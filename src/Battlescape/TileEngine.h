@@ -66,19 +66,13 @@ private:
 	 */
 	struct VisibilityBlockCache
 	{
-		Uint8 blockDir;
-		Uint8 blockDirUp;
-		Uint8 blockDirDown;
+		Uint32 blockDir;
 
 		Uint8 bigWall;
 
 		Uint8 height;
-
-		Uint8 blockUp: 1;
-		Uint8 blockDown: 1;
-		Uint8 smoke: 1;
-		Uint8 fire: 1;
 	};
+
 	/**
 	 * Helper class storing reaction data.
 	 */
