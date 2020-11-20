@@ -597,8 +597,7 @@ void ProjectileFlyBState::think()
 	/* TODO refactoring : store the projectile in this state, instead of getting it from the map each time? */
 	if (_parent->getMap()->getProjectile() == 0)
 	{
-		Tile *t = _parent->getSave()->getTile(_action.actor->getPosition());
-		bool hasFloor = t && !t->hasNoFloor(_parent->getSave());
+		bool hasFloor = _action.actor->haveNoFloorBelow() == false;
 		bool unitCanFly = _action.actor->getMovementType() == MT_FLY;
 
 		if (_action.weapon->haveNextShotsForAction(_action.type, _action.autoShotCounter)
