@@ -187,7 +187,7 @@ pl:
   STR_DATE_SECOND: "{0}."
   STR_DATE_THIRD: "{0}."
   STR_DATE_FOURTH: "{0}."
-  STR_FINANCE_THOUSANDS: "$tys."
+  STR_FINANCE_THOUSANDS: "tys. $"
   STR_NOT_ENOUGH_SPECIAL_MATERIALS_TO_PRODUCE_ITEM_AT_BASE: "Brakuje specjalnych materiałów, żeby produkować{NEWLINE}{0}{NEWLINE}w bazie{NEWLINE}{1}"
   STR_NOT_ENOUGH_MONEY_TO_PRODUCE_ITEM_AT_BASE: "Brakuje pieniędzy, żeby produkować{NEWLINE}{0}{NEWLINE}w bazie{NEWLINE}{1}"
   STR_PRODUCTION_OF_ITEM_AT_BASE_IS_COMPLETE: "Produkcja{NEWLINE}{0}{NEWLINE}w bazie{NEWLINE}{1}{NEWLINE}została zakończona"
