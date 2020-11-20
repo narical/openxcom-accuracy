@@ -3282,7 +3282,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 	int ufoDamagePercentage = 0;
 	if (_game->getMod()->getLessAliensDuringBaseDefense())
 	{
-		ufoDamagePercentage = ufo->getDamage() * 100 / ufo->getCraftStats().damageMax;
+		ufoDamagePercentage = ufo->getDamagePercentage();
 	}
 
 	// Whatever happens in the base defense, the UFO has finished its duty
