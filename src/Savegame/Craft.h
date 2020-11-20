@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include "../Mod/RuleCraft.h"
+#include "../Engine/Script.h"
 
 namespace OpenXcom
 {
@@ -38,6 +39,8 @@ class Mod;
 class SavedGame;
 class Vehicle;
 class RuleStartingCondition;
+class ScriptParserBase;
+class ScriptGlobal;
 
 enum UfoDetection : int;
 
@@ -49,6 +52,13 @@ enum UfoDetection : int;
  */
 class Craft : public MovingTarget
 {
+public:
+	/// Name of class used in script.
+	static constexpr const char *ScriptName = "Craft";
+	/// Register all useful function used by script.
+	static void ScriptRegister(ScriptParserBase* parser);
+
+
 private:
 	const RuleCraft *_rules;
 	Base *_base;
@@ -64,6 +74,7 @@ private:
 	double _lonAuto, _latAuto;
 	std::vector<int> _pilots;
 	int _skinIndex;
+	ScriptValues<Craft> _scriptValues;
 
 	void recalcSpeedMaxRadian();
 
@@ -74,11 +85,11 @@ public:
 	/// Cleans up the craft.
 	~Craft();
 	/// Loads the craft from YAML.
-	void load(const YAML::Node& node, const Mod *mod, SavedGame *save);
+	void load(const YAML::Node& node, const ScriptGlobal *shared, const Mod *mod, SavedGame *save);
 	/// Finishes loading the craft from YAML (called after all other XCOM craft are loaded too).
 	void finishLoading(const YAML::Node& node, SavedGame *save);
 	/// Saves the craft to YAML.
-	YAML::Node save() const override;
+	YAML::Node save(const ScriptGlobal *shared) const;
 	/// Loads a craft ID from YAML.
 	static CraftId loadId(const YAML::Node &node);
 	/// Gets the craft's type.

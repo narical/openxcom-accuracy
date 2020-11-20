@@ -80,7 +80,7 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 		if (mod->getCraft(type) != 0)
 		{
 			_craft = new Craft(mod->getCraft(type), base);
-			_craft->load(craft, mod, 0);
+			_craft->load(craft, mod->getScriptGlobal(), mod, 0);
 		}
 		else
 		{
@@ -121,7 +121,7 @@ YAML::Node Transfer::save(const Base *b, const Mod *mod) const
 	}
 	else if (_craft != 0)
 	{
-		node["craft"] = _craft->save();
+		node["craft"] = _craft->save(mod->getScriptGlobal());
 	}
 	else if (_itemQty != 0)
 	{

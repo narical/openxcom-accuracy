@@ -20,6 +20,7 @@
 #include "RuleCraft.h"
 #include "RuleTerrain.h"
 #include "../Engine/Exception.h"
+#include "../Engine/ScriptBind.h"
 #include "Mod.h"
 
 namespace OpenXcom
@@ -66,11 +67,11 @@ RuleCraft::~RuleCraft()
  * @param modIndex A value that offsets the sounds and sprite values to avoid conflicts.
  * @param listOrder The list weight for this craft.
  */
-void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder)
+void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModScript &parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod, listOrder);
+		load(parent, mod, listOrder, parsers);
 	}
 	_type = node["type"].as<std::string>(_type);
 
@@ -173,6 +174,8 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder)
 	_shieldRechargeAtBase = node["shieldRechargedAtBase"].as<int>(_shieldRechargeAtBase);
 	_mapVisible = node["mapVisible"].as<bool>(_mapVisible);
 	_forceShowInMonthlyCosts = node["forceShowInMonthlyCosts"].as<bool>(_forceShowInMonthlyCosts);
+
+	_scriptValues.load(node, parsers.getShared());
 }
 
 /**
@@ -633,6 +636,68 @@ int RuleCraft::calculateRange(int type)
 	}
 
 	return range;
+}
+
+
+////////////////////////////////////////////////////////////
+//					Script binding
+////////////////////////////////////////////////////////////
+
+namespace
+{
+
+void getTypeScript(const RuleCraft* r, ScriptText& txt)
+{
+	if (r)
+	{
+		txt = { r->getType().c_str() };
+		return;
+	}
+	else
+	{
+		txt = ScriptText::empty;
+	}
+}
+
+std::string debugDisplayScript(const RuleCraft* rc)
+{
+	if (rc)
+	{
+		std::string s;
+		s += RuleCraft::ScriptName;
+		s += "(type: \"";
+		s += rc->getType();
+		s += "\"";
+		s += ")";
+		return s;
+	}
+	else
+	{
+		return "null";
+	}
+}
+
+} // namespace
+
+/**
+ * Register Type in script parser.
+ * @param parser Script parser.
+ */
+void RuleCraft::ScriptRegister(ScriptParserBase* parser)
+{
+	Bind<RuleCraft> b = { parser };
+
+	b.add<&getTypeScript>("getType");
+
+	b.add<&RuleCraft::getWeapons>("getWeaponsMax");
+	b.add<&RuleCraft::getSoldiers>("getSoldiersMax");
+	b.add<&RuleCraft::getVehicles>("getVehiclesMax");
+	b.add<&RuleCraft::getPilots>("getPilotsMax");
+
+	RuleCraftStats::addGetStatsScript<&RuleCraft::_stats>(b, "Stats.");
+
+	b.addScriptValue<&RuleCraft::_scriptValues>();
+	b.addDebugDisplay<&debugDisplayScript>();
 }
 
 }

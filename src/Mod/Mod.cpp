@@ -2094,7 +2094,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if (rule != 0)
 		{
 			_craftListOrder += 100;
-			rule->load(*i, this, _craftListOrder);
+			rule->load(*i, this, _craftListOrder, parsers);
 		}
 	}
 	for (YAML::const_iterator i = doc["craftWeapons"].begin(); i != doc["craftWeapons"].end(); ++i)

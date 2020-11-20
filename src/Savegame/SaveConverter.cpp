@@ -933,7 +933,7 @@ void SaveConverter::loadDatCraft()
 				std::bitset<7> state(load<int>(cdata + _rules->getOffset("CRAFT.DAT_STATE")));
 				node["lowFuel"] = state.test(1);
 
-				craft->load(node, _mod, _save);
+				craft->load(node, _mod->getScriptGlobal(), _mod, _save);
 
 				if (flight != 0 && dest != 0xFFFF)
 				{
@@ -990,7 +990,7 @@ void SaveConverter::loadDatCraft()
 				std::bitset<7> state(load<int>(cdata + _rules->getOffset("CRAFT.DAT_STATE")));
 				node["hyperDetected"] = state.test(6);
 
-				ufo->load(node, *_mod, *_save);
+				ufo->load(node, _mod->getScriptGlobal(), *_mod, *_save);
 				ufo->setSpeed(ufo->getSpeed());
 				if (ufo->getStatus() == Ufo::CRASHED)
 				{

@@ -21,6 +21,7 @@
 #include "../fmath.h"
 #include "../Engine/Language.h"
 #include "../Engine/RNG.h"
+#include "../Engine/ScriptBind.h"
 #include "../Mod/RuleCraft.h"
 #include "CraftWeapon.h"
 #include "../Mod/RuleCraftWeapon.h"
@@ -109,7 +110,7 @@ Craft::~Craft()
  * @param mod Mod for the saved game.
  * @param save Pointer to the saved game.
  */
-void Craft::load(const YAML::Node &node, const Mod *mod, SavedGame *save)
+void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *mod, SavedGame *save)
 {
 	MovingTarget::load(node);
 	_fuel = node["fuel"].as<int>(_fuel);
@@ -253,6 +254,8 @@ void Craft::load(const YAML::Node &node, const Mod *mod, SavedGame *save)
 		setSpeed(0);
 
 	recalcSpeedMaxRadian();
+
+	_scriptValues.load(node, shared);
 }
 
 /**
@@ -286,7 +289,7 @@ void Craft::finishLoading(const YAML::Node &node, SavedGame *save)
  * Saves the craft to a YAML file.
  * @return YAML node.
  */
-YAML::Node Craft::save() const
+YAML::Node Craft::save(const ScriptGlobal *shared) const
 {
 	YAML::Node node = MovingTarget::save();
 	node["type"] = _rules->getType();
@@ -332,6 +335,9 @@ YAML::Node Craft::save() const
 	}
 	if (_skinIndex != 0)
 		node["skinIndex"] = _skinIndex;
+
+	_scriptValues.save(node, shared);
+
 	return node;
 }
 
@@ -1750,5 +1756,67 @@ int Craft::getSkinSprite() const
 {
 	return getRules()->getSprite(_skinIndex);
 }
+
+
+////////////////////////////////////////////////////////////
+//					Script binding
+////////////////////////////////////////////////////////////
+
+namespace
+{
+
+std::string debugDisplayScript(const Craft* c)
+{
+	if (c)
+	{
+		std::string s;
+		s += Craft::ScriptName;
+		s += "(type: \"";
+		s += c->getType();
+		s += "\" id: ";
+		s += std::to_string(c->getId());
+		s += " damage: ";
+		s += std::to_string(c->getDamagePercentage());
+		s += "%)";
+		return s;
+	}
+	else
+	{
+		return "null";
+	}
+}
+
+} // namespace
+
+
+/**
+ * Register Type in script parser.
+ * @param parser Script parser.
+ */
+void Craft::ScriptRegister(ScriptParserBase* parser)
+{
+	parser->registerPointerType<RuleCraft>();
+
+	Bind<Craft> b = { parser };
+
+	b.add<&Craft::getId>("getId");
+
+	b.add<&Craft::getDamage>("getDamage");
+	b.addField<&Craft::_stats, &RuleCraftStats::damageMax>("getDamageMax");
+	b.add<&Craft::getDamagePercentage>("getDamagePercentage");
+
+	b.add<&Craft::getShield>("getShield");
+	b.addField<&Craft::_stats, &RuleCraftStats::shieldCapacity>("getShieldMax");
+	b.add<&Craft::getShieldPercentage>("getShieldPercentage");
+
+	b.addRules<RuleCraft, &Craft::getRules>("getRuleCraft");
+
+	RuleCraftStats::addGetStatsScript<&Craft::_stats>(b, "Stats.");
+
+	b.addScriptValue<BindBase::OnlyGet, &Craft::_rules, &RuleCraft::getScriptValuesRaw>();
+	b.addScriptValue<&Craft::_scriptValues>();
+	b.addDebugDisplay<&debugDisplayScript>();
+}
+
 
 }
