@@ -4094,15 +4094,6 @@ void BattleUnit::setTimeUnits(int tu)
 }
 
 /**
- * Set a specific number of energy.
- * @param energy energy.
- */
-void BattleUnit::setEnergy(int energy)
-{
-	_energy = energy;
-}
-
-/**
  * Get the faction the unit was killed by.
  * @return faction
  */
