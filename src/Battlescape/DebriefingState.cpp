@@ -2554,7 +2554,10 @@ void DebriefingState::recoverAlien(BattleUnit *from, Base *base)
 		ss << "; Status = " << from->getStatus();
 		ss << "; Faction = " << from->getFaction();
 		ss << "; Orig. faction = " << from->getOriginalFaction();
-		ss << "; Spawn unit = [" << from->getSpawnUnit()->getType() << "]";
+		if (from->getSpawnUnit())
+		{
+			ss << "; Spawn unit = [" << from->getSpawnUnit()->getType() << "]";
+		}
 		ss << "; isSurrendering = " << from->isSurrendering();
 		throw Exception(ss.str());
 	}
