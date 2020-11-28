@@ -336,7 +336,7 @@ Mod::Mod() :
 	_maxLookVariant(0), _tooMuchSmokeThreshold(10), _customTrainingFactor(100), _minReactionAccuracy(0), _chanceToStopRetaliation(0), _lessAliensDuringBaseDefense(false),
 	_allowCountriesToCancelAlienPact(false), _buildInfiltrationBaseCloseToTheCountry(false), _allowAlienBasesOnWrongTextures(true),
 	_kneelBonusGlobal(115), _oneHandedPenaltyGlobal(80),
-	_enableCloseQuartersCombat(0), _closeQuartersAccuracyGlobal(100), _closeQuartersTuCostGlobal(12), _closeQuartersEnergyCostGlobal(8),
+	_enableCloseQuartersCombat(0), _closeQuartersAccuracyGlobal(100), _closeQuartersTuCostGlobal(12), _closeQuartersEnergyCostGlobal(8), _closeQuartersSneakUpGlobal(0),
 	_noLOSAccuracyPenaltyGlobal(-1),
 	_surrenderMode(0),
 	_bughuntMinTurn(999), _bughuntMaxEnemies(2), _bughuntRank(0), _bughuntLowMorale(40), _bughuntTimeUnitsLeft(60),
@@ -2402,6 +2402,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_closeQuartersAccuracyGlobal = doc["closeQuartersAccuracyGlobal"].as<int>(_closeQuartersAccuracyGlobal);
 	_closeQuartersTuCostGlobal = doc["closeQuartersTuCostGlobal"].as<int>(_closeQuartersTuCostGlobal);
 	_closeQuartersEnergyCostGlobal = doc["closeQuartersEnergyCostGlobal"].as<int>(_closeQuartersEnergyCostGlobal);
+	_closeQuartersSneakUpGlobal = doc["closeQuartersSneakUpGlobal"].as<int>(_closeQuartersSneakUpGlobal);
 	_noLOSAccuracyPenaltyGlobal = doc["noLOSAccuracyPenaltyGlobal"].as<int>(_noLOSAccuracyPenaltyGlobal);
 	_surrenderMode = doc["surrenderMode"].as<int>(_surrenderMode);
 	_bughuntMinTurn = doc["bughuntMinTurn"].as<int>(_bughuntMinTurn);

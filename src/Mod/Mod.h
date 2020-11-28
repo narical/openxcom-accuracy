@@ -215,7 +215,7 @@ private:
 	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry;
 	bool _allowAlienBasesOnWrongTextures;
 	int _kneelBonusGlobal, _oneHandedPenaltyGlobal;
-	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal;
+	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal, _closeQuartersSneakUpGlobal;
 	int _noLOSAccuracyPenaltyGlobal;
 	int _surrenderMode;
 	int _bughuntMinTurn, _bughuntMaxEnemies, _bughuntRank, _bughuntLowMorale, _bughuntTimeUnitsLeft;
@@ -717,6 +717,8 @@ public:
 	int getCloseQuartersTuCostGlobal() const { return _closeQuartersTuCostGlobal; }
 	/// Gets the default close quarters combat energy cost (default = 8).
 	int getCloseQuartersEnergyCostGlobal() const { return _closeQuartersEnergyCostGlobal; }
+	/// Gets the percentage for successfully avoiding CQC when sneaking up on the enemy (default = 0% = turned off).
+	int getCloseQuartersSneakUpGlobal() const { return _closeQuartersSneakUpGlobal; }
 	/// Gets the default accuracy penalty for having no LOS to the target (default = 0 is no penalty)
 	int getNoLOSAccuracyPenaltyGlobal() const { return _noLOSAccuracyPenaltyGlobal; }
 	/// Gets the surrender mode (default = 0).
