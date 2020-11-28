@@ -480,7 +480,7 @@ bool BattlescapeGame::kneel(BattleUnit *bu)
  */
 void BattlescapeGame::endTurn()
 {
-	_debugPlay = false;
+	_debugPlay = _save->getDebugMode() && ((SDL_GetModState() & KMOD_CTRL) != 0) && (_save->getSide() != FACTION_NEUTRAL);
 	_currentAction.type = BA_NONE;
 	_currentAction.skillRules = nullptr;
 	getMap()->getWaypoints()->clear();
