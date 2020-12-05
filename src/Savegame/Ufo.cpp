@@ -121,7 +121,7 @@ private:
  * @param mod The game mod. Use to access the trajectory rules.
  * @param game The game data. Used to find the UFO's mission.
  */
-void Ufo::load(const YAML::Node &node, const Mod &mod, SavedGame &game)
+void Ufo::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod &mod, SavedGame &game)
 {
 	MovingTarget::load(node);
 	_uniqueId = node["uniqueId"].as<int>(_uniqueId);
@@ -176,6 +176,8 @@ void Ufo::load(const YAML::Node &node, const Mod &mod, SavedGame &game)
 	_escapeCountdown = node["escapeCountdown"].as<int>(_escapeCountdown);
 	if (_inBattlescape)
 		setSpeed(0);
+
+	_scriptValues.load(node, shared);
 }
 
 /**
@@ -263,7 +265,7 @@ void Ufo::finishLoading(const YAML::Node &node, SavedGame &save)
  * Saves the UFO to a YAML file.
  * @return YAML node.
  */
-YAML::Node Ufo::save(bool newBattle) const
+YAML::Node Ufo::save(const ScriptGlobal *shared, bool newBattle) const
 {
 	YAML::Node node = MovingTarget::save();
 	node["type"] = _rules->getType();
@@ -314,6 +316,9 @@ YAML::Node Ufo::save(bool newBattle) const
 
 	node["fireCountdown"] = _fireCountdown;
 	node["escapeCountdown"] = _escapeCountdown;
+
+	_scriptValues.save(node, shared);
+
 	return node;
 }
 
@@ -1333,7 +1338,7 @@ void Ufo::ScriptRegister(ScriptParserBase* parser)
 	RuleCraftStats::addGetStatsScript<&Ufo::_stats>(u, "Stats.");
 
 	u.addScriptValue<BindBase::OnlyGet, &Ufo::_rules, &RuleUfo::getScriptValuesRaw>();
-//	u.addScriptValue<&Ufo::_scriptValues>()
+	u.addScriptValue<&Ufo::_scriptValues>();
 	u.addDebugDisplay<&debugDisplayScript>();
 
 	u.addCustomConst("UFO_FLYING", FLYING);

@@ -505,7 +505,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		if (mod->getUfo(type))
 		{
 			Ufo *u = new Ufo(mod->getUfo(type), 0);
-			u->load(*i, *mod, *this);
+			u->load(*i, mod->getScriptGlobal(), *mod, *this);
 			_ufos.push_back(u);
 		}
 		else
@@ -871,7 +871,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	// UFOs must be after missions
 	for (std::vector<Ufo*>::const_iterator i = _ufos.begin(); i != _ufos.end(); ++i)
 	{
-		node["ufos"].push_back((*i)->save(getMonthsPassed() == -1));
+		node["ufos"].push_back((*i)->save(mod->getScriptGlobal(), getMonthsPassed() == -1));
 	}
 	for (std::vector<GeoscapeEvent *>::const_iterator i = _geoscapeEvents.begin(); i != _geoscapeEvents.end(); ++i)
 	{
