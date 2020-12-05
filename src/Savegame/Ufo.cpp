@@ -1155,6 +1155,14 @@ int Ufo::getShieldRechargeHandle() const
 }
 
 /**
+ * Gets the percent shield remaining
+ */
+int Ufo::getShieldPercentage() const
+{
+	return _stats.shieldCapacity != 0 ? _shield * 100 / _stats.shieldCapacity : 0;
+}
+
+/**
  * Sets how much this UFO is being slowed down by craft tractor beams
  * @param the _tractorBeamSlowdown to set
  */
@@ -1329,6 +1337,10 @@ void Ufo::ScriptRegister(ScriptParserBase* parser)
 	u.add<&Ufo::getDamage>("getDamage");
 	u.add<&getDamageMaxScript>("getDamageMax");
 	u.add<&Ufo::getDamagePercentage>("getDamagePercentage");
+
+	u.add<&Ufo::getShield>("getShield");
+	u.addField<&Ufo::_stats, &RuleUfoStats::getBase, &RuleCraftStats::shieldCapacity>("getShieldMax");
+	u.add<&Ufo::getShieldPercentage>("getShieldPercentage");
 
 	u.add<&Ufo::getDetected>("getDetected");
 	u.add<&Ufo::getHyperDetected>("getHyperDetected");

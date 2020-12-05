@@ -217,6 +217,7 @@ public:
 	int getEscapeCountdown() const;
 	void setInterceptionProcessed(bool processed);
 	bool getInterceptionProcessed() const;
+
 	/// Sets the UFO's shield
 	void setShield(int shield);
 	/// Gets the UFO's shield value
@@ -225,6 +226,9 @@ public:
 	void setShieldRechargeHandle(int shieldRechargeHandle);
 	/// Gets which _interceptionNumber in a dogfight handles the UFO shield recharge
 	int getShieldRechargeHandle() const;
+	/// Gets the percent shield remaining
+	int getShieldPercentage() const;
+
 	/// Sets the number of tractor beams locked on to a UFO
 	void setTractorBeamSlowdown(int tractorBeamSlowdown);
 	/// Gets the number of tractor beams locked on to a UFO

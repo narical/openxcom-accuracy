@@ -55,6 +55,9 @@ struct RuleUfoStats : RuleCraftStats
 		RuleCraftStats::addGetStatsScript<Stat>(b, prefix);
 //		b.template addField<Stat, &RuleUfoStats::?>(prefix + "?");
 	}
+
+	/// Helper function needed by scripts
+	const RuleCraftStats& getBase() const { return *this; }
 };
 
 /**
