@@ -1378,7 +1378,7 @@ ModScript::DetectUfoFromBaseParser::DetectUfoFromBaseParser(ScriptGlobal* shared
 ModScript::DetectUfoFromCraftParser::DetectUfoFromCraftParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
 	"detection_type",
 	"detection_chance",
-	"ufo", "distance", "already_tracked", "radar_total_strength", "radar_max_distance", }
+	"ufo", "craft", "distance", "already_tracked", "radar_total_strength", "radar_max_distance", }
 {
 	BindBase b { this };
 

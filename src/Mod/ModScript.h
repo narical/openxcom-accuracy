@@ -58,6 +58,8 @@ struct StatAdjustment;
 
 class Ufo;
 class RuleUfo;
+class Craft;
+class RuleCraft;
 
 class SavedBattleGame;
 class SavedGame;
@@ -229,7 +231,7 @@ class ModScript
 		DetectUfoFromBaseParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
 
-	struct DetectUfoFromCraftParser : ScriptParserEvents<ScriptOutputArgs<int&, int&>, const Ufo*, int, int, int, int>
+	struct DetectUfoFromCraftParser : ScriptParserEvents<ScriptOutputArgs<int&, int&>, const Ufo*, const Craft*, int, int, int, int>
 	{
 		DetectUfoFromCraftParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};

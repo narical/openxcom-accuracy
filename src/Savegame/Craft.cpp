@@ -1100,7 +1100,7 @@ UfoDetection Craft::detect(const Ufo *target, bool alreadyTracked) const
 	}
 
 	ModScript::DetectUfoFromCraft::Output args { detectionType, detectionChance, };
-	ModScript::DetectUfoFromCraft::Worker work { target, distance, alreadyTracked, _stats.radarChance, _stats.radarRange, };
+	ModScript::DetectUfoFromCraft::Worker work { target, this, distance, alreadyTracked, _stats.radarChance, _stats.radarRange, };
 
 	work.execute(target->getRules()->getScript<ModScript::DetectUfoFromCraft>(), args);
 
