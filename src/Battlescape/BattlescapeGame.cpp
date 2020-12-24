@@ -188,7 +188,6 @@ BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parent
 
 	_debugPlay = false;
 
-	spawnFromPrimedItems();
 	checkForCasualties(nullptr, BattleActionAttack{ }, true);
 	cancelCurrentAction();
 }

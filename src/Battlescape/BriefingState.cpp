@@ -233,6 +233,7 @@ void BriefingState::btnOkClick(Action *)
 	if (_infoOnly) return;
 
 	BattlescapeState *bs = new BattlescapeState;
+	bs->getBattleGame()->spawnFromPrimedItems();
 	auto tally = bs->getBattleGame()->tallyUnits();
 	if (tally.liveAliens > 0)
 	{
