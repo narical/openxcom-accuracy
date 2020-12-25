@@ -36,11 +36,11 @@ private:
 	Position _pos;
 	int _segment;
 	std::vector<int> _nodeLinks;
-	int _type;
-	int _rank;
-	int _flags;
-	int _reserved;
-	int _priority;
+	int _type;      // 19 = Unit type in Mapview 2
+	int _rank;      // 20 = Node rank in Mapview 2
+	int _flags;     // 21 = Patrol priority in Mapview 2
+	int _reserved;  // 22 = Base Attack in Mapview 2
+	int _priority;  // 23 = Spawn weight in Mapview 2
 	bool _allocated;
 	bool _dummy;
 public:
