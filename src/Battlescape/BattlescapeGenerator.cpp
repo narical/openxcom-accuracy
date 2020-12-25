@@ -1098,6 +1098,12 @@ void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, s
 	{
 		for (std::vector<BattleItem*>::iterator j = craftInv->begin(); j != craftInv->end();)
 		{
+			if ((*j)->getRules()->getInventoryHeight() == 0 || (*j)->getRules()->getInventoryWidth() == 0)
+			{
+				// don't autoequip hidden items, whatever they are
+				++j;
+				continue;
+			}
 			if ((*j)->getSlot() == groundRuleInv)
 			{
 				bool add = false;
