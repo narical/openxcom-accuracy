@@ -41,7 +41,7 @@ namespace OpenXcom
 		Unit *unit = item->getVehicleUnit();
 		if (!unit)
 		{
-			throw Exception("Item " + defs->id + " do not have vehicle unit defined");
+			throw Exception("ArticleStateVehicle: Item " + defs->id + " is missing a vehicle unit definition!");
 		}
 		Armor *armor = unit->getArmor();
 
