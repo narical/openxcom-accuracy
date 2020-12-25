@@ -79,6 +79,7 @@ OPT bool oxceEnableUnitResponseSounds;
 OPT bool oxceEnableSlackingIndicator;
 OPT bool oxceEnablePaletteFlickerFix;
 OPT bool oxcePersonalLayoutIncludingArmor;
+OPT bool oxceManufactureFilterSuppliesOK;
 
 // OXCE hidden, but moddable via fixedUserOptions and/or recommendedUserOptions
 OPT int oxceStartUpTextMode;

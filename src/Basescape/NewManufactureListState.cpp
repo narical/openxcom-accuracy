@@ -117,6 +117,10 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 	filterOptions.push_back("STR_FILTER_FACILITY_REQUIRED");
 	filterOptions.push_back("STR_FILTER_HIDDEN");
 	_cbxFilter->setOptions(filterOptions, true);
+	if (Options::oxceManufactureFilterSuppliesOK)
+	{
+		_cbxFilter->setSelected(MANU_FILTER_DEFAULT_SUPPLIES_OK);
+	}
 	_cbxFilter->onChange((ActionHandler)&NewManufactureListState::cbxFilterChange);
 
 	_catStrings.push_back("STR_ALL_ITEMS");
