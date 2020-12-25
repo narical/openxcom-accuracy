@@ -1176,6 +1176,10 @@ void DebriefingState::prepareDebriefing()
 		}
 	}
 
+	if (!base && _game->getSavedGame()->isIronman())
+	{
+		throw Exception("Your save is corrupted. Don't play Ironman or don't ragequit.");
+	}
 
 	// mission site disappears (even when you abort)
 	for (std::vector<MissionSite*>::iterator i = save->getMissionSites()->begin(); i != save->getMissionSites()->end(); ++i)
