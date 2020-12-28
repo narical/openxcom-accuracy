@@ -45,9 +45,9 @@ class RuleResearch
  private:
 	std::string _name, _lookup, _cutscene, _spawnedItem, _spawnedEvent;
 	int _cost, _points;
-	std::vector<std::string> _dependenciesName, _unlocksName, _disablesName, _getOneFreeName, _requiresName;
+	std::vector<std::string> _dependenciesName, _unlocksName, _disablesName, _reenablesName, _getOneFreeName, _requiresName;
 	RuleBaseFacilityFunctions _requiresBaseFunc;
-	std::vector<const RuleResearch*> _dependencies, _unlocks, _disables, _getOneFree, _requires;
+	std::vector<const RuleResearch*> _dependencies, _unlocks, _disables, _reenables, _getOneFree, _requires;
 	bool _sequentialGetOneFree;
 	std::map<std::string, std::vector<std::string> > _getOneFreeProtectedName;
 	std::map<const RuleResearch*, std::vector<const RuleResearch*> > _getOneFreeProtected;
@@ -87,6 +87,8 @@ public:
 	const std::vector<const RuleResearch*> &getUnlocked() const;
 	/// Gets the list of ResearchProjects disabled by this research.
 	const std::vector<const RuleResearch*> &getDisabled() const;
+	/// Gets the list of ResearchProjects reenabled by this research.
+	const std::vector<const RuleResearch*> &getReenabled() const;
 	/// Gets the points earned for discovering this ResearchProject.
 	int getPoints() const;
 	/// Gets the list of ResearchProjects granted at random for free by this research.

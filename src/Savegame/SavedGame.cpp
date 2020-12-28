@@ -1499,9 +1499,17 @@ void SavedGame::addFinishedResearchSimple(const RuleResearch * research)
  */
 void SavedGame::addFinishedResearch(const RuleResearch * research, const Mod * mod, Base * base, bool score)
 {
+	// process "re-enables"
+	for (auto& ree : research->getReenabled())
+	{
+		if (isResearchRuleStatusDisabled(ree->getName()))
+		{
+			setResearchRuleStatus(ree->getName(), RuleResearch::RESEARCH_STATUS_NEW); // reset status
+		}
+	}
+
 	if (isResearchRuleStatusDisabled(research->getName()))
 	{
-		// make absolutely sure disabled research never gets re-researched again by accident
 		return;
 	}
 

@@ -51,6 +51,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	mod->loadUnorderedNames(_name, _dependenciesName, node["dependencies"]);
 	mod->loadUnorderedNames(_name, _unlocksName, node["unlocks"]);
 	mod->loadUnorderedNames(_name, _disablesName, node["disables"]);
+	mod->loadUnorderedNames(_name, _reenablesName, node["reenables"]);
 	mod->loadUnorderedNames(_name, _getOneFreeName, node["getOneFree"]);
 	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
@@ -84,6 +85,7 @@ void RuleResearch::afterLoad(const Mod* mod)
 	_dependencies = mod->getResearch(_dependenciesName);
 	_unlocks = mod->getResearch(_unlocksName);
 	_disables = mod->getResearch(_disablesName);
+	_reenables = mod->getResearch(_reenablesName);
 	_getOneFree = mod->getResearch(_getOneFreeName);
 	_requires = mod->getResearch(_requiresName);
 
@@ -105,6 +107,7 @@ void RuleResearch::afterLoad(const Mod* mod)
 	Collections::removeAll(_dependenciesName);
 	Collections::removeAll(_unlocksName);
 	Collections::removeAll(_disablesName);
+	Collections::removeAll(_reenablesName);
 	Collections::removeAll(_getOneFreeName);
 	Collections::removeAll(_requiresName);
 	Collections::removeAll(_getOneFreeProtectedName);
@@ -179,6 +182,15 @@ const std::vector<const RuleResearch*> &RuleResearch::getUnlocked() const
 const std::vector<const RuleResearch*> &RuleResearch::getDisabled() const
 {
 	return _disables;
+}
+
+/**
+ * Gets the list of ResearchProjects reenabled by this research.
+ * @return The list of ResearchProjects.
+ */
+const std::vector<const RuleResearch*> &RuleResearch::getReenabled() const
+{
+	return _reenables;
 }
 
 /**

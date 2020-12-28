@@ -358,6 +358,7 @@ void TechTreeViewerState::initLists()
 		const std::vector<const RuleResearch*> deps = rule->getDependencies();
 		std::vector<std::string> unlockedBy;
 		std::vector<std::string> disabledBy;
+		std::vector<std::string> reenabledBy;
 		std::vector<std::string> getForFreeFrom;
 		std::vector<std::string> lookupOf;
 		std::vector<std::string> requiredByResearch;
@@ -367,6 +368,7 @@ void TechTreeViewerState::initLists()
 		std::vector<std::string> leadsTo;
 		const std::vector<const RuleResearch*> unlocks = rule->getUnlocked();
 		const std::vector<const RuleResearch*> disables = rule->getDisabled();
+		const std::vector<const RuleResearch*> reenables = rule->getReenabled();
 		const std::vector<const RuleResearch*> free = rule->getGetOneFree();
 		const std::map<const RuleResearch*, std::vector<const RuleResearch*> > freeProtected = rule->getGetOneFreeProtected();
 
@@ -428,6 +430,13 @@ void TechTreeViewerState::initLists()
 				if (i == rule)
 				{
 					disabledBy.push_back(j);
+				}
+			}
+			for (auto& i : temp->getReenabled())
+			{
+				if (i == rule)
+				{
+					reenabledBy.push_back(j);
 				}
 			}
 			for (auto& i : temp->getGetOneFree())
@@ -590,6 +599,26 @@ void TechTreeViewerState::initLists()
 			_leftFlags.push_back(TTV_NONE);
 			++row;
 			for (std::vector<std::string>::const_iterator i = disabledBy.begin(); i != disabledBy.end(); ++i)
+			{
+				std::string name = tr((*i));
+				name.insert(0, "  ");
+				_lstLeft->addRow(1, name.c_str());
+				_lstLeft->setRowColor(row, getResearchColor((*i)));
+				_leftTopics.push_back((*i));
+				_leftFlags.push_back(TTV_RESEARCH);
+				++row;
+			}
+		}
+
+		// 4c. reenabled by
+		if (reenabledBy.size() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_REENABLED_BY").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+			for (std::vector<std::string>::const_iterator i = reenabledBy.begin(); i != reenabledBy.end(); ++i)
 			{
 				std::string name = tr((*i));
 				name.insert(0, "  ");
@@ -834,6 +863,26 @@ void TechTreeViewerState::initLists()
 			_rightFlags.push_back(TTV_NONE);
 			++row;
 			for (auto& i : disables)
+			{
+				std::string name = tr(i->getName());
+				name.insert(0, "  ");
+				_lstRight->addRow(1, name.c_str());
+				_lstRight->setRowColor(row, getResearchColor(i->getName()));
+				_rightTopics.push_back(i->getName());
+				_rightFlags.push_back(TTV_RESEARCH);
+				++row;
+			}
+		}
+
+		// 8c. reenables
+		if (reenables.size() > 0)
+		{
+			_lstRight->addRow(1, tr("STR_REENABLES").c_str());
+			_lstRight->setRowColor(row, _blue);
+			_rightTopics.push_back("-");
+			_rightFlags.push_back(TTV_NONE);
+			++row;
+			for (auto& i : reenables)
 			{
 				std::string name = tr(i->getName());
 				name.insert(0, "  ");
