@@ -103,6 +103,7 @@ BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state) :
 	_txtInit->setText(tr("STR_BASE_DEFENSES_INITIATED"));
 
 	_lstDefenses->setColumns(3, 134, 70, 50);
+	_lstDefenses->setFlooding(true);
 	_gravShields = _base->getGravShields();
 	_defenses = _base->getDefenses()->size();
 	_timer = new Timer(250);
@@ -205,15 +206,22 @@ void BaseDefenseState::nextStep()
 			}
 			return;
 		case BDA_FIRE:
-			_lstDefenses->setCellText(_row, 1, tr("STR_FIRING"));
-			_game->getMod()->getSound("GEO.CAT", (def)->getRules()->getFireSound())->play();
+			if (ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
+			{
+				_lstDefenses->setCellText(_row, 1, tr("STR_NO_AMMO"));
+			}
+			else
+			{
+				_lstDefenses->setCellText(_row, 1, tr("STR_FIRING"));
+				_game->getMod()->getSound("GEO.CAT", (def)->getRules()->getFireSound())->play();
+			}
 			_timer->setInterval(333);
 			_action = BDA_RESOLVE;
 			return;
 		case BDA_RESOLVE:
 			if (ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
 			{
-				_lstDefenses->setCellText(_row, 2, tr("STR_NO_AMMO"));
+				//_lstDefenses->setCellText(_row, 2, tr("STR_NO_AMMO"));
 			}
 			else if (!RNG::percent((def)->getRules()->getHitRatio()))
 			{
