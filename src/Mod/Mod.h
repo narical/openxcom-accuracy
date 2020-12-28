@@ -499,6 +499,10 @@ public:
 		{
 			rule = getInventory(name, true);
 		}
+		else if constexpr (std::is_same_v<T, RuleEvent>)
+		{
+			rule = getEvent(name, true);
+		}
 		else
 		{
 			static_assert(sizeof(T) == 0, "Unsupported type to link");

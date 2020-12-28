@@ -19,9 +19,12 @@
  */
 #include <string>
 #include <yaml-cpp/yaml.h>
+#include "RuleEvent.h"
 
 namespace OpenXcom
 {
+
+class Mod;
 
 /**
  * Represents a specific funding country.
@@ -32,10 +35,13 @@ class RuleCountry
 {
 private:
 	std::string _type;
+	std::string _signedPactEventName, _rejoinedXcomEventName;
 	int _fundingBase, _fundingCap;
 	double _labelLon, _labelLat;
 	std::vector<double> _lonMin, _lonMax, _latMin, _latMax;
 	int _labelColor, _zoomLevel;
+	const RuleEvent* _signedPactEvent = nullptr;
+	const RuleEvent* _rejoinedXcomEvent = nullptr;
 public:
 	/// Creates a blank country ruleset.
 	RuleCountry(const std::string &type);
@@ -43,8 +49,14 @@ public:
 	~RuleCountry();
 	/// Loads the country from YAML.
 	void load(const YAML::Node& node);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Gets the country's type.
 	const std::string& getType() const;
+	/// Gets the event triggered after the country leaves Xcom.
+	const RuleEvent* getSignedPactEvent() const { return _signedPactEvent; }
+	/// Gets the event triggered after the country rejoins Xcom.
+	const RuleEvent* getRejoinedXcomEvent() const { return _rejoinedXcomEvent; }
 	/// Generates the country's starting funding.
 	int generateFunding() const;
 	/// Gets the country's funding cap.

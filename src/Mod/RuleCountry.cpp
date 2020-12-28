@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "RuleCountry.h"
+#include "Mod.h"
 #include "../Engine/RNG.h"
 #include "../fmath.h"
 
@@ -50,6 +51,8 @@ void RuleCountry::load(const YAML::Node &node)
 		load(parent);
 	}
 	_type = node["type"].as<std::string>(_type);
+	_signedPactEventName = node["signedPactEvent"].as<std::string>(_signedPactEventName);
+	_rejoinedXcomEventName = node["rejoinedXcomEvent"].as<std::string>(_rejoinedXcomEventName);
 	_fundingBase = node["fundingBase"].as<int>(_fundingBase);
 	_fundingCap = node["fundingCap"].as<int>(_fundingCap);
 	if (node["labelLon"])
@@ -70,6 +73,15 @@ void RuleCountry::load(const YAML::Node &node)
 		if (_latMin.back() > _latMax.back())
 			std::swap(_latMin.back(), _latMax.back());
 	}
+}
+
+/**
+ * Cross link with other rules.
+ */
+void RuleCountry::afterLoad(const Mod* mod)
+{
+	mod->linkRule(_signedPactEvent, _signedPactEventName);
+	mod->linkRule(_rejoinedXcomEvent, _rejoinedXcomEventName);
 }
 
 /**

@@ -43,6 +43,8 @@
 #include "../Menu/SaveGameState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
+#include "../Savegame/GeoscapeEvent.h"
+#include "../Mod/RuleEvent.h"
 
 namespace OpenXcom
 {
@@ -273,6 +275,39 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	ss5 << countryList(_cancelPactList, "STR_COUNTRY_HAS_CANCELLED_A_SECRET_PACT", "STR_COUNTRIES_HAVE_CANCELLED_A_SECRET_PACT");
 
 	_txtDesc->setText(ss5.str());
+
+	// Give modders some handles on political situation
+	auto spawnEvent = [](const RuleEvent* spawnedEventRule)
+	{
+		if (spawnedEventRule)
+		{
+			GeoscapeEvent* newEvent = new GeoscapeEvent(*spawnedEventRule);
+			int minutes = (spawnedEventRule->getTimer() + (RNG::generate(0, spawnedEventRule->getTimerRandom()))) / 30 * 30;
+			if (minutes < 60) minutes = 60; // just in case
+			newEvent->setSpawnCountdown(minutes);
+			_game->getSavedGame()->getGeoscapeEvents().push_back(newEvent);
+
+			// remember that it has been generated
+			_game->getSavedGame()->addGeneratedEvent(spawnedEventRule);
+		}
+	};
+
+	for (auto& traitorName : _pactList)
+	{
+		auto traitor = _game->getMod()->getCountry(traitorName, false);
+		if (traitor)
+		{
+			spawnEvent(traitor->getSignedPactEvent());
+		}
+	}
+	for (auto& exTraitorName : _cancelPactList)
+	{
+		auto exTraitor = _game->getMod()->getCountry(exTraitorName, false);
+		if (exTraitor)
+		{
+			spawnEvent(exTraitor->getRejoinedXcomEvent());
+		}
+	}
 }
 
 /**

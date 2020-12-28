@@ -1750,6 +1750,7 @@ void Mod::loadAll()
 	afterLoadHelper("commendations", this, _commendations, &RuleCommendations::afterLoad);
 	afterLoadHelper("skills", this, _skills, &RuleSkill::afterLoad);
 	afterLoadHelper("craftWeapons", this, _craftWeapons, &RuleCraftWeapon::afterLoad);
+	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
 
 	for (auto& a : _armors)
 	{
