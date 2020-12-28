@@ -2002,11 +2002,17 @@ void StatsForNerdsState::initItemList()
 
 		addSection("{Animations}", "", _white);
 		addInteger(ss, itemRule->getHitAnimation(), "hitAnimation");
+		addInteger(ss, itemRule->getHitAnimationFrames(), "hitAnimFrames", -1);
 		addInteger(ss, itemRule->getHitMissAnimation(), "hitMissAnimation", -1);
+		addInteger(ss, itemRule->getHitMissAnimationFrames(), "hitMissAnimFrames", -1);
 		addInteger(ss, itemRule->getMeleeAnimation(), "meleeAnimation");
+		addInteger(ss, itemRule->getMeleeAnimationFrames(), "meleeAnimFrames", -1);
 		addInteger(ss, itemRule->getMeleeMissAnimation(), "meleeMissAnimation", -1);
+		addInteger(ss, itemRule->getMeleeMissAnimationFrames(), "meleeMissAnimFrames", -1);
 		addInteger(ss, itemRule->getPsiAnimation(), "psiAnimation", -1);
+		addInteger(ss, itemRule->getPsiAnimationFrames(), "psiAnimFrames", -1);
 		addInteger(ss, itemRule->getPsiMissAnimation(), "psiMissAnimation", -1);
+		addInteger(ss, itemRule->getPsiMissAnimationFrames(), "psiMissAnimFrames", -1);
 
 		addInteger(ss, itemRule->getBulletSpeed(), "bulletSpeed");
 		addInteger(ss, itemRule->getExplosionSpeed(), "explosionSpeed");

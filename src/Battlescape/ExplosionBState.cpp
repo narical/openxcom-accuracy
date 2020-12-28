@@ -207,16 +207,18 @@ void ExplosionBState::init()
 			_parent->getSave()->getTileEngine()->explode(_attack, _center, _power, _damageType, _radius, range);
 
 			int frame = Mod::EXPLOSION_OFFSET;
+			int frameCount = -1;
 			int sound = _power <= 80 ? Mod::SMALL_EXPLOSION : Mod::LARGE_EXPLOSION;
 
 			if (itemRule)
 			{
 				frame = itemRule->getHitAnimation();
+				frameCount = itemRule->getHitAnimationFrames();
 				optValue(sound, itemRule->getExplosionHitSound());
 			}
 			if (_parent->getDepth() > 0)
 			{
-				frame -= Explosion::EXPLODE_FRAMES;
+				frame -= (frameCount > 0 ? frameCount : Explosion::EXPLODE_FRAMES);
 			}
 			int frameDelay = 0;
 			int counter = std::max(1, (_power/5) / 5);
@@ -228,7 +230,7 @@ void ExplosionBState::init()
 				int Y = RNG::generate(-_power/2,_power/2);
 				Position p = _center;
 				p.x += X; p.y += Y;
-				Explosion *explosion = new Explosion(p, frame, frameDelay, true);
+				Explosion *explosion = new Explosion(p, frame, frameDelay, true, false, frameCount);
 				// add the explosion on the map
 				_parent->getMap()->getExplosions()->push_back(explosion);
 				if (i > 0 && i % counter == 0)
@@ -265,6 +267,7 @@ void ExplosionBState::init()
 
 		_parent->setStateInterval(std::max(1, ((BattlescapeState::DEFAULT_ANIM_SPEED/2) - (10 * itemRule->getExplosionSpeed()))));
 		int anim = -1;
+		int animFrames = -1;
 		int sound = -1;
 
 		const RuleItem *weaponRule = _attack.weapon_item->getRules();
@@ -273,12 +276,14 @@ void ExplosionBState::init()
 		if (_hit || _psi)
 		{
 			anim = weaponRule->getMeleeAnimation();
+			animFrames = weaponRule->getMeleeAnimationFrames();
 			if (_psi)
 			{
 				// psi attack sound is based weapon hit sound
 				sound = weaponRule->getHitSound();
 
 				optValue(anim, weaponRule->getPsiAnimation());
+				optValue(animFrames, weaponRule->getPsiAnimationFrames());
 				optValue(sound, weaponRule->getPsiSound());
 			}
 			else
@@ -287,6 +292,7 @@ void ExplosionBState::init()
 				if (damageRule)
 				{
 					optValue(anim, damageRule->getMeleeAnimation());
+					optValue(animFrames, damageRule->getMeleeAnimationFrames());
 					optValue(sound, damageRule->getMeleeSound());
 				}
 			}
@@ -294,6 +300,7 @@ void ExplosionBState::init()
 		else
 		{
 			anim = itemRule->getHitAnimation();
+			animFrames = itemRule->getHitAnimationFrames();
 			sound = itemRule->getHitSound();
 		}
 
@@ -302,12 +309,14 @@ void ExplosionBState::init()
 			if (_hit || _psi)
 			{
 				optValue(anim, weaponRule->getMeleeMissAnimation());
+				optValue(animFrames, weaponRule->getMeleeMissAnimationFrames());
 				if (_psi)
 				{
 					// psi attack sound is based weapon hit sound
 					optValue(sound, weaponRule->getHitMissSound());
 
 					optValue(anim, weaponRule->getPsiMissAnimation());
+					optValue(animFrames, weaponRule->getPsiMissAnimationFrames());
 					optValue(sound, weaponRule->getPsiMissSound());
 				}
 				else
@@ -316,6 +325,7 @@ void ExplosionBState::init()
 					if (damageRule)
 					{
 						optValue(anim, damageRule->getMeleeMissAnimation());
+						optValue(animFrames, damageRule->getMeleeMissAnimationFrames());
 						optValue(sound, damageRule->getMeleeMissSound());
 					}
 				}
@@ -323,13 +333,14 @@ void ExplosionBState::init()
 			else
 			{
 				optValue(anim, itemRule->getHitMissAnimation());
+				optValue(animFrames, itemRule->getHitMissAnimationFrames());
 				optValue(sound, itemRule->getHitMissSound());
 			}
 		}
 
 		if (anim != -1)
 		{
-			Explosion *explosion = new Explosion(_center, anim, 0, false, (_hit || _psi)); // Don't burn the tile
+			Explosion *explosion = new Explosion(_center, anim, 0, false, (_hit || _psi), animFrames); // Don't burn the tile
 			_parent->getMap()->getExplosions()->push_back(explosion);
 		}
 		if (_parent->getMap()->getFollowProjectile())

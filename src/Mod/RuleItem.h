@@ -305,17 +305,17 @@ private:
 	int _specialIconSprite;
 	std::vector<int> _reloadSound;
 	std::vector<int> _fireSound, _hitSound;
-	int _hitAnimation;
+	int _hitAnimation, _hitAnimFrames;
 	std::vector<int> _hitMissSound;
-	int _hitMissAnimation;
+	int _hitMissAnimation, _hitMissAnimFrames;
 	std::vector<int> _meleeSound;
-	int _meleeAnimation;
+	int _meleeAnimation, _meleeAnimFrames;
 	std::vector<int> _meleeMissSound;
-	int _meleeMissAnimation;
+	int _meleeMissAnimation, _meleeMissAnimFrames;
 	std::vector<int> _meleeHitSound, _explosionHitSound, _psiSound;
-	int _psiAnimation;
+	int _psiAnimation, _psiAnimFrames;
 	std::vector<int> _psiMissSound;
-	int _psiMissAnimation;
+	int _psiMissAnimation, _psiMissAnimFrames;
 	int _power;
 	bool _hidePower;
 	float _powerRangeReduction;
@@ -492,22 +492,30 @@ public:
 	const std::vector<int> &getHitSoundRaw() const { return _hitSound; }
 	/// Gets the item's hit animation.
 	int getHitAnimation() const;
+	/// Gets the item's hit animation frame count.
+	int getHitAnimationFrames() const { return _hitAnimFrames; }
 	/// Gets the item's hit sound.
 	int getHitMissSound() const;
 	const std::vector<int> &getHitMissSoundRaw() const { return _hitMissSound; }
-	/// Gets the item's hit animation.
+	/// Gets the item's psiUse miss animation.
 	int getHitMissAnimation() const;
+	/// Gets the item's psiUse miss animation frame count.
+	int getHitMissAnimationFrames() const { return _hitMissAnimFrames; }
 
 	/// What sound does this weapon make when you swing this at someone?
 	int getMeleeSound() const;
 	const std::vector<int> &getMeleeSoundRaw() const { return _meleeSound; }
 	/// Get the melee animation starting frame (comes from hit.pck).
 	int getMeleeAnimation() const;
+	/// Gets the melee animation frame count.
+	int getMeleeAnimationFrames() const { return _meleeAnimFrames; }
 	/// What sound does this weapon make when you miss a swing?
 	int getMeleeMissSound() const;
 	const std::vector<int> &getMeleeMissSoundRaw() const { return _meleeMissSound; }
 	/// Get the melee miss animation starting frame (comes from hit.pck).
 	int getMeleeMissAnimation() const;
+	/// Gets the melee miss animation frame count.
+	int getMeleeMissAnimationFrames() const { return _meleeMissAnimFrames; }
 	/// What sound does this weapon make when you punch someone in the face with it?
 	int getMeleeHitSound() const;
 	const std::vector<int> &getMeleeHitSoundRaw() const { return _meleeHitSound; }
@@ -520,11 +528,15 @@ public:
 	const std::vector<int> &getPsiSoundRaw() const { return _psiSound; }
 	/// Get the psi animation starting frame (comes from hit.pck).
 	int getPsiAnimation() const;
+	/// Gets the psi animation frame count.
+	int getPsiAnimationFrames() const { return _psiAnimFrames; }
 	/// Gets the item's psi miss sound.
 	int getPsiMissSound() const;
 	const std::vector<int> &getPsiMissSoundRaw() const { return _psiMissSound; }
 	/// Get the psi miss animation starting frame (comes from hit.pck).
 	int getPsiMissAnimation() const;
+	/// Gets the psi miss animation frame count.
+	int getPsiMissAnimationFrames() const { return _psiMissAnimFrames; }
 
 
 	/// Gets the item's power.

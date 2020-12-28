@@ -146,9 +146,9 @@ const float TilesToVexels = 16.0f;
 RuleItem::RuleItem(const std::string &type) :
 	_type(type), _name(type), _vehicleUnit(nullptr), _size(0.0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(0), _underwaterThrowRange(0),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
-	_hitAnimation(0), _hitMissAnimation(-1),
-	_meleeAnimation(0), _meleeMissAnimation(-1),
-	_psiAnimation(-1), _psiMissAnimation(-1),
+	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
+	_meleeAnimation(0), _meleeAnimFrames(-1), _meleeMissAnimation(-1), _meleeMissAnimFrames(-1),
+	_psiAnimation(-1), _psiAnimFrames(-1), _psiMissAnimation(-1), _psiMissAnimFrames(-1),
 	_power(0), _hidePower(false), _powerRangeReduction(0), _powerRangeThreshold(0),
 	_accuracyUse(0), _accuracyMind(0), _accuracyPanic(20), _accuracyThrow(100), _accuracyCloseQuarters(-1),
 	_noLOSAccuracyPenalty(-1),
@@ -411,6 +411,14 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	mod->loadSpriteOffset(_type, _meleeMissAnimation, node["meleeMissAnimation"], "HIT.PCK");
 	mod->loadSpriteOffset(_type, _psiAnimation, node["psiAnimation"], "HIT.PCK");
 	mod->loadSpriteOffset(_type, _psiMissAnimation, node["psiMissAnimation"], "HIT.PCK");
+
+	_hitAnimFrames = node["hitAnimFrames"].as<int>(_hitAnimFrames);
+	_hitMissAnimFrames = node["hitMissAnimFrames"].as<int>(_hitMissAnimFrames);
+	_meleeAnimFrames = node["meleeAnimFrames"].as<int>(_meleeAnimFrames);
+	_meleeMissAnimFrames = node["meleeMissAnimFrames"].as<int>(_meleeMissAnimFrames);
+	_psiAnimFrames = node["psiAnimFrames"].as<int>(_psiAnimFrames);
+	_psiMissAnimFrames = node["psiMissAnimFrames"].as<int>(_psiMissAnimFrames);
+
 	mod->loadSoundOffset(_type, _meleeHitSound, node["meleeHitSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _explosionHitSound, node["explosionHitSound"], "BATTLE.CAT");
 
