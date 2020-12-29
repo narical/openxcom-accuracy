@@ -816,6 +816,12 @@ void Tile::addItem(BattleItem *item, RuleInventory *ground)
 	item->setSlot(ground);
 	_inventory.push_back(item);
 	item->setTile(this);
+
+	// Note: floorOb drawing optimisation
+	if (item->getUnit() && _inventory.size() > 1)
+	{
+		std::swap(_inventory.front(), _inventory.back());
+	}
 }
 
 /**
@@ -841,10 +847,23 @@ void Tile::removeItem(BattleItem *item)
  */
 BattleItem* Tile::getTopItem()
 {
+	// Note: floorOb drawing optimisation
+	if (_inventory.size() > 100)
+	{
+		// this tile has a metric ton of junk, it doesn't matter what gets drawn, let's draw it quickly
+		return _inventory.front();
+	}
+
 	int biggestWeight = -1;
 	BattleItem* biggestItem = 0;
 	for (std::vector<BattleItem*>::iterator i = _inventory.begin(); i != _inventory.end(); ++i)
 	{
+		// Note: floorOb drawing optimisation
+		if ((*i)->getUnit())
+		{
+			// any unit has the highest priority (btw. this is still backwards-compatible with both xcom1/xcom2, where corpses are the heaviest items)
+			return *i;
+		}
 		int temp = (*i)->getTotalWeight();
 		if (temp > biggestWeight)
 		{
