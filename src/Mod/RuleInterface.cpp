@@ -50,6 +50,7 @@ void RuleInterface::load(const YAML::Node& node, Mod *mod)
 	_palette = node["palette"].as<std::string>(_palette);
 	_parent = node["parent"].as<std::string>(_parent);
 	_backgroundImage = node["backgroundImage"].as<std::string>(_backgroundImage);
+	_altBackgroundImage = node["altBackgroundImage"].as<std::string>(_altBackgroundImage);
 	_music = node["music"].as<std::string>(_music);
 	mod->loadSoundOffset(_type, _sound, node["sound"], "GEO.CAT");
 	for (YAML::const_iterator i = node["elements"].begin(); i != node["elements"].end(); ++i)
@@ -109,6 +110,11 @@ const std::string &RuleInterface::getParent() const
 const std::string &RuleInterface::getBackgroundImage() const
 {
 	return _backgroundImage;
+}
+
+const std::string &RuleInterface::getAltBackgroundImage() const
+{
+	return _altBackgroundImage;
 }
 
 const std::string &RuleInterface::getMusic() const

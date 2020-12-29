@@ -86,7 +86,7 @@ AbandonGameState::AbandonGameState(OptionsOrigin origin) : _origin(origin)
 
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("geoscape");
 	}
 }
 

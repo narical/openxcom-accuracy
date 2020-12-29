@@ -158,7 +158,7 @@ SoldierArmorState::SoldierArmorState(Base *base, size_t soldier, SoldierArmorOri
 	// switch to battlescape theme if called from inventory
 	if (_origin == SA_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("soldierArmor");
 	}
 }
 

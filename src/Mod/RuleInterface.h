@@ -41,6 +41,7 @@ private:
 	std::string _palette;
 	std::string _parent;
 	std::string _backgroundImage;
+	std::string _altBackgroundImage;
 	std::string _music;
 	int _sound;
 
@@ -60,6 +61,8 @@ public:
 	const std::string &getParent() const;
 	/// Get background image.
 	const std::string &getBackgroundImage() const;
+	/// Get alternative background image (for battlescape theme).
+	const std::string &getAltBackgroundImage() const;
 	/// Get music.
 	const std::string &getMusic() const;
 	/// Get sound.

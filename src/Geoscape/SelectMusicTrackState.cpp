@@ -97,7 +97,7 @@ SelectMusicTrackState::SelectMusicTrackState(SelectMusicTrackOrigin origin) : _o
 	// switch to battlescape theme if called from battlestate
 	if (_origin == SMT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("selectMusicTrack");
 	}
 }
 

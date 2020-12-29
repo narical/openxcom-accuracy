@@ -109,7 +109,7 @@ void NotesState::init()
 
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("noteMenu");
 	}
 
 	updateList();

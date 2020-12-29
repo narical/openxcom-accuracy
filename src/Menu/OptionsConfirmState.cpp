@@ -81,7 +81,7 @@ OptionsConfirmState::OptionsConfirmState(OptionsOrigin origin) : _origin(origin)
 
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("optionsMenu");
 	}
 
 	_timer->onTimer((StateHandler)&OptionsConfirmState::countdown);

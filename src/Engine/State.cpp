@@ -443,9 +443,14 @@ void State::lowerAllSurfaces()
 /**
  * switch all the colours to something a little more battlescape appropriate.
  */
-void State::applyBattlescapeTheme()
+void State::applyBattlescapeTheme(const std::string& category)
 {
 	Element * element = _game->getMod()->getInterface("mainMenu")->getElement("battlescapeTheme");
+	std::string altBg = _game->getMod()->getInterface(category)->getAltBackgroundImage();
+	if (altBg.empty())
+	{
+		altBg = "TAC00.SCR";
+	}
 	for (std::vector<Surface*>::iterator i = _surfaces.begin(); i != _surfaces.end(); ++i)
 	{
 		(*i)->setColor(element->color);
@@ -453,7 +458,7 @@ void State::applyBattlescapeTheme()
 		Window* window = dynamic_cast<Window*>(*i);
 		if (window)
 		{
-			window->setBackground(_game->getMod()->getSurface("TAC00.SCR"));
+			window->setBackground(_game->getMod()->getSurface(altBg));
 		}
 		TextList* list = dynamic_cast<TextList*>(*i);
 		if (list)

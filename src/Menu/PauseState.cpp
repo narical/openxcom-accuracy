@@ -115,7 +115,7 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("pauseMenu");
 	}
 
 	if (_game->getSavedGame()->isIronman())

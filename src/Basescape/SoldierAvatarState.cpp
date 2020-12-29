@@ -115,7 +115,7 @@ SoldierAvatarState::SoldierAvatarState(Base *base, size_t soldier) : _base(base)
 	_lstAvatar->onMouseClick((ActionHandler)&SoldierAvatarState::lstAvatarClick);
 
 	// switch to battlescape theme if called from inventory
-	applyBattlescapeTheme();
+	applyBattlescapeTheme("soldierAvatar");
 }
 
 /**

@@ -77,7 +77,7 @@ DeleteGameState::DeleteGameState(OptionsOrigin origin, const std::string &save) 
 
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("saveMenus");
 	}
 }
 

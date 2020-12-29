@@ -175,7 +175,7 @@ void OptionsBaseState::init()
 	State::init();
 	if (_origin == OPT_BATTLESCAPE)
 	{
-		applyBattlescapeTheme();
+		applyBattlescapeTheme("optionsMenu");
 	}
 }
 

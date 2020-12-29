@@ -104,7 +104,7 @@ public:
 	/// lower all surfaces by half the screen height.
 	void lowerAllSurfaces();
 	/// switch the colours to use the battlescape palette.
-	void applyBattlescapeTheme();
+	void applyBattlescapeTheme(const std::string& category);
 	/// Sets game object pointer
 	static void setGamePtr(Game* game);
 	/// Sets a modal surface.
