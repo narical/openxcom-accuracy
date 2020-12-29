@@ -243,6 +243,11 @@ void SoldierTransformationListState::initList()
 		int eligibleSoldiers = 0;
 		for (auto& soldier : *_base->getSoldiers())
 		{
+			if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
+			{
+				// soldiers outside of the base are not eligible
+				continue;
+			}
 			if (soldier->isEligibleForTransformation(transformationRule))
 			{
 				++eligibleSoldiers;
