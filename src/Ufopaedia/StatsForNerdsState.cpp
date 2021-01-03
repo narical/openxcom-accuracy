@@ -2582,10 +2582,13 @@ void StatsForNerdsState::initSoldierBonusList()
 		endHeading();
 	}
 
-	addSection("{Script tags}", "", _white, true);
+	if (_showDebug)
 	{
-		addScriptTags(ss, bonusRule->getScriptValuesRaw());
-		endHeading();
+		addSection("{Script tags}", "", _white, true);
+		{
+			addScriptTags(ss, bonusRule->getScriptValuesRaw());
+			endHeading();
+		}
 	}
 }
 
@@ -3204,12 +3207,12 @@ void StatsForNerdsState::initUfoList()
 		tmpSoundVector.clear();
 		tmpSoundVector.push_back(ufoRule->getHuntAlertSound());
 		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
-	}
 
-	addSection("{Script tags}", "", _white, true);
-	{
-		addScriptTags(ss, ufoRule->getScriptValuesRaw());
-		endHeading();
+		addSection("{Script tags}", "", _white, true);
+		{
+			addScriptTags(ss, ufoRule->getScriptValuesRaw());
+			endHeading();
+		}
 	}
 }
 
