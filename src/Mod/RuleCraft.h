@@ -21,7 +21,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include "RuleBaseFacilityFunctions.h"
-#include "../Engine/Script.h"
+#include "ModScript.h"
 
 namespace OpenXcom
 {
@@ -175,6 +175,8 @@ private:
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
 	bool _mapVisible, _forceShowInMonthlyCosts;
+
+	ModScript::CraftScripts::Container _craftScripts;
 	ScriptValues<RuleCraft> _scriptValues;
 
 public:
@@ -278,6 +280,10 @@ public:
 	bool forceShowInMonthlyCosts() const;
 	/// Calculate the theoretical range of the craft in nautical miles
 	int calculateRange(int type);
+
+	/// Gets script.
+	template<typename Script>
+	const typename Script::Container &getScript() const { return _craftScripts.get<Script>(); }
 	/// Get all script values.
 	const ScriptValues<RuleCraft>& getScriptValuesRaw() const { return _scriptValues; }
 };

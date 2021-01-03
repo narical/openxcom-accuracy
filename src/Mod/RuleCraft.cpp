@@ -175,6 +175,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 	_mapVisible = node["mapVisible"].as<bool>(_mapVisible);
 	_forceShowInMonthlyCosts = node["forceShowInMonthlyCosts"].as<bool>(_forceShowInMonthlyCosts);
 
+	_craftScripts.load(_type, node, parsers.craftScripts);
 	_scriptValues.load(node, parsers.getShared());
 }
 

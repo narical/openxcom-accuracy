@@ -35,6 +35,7 @@ class ComboBox;
 class TextList;
 class ToggleTextButton;
 class TextButton;
+class ScriptParserBase;
 struct ArticleCommonState;
 template<typename T, typename I> class ScriptValues;
 
@@ -99,6 +100,11 @@ private:
 	template<typename T, typename I>
 	void addScriptTags(std::ostringstream &ss, const ScriptValues<T, I> &vec);
 
+	void addIntegerScript(const std::string &propertyName, const int &value);
+	void addTextScript(const std::string &propertyName, const std::string &value);
+	void addTextFormat1Script(const std::string &propertyName, const std::string &format, const int &value1);
+	void addTextFormat2Script(const std::string &propertyName, const std::string &format, const int &value1, const int &value2);
+
 	void addBoolean(std::ostringstream &ss, const bool &value, const std::string &propertyName, const bool &defaultvalue = false);
 	void addFloat(std::ostringstream &ss, const float &value, const std::string &propertyName, const float &defaultvalue = 0.0f);
 	void addFloatAsPercentage(std::ostringstream &ss, const float &value, const std::string &propertyName, const float &defaultvalue = 0.0f);
@@ -127,6 +133,7 @@ private:
 	void addSpriteResourcePath(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const int &resourceId);
 	void addSoundVectorResourcePaths(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const std::vector<int> &resourceIds);
 	void initItemList();
+
 	void addUnitStatFormatted(std::ostringstream &ss, const int &value, const std::string &label, bool &isFirst);
 	void addUnitStatBonus(std::ostringstream &ss, const UnitStats &value, const std::string &propertyName);
 	void addArmorDamageModifiers(std::ostringstream &ss, const std::vector<float> &vec, const std::string &propertyName);
@@ -135,17 +142,27 @@ private:
 	void addDrawingRoutine(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void initArmorList();
 	void initSoldierBonusList();
+
 	void addVectorOfPositions(std::ostringstream &ss, const std::vector<Position> &vec, const std::string &propertyName);
 	void addBuildCostItem(std::ostringstream &ss, const std::pair<const std::string, std::pair<int, int> > &costItem);
 	void addRightClickActionType(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void initFacilityList();
 	void initCraftList();
+
 	void addHuntMode(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void addHuntBehavior(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void initUfoList();
 	void initCraftWeaponList();
+
 public:
+	/// Name of class used in script.
+	static constexpr const char *ScriptName = "StatsForNerds";
+	/// Register all useful function used by script.
+	static void ScriptRegister(ScriptParserBase* parser);
+
 	static const std::map<std::string, std::string> translationMap;
+
+
 	/// Creates the StatsForNerdsState state.
 	StatsForNerdsState(std::shared_ptr<ArticleCommonState> state, bool debug, bool ids, bool defaults);
 	StatsForNerdsState(const UfopaediaTypeId typeId, const std::string topicId, bool debug, bool ids, bool defaults);
@@ -153,6 +170,12 @@ public:
 	~StatsForNerdsState();
 	/// Initializes the state.
 	void init() override;
+
+	/// Get ufopaedia type Id.
+	UfopaediaTypeId getTypeId() const { return _typeId; }
+	/// Get current topic Id.
+	const std::string& getTopicId() const { return _topicId; }
+
 	/// Handler for selecting an item from the [Compatible ammo] combobox.
 	void cbxAmmoSelect(Action *action);
 	/// Handler for clicking the toggle buttons.
