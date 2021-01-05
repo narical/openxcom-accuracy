@@ -678,7 +678,7 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 				AlienBase* newAlienOperationBase = nullptr;
 				if (tries < 100 || mod.getAllowAlienBasesOnWrongTextures())
 				{
-					spawnAlienBase(0, engine, pos, operationBaseType);
+					newAlienOperationBase = spawnAlienBase(0, engine, pos, operationBaseType);
 				}
 				if (newAlienOperationBase)
 				{
