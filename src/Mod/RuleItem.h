@@ -322,6 +322,7 @@ private:
 	float _powerRangeThreshold;
 	std::vector<std::vector<std::string>> _compatibleAmmoNames = std::vector<std::vector<std::string>>(AmmoSlotMax);
 	std::vector<const RuleItem*> _compatibleAmmo[AmmoSlotMax];
+	std::unordered_map<const RuleItem*, int> _compatibleAmmoSlots;
 	RuleDamageType _damageType, _meleeType;
 	RuleItemAction _confAimed, _confAuto, _confSnap, _confMelee;
 	int _accuracyUse, _accuracyMind, _accuracyPanic, _accuracyThrow, _accuracyCloseQuarters;

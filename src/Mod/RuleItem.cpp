@@ -753,7 +753,13 @@ void RuleItem::afterLoad(const Mod* mod)
 	for (int i = 0; i < AmmoSlotMax; ++i)
 	{
 		mod->linkRule(_compatibleAmmo[i], _compatibleAmmoNames[i]);
-		Collections::sortVector(_compatibleAmmo[i]);
+		for (auto a : _compatibleAmmo[i])
+		{
+			if (_compatibleAmmoSlots.count(a) == 0)
+			{
+				_compatibleAmmoSlots.insert(std::make_pair(a, i));
+			}
+		}
 	}
 	if (_vehicleUnit)
 	{
@@ -1544,12 +1550,10 @@ const std::vector<const RuleItem*> *RuleItem::getPrimaryCompatibleAmmo() const
  */
 int RuleItem::getSlotForAmmo(const RuleItem* type) const
 {
-	for (int i = 0; i < AmmoSlotMax; ++i)
+	auto f = _compatibleAmmoSlots.find(type);
+	if (f != _compatibleAmmoSlots.end())
 	{
-		if (Collections::sortVectorHave(_compatibleAmmo[i], type))
-		{
-			return i;
-		}
+		return f->second;
 	}
 	return -1;
 }
