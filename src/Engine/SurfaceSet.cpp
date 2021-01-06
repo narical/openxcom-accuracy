@@ -36,23 +36,6 @@ SurfaceSet::SurfaceSet(int width, int height) : _width(width), _height(height), 
 }
 
 /**
- * Performs a deep copy of an existing surface set.
- * @param other Surface set to copy from.
- */
-SurfaceSet::SurfaceSet(const SurfaceSet& other)
-{
-	_width = other._width;
-	_height = other._height;
-	_sharedFrames = other._sharedFrames;
-
-	_frames.resize(other._frames.size());
-	for (size_t i = 0; i < _frames.size(); ++i)
-	{
-		_frames[i] = other._frames[i];
-	}
-}
-
-/**
  * Deletes the images from memory.
  */
 SurfaceSet::~SurfaceSet()

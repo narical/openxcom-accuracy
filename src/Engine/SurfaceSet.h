@@ -44,9 +44,16 @@ public:
 	/// Crates a surface set with frames of the specified size.
 	SurfaceSet(int width, int height);
 	/// Creates a surface set from an existing one.
-	SurfaceSet(const SurfaceSet& other);
+	SurfaceSet(const SurfaceSet& other) = default;
+	/// Creates a surface set from an existing one.
+	SurfaceSet(SurfaceSet&& other) = default;
 	/// Cleans up the surface set.
 	~SurfaceSet();
+	/// Assignment operator.
+	SurfaceSet& operator=(const SurfaceSet& other) = default;
+	/// Assignment operator.
+	SurfaceSet& operator=(SurfaceSet&& other) = default;
+
 	/// Loads an X-Com set of PCK/TAB image files.
 	void loadPck(const std::string &pck, const std::string &tab = "");
 	/// Loads an X-Com DAT image file.

@@ -56,12 +56,9 @@ struct AreaSubset
 
 	}
 
-	AreaSubset(const AreaSubset& r):
-			beg_x(r.beg_x), end_x(r.end_x),
-			beg_y(r.beg_y), end_y(r.end_y)
-	{
+	AreaSubset(const AreaSubset& r) = default;
 
-	}
+	AreaSubset& operator=(const AreaSubset& r) = default;
 
 	inline AreaSubset offset(int x, int y) const
 	{
