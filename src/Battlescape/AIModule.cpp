@@ -1355,7 +1355,7 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target) const
 				if (x || y) // skip the unit itself
 				{
 					Position checkPath = target->getPosition() + Position(x, y, z);
-					if (_save->getTile(checkPath) == 0 || std::find(_reachable.begin(), _reachable.end(), _save->getTileIndex(checkPath)) == _reachable.end())
+					if (_save->getTile(checkPath) == 0)
 						continue;
 					int dir = _save->getTileEngine()->getDirectionTo(checkPath, target->getPosition());
 					bool valid = _save->getTileEngine()->validMeleeRange(checkPath, dir, _unit, target, 0);
