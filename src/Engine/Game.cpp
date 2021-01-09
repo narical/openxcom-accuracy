@@ -528,14 +528,14 @@ void Game::loadLanguages()
 		std::string locale = CrossPlatform::getLocale();
 		std::string lang = locale.substr(0, locale.find_first_of('-'));
 		// Try to load full locale
-		if (FileMap::fileExists("Language/" + locale + ".yml"))
+		if (Language::isSupported(locale) && FileMap::fileExists("Language/" + locale + ".yml"))
 		{
 			currentLang = locale;
 		}
 		else
 		{
 			// Try to load language locale
-			if (FileMap::fileExists("Language/" + lang + ".yml"))
+			if (Language::isSupported(lang) && FileMap::fileExists("Language/" + lang + ".yml"))
 			{
 				currentLang = lang;
 			}

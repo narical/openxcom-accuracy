@@ -59,6 +59,8 @@ public:
 	~Language();
 	/// Gets list of available languages.
 	static void getList(std::vector<std::string> &ids, std::vector<std::string> &names);
+	/// Checks if a language is in the supported name list.
+	static bool isSupported(const std::string& lang) { return _names.find(lang) != _names.end(); }
 	/// Loads the language from an external file.
 	void loadFile(const FileMap::FileRecord *frec);
 	/// Loads the language from a ruleset file.
