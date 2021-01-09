@@ -5580,6 +5580,17 @@ void getSkillScript(const Mod* mod, const RuleSkill* &skill, const std::string &
 		skill = nullptr;
 	}
 }
+void getRuleResearch(const Mod* mod, const RuleResearch*& rule, const std::string& name)
+{
+	if (mod)
+	{
+		rule = mod->getResearch(name);
+	}
+	else
+	{
+		rule = nullptr;
+	}
+}
 void getSoldierScript(const Mod* mod, const RuleSoldier* &soldier, const std::string &name)
 {
 	if (mod)
@@ -5628,6 +5639,7 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 	mod.add<&getItemScript>("getRuleItem");
 	mod.add<&getArmorScript>("getRuleArmor");
 	mod.add<&getSkillScript>("getRuleSkill");
+	mod.add<&getRuleResearch>("getRuleResearch");
 	mod.add<&getSoldierScript>("getRuleSoldier");
 	mod.add<&getInvenotryScript>("getRuleInventory");
 	mod.add<&Mod::getInventoryRightHand>("getRuleInventoryRightHand");
