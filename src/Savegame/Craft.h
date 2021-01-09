@@ -79,6 +79,8 @@ private:
 	void recalcSpeedMaxRadian();
 
 	using MovingTarget::load;
+	using MovingTarget::save;
+
 public:
 	/// Creates a craft of the specified type.
 	Craft(const RuleCraft *rules, Base *base, int id = 0);
