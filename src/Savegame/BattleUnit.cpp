@@ -2580,6 +2580,10 @@ std::vector<BattleItem*> *BattleUnit::getInventory()
 bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
 {
 	auto rule = item->getRules();
+	if (rule->canBePlacedIntoInventorySection(slot) == false)
+	{
+		return false;
+	}
 	if (slot->getType() == INV_HAND)
 	{
 		if (!Inventory::overlapItems(this, item, slot))
@@ -2786,10 +2790,6 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 				for (const std::string &s : mod->getInvsList())
 				{
 					RuleInventory *slot = mod->getInventory(s);
-					if (rule->canBePlacedIntoInventorySection(slot) == false)
-					{
-						continue;
-					}
 					if (slot->getType() == INV_SLOT)
 					{
 						placed = fitItemToInventory(slot, item);
