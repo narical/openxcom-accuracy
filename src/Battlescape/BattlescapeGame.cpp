@@ -676,6 +676,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 			if ((*i)->getId() == origMurderer->getMurdererId())
 			{
 				origMurderer = (*i);
+				break;
 			}
 		}
 	}
