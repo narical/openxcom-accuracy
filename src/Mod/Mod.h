@@ -249,6 +249,7 @@ private:
 	bool _difficultyDemigod;
 	std::pair<std::string, int> _alienFuel;
 	std::string _fontName, _finalResearch, _psiUnlockResearch, _fakeUnderwaterBaseUnlockResearch, _newBaseUnlockResearch;
+	std::string _hireScientistsUnlockResearch, _hireEngineersUnlockResearch;
 
 	std::string _destroyedFacility;
 	YAML::Node _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -770,6 +771,10 @@ public:
 	const std::string &getFakeUnderwaterBaseUnlockResearch() const { return _fakeUnderwaterBaseUnlockResearch; }
 	/// Gets the research topic required for building XCOM bases.
 	const std::string &getNewBaseUnlockResearch() const { return _newBaseUnlockResearch; }
+	/// Gets the research topic required for hiring new scientists.
+	const std::string &getHireScientistsUnlockResearch() const { return _hireScientistsUnlockResearch; }
+	/// Gets the research topic required for hiring new engineers.
+	const std::string &getHireEngineersUnlockResearch() const { return _hireEngineersUnlockResearch; }
 
 	/// Gets the threshold for defining a glancing hit on a ufo during interception
 	int getUfoGlancingHitThreshold() const { return _ufoGlancingHitThreshold; }

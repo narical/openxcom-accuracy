@@ -2368,6 +2368,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_psiUnlockResearch = doc["psiUnlockResearch"].as<std::string>(_psiUnlockResearch);
 	_fakeUnderwaterBaseUnlockResearch = doc["fakeUnderwaterBaseUnlockResearch"].as<std::string>(_fakeUnderwaterBaseUnlockResearch);
 	_newBaseUnlockResearch = doc["newBaseUnlockResearch"].as<std::string>(_newBaseUnlockResearch);
+	_hireScientistsUnlockResearch = doc["hireScientistsUnlockResearch"].as<std::string>(_hireScientistsUnlockResearch);
+	_hireEngineersUnlockResearch = doc["hireEngineersUnlockResearch"].as<std::string>(_hireEngineersUnlockResearch);
 	_destroyedFacility = doc["destroyedFacility"].as<std::string>(_destroyedFacility);
 
 	_aiUseDelayGrenade = doc["turnAIUseGrenade"].as<int>(_aiUseDelayGrenade);

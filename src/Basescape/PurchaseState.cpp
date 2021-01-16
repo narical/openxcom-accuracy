@@ -155,6 +155,7 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 			}
 		}
 	}
+	if (_game->getMod()->getHireScientistsUnlockResearch().empty() || _game->getSavedGame()->isResearched(_game->getMod()->getHireScientistsUnlockResearch(), true))
 	{
 		TransferRow row = { TRANSFER_SCIENTIST, 0, tr("STR_SCIENTIST"), _game->getMod()->getHireScientistCost(), _base->getTotalScientists(), 0, 0 };
 		_items.push_back(row);
@@ -164,6 +165,7 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 			_cats.push_back(cat);
 		}
 	}
+	if (_game->getMod()->getHireEngineersUnlockResearch().empty() || _game->getSavedGame()->isResearched(_game->getMod()->getHireEngineersUnlockResearch(), true))
 	{
 		TransferRow row = { TRANSFER_ENGINEER, 0, tr("STR_ENGINEER"), _game->getMod()->getHireEngineerCost(), _base->getTotalEngineers(), 0, 0 };
 		_items.push_back(row);
