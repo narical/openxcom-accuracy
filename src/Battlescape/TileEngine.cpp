@@ -2302,7 +2302,6 @@ bool TileEngine::hitUnit(BattleActionAttack attack, BattleUnit *target, const Po
 		return false;
 	}
 
-	const int wounds = target->getFatalWounds();
 	const int healthOrig = target->getHealth();
 	const int stunLevelOrig = target->getStunlevel();
 	const int adjustedDamage = target->damage(relative, damage, type, _save, attack);
@@ -2327,15 +2326,6 @@ bool TileEngine::hitUnit(BattleActionAttack attack, BattleUnit *target, const Po
 		else
 		{
 			_save->appendToHitLog(HITLOG_NO_DAMAGE, attack.attacker->getFaction());
-		}
-	}
-
-	if (attack.attacker && target->getFaction() != FACTION_PLAYER)
-	{
-		// if it's going to bleed to death and it's not a player, give credit for the kill.
-		if (wounds < target->getFatalWounds())
-		{
-			target->killedBy(attack.attacker->getFaction());
 		}
 	}
 
