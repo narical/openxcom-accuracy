@@ -342,6 +342,10 @@ void CraftInfoState::init()
 				}
 			}
 			_txtWAmmo[i]->setText(weaponLine.str());
+			if (!_craft->getRules()->getFixedWeaponInSlot(i).empty())
+			{
+				_btnW[i]->setVisible(false); // cannot remove or change a fixed weapon
+			}
 		}
 		else
 		{

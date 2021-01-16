@@ -88,6 +88,8 @@ public:
 	void load(const YAML::Node& node, const ScriptGlobal *shared, const Mod *mod, SavedGame *save);
 	/// Finishes loading the craft from YAML (called after all other XCOM craft are loaded too).
 	void finishLoading(const YAML::Node& node, SavedGame *save);
+	/// Initializes fixed weapons.
+	void initFixedWeapons(const Mod* mod);
 	/// Saves the craft to YAML.
 	YAML::Node save(const ScriptGlobal *shared) const;
 	/// Loads a craft ID from YAML.

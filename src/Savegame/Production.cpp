@@ -148,6 +148,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 			if (ruleCraft)
 			{
 				Craft *craft = new Craft(ruleCraft, b, g->getId(ruleCraft->getType()));
+				craft->initFixedWeapons(m);
 				craft->setStatus("STR_REFUELLING");
 				b->getCrafts()->push_back(craft);
 			}

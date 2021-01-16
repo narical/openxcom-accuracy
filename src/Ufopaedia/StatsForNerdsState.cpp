@@ -2865,6 +2865,26 @@ void StatsForNerdsState::initCraftList()
 	}
 	addVectorOfStrings(ss, tmp, "weaponStrings");
 
+	// fixedWeapons
+	modded = false;
+	for (int i = 0; i < RuleCraft::WeaponMax; ++i)
+	{
+		if (!craftRule->getFixedWeaponInSlot(i).empty())
+		{
+			modded = true;
+			break;
+		}
+	}
+	tmp.clear();
+	if (modded)
+	{
+		for (int i = 0; i < RuleCraft::WeaponMax; ++i)
+		{
+			tmp.push_back(craftRule->getFixedWeaponInSlot(i));
+		}
+	}
+	addVectorOfStrings(ss, tmp, "fixedWeapons");
+
 	// weaponTypes
 	modded = false;
 	for (int i = 0; i < RuleCraft::WeaponMax; ++i)

@@ -286,6 +286,23 @@ void Craft::finishLoading(const YAML::Node &node, SavedGame *save)
 }
 
 /**
+ * Initializes fixed weapons.
+ */
+void Craft::initFixedWeapons(const Mod* mod)
+{
+	for (int i = 0; i < _rules->getWeapons(); ++i)
+	{
+		if (!_rules->getFixedWeaponInSlot(i).empty())
+		{
+			RuleCraftWeapon* rule = mod->getCraftWeapon(_rules->getFixedWeaponInSlot(i), true);
+			CraftWeapon* w = new CraftWeapon(rule, 0);
+			addCraftStats(w->getRules()->getBonusStats());
+			_weapons.at(i) = w;
+		}
+	}
+}
+
+/**
  * Saves the craft to a YAML file.
  * @return YAML node.
  */

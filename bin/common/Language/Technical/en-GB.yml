@@ -393,6 +393,7 @@ en-GB:
   maxAltitude: "Dogfight altitude limit"
   weapons: "Weapon pods"
   weaponStrings: "Weapon names"
+  fixedWeapons: "Fixed weapons"
   weaponTypes: "Allowed weapon types"
   damageMax: "Damage capacity"
   avoidBonus: "Dodge bonus (flat)"

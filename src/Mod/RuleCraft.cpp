@@ -171,6 +171,11 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 		for (int i = 0; (size_t)i < str.size() &&  i < WeaponMax; ++i)
 			_weaponStrings[i] = str[i].as<std::string>();
 	}
+	if (const YAML::Node &str = node["fixedWeapons"])
+	{
+		for (int i = 0; (size_t)i < str.size() && i < WeaponMax; ++i)
+			_fixedWeaponNames[i] = str[i].as<std::string>();
+	}
 	_shieldRechargeAtBase = node["shieldRechargedAtBase"].as<int>(_shieldRechargeAtBase);
 	_mapVisible = node["mapVisible"].as<bool>(_mapVisible);
 	_forceShowInMonthlyCosts = node["forceShowInMonthlyCosts"].as<bool>(_forceShowInMonthlyCosts);
@@ -542,6 +547,17 @@ const std::string &RuleCraft::getWeaponSlotString(int slot) const
 {
 	return _weaponStrings[slot];
 }
+
+/**
+ * Gets the string ID of a fixed weapon in a given slot.
+ * @param slot value less than WeaponMax.
+ * @return String ID.
+ */
+const std::string &RuleCraft::getFixedWeaponInSlot(int slot) const
+{
+	return _fixedWeaponNames[slot];
+}
+
 /**
  * Gets basic statistic of craft.
  * @return Basic stats of craft.

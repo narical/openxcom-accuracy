@@ -571,6 +571,7 @@ void PurchaseState::btnOkClick(Action *)
 					RuleCraft *rule = (RuleCraft*)i->rule;
 					t = new Transfer(rule->getTransferTime());
 					Craft *craft = new Craft(rule, _base, _game->getSavedGame()->getId(rule->getType()));
+					craft->initFixedWeapons(_game->getMod());
 					craft->setStatus("STR_REFUELLING");
 					t->setCraft(craft);
 					_base->getTransfers()->push_back(t);
