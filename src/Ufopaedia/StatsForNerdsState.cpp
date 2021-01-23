@@ -3013,6 +3013,12 @@ void StatsForNerdsState::initCraftList()
 				endHeading();
 			}
 		}
+
+		addSection("{Script tags}", "", _white, true);
+		{
+			addScriptTags(ss, craftRule->getScriptValuesRaw());
+			endHeading();
+		}
 	}
 }
 
