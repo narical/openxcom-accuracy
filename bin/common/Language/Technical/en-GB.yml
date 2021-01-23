@@ -218,6 +218,7 @@ en-GB:
   confSnap: "Snap action:"
   confMelee: "Melee action:"
   shots: "Shots per action"
+  spendPerShot: "Spend per shot:"
   followProjectiles: "Follow projectiles?"
   name: "Name"
   ammoSlot: "Ammo slot used"

@@ -1812,6 +1812,7 @@ void StatsForNerdsState::initItemList()
 	addHeading("confAimed");
 	{
 		addInteger(ss, itemRule->getConfigAimed()->shots, "shots", 1);
+		addInteger(ss, itemRule->getConfigAimed()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigAimed()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigAimed()->name, "name", "STR_AIMED_SHOT");
 		addInteger(ss, itemRule->getConfigAimed()->ammoSlot, "ammoSlot");
@@ -1822,6 +1823,7 @@ void StatsForNerdsState::initItemList()
 	addHeading("confAuto");
 	{
 		addInteger(ss, itemRule->getConfigAuto()->shots, "shots", 3);
+		addInteger(ss, itemRule->getConfigAuto()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigAuto()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigAuto()->name, "name", "STR_AUTO_SHOT");
 		addInteger(ss, itemRule->getConfigAuto()->ammoSlot, "ammoSlot");
@@ -1832,6 +1834,7 @@ void StatsForNerdsState::initItemList()
 	addHeading("confSnap");
 	{
 		addInteger(ss, itemRule->getConfigSnap()->shots, "shots", 1);
+		addInteger(ss, itemRule->getConfigSnap()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigSnap()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigSnap()->name, "name", "STR_SNAP_SHOT");
 		addInteger(ss, itemRule->getConfigSnap()->ammoSlot, "ammoSlot");
@@ -1842,6 +1845,7 @@ void StatsForNerdsState::initItemList()
 	addHeading("confMelee");
 	{
 		addInteger(ss, itemRule->getConfigMelee()->shots, "shots", 1);
+		addInteger(ss, itemRule->getConfigMelee()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigMelee()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigMelee()->name, "name");
 		int ammoSlotCurrent = itemRule->getConfigMelee()->ammoSlot;

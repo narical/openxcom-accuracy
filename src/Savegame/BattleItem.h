@@ -106,8 +106,8 @@ public:
 	/// Called when item fuse is triggered on throw.
 	bool fuseProximityEvent();
 
-	/// Spend one bullet.
-	bool spendBullet();
+	/// Spend one bullet. (Or spend a given amount of energy from a battery.)
+	bool spendBullet(int spendPerShot);
 	/// Gets the item's owner.
 	BattleUnit *getOwner();
 	/// Gets the item's owner.
@@ -158,7 +158,7 @@ public:
 	/// Get ammo for action.
 	const BattleItem *getAmmoForAction(BattleActionType action) const;
 	/// Get ammo for action.
-	BattleItem *getAmmoForAction(BattleActionType action, std::string* message = nullptr);
+	BattleItem *getAmmoForAction(BattleActionType action, std::string* message = nullptr, int* spendPerShot = nullptr);
 	/// Spend weapon ammo.
 	void spendAmmoForAction(BattleActionType action, SavedBattleGame *save);
 	/// Spend one quantity of a healing item use

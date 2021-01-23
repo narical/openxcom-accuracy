@@ -322,6 +322,7 @@ void RuleItem::loadConfAction(RuleItemAction& a, const YAML::Node& node, const s
 	if (const YAML::Node& conf = node["conf" + name])
 	{
 		a.shots = conf["shots"].as<int>(a.shots);
+		a.spendPerShot = conf["spendPerShot"].as<int>(a.spendPerShot);
 		a.followProjectiles = conf["followProjectiles"].as<bool>(a.followProjectiles);
 		a.name = conf["name"].as<std::string>(a.name);
 		loadAmmoSlotChecked(a.ammoSlot, conf["ammoSlot"], _name);
