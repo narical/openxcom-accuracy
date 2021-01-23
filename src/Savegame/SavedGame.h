@@ -199,6 +199,8 @@ public:
 	void setDifficulty(GameDifficulty difficulty);
 	/// Gets the game difficulty coefficient.
 	int getDifficultyCoefficient() const;
+	/// Gets the sell price coefficient.
+	int getSellPriceCoefficient() const;
 	/// Gets the game ending.
 	GameEnding getEnding() const;
 	/// Sets the game ending.

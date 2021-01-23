@@ -58,7 +58,7 @@ private:
 	std::vector<std::string> _cats;
 	size_t _vanillaCategories;
 	size_t _sel;
-	int _total;
+	int64_t _total;
 	double _spaceChange;
 	Timer *_timerInc, *_timerDec;
 	Uint8 _ammoColor;

@@ -365,6 +365,7 @@ public:
 	static std::string DEBRIEF_MUSIC_GOOD;
 	static std::string DEBRIEF_MUSIC_BAD;
 	static int DIFFICULTY_COEFFICIENT[5];
+	static int SELL_PRICE_COEFFICIENT[5];
 	static int UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
 	static bool EXTENDED_ITEM_RELOAD_COST;
 	static bool EXTENDED_RUNNING_COST;

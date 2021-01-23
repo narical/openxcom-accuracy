@@ -50,7 +50,8 @@ private:
 	std::vector<int> _qtys;
 	std::vector<std::string> _aliens;
 	size_t _sel;
-	int _aliensSold, _total;
+	int _aliensSold;
+	int64_t _total;
 	bool _doNotReset, _threeButtons;
 
 	/// Gets selected quantity.

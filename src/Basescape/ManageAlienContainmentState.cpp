@@ -213,6 +213,8 @@ void ManageAlienContainmentState::resetListAndTotals()
 		}
 	}
 
+	int sellPriceCoefficient = _game->getSavedGame()->getSellPriceCoefficient();
+
 	const std::vector<std::string> &items = _game->getMod()->getItemsList();
 	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
 	{
@@ -239,8 +241,9 @@ void ManageAlienContainmentState::resetListAndTotals()
 			std::string formattedCost = "";
 			if (Options::canSellLiveAliens)
 			{
-				int sellCost = rule->getSellCost();
-				formattedCost = Unicode::formatFunding(sellCost / 1000).append("K");
+				int64_t adjustedCost = rule->getSellCost();
+				adjustedCost = adjustedCost * sellPriceCoefficient / 100;
+				formattedCost = Unicode::formatFunding(adjustedCost / 1000).append("K");
 			}
 
 			_lstAliens->addRow(5, tr(*i).c_str(), formattedCost.c_str(), ss.str().c_str(), "0", rqty.c_str());
@@ -266,7 +269,8 @@ void ManageAlienContainmentState::resetListAndTotals()
 
 		if (Options::canSellLiveAliens)
 		{
-			_txtValueOfSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(_total)));
+			int64_t adjustedTotal = _total * sellPriceCoefficient / 100;
+			_txtValueOfSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(adjustedTotal)));
 		}
 	}
 
@@ -320,6 +324,8 @@ void ManageAlienContainmentState::btnSellClick(Action *)
  */
 void ManageAlienContainmentState::dealWithSelectedAliens(bool sell)
 {
+	int sellPriceCoefficient = _game->getSavedGame()->getSellPriceCoefficient();
+
 	for (size_t i = 0; i < _qtys.size(); ++i)
 	{
 		if (_qtys[i] > 0)
@@ -329,7 +335,9 @@ void ManageAlienContainmentState::dealWithSelectedAliens(bool sell)
 
 			if (sell)
 			{
-				_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + _game->getMod()->getItem(_aliens[i], true)->getSellCost() * _qtys[i]);
+				int64_t adjustedCost = _game->getMod()->getItem(_aliens[i], true)->getSellCost();
+				adjustedCost = adjustedCost * _qtys[i] * sellPriceCoefficient / 100;
+				_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + adjustedCost);
 			}
 			else
 			{
@@ -588,7 +596,8 @@ void ManageAlienContainmentState::updateStrings()
 				_total += _game->getMod()->getItem(_aliens[i])->getSellCost() * _qtys[i];
 			}
 		}
-		_txtValueOfSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(_total)));
+		int64_t adjustedTotal = _total * _game->getSavedGame()->getSellPriceCoefficient() / 100;
+		_txtValueOfSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(adjustedTotal)));
 	}
 }
 
