@@ -386,7 +386,11 @@ void SoldierInfoState::init()
 	_btnBonuses->setVisible(hasBonus);
 
 	SurfaceSet *texture = _game->getMod()->getSurfaceSet("BASEBITS.PCK");
-	texture->getFrame(_soldier->getRankSprite())->blitNShade(_rank, 0, 0);
+	auto frame = texture->getFrame(_soldier->getRankSprite());
+	if (frame)
+	{
+		frame->blitNShade(_rank, 0, 0);
+	}
 
 	std::ostringstream flagId;
 	flagId << "Flag";

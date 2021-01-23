@@ -1843,7 +1843,11 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		{
 			// show rank (vanilla behaviour)
 			SurfaceSet *texture = _game->getMod()->getSurfaceSet("SMOKE.PCK");
-			texture->getFrame(soldier->getRankSpriteBattlescape())->blitNShade(_rank, 0, 0);
+			auto frame = texture->getFrame(soldier->getRankSpriteBattlescape());
+			if (frame)
+			{
+				frame->blitNShade(_rank, 0, 0);
+			}
 		}
 		else
 		{

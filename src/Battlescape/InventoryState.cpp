@@ -415,7 +415,11 @@ void InventoryState::init()
 		}
 
 		SurfaceSet *texture = _game->getMod()->getSurfaceSet("SMOKE.PCK");
-		texture->getFrame(s->getRankSpriteBattlescape())->blitNShade(_btnRank, 0, 0);
+		auto frame = texture->getFrame(s->getRankSpriteBattlescape());
+		if (frame)
+		{
+			frame->blitNShade(_btnRank, 0, 0);
+		}
 
 		auto defaultPrefix = s->getArmor()->getLayersDefaultPrefix();
 		if (!defaultPrefix.empty())
