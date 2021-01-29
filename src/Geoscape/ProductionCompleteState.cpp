@@ -233,8 +233,9 @@ void ProductionCompleteState::lstSummaryClick(Action *)
 
 		if (itemCount > 0)
 		{
-			int total = itemCount * itemRule->getSellCost();
-			_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + total);
+			int64_t adjustedSellValue = itemRule->getSellCost();
+			adjustedSellValue = adjustedSellValue * itemCount * _game->getSavedGame()->getSellPriceCoefficient() / 100;
+			_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + adjustedSellValue);
 			_base->getStorageItems()->removeItem(itemRule, itemCount);
 		}
 	}
