@@ -103,6 +103,7 @@ private:
 	ScriptValues<Armor> _scriptValues;
 	std::vector<int> _customArmorPreviewIndex;
 	Sint8 _allowsRunning, _allowsStrafing, _allowsKneeling, _allowsMoving;
+	bool _isPilotArmor;
 	bool _allowTwoMainWeapons;
 	bool _instantWoundRecovery;
 	int _standHeight, _kneelHeight, _floatHeight;
@@ -319,6 +320,8 @@ public:
 	bool allowsKneeling(bool def = true) const;
 	/// Can you move while wearing this armor?
 	bool allowsMoving() const;
+	/// Does this armor count for pilot bonuses?
+	bool isPilotArmor() const { return _isPilotArmor; }
 	/// Does this armor allow two main weapons during autoequip?
 	bool getAllowTwoMainWeapons() const { return _allowTwoMainWeapons; }
 	/// Does this armor instantly recover any wounds after the battle?

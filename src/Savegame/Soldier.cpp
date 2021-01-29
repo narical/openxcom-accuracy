@@ -1906,6 +1906,12 @@ bool Soldier::prepareStatsWithBonuses(const Mod *mod)
 	// 6. stats with all bonuses
 	_tmpStatsWithAllBonuses = UnitStats::obeyFixedMinimum(tmp);
 
+	// 7. pilot armors count as soldier bonuses
+	if (_armor->isPilotArmor())
+	{
+		_tmpStatsWithSoldierBonuses = _tmpStatsWithAllBonuses;
+	}
+
 	return hasSoldierBonus;
 }
 

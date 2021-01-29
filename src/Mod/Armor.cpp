@@ -71,7 +71,7 @@ Armor::Armor(const std::string &type) :
 	_ignoresMeleeThreat(defTriBool), _createsMeleeThreat(defTriBool),
 	_overKill(0.5f), _meleeDodgeBackPenalty(0),
 	_allowsRunning(defTriBool), _allowsStrafing(defTriBool), _allowsKneeling(defTriBool), _allowsMoving(1),
-	_allowTwoMainWeapons(false), _instantWoundRecovery(false),
+	_isPilotArmor(false), _allowTwoMainWeapons(false), _instantWoundRecovery(false),
 	_standHeight(-1), _kneelHeight(-1), _floatHeight(-1)
 {
 	for (int i=0; i < DAMAGE_TYPES; i++)
@@ -236,6 +236,7 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	loadTriBoolHelper(_allowsStrafing, node["allowsStrafing"]);
 	loadTriBoolHelper(_allowsKneeling, node["allowsKneeling"]);
 	_allowsMoving = node["allowsMoving"].as<bool>(_allowsMoving);
+	_isPilotArmor = node["isPilotArmor"].as<bool>(_isPilotArmor);
 	_allowTwoMainWeapons = node["allowTwoMainWeapons"].as<bool>(_allowTwoMainWeapons);
 	_instantWoundRecovery = node["instantWoundRecovery"].as<bool>(_instantWoundRecovery);
 	_standHeight = node["standHeight"].as<int>(_standHeight);
