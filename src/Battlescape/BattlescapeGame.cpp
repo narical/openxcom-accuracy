@@ -1729,6 +1729,7 @@ void BattlescapeGame::primaryAction(Position pos)
 			if (targetUnit && targetUnit->getFaction() != _save->getSelectedUnit()->getFaction() && targetUnit->getVisible())
 			{
 				if (!_currentAction.weapon->getRules()->isLOSRequired() ||
+					(_currentAction.actor->getFaction() == FACTION_PLAYER && targetUnit->getFaction() != FACTION_HOSTILE) ||
 					std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 				{
 					std::string error;
@@ -1766,6 +1767,7 @@ void BattlescapeGame::primaryAction(Position pos)
 					_currentAction.updateTU();
 					_currentAction.target = pos;
 					if (!_currentAction.weapon->getRules()->isLOSRequired() ||
+						(_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
 						std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 					{
 						// get the sound/animation started
