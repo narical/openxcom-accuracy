@@ -168,7 +168,7 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 	}
 	else if (weapon->getBattleType() == BT_SCANNER)
 	{
-		addItem(BA_USE, "STR_USE_SCANNER", &id, Options::keyBattleActionItem1);
+		addItem(BA_USE, weapon->getPsiAttackName().empty() ? "STR_USE_SCANNER" : weapon->getPsiAttackName(), &id, Options::keyBattleActionItem1);
 	}
 	else if (weapon->getBattleType() == BT_PSIAMP)
 	{
@@ -187,7 +187,7 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 	}
 	else if (weapon->getBattleType() == BT_MINDPROBE)
 	{
-		addItem(BA_USE, "STR_USE_MIND_PROBE", &id, Options::keyBattleActionItem1);
+		addItem(BA_USE, weapon->getPsiAttackName().empty() ? "STR_USE_MIND_PROBE" : weapon->getPsiAttackName(), &id, Options::keyBattleActionItem1);
 	}
 
 }
