@@ -186,6 +186,7 @@ set ( geoscape_src
   Geoscape/DogfightErrorState.cpp
   Geoscape/DogfightExperienceState.cpp
   Geoscape/DogfightState.cpp
+  Geoscape/ExtendedGeoscapeLinksState.cpp
   Geoscape/FundingState.cpp
   Geoscape/GeoscapeCraftState.cpp
   Geoscape/GeoscapeEventState.cpp

@@ -829,6 +829,17 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1
+  - type: oxceGeoLinks
+    backgroundImage: BACK01.SCR
+    elements:
+      - id: palette
+        color: 4
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+      - id: button
+        color: 1
   - type: geoscapeEvent
     elements:
       - id: palette

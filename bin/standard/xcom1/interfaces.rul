@@ -802,6 +802,17 @@ interfaces:
         color2: 138  # yellow
       - id: button
         color: 239   # bright green
+  - type: oxceGeoLinks
+    backgroundImage: BACK01.SCR
+    elements:
+      - id: palette
+        color: 0     # brown
+      - id: window
+        color: 239   # bright green
+      - id: text
+        color: 138   # yellow
+      - id: button
+        color: 133   # minty green
   - type: geoscapeEvent
     elements:
       - id: palette

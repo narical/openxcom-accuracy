@@ -272,6 +272,8 @@ en-US:
   STR_VSYNC_FOR_OPENGL: "VSync for OpenGL"
   STR_VSYNC_FOR_OPENGL_DESC: "Turn off for maximum enemy hidden movement speed and (optionally) soldier movement speed. DO NOT set FPS limit to 0. Only applies to OpenGL rendering."
 #===================
+  STR_OXCE_LINKS: "Extended links"
+  STR_OXCE_LINKS_DESC: "Enables additional menus/buttons/links for OXCE features."
   STR_UFO_LANDING_ALERT: "UFO landing alert"
   STR_UFO_LANDING_ALERT_DESC: "If enabled, a message will pop up each time a detected UFO lands."
   STR_WOUNDED_DEFEND_BASE_IF: "Wounded defend (if HP above x%)"
@@ -349,6 +351,8 @@ en-US:
   STR_TRACTOR_BEAM_DISENGAGED: "DISENGAGING TRACTOR BEAM"
   STR_SELF_DESTRUCT_ACTIVATED: "SELF-DESTRUCT ACTIVATED!"
   STR_SELF_DESTRUCT_CANCELLED: "SELF-DESTRUCT CANCELLED"
+#ExtendedGeoscapeLinksState.cpp
+  STR_EXTENDED_LINKS: "Links"
 #GeoscapeCraftState.cpp
   STR_AUTO_PATROL: "AUTO-PATROL"
 #GeoscapeState.cpp
@@ -356,6 +360,7 @@ en-US:
   STR_CRAFT_IS_READY: "{0} at {1} is ready."
   STR_ECONOMY_WARNING: "The funds {0} and income {1} are low and the maintenance {2} too high! Sell something to avoid taking a credit... funds missing: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_EXTENDED_UC: "EXTENDED"
 #InterceptState.cpp
   STR_RETURNING: "RETURNING"
   STR_INTERCEPTING: "INTERCEPTING"
