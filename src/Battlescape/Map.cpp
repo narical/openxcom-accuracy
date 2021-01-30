@@ -645,7 +645,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
  */
 void Map::drawTerrain(Surface *surface)
 {
-	_isAltPressed = (SDL_GetModState() & KMOD_ALT) != 0;
+	_isAltPressed = _game->isAltPressed();
 	int frameNumber = 0;
 	SurfaceRaw<const Uint8> tmpSurface;
 	Tile *tile;
@@ -1252,7 +1252,7 @@ void Map::drawTerrain(Surface *surface)
 									int noLOSAccuracyPenalty = action->weapon->getRules()->getNoLOSAccuracyPenalty(_game->getMod());
 									if (noLOSAccuracyPenalty != -1)
 									{
-										bool isCtrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+										bool isCtrlPressed = _game->isCtrlPressed();
 										bool hasLOS = false;
 										if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
 										{

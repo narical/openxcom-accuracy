@@ -1025,7 +1025,7 @@ void TechTreeViewerState::initLists()
 			}
 		}
 		bool showDetails = false;
-		if (Options::isPasswordCorrect() && (SDL_GetModState() & KMOD_ALT))
+		if (Options::isPasswordCorrect() && _game->isAltPressed())
 		{
 			showDetails = true;
 		}

@@ -256,7 +256,7 @@ SoldiersState::~SoldiersState()
  */
 void SoldiersState::cbxSortByChange(Action *action)
 {
-	bool ctrlPressed = SDL_GetModState() & KMOD_CTRL;
+	bool ctrlPressed = _game->isCtrlPressed();
 	size_t selIdx = _cbxSortBy->getSelected();
 	if (selIdx == (size_t)-1)
 	{
@@ -288,8 +288,7 @@ void SoldiersState::cbxSortByChange(Action *action)
 			{
 				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *compFunc);
 			}
-			bool shiftPressed = SDL_GetModState() & KMOD_SHIFT;
-			if (shiftPressed)
+			if (_game->isShiftPressed())
 			{
 				std::reverse(_base->getSoldiers()->begin(), _base->getSoldiers()->end());
 			}
@@ -619,7 +618,7 @@ void SoldiersState::btnInventoryClick(Action *)
 		_game->getSavedGame()->setBattleGame(bgame);
 		bgame->setMissionType("STR_BASE_DEFENSE");
 
-		if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_ALT))
+		if (_game->isCtrlPressed() && _game->isAltPressed())
 		{
 			_game->getSavedGame()->setDisableSoldierEquipment(true);
 		}

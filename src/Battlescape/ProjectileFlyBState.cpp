@@ -304,7 +304,7 @@ void ProjectileFlyBState::init()
 	}
 
 	bool forceEnableObstacles = false;
-	if (_action.type == BA_LAUNCH || (Options::forceFire && (SDL_GetModState() & KMOD_CTRL) != 0 && isPlayer) || !_parent->getPanicHandled())
+	if (_action.type == BA_LAUNCH || (Options::forceFire && _parent->getSave()->isCtrlPressed() && isPlayer) || !_parent->getPanicHandled())
 	{
 		// target nothing, targets the middle of the tile
 		_targetVoxel = _action.target.toVoxel() + TileEngine::voxelTileCenter;

@@ -496,7 +496,7 @@ void GeoscapeState::handle(Action *action)
 	if (action->getDetails()->type == SDL_KEYDOWN)
 	{
 		// "ctrl-d" - enable debug mode
-		if (Options::debug && action->getDetails()->key.keysym.sym == SDLK_d && (SDL_GetModState() & KMOD_CTRL) != 0)
+		if (Options::debug && action->getDetails()->key.keysym.sym == SDLK_d && _game->isCtrlPressed())
 		{
 			_game->getSavedGame()->setDebugMode();
 			if (_game->getSavedGame()->getDebugMode())
@@ -510,7 +510,7 @@ void GeoscapeState::handle(Action *action)
 			_cbxRegion->setVisible(_game->getSavedGame()->getDebugMode());
 			_cbxZone->setVisible(_game->getSavedGame()->getDebugMode());
 		}
-		if (Options::debug && _game->getSavedGame()->getDebugMode() && (SDL_GetModState() & KMOD_CTRL) != 0)
+		if (Options::debug && _game->getSavedGame()->getDebugMode() && _game->isCtrlPressed())
 		{
 			// "ctrl-1"
 			if (action->getDetails()->key.keysym.sym == SDLK_1)

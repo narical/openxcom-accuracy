@@ -945,7 +945,7 @@ void SellState::lstItemsMousePress(Action *action)
 			{
 				std::string articleId = rule->getType();
 				const RuleResearch *selectedTopic = _game->getMod()->getResearch(articleId, false);
-				bool ctrlPressed = SDL_GetModState() & KMOD_CTRL;
+				bool ctrlPressed = _game->isCtrlPressed();
 				if (selectedTopic && !ctrlPressed)
 				{
 					_game->pushState(new TechTreeViewerState(selectedTopic, 0));

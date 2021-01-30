@@ -75,7 +75,7 @@ void MiniMapView::draw()
 	drawRect(0, 0, getWidth(), getHeight(), 15);
 	this->lock();
 	Surface * emptySpace = _set->getFrame(_emptySpaceIndex);
-	bool isAltPressed = (SDL_GetModState() & KMOD_ALT) != 0;
+	bool isAltPressed = _game->isAltPressed();
 	if (Options::isPasswordCorrect())
 	{
 		isAltPressed = !isAltPressed;

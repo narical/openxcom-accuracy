@@ -1008,7 +1008,7 @@ void BattlescapeState::mapClick(Action *action)
 			BattleUnit *bu = _save->selectUnit(pos);
 			if (bu && (bu->getVisible() || _save->getDebugMode()))
 			{
-				if (_save->getDebugMode() && (SDL_GetModState() & KMOD_CTRL) != 0)
+				if (_save->getDebugMode() && _game->isCtrlPressed())
 				{
 					// mind probe
 					popup(new UnitInfoState(bu, this, false, true));
@@ -2325,9 +2325,9 @@ inline void BattlescapeState::handle(Action *action)
 			if (action->getDetails()->type == SDL_KEYDOWN)
 			{
 				SDLKey key = action->getDetails()->key.keysym.sym;
-				bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
-				bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
-				bool altPressed = (SDL_GetModState() & KMOD_ALT) != 0;
+				bool ctrlPressed = _game->isCtrlPressed();
+				bool shiftPressed = _game->isShiftPressed();
+				bool altPressed = _game->isAltPressed();
 
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)

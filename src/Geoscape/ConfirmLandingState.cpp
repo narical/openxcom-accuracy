@@ -84,7 +84,7 @@ ConfirmLandingState::ConfirmLandingState(Craft *craft, Texture *missionTexture, 
 	_btnYes->onMouseClick((ActionHandler)&ConfirmLandingState::btnYesClick);
 	_btnYes->onKeyboardPress((ActionHandler)&ConfirmLandingState::btnYesClick, Options::keyOk);
 
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		_btnNo->setText(tr("STR_PATROL"));
 	}
@@ -300,7 +300,7 @@ void ConfirmLandingState::btnYesClick(Action *)
  */
 void ConfirmLandingState::btnNoClick(Action *)
 {
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		_craft->setDestination(0);
 	}
@@ -317,7 +317,7 @@ void ConfirmLandingState::btnNoClick(Action *)
  */
 void ConfirmLandingState::togglePatrolButton(Action *)
 {
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		_btnNo->setText(tr("STR_PATROL"));
 	}

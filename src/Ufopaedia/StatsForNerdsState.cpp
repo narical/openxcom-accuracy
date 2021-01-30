@@ -296,9 +296,7 @@ void StatsForNerdsState::btnRefreshClick(Action *)
  */
 void StatsForNerdsState::btnOkClick(Action *)
 {
-	bool ctrlPressed = SDL_GetModState() & KMOD_CTRL;
-
-	if (ctrlPressed)
+	if (_game->isCtrlPressed())
 	{
 		Log(LOG_INFO) << _txtArticle->getText();
 		for (size_t row = 0; row < _lstRawData->getTexts(); ++row)

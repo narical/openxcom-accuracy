@@ -263,7 +263,7 @@ void ManufactureState::lstManufactureMousePress(Action *action)
 	}
 
 	int change = Options::oxceManufactureScrollSpeed;
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 		change = Options::oxceManufactureScrollSpeedWithCtrl;
 
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)

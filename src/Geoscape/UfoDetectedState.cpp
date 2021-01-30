@@ -121,7 +121,7 @@ UfoDetectedState::UfoDetectedState(Ufo *ufo, GeoscapeState *state, bool detected
 	_btnCentre->setText(tr("STR_CENTER_ON_UFO_TIME_5_SECONDS"));
 	_btnCentre->onMouseClick((ActionHandler)&UfoDetectedState::btnCentreClick);
 
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		_btnCancel->setText(tr("STR_IGNORE_UC"));
 	}
@@ -250,7 +250,7 @@ void UfoDetectedState::btnCentreClick(Action *)
  */
 void UfoDetectedState::btnCancelClick(Action *)
 {
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		// don't show UFO Detected window for this UFO anymore
 		_game->getSavedGame()->addUfoToIgnoreList(_ufo->getId());
@@ -264,7 +264,7 @@ void UfoDetectedState::btnCancelClick(Action *)
  */
 void UfoDetectedState::toggleCancel(Action *)
 {
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 	{
 		_btnCancel->setText(tr("STR_IGNORE_UC"));
 	}

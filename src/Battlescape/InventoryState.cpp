@@ -271,7 +271,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_inv->onMouseOver((ActionHandler)&InventoryState::invMouseOver);
 	_inv->onMouseOut((ActionHandler)&InventoryState::invMouseOut);
 
-	if (_battleGame->getDebugMode() && ((SDL_GetModState() & KMOD_SHIFT) != 0))
+	if (_battleGame->getDebugMode() && _game->isShiftPressed())
 	{
 		// replenish TUs
 		auto unit = _inv->getSelectedUnit();
@@ -895,7 +895,7 @@ void InventoryState::btnGlobalEquipmentLayoutClick(Action *action)
 		return; // just in case
 	}
 
-	if ((SDL_GetModState() & KMOD_CTRL) != 0)
+	if (_game->isCtrlPressed())
 	{
 		saveGlobalLayout(index, false);
 
@@ -1083,7 +1083,7 @@ void InventoryState::btnGroundClick(Action *action)
 		// scroll backwards
 		_inv->arrangeGround(-1);
 	}
-	else if ((SDL_GetModState() & KMOD_SHIFT) != 0)
+	else if (_game->isShiftPressed())
 	{
 		// scroll backwards
 		_inv->arrangeGround(-1);
@@ -1603,7 +1603,7 @@ void InventoryState::invMouseOver(Action *)
 		return;
 	}
 
-	bool altPressed = ((SDL_GetModState() & KMOD_ALT) != 0);
+	bool altPressed = _game->isAltPressed();
 	bool currentDamageTooltipItemChanged = false;
 
 	BattleItem *item = _inv->getMouseOverItem();
@@ -1839,7 +1839,7 @@ void InventoryState::handle(Action *action)
 		}
 		if (action->getDetails()->key.keysym.sym == Options::keyInvClear)
 		{
-			if ((SDL_GetModState() & KMOD_CTRL) != 0 && (SDL_GetModState() & KMOD_ALT) != 0)
+			if (_game->isCtrlPressed() && _game->isAltPressed())
 			{
 				onMoveGroundInventoryToBase(action);
 			}

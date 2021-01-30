@@ -848,7 +848,7 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 		_game->getSavedGame()->setBattleGame(bgame);
 
-		if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_ALT))
+		if (_game->isCtrlPressed() && _game->isAltPressed())
 		{
 			_game->getSavedGame()->setDisableSoldierEquipment(true);
 		}

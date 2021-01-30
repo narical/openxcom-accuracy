@@ -169,7 +169,7 @@ CraftArmorState::~CraftArmorState()
  */
 void CraftArmorState::cbxSortByChange(Action *action)
 {
-	bool ctrlPressed = SDL_GetModState() & KMOD_CTRL;
+	bool ctrlPressed = _game->isCtrlPressed();
 	size_t selIdx = _cbxSortBy->getSelected();
 	if (selIdx == (size_t)-1)
 	{
@@ -201,8 +201,7 @@ void CraftArmorState::cbxSortByChange(Action *action)
 			{
 				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *compFunc);
 			}
-			bool shiftPressed = SDL_GetModState() & KMOD_SHIFT;
-			if (shiftPressed)
+			if (_game->isShiftPressed())
 			{
 				std::reverse(_base->getSoldiers()->begin(), _base->getSoldiers()->end());
 			}

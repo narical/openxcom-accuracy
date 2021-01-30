@@ -105,6 +105,12 @@ public:
 	void setUpdateFlag(bool update) { _update = update; }
 	/// Returns the update flag.
 	bool getUpdateFlag() const { return _update; }
+	/// Is CTRL pressed?
+	bool isCtrlPressed() const;
+	/// Is ALT pressed?
+	bool isAltPressed() const;
+	/// Is SHIFT pressed?
+	bool isShiftPressed() const;
 };
 
 }

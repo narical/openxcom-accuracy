@@ -132,7 +132,7 @@ void ResearchState::btnOkClick(Action *)
  */
 void ResearchState::btnNewClick(Action *)
 {
-	bool sortByCost = (SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_ALT);
+	bool sortByCost = _game->isCtrlPressed() && _game->isAltPressed();
 	_game->pushState(new NewResearchListState(_base, sortByCost));
 }
 
@@ -169,7 +169,7 @@ void ResearchState::lstResearchMousePress(Action *action)
 	}
 
 	int change = Options::oxceResearchScrollSpeed;
-	if (SDL_GetModState() & KMOD_CTRL)
+	if (_game->isCtrlPressed())
 		change = Options::oxceResearchScrollSpeedWithCtrl;
 
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)

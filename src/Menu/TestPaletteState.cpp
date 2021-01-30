@@ -41,8 +41,7 @@ TestPaletteState::TestPaletteState(const std::string &palette, PaletteActionType
 	setStandardPalette(palette);
 	int maxColors = _game->getMod()->getPalette(palette)->getColorCount();
 
-	bool ctrlPressed = SDL_GetModState() & KMOD_CTRL;
-	if (ctrlPressed)
+	if (_game->isCtrlPressed())
 	{
 		// export the palette
 		const std::string exportName = palette + ".jasc.pal";

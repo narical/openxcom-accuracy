@@ -255,13 +255,13 @@ void Game::run()
 					if (action.getDetails()->type == SDL_KEYDOWN)
 					{
 						// "ctrl-g" grab input
-						if (action.getDetails()->key.keysym.sym == SDLK_g && (SDL_GetModState() & KMOD_CTRL) != 0)
+						if (action.getDetails()->key.keysym.sym == SDLK_g && isCtrlPressed())
 						{
 							Options::captureMouse = (SDL_GrabMode)(!Options::captureMouse);
 							SDL_WM_GrabInput(Options::captureMouse);
 						}
 						// "ctrl-n" notes UI
-						else if (action.getDetails()->key.keysym.sym == SDLK_n && (SDL_GetModState() & KMOD_CTRL) != 0)
+						else if (action.getDetails()->key.keysym.sym == SDLK_n && isCtrlPressed())
 						{
 							if (_save)
 							{
@@ -280,12 +280,12 @@ void Game::run()
 						}
 						else if (Options::debug)
 						{
-							if (action.getDetails()->key.keysym.sym == SDLK_t && (SDL_GetModState() & KMOD_CTRL) != 0)
+							if (action.getDetails()->key.keysym.sym == SDLK_t && isCtrlPressed())
 							{
 								pushState(new TestState);
 							}
 							// "ctrl-u" debug UI
-							else if (action.getDetails()->key.keysym.sym == SDLK_u && (SDL_GetModState() & KMOD_CTRL) != 0)
+							else if (action.getDetails()->key.keysym.sym == SDLK_u && isCtrlPressed())
 							{
 								Options::debugUi = !Options::debugUi;
 								_states.back()->redrawText();
@@ -643,6 +643,30 @@ void Game::initAudio()
 		Log(LOG_INFO) << "SDL_mixer initialized successfully.";
 		setVolume(Options::soundVolume, Options::musicVolume, Options::uiVolume);
 	}
+}
+
+/**
+ * Is CTRL pressed?
+ */
+bool Game::isCtrlPressed() const
+{
+	return (SDL_GetModState() & KMOD_CTRL) != 0;
+}
+
+/**
+ * Is ALT pressed?
+ */
+bool Game::isAltPressed() const
+{
+	return (SDL_GetModState() & KMOD_ALT) != 0;
+}
+
+/**
+ * Is SHIFT pressed?
+ */
+bool Game::isShiftPressed() const
+{
+	return (SDL_GetModState() & KMOD_SHIFT) != 0;
 }
 
 }
