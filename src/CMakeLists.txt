@@ -85,6 +85,7 @@ set ( battlescape_src
   Battlescape/DebriefingState.cpp
   Battlescape/Explosion.cpp
   Battlescape/ExplosionBState.cpp
+  Battlescape/ExtendedBattlescapeLinksState.cpp
   Battlescape/InfoboxOKState.cpp
   Battlescape/InfoboxState.cpp
   Battlescape/Inventory.cpp

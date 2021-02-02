@@ -829,7 +829,7 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1
-  - type: oxceGeoLinks
+  - type: oxceLinks
     backgroundImage: BACK01.SCR
     elements:
       - id: palette

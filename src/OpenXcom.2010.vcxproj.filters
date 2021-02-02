@@ -1121,6 +1121,9 @@
     <ClCompile Include="Geoscape\ExtendedGeoscapeLinksState.cpp">
       <Filter>Geoscape</Filter>
     </ClCompile>
+    <ClCompile Include="Battlescape\ExtendedBattlescapeLinksState.cpp">
+      <Filter>Battlescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2302,6 +2305,9 @@
     </ClInclude>
     <ClInclude Include="Geoscape\ExtendedGeoscapeLinksState.h">
       <Filter>Geoscape</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlescape\ExtendedBattlescapeLinksState.h">
+      <Filter>Battlescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

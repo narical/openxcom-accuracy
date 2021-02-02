@@ -802,7 +802,7 @@ interfaces:
         color2: 138  # yellow
       - id: button
         color: 239   # bright green
-  - type: oxceGeoLinks
+  - type: oxceLinks
     backgroundImage: BACK01.SCR
     elements:
       - id: palette

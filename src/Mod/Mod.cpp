@@ -1858,6 +1858,7 @@ void Mod::loadAll()
 	// fixed user options
 	if (!_fixedUserOptions.empty())
 	{
+		_fixedUserOptions.erase("oxceLinks");
 		_fixedUserOptions.erase("oxceUpdateCheck");
 		_fixedUserOptions.erase("maximizeInfoScreens"); // FIXME: make proper categorisations in the next release
 		_fixedUserOptions.erase("oxceAutoNightVisionThreshold");

@@ -300,6 +300,7 @@
     <ClCompile Include="Battlescape\DebriefingState.cpp" />
     <ClCompile Include="Battlescape\Explosion.cpp" />
     <ClCompile Include="Battlescape\ExplosionBState.cpp" />
+    <ClCompile Include="Battlescape\ExtendedBattlescapeLinksState.cpp" />
     <ClCompile Include="Battlescape\InfoboxOKState.cpp" />
     <ClCompile Include="Battlescape\InfoboxState.cpp" />
     <ClCompile Include="Battlescape\Inventory.cpp" />
@@ -676,6 +677,7 @@
     <ClInclude Include="Battlescape\DebriefingState.h" />
     <ClInclude Include="Battlescape\Explosion.h" />
     <ClInclude Include="Battlescape\ExplosionBState.h" />
+    <ClInclude Include="Battlescape\ExtendedBattlescapeLinksState.h" />
     <ClInclude Include="Battlescape\InfoboxOKState.h" />
     <ClInclude Include="Battlescape\InfoboxState.h" />
     <ClInclude Include="Battlescape\Inventory.h" />

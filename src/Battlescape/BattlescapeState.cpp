@@ -39,6 +39,7 @@
 #include "MiniMapState.h"
 #include "BattlescapeGenerator.h"
 #include "BriefingState.h"
+#include "ExtendedBattlescapeLinksState.h"
 #include "../lodepng.h"
 #include "../fmath.h"
 #include "../Geoscape/SelectMusicTrackState.h"
@@ -444,7 +445,7 @@ BattlescapeState::BattlescapeState() :
 	_btnNextStop->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 
 	_btnShowLayers->onMouseClick((ActionHandler)&BattlescapeState::btnShowLayersClick);
-	_btnShowLayers->setTooltip("STR_MULTI_LEVEL_VIEW");
+	_btnShowLayers->setTooltip(Options::oxceLinks ? "STR_EXTENDED_LINKS" : "STR_MULTI_LEVEL_VIEW");
 	_btnShowLayers->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
 	_btnShowLayers->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 	_btnShowLayers->onKeyboardPress((ActionHandler)&BattlescapeState::btnUfopaediaClick, Options::keyGeoUfopedia);
@@ -1246,7 +1247,14 @@ void BattlescapeState::selectPreviousPlayerUnit(bool checkReselect, bool setRese
  */
 void BattlescapeState::btnShowLayersClick(Action *)
 {
-	_numLayers->setValue(_map->getCamera()->toggleShowAllLayers());
+	if (Options::oxceLinks)
+	{
+		_game->pushState(new ExtendedBattlescapeLinksState(this, _save));
+	}
+	else
+	{
+		_numLayers->setValue(_map->getCamera()->toggleShowAllLayers());
+	}
 }
 
 /**

@@ -58,26 +58,26 @@ ExtendedGeoscapeLinksState::ExtendedGeoscapeLinksState(GeoscapeState* parent) : 
 	_btnTest = new TextButton(220, 12, 50, 154);
 
 	// Set palette
-	setInterface("oxceGeoLinks");
+	setInterface("oxceLinks");
 
-	add(_window, "window", "oxceGeoLinks");
-	add(_txtTitle, "text", "oxceGeoLinks");
-	add(_btnOk, "button", "oxceGeoLinks");
+	add(_window, "window", "oxceLinks");
+	add(_txtTitle, "text", "oxceLinks");
+	add(_btnOk, "button", "oxceLinks");
 
-	add(_btnFunding, "button", "oxceGeoLinks");
-	add(_btnTechTree, "button", "oxceGeoLinks");
-	add(_btnGlobalResearch, "button", "oxceGeoLinks");
-	add(_btnGlobalProduction, "button", "oxceGeoLinks");
-	add(_btnUfoTracker, "button", "oxceGeoLinks");
-	add(_btnPilotExp, "button", "oxceGeoLinks");
-	add(_btnNotes, "button", "oxceGeoLinks");
-	add(_btnMusic, "button", "oxceGeoLinks");
-	add(_btnTest, "button", "oxceGeoLinks");
+	add(_btnFunding, "button", "oxceLinks");
+	add(_btnTechTree, "button", "oxceLinks");
+	add(_btnGlobalResearch, "button", "oxceLinks");
+	add(_btnGlobalProduction, "button", "oxceLinks");
+	add(_btnUfoTracker, "button", "oxceLinks");
+	add(_btnPilotExp, "button", "oxceLinks");
+	add(_btnNotes, "button", "oxceLinks");
+	add(_btnMusic, "button", "oxceLinks");
+	add(_btnTest, "button", "oxceLinks");
 
 	centerAllSurfaces();
 
 	// Set up objects
-	setWindowBackground(_window, "oxceGeoLinks");
+	setWindowBackground(_window, "oxceLinks");
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
