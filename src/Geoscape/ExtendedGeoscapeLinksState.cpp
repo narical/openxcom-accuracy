@@ -30,7 +30,6 @@
 #include "../Interface/TextButton.h"
 #include "../Menu/NotesState.h"
 #include "../Menu/TestState.h"
-#include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
 {
@@ -123,7 +122,6 @@ ExtendedGeoscapeLinksState::ExtendedGeoscapeLinksState(GeoscapeState* parent) : 
 
 	_btnTest->setText(tr("STR_TEST_SCREEN"));
 	_btnTest->onMouseClick((ActionHandler)&ExtendedGeoscapeLinksState::btnTestClick);
-	_btnTest->setVisible(_game->getSavedGame()->getDebugMode());
 }
 
 void ExtendedGeoscapeLinksState::btnFundingClick(Action *)
