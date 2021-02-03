@@ -577,7 +577,10 @@ bool NextTurnState::determineReinforcements()
 			}
 			else if (wave.mapBlockFilterType == MFT_BY_REINFORCEMENTS || wave.mapBlockFilterType == MFT_BY_BOTH_UNION || wave.mapBlockFilterType == MFT_BY_BOTH_INTERSECTION)
 			{
-				_compliantBlocksMap.resize((sizeX), std::vector<int>((sizeY), 0)); // start with all false
+				if (wave.spawnBlocks.empty())
+					_compliantBlocksMap.resize((sizeX), std::vector<int>((sizeY), 1)); // start with all true
+				else
+					_compliantBlocksMap.resize((sizeX), std::vector<int>((sizeY), 0)); // start with all false
 			}
 			else //if (wave.mapBlockFilterType == MFT_NONE)
 			{
@@ -687,6 +690,16 @@ bool NextTurnState::determineReinforcements()
 					}
 				}
 			}
+		}
+
+		// synchronize _compliantBlocksList and _compliantBlocksMap
+		{
+			for (int x = 0; x < _battleGame->getMapSizeX() / 10; ++x)
+				for (int y = 0; y < _battleGame->getMapSizeY() / 10; ++y)
+					_compliantBlocksMap[x][y] = 0;
+
+			for (auto& pos : _compliantBlocksList)
+				_compliantBlocksMap[pos.x][pos.y] = 1;
 		}
 
 		// 2b. calculate compliant nodes
