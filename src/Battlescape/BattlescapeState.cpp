@@ -278,6 +278,15 @@ BattlescapeState::BattlescapeState() :
 		_icons->setPixel(46, 44, 8);
 	}
 
+	// custom OXCE links button
+	if (Options::oxceLinks && _game->getMod()->getSurface("oxceLinks", false))
+	{
+		Surface* oxceLinks = _game->getMod()->getSurface("oxceLinks");
+		oxceLinks->blitNShade(_icons, 208, 0);
+
+		_numLayers->setVisible(false);
+	}
+
 	add(_rank, "rank", "battlescape", _icons);
 	add(_rankTiny, "rank", "battlescape", _icons);
 	add(_btnUnitUp, "buttonUnitUp", "battlescape", _icons);

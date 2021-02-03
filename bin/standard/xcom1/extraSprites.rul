@@ -1,4 +1,10 @@
 extraSprites:
+  - type: oxceLinks
+    width: 32
+    height: 16
+    singleImage: true
+    files:
+      0: Resources/Extended/oxceLinks.png
   - type: TinyRanks
     width: 42
     height: 7
