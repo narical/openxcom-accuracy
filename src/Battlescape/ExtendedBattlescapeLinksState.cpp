@@ -116,9 +116,15 @@ ExtendedBattlescapeLinksState::ExtendedBattlescapeLinksState(BattlescapeState* p
 	_btnMusic->setText(tr("STR_SELECT_MUSIC_TRACK"));
 	_btnMusic->onMouseClick((ActionHandler)&ExtendedBattlescapeLinksState::btnMusicClick);
 
-	_btnKillAll->setText(_save->getDebugMode() ? tr("STR_DEBUG_KILL_ALL_ALIENS") : tr("STR_TOGGLE_DEBUG_MODE"));
+	if (Options::debug)
+	{
+		_btnKillAll->setText(_save->getDebugMode() ? tr("STR_DEBUG_KILL_ALL_ALIENS") : tr("STR_TOGGLE_DEBUG_MODE"));
+	}
+	else
+	{
+		_btnKillAll->setText(tr("STR_MULTI_LEVEL_VIEW"));
+	}
 	_btnKillAll->onMouseClick((ActionHandler)&ExtendedBattlescapeLinksState::btnKillAllClick);
-	_btnKillAll->setVisible(Options::debug);
 
 	applyBattlescapeTheme("oxceLinks");
 }
@@ -182,6 +188,13 @@ void ExtendedBattlescapeLinksState::btnMusicClick(Action *)
 void ExtendedBattlescapeLinksState::btnKillAllClick(Action *)
 {
 	_game->popState();
+
+	if (!Options::debug)
+	{
+		_parent->btnShowLayersClickOrig();
+		return;
+	}
+
 	if (_save->getDebugMode())
 	{
 		// kill all

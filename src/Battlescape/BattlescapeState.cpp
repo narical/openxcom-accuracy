@@ -1253,8 +1253,13 @@ void BattlescapeState::btnShowLayersClick(Action *)
 	}
 	else
 	{
-		_numLayers->setValue(_map->getCamera()->toggleShowAllLayers());
+		btnShowLayersClickOrig();
 	}
+}
+
+void BattlescapeState::btnShowLayersClickOrig()
+{
+	_numLayers->setValue(_map->getCamera()->toggleShowAllLayers());
 }
 
 /**

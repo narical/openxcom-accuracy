@@ -159,6 +159,7 @@ public:
 	void btnPrevSoldierClick(Action *action);
 	/// Handler for clicking the Show Layers button.
 	void btnShowLayersClick(Action *action);
+	void btnShowLayersClickOrig();
 	/// Handler for clicking the Ufopaedia button.
 	void btnUfopaediaClick(Action *action);
 	/// Handler for clicking the Help button.
