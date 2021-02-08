@@ -1776,6 +1776,10 @@ void ParserWriter::relese()
 	refLabels.forEachPosition(
 		[&](auto pos, ProgPos value)
 		{
+			if (value == ProgPos::Unknown)
+			{
+				throw Exception("Incorrect label position reference");
+			}
 			updateReserved<ProgPos>(pos, value);
 		}
 	);
@@ -2484,9 +2488,15 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 					return false;
 				}
 			}
+			if (help.codeBlocks.size() != 0)
+			{
+				Log(LOG_ERROR) << err << "script have missed 'end;'";
+				return false;
+			}
 			if (!haveLastReturn)
 			{
 				Log(LOG_ERROR) << err << "script need to end with return statement";
+				return false;
 			}
 			help.relese();
 			destScript = std::move(tempScript);
