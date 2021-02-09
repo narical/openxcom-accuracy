@@ -875,33 +875,33 @@ protected:
 
 public:
 	/// Default constructor.
-	ScriptRange() : _begin{ nullptr }, _end{ nullptr }
+	constexpr ScriptRange() : _begin{ nullptr }, _end{ nullptr }
 	{
 
 	}
 	/// Constructor.
-	ScriptRange(ptr b, ptr e) : _begin{ b }, _end{ e }
+	constexpr ScriptRange(ptr b, ptr e) : _begin{ b }, _end{ e }
 	{
 
 	}
 
 	/// Beginning of string range.
-	ptr begin() const
+	constexpr ptr begin() const
 	{
 		return _begin;
 	}
 	/// End of string range.
-	ptr end() const
+	constexpr ptr end() const
 	{
 		return _end;
 	}
 	/// Size of string range.
-	size_t size() const
+	constexpr size_t size() const
 	{
 		return _end - _begin;
 	}
 	/// Bool operator.
-	explicit operator bool() const
+	constexpr explicit operator bool() const
 	{
 		return _begin != _end;
 	}
@@ -914,24 +914,32 @@ class ScriptRef : public ScriptRange<char>
 {
 public:
 	/// Default constructor.
-	ScriptRef() = default;
+	constexpr ScriptRef() = default;
 
 	/// Copy constructor.
-	ScriptRef(const ScriptRef&) = default;
+	constexpr ScriptRef(const ScriptRef&) = default;
 
 	/// Constructor from pointer.
 	explicit ScriptRef(ptr p) : ScriptRange{ p , p + strlen(p) }
 	{
 
 	}
+
+	/// Constructor from char array.
+	template<int I>
+	constexpr explicit ScriptRef(const char (&p)[I]) : ScriptRange{ p , p + I - 1 }
+	{
+
+	}
+
 	/// Constructor from range of pointers.
-	ScriptRef(ptr b, ptr e) : ScriptRange{ b, e }
+	constexpr ScriptRef(ptr b, ptr e) : ScriptRange{ b, e }
 	{
 
 	}
 
 	/// Find first occurrence of character in string range.
-	size_t find(char c) const
+	constexpr size_t find(char c) const
 	{
 		for (auto &curr : *this)
 		{
@@ -944,7 +952,7 @@ public:
 	}
 
 	/// Return sub range of current range.
-	ScriptRef substr(size_t p, size_t s = std::string::npos) const
+	constexpr ScriptRef substr(size_t p, size_t s = std::string::npos) const
 	{
 		const size_t totalSize = _end - _begin;
 		if (p >= totalSize)
@@ -976,7 +984,7 @@ public:
 	}
 
 	/// Compare two ranges.
-	static int compare(ScriptRef a, ScriptRef b)
+	constexpr static int compare(ScriptRef a, ScriptRef b)
 	{
 		const auto size_a = a.size();
 		const auto size_b = b.size();
@@ -997,18 +1005,21 @@ public:
 			return 1;
 		}
 	}
+
 	/// Equal operator.
-	bool operator==(const ScriptRef& s) const
+	constexpr bool operator==(const ScriptRef& s) const
 	{
 		return compare(*this, s) == 0;
 	}
+
 	/// Not-equal operator.
-	bool operator!=(const ScriptRef& s) const
+	constexpr bool operator!=(const ScriptRef& s) const
 	{
 		return compare(*this, s) != 0;
 	}
+
 	/// Less operator.
-	bool operator<(const ScriptRef& s) const
+	constexpr bool operator<(const ScriptRef& s) const
 	{
 		return compare(*this, s) < 0;
 	}
