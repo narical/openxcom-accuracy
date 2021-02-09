@@ -2514,31 +2514,49 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			args[0] = range.getNextToken();
 		}
 
-		// change form of "Reg.Function" to "Type.Function Reg".
+		// change form of `Reg.Function` to `Type.Function Reg`.
 		auto op_curr = getProc(op);
 		if (!op_curr)
 		{
 			auto first_dot = op.find('.');
-			if (first_dot != std::string::npos)
+			if (first_dot == std::string::npos)
 			{
-				auto temp = op.substr(0, first_dot);
-				auto ref = help.getReferece(temp);
-				if (ref && ref.type >= ArgMax)
-				{
-					auto name = getTypeName(ref.type);
-					if (name)
-					{
-						op_curr = getProc(name, op.substr(first_dot));
-						if (!op_curr)
-						{
-							Log(LOG_ERROR) << err << "invalid operation name '"<< op.toString() <<"'";
-							return false;
-						}
-						args[1] = args[0];
-						args[0] = { TokenSymbol, temp };
-					}
-				}
+				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				return false;
 			}
+
+			auto temp = op.substr(0, first_dot);
+			auto ref = help.getReferece(temp);
+			if (!ref)
+			{
+				Log(LOG_ERROR) << "Unknow variable name '" << temp.toString() << "'";
+				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				return false;
+			}
+
+			auto name = getTypeName(ref.type);
+			if (ref.type < ArgMax || !name)
+			{
+				Log(LOG_ERROR) << "Unsupported type for variable '" << ref.name.toString() << "'";
+				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				return false;
+			}
+
+			auto name_end = op.substr(first_dot);
+			op_curr = getProc(name, name_end);
+			if (!op_curr)
+			{
+				Log(LOG_ERROR) << "Unknow operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
+				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				return false;
+			}
+
+			// now we manage to find form `Type.Function Reg`
+
+			// we already loaded op_curr = "Reg.Function", args[0] = "X"
+			// then switch it to op_curr = "Type.Function", args[0] = "Reg", args[1] = "X"
+			args[1] = args[0];
+			args[0] = { TokenSymbol, temp };
 		}
 		for (size_t i = (args[1] ? 2 : 1); i < ScriptMaxArg; ++i)
 			args[i] = range.getNextToken();
