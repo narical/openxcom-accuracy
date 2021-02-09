@@ -268,6 +268,17 @@ struct UnitStats
 		}
 	}
 
+	template<typename T, UnitStats T::*Stat, Ptr StatMax>
+	static void addMaxStatScript(T *t, int val)
+	{
+		if (t)
+		{
+			//limit range to prevent overflow
+			val = std::min(std::max(val, -1000), 1000);
+			setMaxStatScript<T, Stat, StatMax>(t, val + ((t->*Stat).*StatMax));
+		}
+	}
+
 	template<typename T, UnitStats T::*Stat, int T::*Curr, Ptr StatMax>
 	static void setMaxAndCurrStatScript(T *t, int val)
 	{
@@ -281,6 +292,17 @@ struct UnitStats
 			{
 				(t->*Curr) = val;
 			}
+		}
+	}
+
+	template<typename T, UnitStats T::*Stat, int T::*Curr, Ptr StatMax>
+	static void addMaxAndCurrStatScript(T *t, int val)
+	{
+		if (t)
+		{
+			//limit range to prevent overflow
+			val = std::min(std::max(val, -1000), 1000);
+			setMaxAndCurrStatScript<T, Stat, Curr, StatMax>(t, val + ((t->*Stat).*StatMax));
 		}
 	}
 
@@ -314,6 +336,11 @@ struct UnitStats
 			b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::stamina>>(prefix + "setStamina");
 			b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::health>>(prefix + "setHealth");
 			b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::mana>>(prefix + "setManaPool");
+
+			b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::tu>>(prefix + "addTimeUnits");
+			b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::stamina>>(prefix + "addStamina");
+			b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::health>>(prefix + "addHealth");
+			b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::mana>>(prefix + "addManaPool");
 		}
 
 		b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::bravery>>(prefix + "setBravery");
@@ -324,6 +351,15 @@ struct UnitStats
 		b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::psiStrength>>(prefix + "setPsiStrength");
 		b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::psiSkill>>(prefix + "setPsiSkill");
 		b.template add<&setMaxStatScript<typename TBind::Type, Stat, &UnitStats::melee>>(prefix + "setMelee");
+
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::bravery>>(prefix + "addBravery");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::reactions>>(prefix + "addReactions");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::firing>>(prefix + "addFiring");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::throwing>>(prefix + "addThrowing");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::strength>>(prefix + "addStrength");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::psiStrength>>(prefix + "addPsiStrength");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::psiSkill>>(prefix + "addPsiSkill");
+		b.template add<&addMaxStatScript<typename TBind::Type, Stat, &UnitStats::melee>>(prefix + "addMelee");
 	}
 
 	template<auto Stat, auto CurrTu, auto CurrEnergy, auto CurrHealth, auto CurrMana, typename TBind>
@@ -334,6 +370,11 @@ struct UnitStats
 		b.template add<&setMaxAndCurrStatScript<typename TBind::Type, Stat, CurrEnergy, &UnitStats::stamina>>(prefix + "setStamina");
 		b.template add<&setMaxAndCurrStatScript<typename TBind::Type, Stat, CurrHealth, &UnitStats::health>>(prefix + "setHealth");
 		b.template add<&setMaxAndCurrStatScript<typename TBind::Type, Stat, CurrMana, &UnitStats::mana>>(prefix + "setManaPool");
+
+		b.template add<&addMaxAndCurrStatScript<typename TBind::Type, Stat, CurrTu, &UnitStats::tu>>(prefix + "addTimeUnits");
+		b.template add<&addMaxAndCurrStatScript<typename TBind::Type, Stat, CurrEnergy, &UnitStats::stamina>>(prefix + "addStamina");
+		b.template add<&addMaxAndCurrStatScript<typename TBind::Type, Stat, CurrHealth, &UnitStats::health>>(prefix + "addHealth");
+		b.template add<&addMaxAndCurrStatScript<typename TBind::Type, Stat, CurrMana, &UnitStats::mana>>(prefix + "addManaPool");
 
 		addSetStatsScript<Stat>(b, prefix, true);
 	}

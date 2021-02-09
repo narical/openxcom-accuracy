@@ -4889,6 +4889,15 @@ void setArmorValueScript(BattleUnit *bu, int side, int value)
 		bu->setArmor(value, (UnitSide)side);
 	}
 }
+void addArmorValueScript(BattleUnit *bu, int side, int value)
+{
+	if (bu && 0 <= side && side < SIDE_MAX)
+	{
+		//limit range to prevent overflow
+		value = Clamp(value, -1000, 1000);
+		bu->setArmor(value + bu->getArmor((UnitSide)side), (UnitSide)side);
+	}
+}
 void getArmorValueScript(const BattleUnit *bu, int &ret, int side)
 {
 	if (bu && 0 <= side && side < SIDE_MAX)
@@ -4913,6 +4922,15 @@ void setFatalWoundScript(BattleUnit *bu, int part, int val)
 	if (bu && 0 <= part && part < BODYPART_MAX)
 	{
 		bu->setFatalWound(val, (UnitBodyPart)part);
+	}
+}
+void addFatalWoundScript(BattleUnit *bu, int part, int val)
+{
+	if (bu && 0 <= part && part < BODYPART_MAX)
+	{
+		//limit range to prevent overflow
+		val = Clamp(val, -1000, 1000);
+		bu->setFatalWound(val + bu->getFatalWound((UnitBodyPart)part), (UnitBodyPart)part);
 	}
 }
 void getFatalWoundScript(const BattleUnit *bu, int &ret, int part)
@@ -5228,6 +5246,16 @@ void setBaseStatScript(BattleUnit *bu, int val)
 		(bu->*StatCurr) = Clamp(val, 0, +(bu->getBaseStats()->*StatMax));
 	}
 }
+template<int BattleUnit::*StatCurr, UnitStats::Ptr StatMax>
+void addBaseStatScript(BattleUnit *bu, int val)
+{
+	if (bu)
+	{
+		//limit range to prevent overflow
+		val = Clamp(val, -1000, 1000);
+		setBaseStatScript<StatCurr, StatMax>(bu, val + (bu->*StatCurr));
+	}
+}
 
 template<int BattleUnit::*StatCurr>
 void setStunScript(BattleUnit *bu, int val)
@@ -5238,12 +5266,34 @@ void setStunScript(BattleUnit *bu, int val)
 	}
 }
 
+template<int BattleUnit::*StatCurr>
+void addStunScript(BattleUnit *bu, int val)
+{
+	if (bu)
+	{
+		//limit range to prevent overflow, 4 time bigger than normal as stun can be 4 time bigger than health
+		val = Clamp(val, -4000, 4000);
+		setStunScript<StatCurr>(bu, val + (bu->*StatCurr));
+	}
+}
+
 template<int BattleUnit::*StatCurr, int Min, int Max>
 void setBaseStatRangeScript(BattleUnit *bu, int val)
 {
 	if (bu)
 	{
 		(bu->*StatCurr) = Clamp(val, Min, Max);
+	}
+}
+
+template<int BattleUnit::*StatCurr, int Min, int Max>
+void addBaseStatRangeScript(BattleUnit *bu, int val)
+{
+	if (bu)
+	{
+		//limit range to prevent overflow
+		val = Clamp(val, -1000, 1000);
+		setBaseStatRangeScript<StatCurr, Min, Max>(bu, val + (bu->*StatCurr));
 	}
 }
 
@@ -5459,34 +5509,42 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");
 	bu.add<&UnitStats::getMaxStatScript<BattleUnit, &BattleUnit::_stats, &UnitStats::tu>>("getTimeUnitsMax");
 	bu.add<&setBaseStatScript<&BattleUnit::_tu, &UnitStats::tu>>("setTimeUnits");
+	bu.add<&addBaseStatScript<&BattleUnit::_tu, &UnitStats::tu>>("addTimeUnits");
 
 	bu.addField<&BattleUnit::_health>("getHealth");
 	bu.add<UnitStats::getMaxStatScript<BattleUnit, &BattleUnit::_stats, &UnitStats::health>>("getHealthMax");
 	bu.add<&setBaseStatScript<&BattleUnit::_health, &UnitStats::health>>("setHealth");
+	bu.add<&addBaseStatScript<&BattleUnit::_health, &UnitStats::health>>("addHealth");
 
 	bu.addField<&BattleUnit::_mana>("getMana");
 	bu.add<&UnitStats::getMaxStatScript<BattleUnit, &BattleUnit::_stats, &UnitStats::mana>>("getManaMax");
 	bu.add<&setBaseStatScript<&BattleUnit::_mana, &UnitStats::mana>>("setMana");
+	bu.add<&addBaseStatScript<&BattleUnit::_mana, &UnitStats::mana>>("addMana");
 
 	bu.addField<&BattleUnit::_energy>("getEnergy");
 	bu.add<&UnitStats::getMaxStatScript<BattleUnit, &BattleUnit::_stats, &UnitStats::stamina>>("getEnergyMax");
 	bu.add<&setBaseStatScript<&BattleUnit::_energy, &UnitStats::stamina>>("setEnergy");
+	bu.add<&addBaseStatScript<&BattleUnit::_energy, &UnitStats::stamina>>("addEnergy");
 
 	bu.addField<&BattleUnit::_stunlevel>("getStun");
 	bu.add<&getStunMaxScript>("getStunMax");
 	bu.add<&setStunScript<&BattleUnit::_stunlevel>>("setStun");
+	bu.add<&addStunScript<&BattleUnit::_stunlevel>>("addStun");
 
 	bu.addField<&BattleUnit::_morale>("getMorale");
 	bu.addFake<100>("getMoraleMax");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("setMorale");
+	bu.add<&addBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("addMorale");
 
 
 	bu.add<&setArmorValueScript>("setArmor", "first arg is side, second one is new value of armor");
+	bu.add<&addArmorValueScript>("addArmor", "first arg is side, second one is value to add to armor");
 	bu.add<&getArmorValueScript>("getArmor", "first arg return armor value, second arg is side");
 	bu.add<&getArmorValueMaxScript>("getArmorMax", "first arg return max armor value, second arg is side");
 
 	bu.add<&BattleUnit::getFatalWounds>("getFatalwoundsTotal", "sum for every body part");
 	bu.add<&setFatalWoundScript>("setFatalwounds", "first arg is body part, second one is new value of wounds");
+	bu.add<&addFatalWoundScript>("addFatalwounds", "first arg is body part, second one is value to add to wounds");
 	bu.add<&getFatalWoundScript>("getFatalwounds", "first arg return wounds number, second arg is body part");
 	bu.add<&getFatalWoundMaxScript>("getFatalwoundsMax", "first arg return max wounds number, second arg is body part");
 
