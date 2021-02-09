@@ -1986,7 +1986,8 @@ bool ParserWriter::pushLabelTry(const ScriptRefData& data)
 	auto temp = data;
 	if (!temp && temp.name)
 	{
-		temp = addReferece(addLabel(data.name));
+//		temp = addReferece(addLabel(data.name));
+		return false;
 	}
 	if (temp.type != ArgLabel)
 	{
@@ -2021,7 +2022,8 @@ bool ParserWriter::setLabel(const ScriptRefData& data, ProgPos offset)
 	auto temp = data;
 	if (!temp && temp.name)
 	{
-		temp = addReferece(addLabel(data.name));
+//		temp = addReferece(addLabel(data.name));
+		return false;
 	}
 	if (temp.type != ArgLabel)
 	{
@@ -2504,14 +2506,14 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		SelectedToken op = range.getNextToken();
 		if (!op)
 		{
-			for (auto i = help.refListCurr.begin(); i != help.refListCurr.end(); ++i)
-			{
-				if (i->type == ArgLabel && help.refLabels.getValue(i->value) == ProgPos::Unknown)
-				{
-					Log(LOG_ERROR) << err << "invalid use of label: '" << i->name.toString() << "' without declaration";
-					return false;
-				}
-			}
+//			for (auto i = help.refListCurr.begin(); i != help.refListCurr.end(); ++i)
+//			{
+//				if (i->type == ArgLabel && help.refLabels.getValue(i->value) == ProgPos::Unknown)
+//				{
+//					Log(LOG_ERROR) << err << "invalid use of label: '" << i->name.toString() << "' without declaration";
+//					return false;
+//				}
+//			}
 			if (help.codeBlocks.size() != 0)
 			{
 				Log(LOG_ERROR) << err << "script have missed 'end;'";
