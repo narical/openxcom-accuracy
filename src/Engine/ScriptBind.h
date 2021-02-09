@@ -49,9 +49,15 @@ static constexpr decltype(T) _clang_auto_hack()
  */
 enum BlockEnum
 {
+	/// Block that represents whole body of script
+	BlockMain,
+	/// Normal block
+	BlockBegin,
+	/// Conditional block
 	BlockIf,
+	/// Else block of conditional block
 	BlockElse,
-	BlockWhile,
+	/// Iteraion block
 	BlockLoop,
 };
 
@@ -64,6 +70,8 @@ struct ParserWriter
 	struct Block
 	{
 		BlockEnum type;
+		size_t regStackSizeFrom;
+		RegEnum regIndexUsedFrom;
 		ScriptRefData nextLabel;
 		ScriptRefData finalLabel;
 	};
@@ -140,20 +148,20 @@ struct ParserWriter
 	ScriptContainerBase& container;
 	/// all available data for script.
 	const ScriptParserBase& parser;
-	/// temporary script data.
-	std::vector<ScriptRefData> refListCurr;
 	/// list of labels.
 	ReservedCrossRefrenece<ProgPos> refLabels;
 	/// list of texts.
 	ReservedCrossRefrenece<ScriptText, ScriptRef> refTexts;
 
 	/// index of used script registers.
-	size_t regIndexUsed;
-	/// negative index of used const values.
-	int constIndexUsed;
+	RegEnum regIndexUsed;
 
+	/// Stack of registers limited to code blocks.
+	std::vector<ScriptRefData> regStack;
 	/// Store position of blocks of code like "if" or "while".
 	std::vector<Block> codeBlocks;
+
+
 
 	/// Constructor.
 	ParserWriter(
@@ -166,13 +174,12 @@ struct ParserWriter
 
 	/// Get reference based on name.
 	ScriptRefData getReferece(const ScriptRef& s) const;
-	/// Add reference based.
-	ScriptRefData addReferece(const ScriptRefData& data);
 
 	/// Get current position in proc vector.
 	ProgPos getCurrPos() const;
 	/// Get distance between two positions in proc vector.
 	size_t getDiffPos(ProgPos begin, ProgPos end) const;
+
 
 	/// Push zeros to fill empty space.
 	ProgPos push(size_t s);
@@ -191,6 +198,7 @@ struct ParserWriter
 	{
 		update(pos.getPos(), &value, sizeof(T));
 	}
+
 
 	/// Push custom value on proc vector.
 	void pushValue(ScriptValueData v);
@@ -244,8 +252,19 @@ struct ParserWriter
 	bool addReg(const ScriptRef& s, ArgEnum type);
 
 
+
+	/// Add new code scope.
+	Block& pushScopeBlock(BlockEnum type);
+	/// Clear values in code scope.
+	Block& clearScopeBlock();
+	/// Pop code scope.
+	Block popScopeBlock();
+
+
+
 	/// Dump to log error info about ref.
 	void logDump(const ScriptRefData&) const;
+
 }; //struct ParserWriter
 
 
