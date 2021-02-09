@@ -585,6 +585,12 @@ void ScriptWorkerBase::log_buffer_flush(ProgPos& p)
 namespace
 {
 
+
+////////////////////////////////////////////////////////////
+//			Handle of overload arguments
+////////////////////////////////////////////////////////////
+
+
 /**
  * Test for validity of arguments.
  */
@@ -773,6 +779,12 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 	}
 }
 
+
+////////////////////////////////////////////////////////////
+//			Pushing operation on proc vector
+////////////////////////////////////////////////////////////
+
+
 /**
  * Helper used to parse line for build in function.
  */
@@ -832,6 +844,12 @@ bool parseCustomProc(const ScriptProcData& spd, ParserWriter& ph, const ScriptRe
 	}
 	return false;
 }
+
+
+////////////////////////////////////////////////////////////
+//		Custom parsers of operation arguments
+////////////////////////////////////////////////////////////
+
 
 constexpr size_t ConditionSize = 6;
 const ScriptRef ConditionNames[ConditionSize] =
@@ -1232,6 +1250,12 @@ bool parseDummy(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 	Log(LOG_ERROR) << "Reserved operation for future use";
 	return false;
 }
+
+
+////////////////////////////////////////////////////////////
+//					Sort helpers
+////////////////////////////////////////////////////////////
+
 
 /**
  * Add new value to sorted vector by name.
