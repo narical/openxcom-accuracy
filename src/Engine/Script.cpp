@@ -1060,6 +1060,71 @@ bool parseBegin(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 }
 
 /**
+ * Parser of `loop` operation.
+ */
+bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	if (std::distance(begin, end) != 3)
+	{
+		Log(LOG_ERROR) << "Unexpected symbols after 'loop'";
+		return false;
+	}
+	if (begin[0].name != ScriptRef{ "var" })
+	{
+		Log(LOG_ERROR) << "After 'loop' should be 'var'";
+		return false;
+	}
+
+	// each operation can fail, we can't revent
+	auto correct = true;
+
+	auto& loop = ph.pushScopeBlock(BlockLoop);
+	loop.nextLabel = ph.addLabel();
+	loop.finalLabel = ph.addLabel();
+
+	auto limit = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
+	auto curr = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
+	auto var = ph.addReg(begin[1].name, ArgSpecAdd(ArgInt, ArgSpecVar));
+
+	correct &= !!limit;
+	correct &= !!curr;
+	correct &= !!var;
+
+	correct &= parseVariableImpl(ph, limit, begin[2]);
+	correct &= parseVariableImpl(ph, curr);
+
+	correct &= ph.setLabel(loop.nextLabel, ph.getCurrPos());
+
+	ScriptRefData breakCond[] =
+	{
+		ScriptRefData { ScriptRef{ "lt" }, ArgInvalid },
+		curr,
+		limit,
+	};
+	correct &= parseFullConditionImpl(ph, loop.finalLabel, std::begin(breakCond), std::end(breakCond));
+
+	correct &= parseVariableImpl(ph, var, curr);
+
+	ScriptRefData addArgs[] =
+	{
+		curr,
+		{ {}, ArgInt, 1 },
+	};
+	correct &= callOverloadProc(ph, ph.parser.getProc(ScriptRef{ "add" }), std::begin(addArgs), std::end(addArgs));
+
+
+	if (correct)
+	{
+		return true;
+	}
+	else
+	{
+		Log(LOG_ERROR) << "Error in processing 'loop'";
+		return false;
+	}
+}
+
+/**
  * Parser of `end` operation.
  */
 bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
@@ -1096,7 +1161,10 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 		break;
 
 	case BlockLoop:
-		throw Exception("Not implmeted");
+		ph.pushProc(Proc_goto);
+		correct &= ph.pushLabelTry(block.nextLabel);
+
+		correct &= ph.setLabel(block.finalLabel, ph.getCurrPos());
 		break;
 
 	default:
@@ -2060,7 +2128,7 @@ void ParserWriter::updateProc(ReservedPos<ProcOp> pos, int procOffset)
 }
 
 /**
- * Try pushing label arg on proc vector. Can't use this to create loop back label.
+ * Try pushing label arg on proc vector.
  * @param s name of label.
  * @return true if label was successfully added.
  */
@@ -2077,7 +2145,8 @@ bool ParserWriter::pushLabelTry(const ScriptRefData& data)
 		return false;
 	}
 
-	if ((!data.name && refLabels.getValue(temp.value) != ProgPos::Unknown))
+	// Can't use this to create loop back named label.
+	if (temp.name && refLabels.getValue(temp.value) != ProgPos::Unknown)
 	{
 		return false;
 	}
@@ -2281,7 +2350,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	buildin("end", &parseEnd);
 	buildin("var", &parseVar);
 	buildin("debug_log", &parseDebugLog);
-	buildin("loop", &parseDummy);
+	buildin("loop", &parseLoop);
 	buildin("break", &parseDummy);
 	buildin("continue", &parseDummy);
 	buildin("return", &parseReturn);
