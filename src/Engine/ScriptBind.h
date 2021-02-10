@@ -249,7 +249,7 @@ struct ParserWriter
 	}
 
 	/// Add new reg arg.
-	bool addReg(const ScriptRef& s, ArgEnum type);
+	ScriptRefData addReg(const ScriptRef& s, ArgEnum type);
 
 
 

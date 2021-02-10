@@ -926,6 +926,10 @@ bool parseFullConditionImpl(ParserWriter& ph, ScriptRefData falsePos, const Scri
 		Log(LOG_ERROR) << "Invalid length of condition arguments";
 		return false;
 	}
+
+	// each operation can fail, we can't revent
+	auto correct = true;
+
 	const auto truePos = ph.addLabel();
 	const auto orFunc = begin[0].name == ConditionSpecNames[0];
 	const auto andFunc = begin[0].name == ConditionSpecNames[1];
@@ -937,28 +941,51 @@ bool parseFullConditionImpl(ParserWriter& ph, ScriptRefData falsePos, const Scri
 			auto temp = ph.addLabel();
 			if (orFunc)
 			{
-				if (!parseConditionImpl(ph, truePos, temp, begin, begin + 3))
-				{
-					return false;
-				}
+				correct &= parseConditionImpl(ph, truePos, temp, begin, begin + 3);
 			}
 			else
 			{
-				if (!parseConditionImpl(ph, temp, falsePos, begin, begin + 3))
-				{
-					return false;
-				}
+				correct &= parseConditionImpl(ph, temp, falsePos, begin, begin + 3);
 			}
-			ph.setLabel(temp, ph.getCurrPos());
+			correct &= ph.setLabel(temp, ph.getCurrPos());
 		}
 	}
-	if (!parseConditionImpl(ph, truePos, falsePos, begin, end))
+	correct &= parseConditionImpl(ph, truePos, falsePos, begin, end);
+
+	correct &= ph.setLabel(truePos, ph.getCurrPos());
+	return correct;
+}
+
+/**
+ * Helper used of variable operation declaration.
+ */
+bool parseVariableImpl(ParserWriter& ph, ScriptRefData reg, ScriptRefData val = {})
+{
+	if (!ArgIsReg(reg.type))
 	{
+		Log(LOG_ERROR) << "Invalid register";
 		return false;
 	}
 
-	ph.setLabel(truePos, ph.getCurrPos());
-	return true;
+	if (val)
+	{
+		ScriptRefData setArgs[] =
+		{
+			reg,
+			val,
+		};
+		const auto proc = ph.parser.getProc(ScriptRef{ "set" });
+		return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
+	}
+	else
+	{
+		ScriptRefData setArgs[] =
+		{
+			reg,
+		};
+		const auto proc = ph.parser.getProc(ScriptRef{ "clear" });
+		return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
+	}
 }
 
 /**
@@ -984,22 +1011,35 @@ bool parseElse(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 		return false;
 	}
 
+	// each operation can fail, we can't revent
+	auto correct = true;
+
 	auto& block = ph.clearScopeBlock();
 
 	ph.pushProc(Proc_goto);
-	ph.pushLabelTry(block.finalLabel);
+	correct &= ph.pushLabelTry(block.finalLabel);
 
-	ph.setLabel(block.nextLabel, ph.getCurrPos());
+	correct &= ph.setLabel(block.nextLabel, ph.getCurrPos());
 	if (std::distance(begin, end) == 0)
 	{
 		block.nextLabel = block.finalLabel;
 		block.type = BlockElse;
-		return true;
 	}
 	else
 	{
 		block.nextLabel = ph.addLabel();
-		return parseFullConditionImpl(ph, block.nextLabel, begin, end);
+		correct &= parseFullConditionImpl(ph, block.nextLabel, begin, end);
+	}
+
+
+	if (correct)
+	{
+		return true;
+	}
+	else
+	{
+		Log(LOG_ERROR) << "Error in processing 'else'";
+		return false;
 	}
 }
 
@@ -1035,6 +1075,9 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 		return false;
 	}
 
+	// each operation can fail, we can't revent
+	auto correct = true;
+
 	auto block = ph.popScopeBlock();
 
 	switch (block.type)
@@ -1043,9 +1086,9 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	case BlockElse:
 		if (block.nextLabel.value != block.finalLabel.value)
 		{
-			ph.setLabel(block.nextLabel, ph.getCurrPos());
+			correct &= ph.setLabel(block.nextLabel, ph.getCurrPos());
 		}
-		ph.setLabel(block.finalLabel, ph.getCurrPos());
+		correct &= ph.setLabel(block.finalLabel, ph.getCurrPos());
 		break;
 
 	case BlockBegin:
@@ -1059,7 +1102,17 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	default:
 		throw Exception("Unsuported block type");
 	}
-	return true;
+
+
+	if (correct)
+	{
+		return true;
+	}
+	else
+	{
+		Log(LOG_ERROR) << "Error in processing 'end'";
+		return false;
+	}
 }
 
 /**
@@ -1090,44 +1143,52 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 
 	// adding new custom variables of type selected type.
 	auto type_curr = ph.parser.getType(begin[0].name);
-	if (type_curr)
+	if (!type_curr)
 	{
-		if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
-		{
-			Log(LOG_ERROR) << "Can't create variable of type '" << begin->name.toString() << "'";
-			return false;
-		}
+		Log(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
+		return false;
+	}
 
-		++begin;
-		if (begin[0].type != ArgInvalid || begin[0].name.find('.') != std::string::npos || ph.addReg(begin[0].name, ArgSpecAdd(type_curr->type, spec)) == false)
-		{
-			Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
-			return false;
-		}
-		if (size == 3)
-		{
-			ScriptRefData setArgs[] =
-			{
-				ph.getReferece(begin[0].name),
-				begin[1],
-			};
-			const auto proc = ph.parser.getProc(ScriptRef{ "set" });
-			return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
-		}
-		else
-		{
-			ScriptRefData setArgs[] =
-			{
-				ph.getReferece(begin[0].name),
-			};
-			const auto proc = ph.parser.getProc(ScriptRef{ "clear" });
-			return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
-		}
+	if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
+	{
+		Log(LOG_ERROR) << "Can't create variable of type '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	++begin;
+	if (begin[0].type != ArgInvalid || !begin[0].name || begin[0].name.find('.') != std::string::npos)
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	auto reg = ph.addReg(begin[0].name, ArgSpecAdd(type_curr->type, spec));
+	if (!reg)
+	{
+		Log(LOG_ERROR) << "Invalid type for variable '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	// each operation can fail, we can't revent
+	auto correct = true;
+
+	if (size == 2)
+	{
+		correct &= parseVariableImpl(ph, reg);
+	}
+	else
+	{
+		correct &= parseVariableImpl(ph, reg, begin[1]);
+	}
+
+
+	if (correct)
+	{
 		return true;
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
+		Log(LOG_ERROR) << "Error in processing 'end'";
 		return false;
 	}
 }
@@ -1241,6 +1302,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 			}
 		}
 	}
+
 	ph.pushProc(Proc_exit);
 	return true;
 }
@@ -2105,31 +2167,34 @@ bool ParserWriter::pushRegTry(const ScriptRefData& data, ArgEnum type)
 
 /**
  * Add new reg arg definition.
- * @param s name of reg
+ * @param s optional name of reg
  * @param type type of reg
- * @return true if reg exists and is valid
+ * @return Reg data
  */
-bool ParserWriter::addReg(const ScriptRef& s, ArgEnum type)
+ScriptRefData ParserWriter::addReg(const ScriptRef& s, ArgEnum type)
 {
-	ScriptRefData pos = getReferece(s);
-	type = ArgSpecAdd(type, ArgSpecReg);
-	if (pos)
+	if (s && getReferece(s))
 	{
-		return false;
+		return {};
 	}
+
+	type = ArgSpecAdd(type, ArgSpecReg);
 	auto meta = getRegMeta(parser, type);
 	if (!meta)
 	{
-		return false;
+		return {};
 	}
 	if (meta.needRegSpace(regIndexUsed) > ScriptMaxReg)
 	{
-		return false;
+		return {};
 	}
 	ScriptRefData data = { s, type, static_cast<RegEnum>(meta.nextRegPos(regIndexUsed)) };
-	regStack.push_back(data);
+	if (s)
+	{
+		regStack.push_back(data);
+	}
 	regIndexUsed = static_cast<RegEnum>(meta.needRegSpace(regIndexUsed));
-	return true;
+	return data;
 }
 
 /**
