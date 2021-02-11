@@ -72,8 +72,8 @@ struct ParserWriter
 		BlockEnum type;
 		size_t regStackSizeFrom;
 		RegEnum regIndexUsedFrom;
-		ScriptRefData nextLabel;
-		ScriptRefData finalLabel;
+		ScriptRefData nextLabel = { };
+		ScriptRefData finalLabel = { };
 	};
 
 	template<typename T, typename = typename std::enable_if_t<std::is_pod<T>::value>>
