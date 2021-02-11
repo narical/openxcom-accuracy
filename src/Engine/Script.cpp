@@ -1167,6 +1167,8 @@ bool parseBreak(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 	ph.pushProc(Proc_goto);
 	correct &= ph.pushLabelTry(loopBlock->finalLabel);
 
+	//TODO: add handling similar to `break eq x y;`
+
 
 	if (correct)
 	{
@@ -1202,6 +1204,8 @@ bool parseContinue(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 
 	ph.pushProc(Proc_goto);
 	correct &= ph.pushLabelTry(loopBlock->nextLabel);
+
+	//TODO: add handling similar to `continue eq x y;`
 
 
 	if (correct)
@@ -2441,6 +2445,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	buildin("end", &parseEnd);
 	buildin("var", &parseVar);
 	buildin("debug_log", &parseDebugLog);
+	buildin("debug_assert", &parseDummy);
 	buildin("loop", &parseLoop);
 	buildin("break", &parseBreak);
 	buildin("continue", &parseContinue);
