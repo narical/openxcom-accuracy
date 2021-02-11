@@ -34,6 +34,7 @@
 #include "ShaderMove.h"
 #include "Exception.h"
 #include "../fallthrough.h"
+#include "Collections.h"
 
 namespace OpenXcom
 {
@@ -1120,6 +1121,96 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 	else
 	{
 		Log(LOG_ERROR) << "Error in processing 'loop'";
+		return false;
+	}
+}
+
+/**
+ * Get first outer scope of given type.
+ * @param ph Script writer
+ * @param type Type of block
+ * @return Pointer to block or null if there is not bock of given type.
+ */
+ParserWriter::Block* getTopBlockOfType(ParserWriter& ph, BlockEnum type)
+{
+	for (auto& b : Collections::reverse(Collections::range(ph.codeBlocks)))
+	{
+		if (b.type == type)
+		{
+			return &b;
+		}
+	}
+	return nullptr;
+}
+
+/**
+ * Parser of `break` operation.
+ */
+bool parseBreak(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	if (std::distance(begin, end) != 0)
+	{
+		Log(LOG_ERROR) << "Unexpected symbols after 'break'";
+		return false;
+	}
+
+	auto* loopBlock = getTopBlockOfType(ph, BlockLoop);
+	if (!loopBlock)
+	{
+		Log(LOG_ERROR) << "Operation 'break' outside 'loop'";
+		return false;
+	}
+
+	// each operation can fail, we can't revent
+	auto correct = true;
+
+	ph.pushProc(Proc_goto);
+	correct &= ph.pushLabelTry(loopBlock->finalLabel);
+
+
+	if (correct)
+	{
+		return true;
+	}
+	else
+	{
+		Log(LOG_ERROR) << "Error in processing 'break'";
+		return false;
+	}
+}
+
+/**
+ * Parser of `continue` operation.
+ */
+bool parseContinue(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	if (std::distance(begin, end) != 0)
+	{
+		Log(LOG_ERROR) << "Unexpected symbols after 'continue'";
+		return false;
+	}
+
+	auto* loopBlock = getTopBlockOfType(ph, BlockLoop);
+	if (!loopBlock)
+	{
+		Log(LOG_ERROR) << "Operation 'continue' outside 'loop'";
+		return false;
+	}
+
+	// each operation can fail, we can't revent
+	auto correct = true;
+
+	ph.pushProc(Proc_goto);
+	correct &= ph.pushLabelTry(loopBlock->nextLabel);
+
+
+	if (correct)
+	{
+		return true;
+	}
+	else
+	{
+		Log(LOG_ERROR) << "Error in processing 'continue'";
 		return false;
 	}
 }
@@ -2351,8 +2442,8 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	buildin("var", &parseVar);
 	buildin("debug_log", &parseDebugLog);
 	buildin("loop", &parseLoop);
-	buildin("break", &parseDummy);
-	buildin("continue", &parseDummy);
+	buildin("break", &parseBreak);
+	buildin("continue", &parseContinue);
 	buildin("return", &parseReturn);
 	buildin("begin", &parseBegin);
 
@@ -2828,6 +2919,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		auto isVarDef = (op == ScriptRef{ "var" });
 		auto isBegin = (op == ScriptRef{ "if" }) || (op == ScriptRef{ "else" }) || (op == ScriptRef{ "begin" }) || (op == ScriptRef{ "loop" });
 		auto isEnd = (op == ScriptRef{ "end" }) || (op == ScriptRef{ "else" }); // `else;` is begin and end of scope
+		auto isBreak = (op == ScriptRef{ "continue" } || op == ScriptRef{ "break" });
 
 		if (haveLastReturn && !isEnd)
 		{
@@ -2845,7 +2937,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			return false;
 		}
 
-		haveLastReturn = isReturn;
+		haveLastReturn = isReturn || isBreak;
 		haveCodeNormal = !(isVarDef || isBegin); // we can have `var` only on begining of new scope
 
 
