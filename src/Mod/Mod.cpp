@@ -4426,6 +4426,7 @@ void Mod::loadVanillaResources()
 	_sets["CustomArmorPreviews"] = new SurfaceSet(12, 20);
 	_sets["CustomItemPreviews"] = new SurfaceSet(12, 20);
 	_sets["TinyRanks"] = new SurfaceSet(7, 7);
+	_sets["Touch"] = new SurfaceSet(32, 24);
 
 	// Load palettes
 	const char *pal[] = { "PAL_GEOSCAPE", "PAL_BASESCAPE", "PAL_GRAPHS", "PAL_UFOPAEDIA", "PAL_BATTLEPEDIA" };
@@ -4690,6 +4691,10 @@ void Mod::loadVanillaResources()
 		{
 			SurfaceSet* s = _sets["TinyRanks"];
 			s->setMaxSharedFrames(6);
+		}
+		{
+			SurfaceSet* s = _sets["Touch"];
+			s->setMaxSharedFrames(10);
 		}
 	}
 	{

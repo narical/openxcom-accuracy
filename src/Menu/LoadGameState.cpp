@@ -159,6 +159,9 @@ void LoadGameState::think()
 			origBattleState = _game->getSavedGame()->getSavedBattle()->getBattleState();
 		}
 
+		// Reset touch flags
+		_game->resetTouchButtonFlags();
+
 		// Load the game
 		SavedGame *s = new SavedGame();
 		try

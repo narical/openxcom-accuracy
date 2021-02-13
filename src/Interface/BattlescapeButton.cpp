@@ -102,7 +102,7 @@ void BattlescapeButton::mousePress(Action *action, State *state)
  */
 void BattlescapeButton::mouseRelease(Action *action, State *state)
 {
-	if (_inverted && isButtonHandled(action->getDetails()->button.button))
+	if (_inverted && (_tftdMode || _toggleMode == INVERT_CLICK) && isButtonHandled(action->getDetails()->button.button))
 	{
 		_inverted = false;
 	}
@@ -143,11 +143,17 @@ void BattlescapeButton::allowClickInversion()
  * we use two separate surfaces because it's far easier to keep track of
  * whether or not this surface is inverted.
  */
-void BattlescapeButton::initSurfaces()
+void BattlescapeButton::initSurfaces(Surface* custom)
 {
 	delete _altSurface;
 	_altSurface = new Surface(_surface->w, _surface->h, _x, _y);
 	_altSurface->setPalette(getPalette());
+
+	if (custom)
+	{
+		custom->blitNShade(_altSurface, 0, 0);
+		return;
+	}
 
 	// Lock the surface
 	_altSurface->lock();

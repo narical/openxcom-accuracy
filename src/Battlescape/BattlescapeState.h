@@ -56,6 +56,8 @@ private:
 	BattlescapeButton *_btnUnitUp, *_btnUnitDown, *_btnMapUp, *_btnMapDown, *_btnShowMap, *_btnKneel;
 	BattlescapeButton *_btnInventory, *_btnCenter, *_btnNextSoldier, *_btnNextStop, *_btnShowLayers, *_btnHelp;
 	BattlescapeButton *_btnEndTurn, *_btnAbort, *_btnLaunch, *_btnPsi, *_btnSpecial, *_btnSkills, *_reserve;
+	BattlescapeButton *_btnCtrl, *_btnAlt, *_btnShift, *_btnRMB, *_btnMMB;
+	bool _touchButtonsEnabled, _touchButtonsEnabledLastTurn;
 	InteractiveSurface *_btnStats;
 	BattlescapeButton *_btnReserveNone, *_btnReserveSnap, *_btnReserveAimed, *_btnReserveAuto, *_btnReserveKneel, *_btnZeroTUs;
 	InteractiveSurface *_btnLeftHandItem, *_btnRightHandItem;
@@ -176,6 +178,20 @@ public:
 	void btnRightHandItemClick(Action *action);
 	/// Handler for clicking a visible unit button.
 	void btnVisibleUnitClick(Action *action);
+
+	/// Handler for clicking the CTRL touch button.
+	void btnCtrlClick(Action* action);
+	/// Handler for clicking the ALT touch button.
+	void btnAltClick(Action* action);
+	/// Handler for clicking the SHIFT touch button.
+	void btnShiftClick(Action* action);
+	/// Handler for clicking the RMB touch button.
+	void btnRMBClick(Action* action);
+	/// Handler for clicking the MMB touch button.
+	void btnMMBClick(Action* action);
+	/// Toggles the touch buttons.
+	void toggleTouchButtons(bool deactivate, bool tryToReactivate);
+
 	/// Handler for clicking the launch rocket button.
 	void btnLaunchClick(Action *action);
 	/// Handler for clicking the use psi button.

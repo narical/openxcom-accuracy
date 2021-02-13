@@ -164,6 +164,10 @@ void NewGameState::btnOkClick(Action *)
 	{
 		diff = DIFF_SUPERHUMAN;
 	}
+
+	// Reset touch flags
+	_game->resetTouchButtonFlags();
+
 	SavedGame *save = _game->getMod()->newSave(diff);
 	save->setDifficulty(diff);
 	save->setIronman(_btnIronman->getPressed());

@@ -54,6 +54,7 @@ private:
 	bool _mouseActive;
 	unsigned int _timeOfLastFrame;
 	int _timeUntilNextFrame;
+	bool _ctrl, _alt, _shift, _rmb, _mmb;
 	static const double VOLUME_GRADIENT;
 
 public:
@@ -105,12 +106,45 @@ public:
 	void setUpdateFlag(bool update) { _update = update; }
 	/// Returns the update flag.
 	bool getUpdateFlag() const { return _update; }
+
 	/// Is CTRL pressed?
-	bool isCtrlPressed() const;
+	bool isCtrlPressed(bool considerTouchButtons = false) const;
 	/// Is ALT pressed?
-	bool isAltPressed() const;
+	bool isAltPressed(bool considerTouchButtons = false) const;
 	/// Is SHIFT pressed?
-	bool isShiftPressed() const;
+	bool isShiftPressed(bool considerTouchButtons = false) const;
+
+	/// Resets the touch button flags.
+	void resetTouchButtonFlags();
+
+	/// Sets the _ctrl flag.
+	void setCtrlPressedFlag(bool newValue) { _ctrl = newValue; }
+	void toggleCtrlPressedFlag() { _ctrl = !_ctrl; }
+	/// Sets the _alt flag.
+	void setAltPressedFlag(bool newValue) { _alt = newValue; }
+	void toggleAltPressedFlag() { _alt = !_alt; }
+	/// Sets the _shift flag.
+	void setShiftPressedFlag(bool newValue) { _shift = newValue; }
+	void toggleShiftPressedFlag() { _shift = !_shift; }
+
+	/// Gets the _ctrl flag.
+	bool getCtrlPressedFlag() const { return _ctrl; }
+	/// Gets the _alt flag.
+	bool getAltPressedFlag() const { return _alt; }
+	/// Gets the _shift flag.
+	bool getShiftPressedFlag() const { return _shift; }
+
+	/// Sets the _rmb flag.
+	void setRMBFlag(bool newValue) { _rmb = newValue; }
+	void toggleRMBFlag() { _rmb = !_rmb; }
+	/// Sets the _mmb flag.
+	void setMMBFlag(bool newValue) { _mmb = newValue; }
+	void toggleMMBFlag() { _mmb = !_mmb; }
+
+	/// Gets the _rmb flag.
+	bool getRMBFlag() const { return _rmb; }
+	/// Gets the _mmb flag.
+	bool getMMBFlag() const { return _mmb; }
 };
 
 }

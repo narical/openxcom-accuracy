@@ -1,4 +1,11 @@
 extraSprites: #done
+  - type: Touch
+    width: 64
+    height: 120
+    subX: 32
+    subY: 24
+    files:
+      0: Resources/Extended/Touch.png
   - type: oxceLinks
     width: 32
     height: 16

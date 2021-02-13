@@ -139,6 +139,9 @@ OptionsBaseState::~OptionsBaseState()
 
 void OptionsBaseState::restart(OptionsOrigin origin)
 {
+	// Reset touch flags
+	_game->resetTouchButtonFlags();
+
 	if (origin == OPT_MENU)
 	{
 		_game->setState(new MainMenuState);

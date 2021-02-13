@@ -483,6 +483,12 @@ void NextTurnState::close()
 	{
 		_state->btnCenterClick(0);
 
+		// Try to reactivate the touch buttons at the start of the player's turn
+		if (_battleGame->getSide() == FACTION_PLAYER)
+		{
+			_state->toggleTouchButtons(false, true);
+		}
+
 		// Autosave every set amount of turns
 		if ((_currentTurn == 1 || _currentTurn % Options::autosaveFrequency == 0) && _battleGame->getSide() == FACTION_PLAYER)
 		{

@@ -54,7 +54,8 @@ const double Game::VOLUME_GRADIENT = 10.0;
  * creates the display screen and sets up the cursor.
  * @param title Title of the game window.
  */
-Game::Game(const std::string &title) : _screen(0), _cursor(0), _lang(0), _save(0), _mod(0), _quit(false), _init(false), _update(false),  _mouseActive(true), _timeUntilNextFrame(0)
+Game::Game(const std::string &title) : _screen(0), _cursor(0), _lang(0), _save(0), _mod(0), _quit(false), _init(false), _update(false),  _mouseActive(true), _timeUntilNextFrame(0),
+	_ctrl(false), _alt(false), _shift(false), _rmb(false), _mmb(false)
 {
 	Options::reload = false;
 	Options::mute = false;
@@ -648,25 +649,49 @@ void Game::initAudio()
 /**
  * Is CTRL pressed?
  */
-bool Game::isCtrlPressed() const
+bool Game::isCtrlPressed(bool considerTouchButtons) const
 {
+	if (considerTouchButtons && _ctrl)
+	{
+		return true;
+	}
 	return (SDL_GetModState() & KMOD_CTRL) != 0;
 }
 
 /**
  * Is ALT pressed?
  */
-bool Game::isAltPressed() const
+bool Game::isAltPressed(bool considerTouchButtons) const
 {
+	if (considerTouchButtons && _alt)
+	{
+		return true;
+	}
 	return (SDL_GetModState() & KMOD_ALT) != 0;
 }
 
 /**
  * Is SHIFT pressed?
  */
-bool Game::isShiftPressed() const
+bool Game::isShiftPressed(bool considerTouchButtons) const
 {
+	if (considerTouchButtons && _shift)
+	{
+		return true;
+	}
 	return (SDL_GetModState() & KMOD_SHIFT) != 0;
+}
+
+/**
+ * Resets the touch button flags.
+ */
+void Game::resetTouchButtonFlags()
+{
+	_ctrl = false;
+	_alt = false;
+	_shift = false;
+	_rmb = false;
+	_mmb = false;
 }
 
 }

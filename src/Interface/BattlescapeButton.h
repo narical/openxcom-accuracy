@@ -61,7 +61,7 @@ public:
 	/// Allows this button to be toggled on when clicked, and off when released.
 	void allowClickInversion();
 	/// Sets up the "pressed" surface.
-	void initSurfaces();
+	void initSurfaces(Surface* custom = nullptr);
 	/// Blits this surface onto another one.
 	void blit(SDL_Surface *surface) override;
 	/// Alters both versions of the button's X pos.
