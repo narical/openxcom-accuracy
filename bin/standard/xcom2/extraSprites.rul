@@ -12,6 +12,12 @@ extraSprites: #done
     singleImage: true
     files:
       0: Resources/Extended/oxceLinks.png
+  - type: oxceLinksInv
+    width: 23
+    height: 22
+    singleImage: true
+    files:
+      0: Resources/Extended/oxceLinksInv.png
   - type: TinyRanks
     width: 42
     height: 7

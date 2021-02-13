@@ -2088,6 +2088,8 @@ interfaces: #done
         TFTDMode: true
       - id: buttonApply
         TFTDMode: true
+      - id: buttonLinks
+        TFTDMode: true
       # required
       - id: textSlots
         color: 48

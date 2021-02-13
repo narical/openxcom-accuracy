@@ -49,6 +49,7 @@ private:
 	TextEdit *_btnQuickSearch;
 	BattlescapeButton *_btnOk, *_btnPrev, *_btnNext, *_btnUnload, *_btnGround, *_btnRank, *_btnArmor;
 	BattlescapeButton *_btnCreateTemplate, *_btnApplyTemplate;
+	BattlescapeButton *_btnLinks;
 	Surface *_selAmmo;
 	Inventory *_inv;
 	std::vector<EquipmentLayoutItem*> _curInventoryTemplate, _tempInventoryTemplate;
@@ -114,6 +115,8 @@ public:
 	void btnGroundClick(Action *action);
 	/// Handler for clicking the Rank button.
 	void btnRankClick(Action *action);
+	/// Handler for clicking the Links button.
+	void btnLinksClick(Action *action);
 	/// Handler for clicking on the Create Template button.
 	void btnCreateTemplateClick(Action *action);
 	void btnCreatePersonalTemplateClick(Action *action);

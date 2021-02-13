@@ -55,6 +55,7 @@
 #include "UnitInfoState.h"
 #include "BattlescapeState.h"
 #include "BattlescapeGenerator.h"
+#include "ExtendedInventoryLinksState.h"
 #include "TileEngine.h"
 #include "../Mod/RuleInterface.h"
 #include "../Ufopaedia/Ufopaedia.h"
@@ -109,6 +110,15 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnArmor = new BattlescapeButton(RuleInventory::PAPERDOLL_W, RuleInventory::PAPERDOLL_H, RuleInventory::PAPERDOLL_X, RuleInventory::PAPERDOLL_Y);
 	_btnCreateTemplate = new BattlescapeButton(32, 22, _templateBtnX, _createTemplateBtnY);
 	_btnApplyTemplate = new BattlescapeButton(32, 22, _templateBtnX, _applyTemplateBtnY);
+	auto pixelShift = _game->getMod()->getInterface("inventory")->getElement("buttonLinks");
+	if (pixelShift && pixelShift->TFTDMode)
+	{
+		_btnLinks = new BattlescapeButton(23, 22, 213, 0);
+	}
+	else
+	{
+		_btnLinks = new BattlescapeButton(23, 22, 213, 1);
+	}
 	_selAmmo = new Surface(RuleInventory::HAND_W * RuleInventory::SLOT_W, RuleInventory::HAND_H * RuleInventory::SLOT_H, 272, 88);
 	_inv = new Inventory(_game, 320, 200, 0, 0, _parent == 0);
 	_btnQuickSearch = new TextEdit(this, 40, 9, 244, 140);
@@ -141,6 +151,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	add(_btnRank, "rank", "inventory", _bg);
 	add(_btnCreateTemplate, "buttonCreate", "inventory", _bg);
 	add(_btnApplyTemplate, "buttonApply", "inventory", _bg);
+	add(_btnLinks, "buttonLinks", "inventory", _bg);
 	add(_selAmmo);
 	add(_inv);
 
@@ -246,12 +257,21 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnApplyTemplate->onMouseIn((ActionHandler)&InventoryState::txtTooltipIn);
 	_btnApplyTemplate->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
 
+	_btnLinks->onMouseClick((ActionHandler)&InventoryState::btnLinksClick);
+	_btnLinks->setTooltip("STR_EXTENDED_LINKS");
+	_btnLinks->onMouseIn((ActionHandler)&InventoryState::txtTooltipIn);
+	_btnLinks->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
+
 	_btnQuickSearch->setHighContrast(true);
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&InventoryState::btnQuickSearchApply);
 	_btnQuickSearch->setVisible(false);
 
 	_btnOk->onKeyboardRelease((ActionHandler)&InventoryState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
+
+	_game->getMod()->getSurface("oxceLinksInv")->blitNShade(_btnLinks, 0, 0);
+	_btnLinks->initSurfaces();
+	_btnLinks->setVisible(Options::oxceLinks && !_tu);
 
 	// only use copy/paste buttons in setup (i.e. non-tu) mode
 	if (_tu)
@@ -502,7 +522,7 @@ void InventoryState::init()
 void InventoryState::edtSoldierPress(Action *)
 {
 	// renaming available only in the base (not during mission)
-	if (_base == 0)
+	if (_base == 0 || _btnLinks->getVisible())
 	{
 		_txtName->setFocus(false);
 	}
@@ -1126,6 +1146,17 @@ void InventoryState::_createInventoryTemplate(std::vector<EquipmentLayoutItem*> 
 
 		inventoryTemplate.push_back(new EquipmentLayoutItem((*j)));
 	}
+}
+
+void InventoryState::btnLinksClick(Action *)
+{
+	// don't accept clicks when moving items
+	if (_inv->getSelectedItem() != 0)
+	{
+		return;
+	}
+
+	_game->pushState(new ExtendedInventoryLinksState(this, _battleGame, _base, !_tu));
 }
 
 void InventoryState::btnCreateTemplateClick(Action *)
