@@ -30,8 +30,9 @@ class Explosion
 {
 private:
 	Position _position;
-	int _currentFrame, _startFrame, _frameDelay, _frames;
+	int _currentFrame, _startFrame, _frameDelay;
 	bool _big, _hit;
+	int _frames;
 public:
 	static const int HIT_FRAMES;
 	static const int EXPLODE_FRAMES;
