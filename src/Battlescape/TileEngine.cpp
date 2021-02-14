@@ -1169,7 +1169,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
 	std::vector<Position> _trajectory;
 	bool seen = false;
 
-	bool forceFire = Options::forceFire && _save->isCtrlPressed() && _save->getSide() == FACTION_PLAYER;
+	bool forceFire = Options::forceFire && _save->isCtrlPressed(true) && _save->getSide() == FACTION_PLAYER;
 
 	// Primary LOF check
 	if (forceFire)

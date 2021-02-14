@@ -683,7 +683,7 @@ void Inventory::mouseOver(Action *action, State *state)
  */
 void Inventory::mouseClick(Action *action, State *state)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action))
 	{
 		if (_selUnit == 0)
 			return;
@@ -1005,7 +1005,7 @@ void Inventory::mouseClick(Action *action, State *state)
 			}
 		}
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	else if (_game->isRightClick(action))
 	{
 		if (_selItem == 0)
 		{
@@ -1068,7 +1068,7 @@ void Inventory::mouseClick(Action *action, State *state)
 			setSelectedItem(0);
 		}
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
+	else if (_game->isMiddleClick(action))
 	{
 		if (_selUnit == 0)
 			return;

@@ -32,6 +32,7 @@ class SavedGame;
 class Mod;
 class ModInfo;
 class FpsCounter;
+class Action;
 
 /**
  * The core of the game engine, manages the game's entire contents and structure.
@@ -113,6 +114,13 @@ public:
 	bool isAltPressed(bool considerTouchButtons = false) const;
 	/// Is SHIFT pressed?
 	bool isShiftPressed(bool considerTouchButtons = false) const;
+
+	/// Is LMB pressed?
+	bool isLeftClick(Action* action, bool considerTouchButtons = false) const;
+	/// Is RMB pressed?
+	bool isRightClick(Action* action, bool considerTouchButtons = false) const;
+	/// Is MMB pressed?
+	bool isMiddleClick(Action* action, bool considerTouchButtons = false) const;
 
 	/// Resets the touch button flags.
 	void resetTouchButtonFlags();

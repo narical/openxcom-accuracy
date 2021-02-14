@@ -683,6 +683,42 @@ bool Game::isShiftPressed(bool considerTouchButtons) const
 }
 
 /**
+ * Is LMB pressed?
+ */
+bool Game::isLeftClick(Action* action, bool considerTouchButtons) const
+{
+	if (considerTouchButtons)
+	{
+		return (action->getDetails()->button.button == SDL_BUTTON_LEFT) && !_rmb && !_mmb;
+	}
+	return (action->getDetails()->button.button == SDL_BUTTON_LEFT);
+}
+
+/**
+ * Is RMB pressed?
+ */
+bool Game::isRightClick(Action* action, bool considerTouchButtons) const
+{
+	if (considerTouchButtons)
+	{
+		return (action->getDetails()->button.button == SDL_BUTTON_RIGHT) || ((action->getDetails()->button.button == SDL_BUTTON_LEFT) && _rmb);
+	}
+	return (action->getDetails()->button.button == SDL_BUTTON_RIGHT);
+}
+
+/**
+ * Is MMB pressed?
+ */
+bool Game::isMiddleClick(Action* action, bool considerTouchButtons) const
+{
+	if (considerTouchButtons)
+	{
+		return (action->getDetails()->button.button == SDL_BUTTON_MIDDLE) || ((action->getDetails()->button.button == SDL_BUTTON_LEFT) && _mmb);
+	}
+	return (action->getDetails()->button.button == SDL_BUTTON_MIDDLE);
+}
+
+/**
  * Resets the touch button flags.
  */
 void Game::resetTouchButtonFlags()

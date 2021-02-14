@@ -669,7 +669,7 @@ void UnitInfoState::handle(Action *action)
 	State::handle(action);
 	if (action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
 	{
-		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+		if (_game->isRightClick(action))
 		{
 			exitClick(action);
 		}

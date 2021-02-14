@@ -1399,11 +1399,11 @@ void SavedBattleGame::setBattleState(BattlescapeState *bs)
 /**
  * Is CTRL pressed?
  */
-bool SavedBattleGame::isCtrlPressed() const
+bool SavedBattleGame::isCtrlPressed(bool considerTouchButtons) const
 {
 	if (_battleState)
 	{
-		return _battleState->getGame()->isCtrlPressed();
+		return _battleState->getGame()->isCtrlPressed(considerTouchButtons);
 	}
 	return false;
 }

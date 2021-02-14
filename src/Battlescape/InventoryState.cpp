@@ -1098,7 +1098,7 @@ void InventoryState::btnQuickSearchApply(Action *)
  */
 void InventoryState::btnGroundClick(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	if (_game->isRightClick(action))
 	{
 		// scroll backwards
 		_inv->arrangeGround(-1);

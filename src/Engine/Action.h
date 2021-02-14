@@ -49,10 +49,6 @@ public:
 	void setMouseAction(int mouseX, int mouseY, int surfaceX, int surfaceY);
 	/// Gets if the action is a mouse action.
 	bool isMouseAction() const;
-	/// Gets if action is mouse left click.
-	bool isMouseLeftClick() const;
-	/// Gets if action is mouse right click.
-	bool isMouseRightClick() const;
 	/// Gets the top black band height.
 	int getTopBlackBand() const;
 	/// Gets the left black band width.

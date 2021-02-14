@@ -558,6 +558,11 @@ BattlescapeState::BattlescapeState() :
 	_btnReserveKneel->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 	_btnReserveKneel->allowToggleInversion();
 
+	if (Options::oxceLinks)
+	{
+		// Note: hidden behind an option so that the visual click effect is not done in "vanilla"
+		_btnZeroTUs->onMouseClick((ActionHandler)&BattlescapeState::btnZeroTUsClick, SDL_BUTTON_LEFT);
+	}
 	_btnZeroTUs->onMouseClick((ActionHandler)&BattlescapeState::btnZeroTUsClick, SDL_BUTTON_RIGHT);
 	_btnZeroTUs->onKeyboardPress((ActionHandler)&BattlescapeState::btnZeroTUsClick, Options::keyBattleZeroTUs);
 	_btnZeroTUs->setTooltip("STR_EXPEND_ALL_TIME_UNITS");
@@ -570,6 +575,7 @@ BattlescapeState::BattlescapeState() :
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::btnSelectMusicTrackClick, Options::keySelectMusicTrack);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::btnPersonalLightingClick, Options::keyBattlePersonalLighting);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::btnNightVisionClick, Options::keyNightVisionToggle);
+	//_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::btnTouchButtonsClick, SDLK_t); // for debugging only
 
 	// automatic night vision
 	if (_save->getGlobalShade() > Options::oxceAutoNightVisionThreshold)
@@ -1022,7 +1028,7 @@ void BattlescapeState::mapClick(Action *action)
 	}
 
 	// right-click aborts walking state
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	if (_game->isRightClick(action))
 	{
 		if (_battleGame->cancelCurrentAction())
 		{
@@ -1049,15 +1055,15 @@ void BattlescapeState::mapClick(Action *action)
 
 	if (_save->getTile(pos) != 0) // don't allow to click into void
 	{
-		if ((action->getDetails()->button.button == SDL_BUTTON_RIGHT) && playableUnitSelected())
+		if (_game->isRightClick(action, true) && playableUnitSelected())
 		{
 			_battleGame->secondaryAction(pos);
 		}
-		else if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		else if (_game->isLeftClick(action, true))
 		{
 			_battleGame->primaryAction(pos);
 		}
-		else if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
+		else if (_game->isMiddleClick(action, true))
 		{
 			_battleGame->cancelCurrentAction();
 			BattleUnit *bu = _save->selectUnit(pos);
@@ -1222,8 +1228,14 @@ void BattlescapeState::btnCenterClick(Action *)
  * Selects the next soldier.
  * @param action Pointer to an action.
  */
-void BattlescapeState::btnNextSoldierClick(Action *)
+void BattlescapeState::btnNextSoldierClick(Action *action)
 {
+	if (_game->isRightClick(action, true))
+	{
+		btnPrevSoldierClick(action);
+		return;
+	}
+
 	if (allowButtons())
 	{
 		selectNextPlayerUnit(true, false);
@@ -1375,7 +1387,7 @@ void BattlescapeState::btnStatsClick(Action *action)
 	{
 		bool scroll = false;
 		if (SCROLL_TRIGGER == Options::battleEdgeScroll &&
-			SDL_MOUSEBUTTONUP == action->getDetails()->type && SDL_BUTTON_LEFT == action->getDetails()->button.button)
+			SDL_MOUSEBUTTONUP == action->getDetails()->type && _game->isLeftClick(action))
 		{
 			int posX = action->getXMouse();
 			int posY = action->getYMouse();
@@ -1389,7 +1401,7 @@ void BattlescapeState::btnStatsClick(Action *action)
 		}
 		if (!scroll)
 		{
-			if (SDL_BUTTON_RIGHT == action->getDetails()->button.button)
+			if (_game->isRightClick(action))
 			{
 				_save->setNameDisplay(!_save->isNameDisplay());
 				updateSoldierInfo();
@@ -1425,7 +1437,7 @@ void BattlescapeState::btnLeftHandItemClick(Action *action)
 		_save->getSelectedUnit()->setActiveLeftHand();
 		_map->draw();
 
-		bool rightClick = action->getDetails()->button.button == SDL_BUTTON_RIGHT;
+		bool rightClick = _game->isRightClick(action, true);
 		if (rightClick)
 		{
 			_save->getSelectedUnit()->toggleLeftHandForReactions();
@@ -1446,7 +1458,7 @@ void BattlescapeState::btnLeftHandItemClick(Action *action)
 				leftHandItem = 0;
 			}
 		}
-		bool middleClick = action->getDetails()->button.button == SDL_BUTTON_MIDDLE;
+		bool middleClick = _game->isMiddleClick(action, true);
 		handleItemClick(leftHandItem, middleClick);
 	}
 }
@@ -1473,7 +1485,7 @@ void BattlescapeState::btnRightHandItemClick(Action *action)
 		_save->getSelectedUnit()->setActiveRightHand();
 		_map->draw();
 
-		bool rightClick = action->getDetails()->button.button == SDL_BUTTON_RIGHT;
+		bool rightClick = _game->isRightClick(action, true);
 		if (rightClick)
 		{
 			_save->getSelectedUnit()->toggleRightHandForReactions();
@@ -1494,7 +1506,7 @@ void BattlescapeState::btnRightHandItemClick(Action *action)
 				rightHandItem = 0;
 			}
 		}
-		bool middleClick = action->getDetails()->button.button == SDL_BUTTON_MIDDLE;
+		bool middleClick = _game->isMiddleClick(action, true);
 		handleItemClick(rightHandItem, middleClick);
 	}
 }
@@ -1611,6 +1623,16 @@ void BattlescapeState::btnMMBClick(Action* action)
 	action->getDetails()->type = SDL_NOEVENT; // consume the event
 }
 
+/**
+ * Toggles touch buttons.
+ * @param action Pointer to an action.
+ */
+void BattlescapeState::btnTouchButtonsClick(Action *)
+{
+	if (allowButtons())
+		toggleTouchButtons(false, false);
+}
+
 void BattlescapeState::toggleTouchButtons(bool deactivate, bool tryToReactivate)
 {
 	// Reset touch flags
@@ -1698,7 +1720,7 @@ void BattlescapeState::btnSpecialClick(Action *action)
 		}
 
 		_map->draw();
-		bool middleClick = action->getDetails()->button.button == SDL_BUTTON_MIDDLE;
+		bool middleClick = _game->isMiddleClick(action, true);
 		handleItemClick(specialItem, middleClick);
 	}
 	action->getDetails()->type = SDL_NOEVENT; // consume the event
@@ -2472,7 +2494,7 @@ inline void BattlescapeState::handle(Action *action)
 {
 	if (!_firstInit)
 	{
-		if (_game->getCursor()->getVisible() || ((action->getDetails()->type == SDL_MOUSEBUTTONDOWN || action->getDetails()->type == SDL_MOUSEBUTTONUP) && action->getDetails()->button.button == SDL_BUTTON_RIGHT))
+		if (_game->getCursor()->getVisible() || ((action->getDetails()->type == SDL_MOUSEBUTTONDOWN || action->getDetails()->type == SDL_MOUSEBUTTONUP) && _game->isRightClick(action)))
 		{
 			State::handle(action);
 
@@ -3346,6 +3368,11 @@ void BattlescapeState::btnReserveKneelClick(Action *action)
  */
 void BattlescapeState::btnZeroTUsClick(Action *action)
 {
+	if (!_game->isRightClick(action, true))
+	{
+		return;
+	}
+
 	if (allowButtons())
 	{
 		SDL_Event ev;

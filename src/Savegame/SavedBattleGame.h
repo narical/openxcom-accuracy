@@ -429,7 +429,7 @@ public:
 	/// Sets the pointer to the BattlescapeState.
 	void setBattleState(BattlescapeState *bs);
 	/// Is CTRL pressed?
-	bool isCtrlPressed() const;
+	bool isCtrlPressed(bool considerTouchButtons = false) const;
 	/// Gets the highest ranked, living XCom unit.
 	BattleUnit* getHighestRankedXCom();
 	/// Gets the morale modifier for the unit passed to this function.

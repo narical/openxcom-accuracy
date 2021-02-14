@@ -189,6 +189,8 @@ public:
 	void btnRMBClick(Action* action);
 	/// Handler for clicking the MMB touch button.
 	void btnMMBClick(Action* action);
+	/// Handler for pressing the toggle touch buttons hotkey.
+	void btnTouchButtonsClick(Action* action);
 	/// Toggles the touch buttons.
 	void toggleTouchButtons(bool deactivate, bool tryToReactivate);
 

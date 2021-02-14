@@ -75,7 +75,7 @@ void MiniMapView::draw()
 	drawRect(0, 0, getWidth(), getHeight(), 15);
 	this->lock();
 	Surface * emptySpace = _set->getFrame(_emptySpaceIndex);
-	bool isAltPressed = _game->isAltPressed();
+	bool isAltPressed = _game->isAltPressed(true);
 	if (Options::isPasswordCorrect())
 	{
 		isAltPressed = !isAltPressed;
@@ -295,12 +295,12 @@ void MiniMapView::mouseClick(Action *action, State *state)
 		if (_isMouseScrolled) return;
 	}
 
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	if (_game->isRightClick(action))
 	{
 		((MiniMapState*)(state))->btnOkClick(action);
 	}
 
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action))
 	{
 		int origX = action->getRelativeXMouse() / action->getXScale();
 		int origY = action->getRelativeYMouse() / action->getYScale();

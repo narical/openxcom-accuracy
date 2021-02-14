@@ -83,21 +83,6 @@ bool Action::isMouseAction() const
 }
 
 /**
- * Gets if action is mouse left click.
- */
-bool  Action::isMouseLeftClick() const
-{
-	return isMouseAction() && _ev->button.button == SDL_BUTTON_LEFT;
-}
-
-/**
- * Gets if action is mouse right click.
- */
-bool  Action::isMouseRightClick() const
-{
-	return isMouseAction() && _ev->button.button == SDL_BUTTON_RIGHT;
-}
-/**
  * Returns the height in pixel of the
  * top black band if any.
  * @return Screen's top black band.

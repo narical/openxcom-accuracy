@@ -177,7 +177,7 @@ void InventorySaveState::lstLayoutPress(Action *action)
 	}
 	_selected = _lstLayout->getCellText(_selectedRow, 0);
 
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && _edtSave->isFocused())
+	if (_game->isRightClick(action) && _edtSave->isFocused())
 	{
 		_previousSelectedRow = -1;
 		_selectedRow = -1;
@@ -187,7 +187,7 @@ void InventorySaveState::lstLayoutPress(Action *action)
 		_edtSave->setFocus(false, false);
 		_lstLayout->setScrolling(true);
 	}
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action))
 	{
 		_lstLayout->setCellText(_selectedRow, 0, "");
 
