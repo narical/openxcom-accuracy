@@ -288,6 +288,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 5;
 		}
+		else if (i == &Options::autosaveSlots)
+		{
+			min = 1;
+			max = 10;
+		}
 		else if (i == &Options::oxceWoundedDefendBaseIf) {
 			min = 0;
 			max = 100;

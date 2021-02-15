@@ -93,7 +93,7 @@ private:
 	std::string _currentTooltip;
 	Position _cursorPosition;
 	Uint8 _barHealthColor;
-	bool _autosave;
+	int _autosave;
 	int _numberOfDirectlyVisibleUnits, _numberOfEnemiesTotal, _numberOfEnemiesTotalPlusWounded;
 	Uint8 _indicatorTextColor, _indicatorGreen, _indicatorBlue, _indicatorPurple;
 	/// Popups a context sensitive list of actions the user can choose from.
@@ -287,7 +287,7 @@ public:
 	/// Move the mouse back to where it started after we finish drag scrolling.
 	void stopScrolling(Action *action);
 	/// Autosave next turn.
-	void autosave();
+	void autosave(int currentTurn);
 	/// Is busy?
 	bool isBusy() const;
 };

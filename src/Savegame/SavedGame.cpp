@@ -347,6 +347,16 @@ SaveInfo SavedGame::getSaveInfo(const std::string &file, Language *lang)
 		save.displayName = lang->getString("STR_AUTO_SAVE_BATTLESCAPE_SLOT");
 		save.reserved = true;
 	}
+	else if (save.fileName.find(AUTOSAVE_BATTLESCAPE) != std::string::npos)
+	{
+		int turn = 0;
+		if (doc["turn"])
+		{
+			turn = doc["turn"].as<int>(turn);
+		}
+		save.displayName = lang->getString("STR_AUTO_SAVE_BATTLESCAPE_SLOT_WITH_NUMBER").arg(turn);
+		save.reserved = true;
+	}
 	else
 	{
 		if (doc["name"])

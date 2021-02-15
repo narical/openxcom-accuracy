@@ -99,7 +99,7 @@ BattlescapeState::BattlescapeState() :
 	_isMouseScrolling(false), _isMouseScrolled(false),
 	_xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0),
 	_totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0), _mouseOverIcons(false),
-	_autosave(false),
+	_autosave(0),
 	_numberOfDirectlyVisibleUnits(0), _numberOfEnemiesTotal(0), _numberOfEnemiesTotalPlusWounded(0)
 {
 	std::fill_n(_visibleUnit, 10, (BattleUnit*)(0));
@@ -797,16 +797,17 @@ void BattlescapeState::init()
 	_txtTooltip->setText("");
 	_btnReserveKneel->toggle(_save->getKneelReserved());
 	_battleGame->setKneelReserved(_save->getKneelReserved());
-	if (_autosave)
+	if (_autosave > 0)
 	{
-		_autosave = false;
+		int currentTurn = _autosave;
+		_autosave = 0;
 		if (_game->getSavedGame()->isIronman())
 		{
 			_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_IRONMAN, _palette));
 		}
 		else if (Options::autosave)
 		{
-			_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_AUTO_BATTLESCAPE, _palette));
+			_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_AUTO_BATTLESCAPE, _palette, currentTurn));
 		}
 	}
 }
@@ -3700,9 +3701,9 @@ void BattlescapeState::stopScrolling(Action *action)
 /**
  * Autosave the game the next time the battlescape is displayed.
  */
-void BattlescapeState::autosave()
+void BattlescapeState::autosave(int currentTurn)
 {
-	_autosave = true;
+	_autosave = currentTurn;
 }
 
 /**

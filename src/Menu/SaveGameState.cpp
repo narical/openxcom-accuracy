@@ -55,7 +55,7 @@ SaveGameState::SaveGameState(OptionsOrigin origin, const std::string &filename, 
  * @param type Type of auto-save being used.
  * @param palette Parent state palette.
  */
-SaveGameState::SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *palette) : _firstRun(0), _origin(origin), _type(type)
+SaveGameState::SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *palette, int currentTurn) : _firstRun(0), _origin(origin), _type(type)
 {
 	switch (type)
 	{
@@ -66,7 +66,17 @@ SaveGameState::SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *pal
 		_filename = SavedGame::AUTOSAVE_GEOSCAPE;
 		break;
 	case SAVE_AUTO_BATTLESCAPE:
-		_filename = SavedGame::AUTOSAVE_BATTLESCAPE;
+		if (currentTurn > 0 && Options::autosaveSlots >= 2 && Options::autosaveSlots <= 10)
+		{
+			// multi-slot autosave
+			int slotIndex = (currentTurn / Options::autosaveFrequency) % Options::autosaveSlots;
+			_filename = "_" + std::to_string(slotIndex) + SavedGame::AUTOSAVE_BATTLESCAPE;
+		}
+		else
+		{
+			// classic autosave
+			_filename = SavedGame::AUTOSAVE_BATTLESCAPE;
+		}
 		break;
 	case SAVE_IRONMAN:
 	case SAVE_IRONMAN_END:

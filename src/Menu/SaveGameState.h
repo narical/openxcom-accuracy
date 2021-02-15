@@ -43,7 +43,7 @@ public:
 	/// Creates the Save Game state.
 	SaveGameState(OptionsOrigin origin, const std::string &filename, SDL_Color *palette);
 	/// Creates the Load Game state.
-	SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *palette);
+	SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *palette, int currentTurn = 0);
 	/// Cleans up the Save Game state.
 	~SaveGameState();
 	/// Creates the interface.
