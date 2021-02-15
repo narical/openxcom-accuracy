@@ -558,11 +558,6 @@ BattlescapeState::BattlescapeState() :
 	_btnReserveKneel->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 	_btnReserveKneel->allowToggleInversion();
 
-	if (Options::oxceLinks)
-	{
-		// Note: hidden behind an option so that the visual click effect is not done in "vanilla"
-		_btnZeroTUs->onMouseClick((ActionHandler)&BattlescapeState::btnZeroTUsClick, SDL_BUTTON_LEFT);
-	}
 	_btnZeroTUs->onMouseClick((ActionHandler)&BattlescapeState::btnZeroTUsClick, SDL_BUTTON_RIGHT);
 	_btnZeroTUs->onKeyboardPress((ActionHandler)&BattlescapeState::btnZeroTUsClick, Options::keyBattleZeroTUs);
 	_btnZeroTUs->setTooltip("STR_EXPEND_ALL_TIME_UNITS");
@@ -3368,11 +3363,6 @@ void BattlescapeState::btnReserveKneelClick(Action *action)
  */
 void BattlescapeState::btnZeroTUsClick(Action *action)
 {
-	if (!_game->isRightClick(action, true))
-	{
-		return;
-	}
-
 	if (allowButtons())
 	{
 		SDL_Event ev;
