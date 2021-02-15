@@ -2498,7 +2498,7 @@ inline void BattlescapeState::handle(Action *action)
 				_map->setSelectorPosition((_cursorPosition.x - _game->getScreen()->getCursorLeftBlackBand()) / action->getXScale(), (_cursorPosition.y - _game->getScreen()->getCursorTopBlackBand()) / action->getYScale());
 			}
 
-			if (action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
+			if (Options::thumbButtons && action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (action->getDetails()->button.button == SDL_BUTTON_X1)
 				{

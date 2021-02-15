@@ -1878,7 +1878,7 @@ void InventoryState::handle(Action *action)
 	}
 
 #ifndef __MORPHOS__
-	if (action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
+	if (Options::thumbButtons && action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
 	{
 		if (action->getDetails()->button.button == SDL_BUTTON_X1)
 		{
