@@ -297,18 +297,41 @@ OptionsVideoState::OptionsVideoState(OptionsOrigin origin) : OptionsBaseState(or
 	_txtGeoScale->setText(tr("STR_GEOSCAPE_SCALE"));
 
 	std::vector<std::string> scales;
-	scales.push_back(tr("STR_ORIGINAL"));
-	scales.push_back(tr("STR_1_5X"));
-	scales.push_back(tr("STR_2X"));
-	scales.push_back(tr("STR_THIRD_DISPLAY"));
-	scales.push_back(tr("STR_HALF_DISPLAY"));
-	scales.push_back(tr("STR_FULL_DISPLAY"));
-	scales.push_back(tr("STR_FOURTH_DISPLAY"));
-	scales.push_back(tr("STR_FIFTH_DISPLAY"));
-	scales.push_back(tr("STR_SIXTH_DISPLAY"));
+	scales.push_back("1x"); // was 5 -> is 0
+	scales.push_back("2x"); // was 4 -> is 1
+	scales.push_back("3x"); // was 3 -> is 2
+	scales.push_back("4x"); // was 6 -> is 3
+	scales.push_back("5x"); // was 7 -> is 4
+	scales.push_back("6x"); // was 8 -> is 5
+	scales.push_back("320x200"); // was 0 -> is 6
+	scales.push_back("480x300"); // was 1 -> is 7
+	scales.push_back("640x400"); // was 2 -> is 8
+
+	_scales.push_back(6); // 0
+	_scales.push_back(7); // 1
+	_scales.push_back(8); // 2
+	_scales.push_back(2); // 3
+	_scales.push_back(1); // 4
+	_scales.push_back(0); // 5
+	_scales.push_back(3); // 6
+	_scales.push_back(4); // 7
+	_scales.push_back(5); // 8
+
+	_reverseScales.push_back(5); // 0
+	_reverseScales.push_back(4); // 1
+	_reverseScales.push_back(3); // 2
+	_reverseScales.push_back(6); // 3
+	_reverseScales.push_back(7); // 4
+	_reverseScales.push_back(8); // 5
+	_reverseScales.push_back(0); // 6
+	_reverseScales.push_back(1); // 7
+	_reverseScales.push_back(2); // 8
+
+	if (Options::geoscapeScale < 0 || Options::geoscapeScale > 8) Options::geoscapeScale = 0;
+	if (Options::battlescapeScale < 0 || Options::battlescapeScale > 8) Options::battlescapeScale = 0;
 
 	_cbxGeoScale->setOptions(scales);
-	_cbxGeoScale->setSelected(Options::geoscapeScale);
+	_cbxGeoScale->setSelected(_scales[Options::geoscapeScale]);
 	_cbxGeoScale->onChange((ActionHandler)&OptionsVideoState::updateGeoscapeScale);
 	_cbxGeoScale->setTooltip("STR_GEOSCAPESCALE_SCALE_DESC");
 	_cbxGeoScale->onMouseIn((ActionHandler)&OptionsVideoState::txtTooltipIn);
@@ -317,7 +340,7 @@ OptionsVideoState::OptionsVideoState(OptionsOrigin origin) : OptionsBaseState(or
 	_txtBattleScale->setText(tr("STR_BATTLESCAPE_SCALE"));
 
 	_cbxBattleScale->setOptions(scales);
-	_cbxBattleScale->setSelected(Options::battlescapeScale);
+	_cbxBattleScale->setSelected(_scales[Options::battlescapeScale]);
 	_cbxBattleScale->onChange((ActionHandler)&OptionsVideoState::updateBattlescapeScale);
 	_cbxBattleScale->setTooltip("STR_BATTLESCAPE_SCALE_DESC");
 	_cbxBattleScale->onMouseIn((ActionHandler)&OptionsVideoState::txtTooltipIn);
@@ -586,7 +609,7 @@ void OptionsVideoState::btnRootWindowedModeClick(Action *)
  */
 void OptionsVideoState::updateGeoscapeScale(Action *)
 {
-	Options::newGeoscapeScale = _cbxGeoScale->getSelected();
+	Options::newGeoscapeScale = _reverseScales[_cbxGeoScale->getSelected()];
 }
 
 /**
@@ -595,7 +618,7 @@ void OptionsVideoState::updateGeoscapeScale(Action *)
  */
 void OptionsVideoState::updateBattlescapeScale(Action *)
 {
-	Options::newBattlescapeScale = _cbxBattleScale->getSelected();
+	Options::newBattlescapeScale = _reverseScales[_cbxBattleScale->getSelected()];
 }
 
 /**
