@@ -619,10 +619,6 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_moraleRecovery = node["moraleRecovery"].as<int>(_moraleRecovery);
 	_painKillerRecovery = node["painKillerRecovery"].as<float>(_painKillerRecovery);
 	_medikitType = (BattleMediKitType)node["medikitType"].as<int>(_medikitType);
-	{
-		// FIXME: deprecated, backwards-compatibility only, remove by mid 2020
-		_medikitTargetSelf = node["allowSelfHeal"].as<bool>(_medikitTargetSelf);
-	}
 	_medikitTargetSelf = node["medikitTargetSelf"].as<bool>(_medikitTargetSelf);
 	_medikitTargetImmune = node["medikitTargetImmune"].as<bool>(_medikitTargetImmune);
 	_medikitTargetMatrix = node["medikitTargetMatrix"].as<int>(_medikitTargetMatrix);

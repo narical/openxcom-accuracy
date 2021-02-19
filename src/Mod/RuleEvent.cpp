@@ -50,19 +50,6 @@ void RuleEvent::load(const YAML::Node &node)
 	{
 		_spawnedSoldier = node["spawnedSoldier"];
 	}
-
-	{
-		// backwards-compatibility, FIXME: remove after 6 months
-		bool randomItem = node["randomItem"].as<bool>(false);
-		if (randomItem)
-		{
-			_randomItemList = node["itemList"].as<std::vector<std::string> >(_randomItemList);
-		}
-		else
-		{
-			_everyItemList = node["itemList"].as<std::vector<std::string> >(_everyItemList);
-		}
-	}
 	_everyMultiItemList = node["everyMultiItemList"].as<std::map<std::string, int> >(_everyMultiItemList);
 	_everyItemList = node["everyItemList"].as<std::vector<std::string> >(_everyItemList);
 	_randomItemList = node["randomItemList"].as<std::vector<std::string> >(_randomItemList);
