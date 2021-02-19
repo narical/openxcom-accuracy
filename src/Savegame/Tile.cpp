@@ -1108,6 +1108,16 @@ void getPositionZScript(const Tile *t, int &ret)
 	ret = 0;
 }
 
+void getDistanceTileScript(const Tile *t, int &ret, const Tile *other)
+{
+	ret = t && other ? Position::distance(t->getPosition(), other->getPosition()) : -1;
+}
+
+void getDistanceVoxelScript(const Tile *t, int &ret, const Tile *other)
+{
+	ret = t && other ? Position::distance(t->getPosition().toVoxel(), other->getPosition().toVoxel()) : -1;
+}
+
 void getFloorSpecialTileTypeScript(const Tile *t, int &ret)
 {
 	ret = t ? t->getFloorSpecialTileType() : TILE;
@@ -1168,6 +1178,9 @@ void Tile::ScriptRegister(ScriptParserBase* parser)
 	t.add<&Tile::getShade>("getShade");
 
 	t.add<&getUnitScript>("getUnit");
+
+	t.add<&getDistanceTileScript>("getDistanceTile");
+	t.add<&getDistanceVoxelScript>("getDistanceVoxel");
 
 	t.add<&getFloorSpecialTileTypeScript>("getFloorSpecialTileType");
 	t.add<&getObjectSpecialTileTypeScript>("getObjectSpecialTileType");
