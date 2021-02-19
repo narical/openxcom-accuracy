@@ -3069,6 +3069,7 @@ std::string debugDisplayScript(const SavedBattleGame* p)
 void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 {
 	parser->registerPointerType<SavedGame>();
+	parser->registerPointerType<Tile>();
 
 	Bind<SavedBattleGame> sbg = { parser };
 

@@ -1140,11 +1140,11 @@ std::string debugDisplayScript(const Tile* t)
 		std::string s;
 		s += Tile::ScriptName;
 		s += "(x: ";
-		s += t->getPosition().x;
+		s += std::to_string(t->getPosition().x);
 		s += " y: ";
-		s += t->getPosition().y;
+		s += std::to_string(t->getPosition().y);
 		s += " z: ";
-		s += t->getPosition().z;
+		s += std::to_string(t->getPosition().z);
 		s += " isVoid: ";
 		s += t->isVoid() ? "true" : "false";
 		if (t->getUnit())
