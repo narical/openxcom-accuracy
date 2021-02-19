@@ -108,6 +108,7 @@ private:
 	int _fire;
 	std::vector<BattleItem*> _inventory;
 	BattleItem* _specWeapon[SPEC_WEAPON_MAX];
+	std::vector<BattleItem*> _specWeaponSaved;
 	AIModule *_currentAIState;
 	bool _visible;
 	UnitStats _exp, _expTmp;
@@ -648,7 +649,7 @@ public:
 	/// Gets the turn cost.
 	int getTurnCost() const;
 	/// Create special weapon for unit.
-	void setSpecialWeapon(SavedBattleGame *save);
+	void setSpecialWeapon(SavedBattleGame *save, bool updateFromSave);
 	/// Get special weapon by battle type.
 	BattleItem *getSpecialWeapon(BattleType type) const;
 	/// Get special weapon by name.

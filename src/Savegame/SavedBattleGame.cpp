@@ -251,7 +251,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			unit = new BattleUnit(mod, mod->getUnit(type), originalFaction, id, nullptr, mod->getArmor(armor), mod->getStatAdjustment(savedGame->getDifficulty()), _depth);
 		}
 		unit->load(*i, this->getMod(), this->getMod()->getScriptGlobal());
-		unit->setSpecialWeapon(this);
+		unit->setSpecialWeapon(this, true);
 		_units.push_back(unit);
 		if (faction == FACTION_PLAYER)
 		{
@@ -1547,7 +1547,7 @@ void SavedBattleGame::addFixedItems(BattleUnit *unit, const std::vector<const Ru
  */
 void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 {
-	unit->setSpecialWeapon(this);
+	unit->setSpecialWeapon(this, false);
 	Unit* rule = unit->getUnitRules();
 	const Armor* armor = unit->getArmor();
 	// Built in weapons: the unit has this weapon regardless of loadout or what have you.

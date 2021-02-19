@@ -80,8 +80,10 @@ public:
 	~BattleItem();
 	/// Loads the item from YAML.
 	void load(const YAML::Node& node, Mod *mod, const ScriptGlobal *shared);
+	void loadSpecialWeapon(const YAML::Node& node);
 	/// Saves the item to YAML.
 	YAML::Node save(const ScriptGlobal *shared) const;
+	YAML::Node saveSpecialWeapon() const;
 	/// Gets the item's ruleset.
 	const RuleItem *getRules() const;
 	/// Gets the item's ammo quantity
