@@ -409,7 +409,7 @@ void InventoryState::init()
 			// Step 0: update unit's armor
 			unit->updateArmorFromSoldier(_game->getMod(), s, s->getArmor(), _battleGame->getDepth());
 
-			// Step 1: remember the unit's equipment (excl. fixed items)
+			// Step 1: remember the unit's equipment (incl. loaded fixed items)
 			_clearInventoryTemplate(_tempInventoryTemplate);
 			_createInventoryTemplate(_tempInventoryTemplate);
 
@@ -675,7 +675,8 @@ void InventoryState::saveEquipmentLayout()
 			// skip fixed items
 			if ((*j)->getRules()->isFixed())
 			{
-				continue;
+				bool loaded = (*j)->needsAmmoForSlot(0) && (*j)->getAmmoForSlot(0);
+				if (!loaded) continue;
 			}
 
 			layoutItems->push_back(new EquipmentLayoutItem((*j)));
@@ -1141,7 +1142,8 @@ void InventoryState::_createInventoryTemplate(std::vector<EquipmentLayoutItem*> 
 		// skip fixed items
 		if ((*j)->getRules()->isFixed())
 		{
-			continue;
+			bool loaded = (*j)->needsAmmoForSlot(0) && (*j)->getAmmoForSlot(0);
+			if (!loaded) continue;
 		}
 
 		inventoryTemplate.push_back(new EquipmentLayoutItem((*j)));
@@ -1272,7 +1274,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 				continue;
 			}
 
-			if ((*templateIt)->getItemType() == groundItemName)
+			if ((*templateIt)->isFixed() == false && (*templateIt)->getItemType() == groundItemName)
 			{
 				// if the loaded ammo doesn't match the template item's,
 				// remember the weapon for later and continue scanning
@@ -1300,6 +1302,51 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 					matchedWeapon = groundItem;
 					found = true; // found = true, even if not equipped
 					break;
+				}
+			}
+		}
+
+		if ((*templateIt)->isFixed())
+		{
+			for (BattleItem* fixedItem : *unit->getInventory())
+			{
+				if (fixedItem->getRules()->isFixed() == false)
+				{
+					// this is not a fixed item, continue searching...
+					continue;
+				}
+				if (fixedItem->getSlot()->getId() == (*templateIt)->getSlot() &&
+					fixedItem->getSlotX() == (*templateIt)->getSlotX() &&
+					fixedItem->getSlotY() == (*templateIt)->getSlotY() &&
+					fixedItem->getRules()->getType() == (*templateIt)->getItemType())
+				{
+					// if the loaded ammo doesn't match the template item's,
+					// remember the weapon for later and continue scanning
+					bool skipWeapon = false;
+					for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+					{
+						if (!fixedItem->needsAmmoForSlot(slot))
+						{
+							continue;
+						}
+						BattleItem* loadedAmmo = fixedItem->getAmmoForSlot(slot);
+						if ((needsAmmo[slot] && (!loadedAmmo || targetAmmo[slot] != loadedAmmo->getRules()->getType()))
+							|| (!needsAmmo[slot] && loadedAmmo))
+						{
+							// remember the last matched weapon for simplicity (but prefer empty weapons if any are found)
+							if (!matchedWeapon || matchedWeapon->getAmmoForSlot(slot))
+							{
+								matchedWeapon = fixedItem;
+							}
+							skipWeapon = true;
+						}
+					}
+					if (!skipWeapon)
+					{
+						matchedWeapon = fixedItem;
+						found = true; // found = true, even if not equipped
+						break;
+					}
 				}
 			}
 		}
@@ -1337,6 +1384,17 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 			}
 		}
 
+		if (!found)
+		{
+			itemMissing = true;
+		}
+
+		if ((*templateIt)->isFixed())
+		{
+			// we have loaded the fixed weapon (if possible) and we don't need to do anything else, it's already in the correct slot
+			continue;
+		}
+
 		// check if the slot is not occupied already (e.g. by a fixed weapon)
 		if (matchedWeapon && !_inv->overlapItems(
 			unit,
@@ -1355,11 +1413,6 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		else
 		{
 			// let the user know or not? probably not... should be obvious why
-		}
-
-		if (!found)
-		{
-			itemMissing = true;
 		}
 	}
 

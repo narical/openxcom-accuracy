@@ -1073,6 +1073,9 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		placeItemByLayout(i, tempItemList);
 	}
 
+	// load fixed weapons based on equipment layout
+	reloadFixedWeaponsByLayout();
+
 	// refresh list
 	tempItemList = *_craftInventoryTile->getInventory();
 
@@ -1563,6 +1566,9 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 			// find the first matching layout-slot which is not already occupied
 			for (auto layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
 			{
+				// fixed items will be handled elsewhere
+				if (layoutItem->isFixed()) continue;
+
 				if (itemType != layoutItem->getItemType()) continue;
 
 				auto inventorySlot = _game->getMod()->getInventory(layoutItem->getSlot(), true);
@@ -1635,6 +1641,80 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 		}
 	}
 	return false;
+}
+
+/**
+ * Reloads fixed weapons on XCom soldiers based on equipment layout.
+ */
+void BattlescapeGenerator::reloadFixedWeaponsByLayout()
+{
+	// go through all soldiers
+	for (auto unit : *_save->getUnits())
+	{
+		// skip the vehicles, we need only X-Com soldiers WITH equipment-layout
+		if (!unit->getGeoscapeSoldier() || unit->getGeoscapeSoldier()->getEquipmentLayout()->empty())
+		{
+			continue;
+		}
+
+		// find fixed weapons in the layout
+		for (auto layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
+		{
+			if (layoutItem->isFixed() == false) continue;
+
+			// find matching fixed weapon in the inventory
+			BattleItem* fixedItem = nullptr;
+			for (auto item : *unit->getInventory())
+			{
+				if (item->getSlot()->getId() == layoutItem->getSlot() &&
+					item->getSlotX() == layoutItem->getSlotX() &&
+					item->getSlotY() == layoutItem->getSlotY() &&
+					item->getRules()->getType() == layoutItem->getItemType())
+				{
+					fixedItem = item;
+					break;
+				}
+			}
+			if (!fixedItem) continue;
+
+			auto toLoad = 0;
+			for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+			{
+				if (layoutItem->getAmmoItemForSlot(slot) != "NONE")
+				{
+					++toLoad;
+				}
+			}
+
+			if (toLoad)
+			{
+				// maybe we find the layout-ammo on the ground to load it with
+				for (auto ammo : *_craftInventoryTile->getInventory())
+				{
+					if (ammo->getSlot() == _inventorySlotGround)
+					{
+						auto& ammoType = ammo->getRules()->getType();
+						for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+						{
+							if (ammoType == layoutItem->getAmmoItemForSlot(slot))
+							{
+								if (fixedItem->setAmmoPreMission(ammo))
+								{
+									--toLoad;
+								}
+								// even if item was not loaded other slots can't use it either
+								break;
+							}
+						}
+						if (!toLoad)
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 /**

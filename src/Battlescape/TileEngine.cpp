@@ -4363,6 +4363,20 @@ void TileEngine::itemDropInventory(Tile *t, BattleUnit *unit, bool unprimeItems,
 			{
 				if (deleteFixedItems)
 				{
+					// first unload all ammo
+					for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+					{
+						if (i->needsAmmoForSlot(slot) && i->getAmmoForSlot(slot))
+						{
+							// unload the existing ammo (if any) from the weapon
+							BattleItem* oldAmmo = i->setAmmoForSlot(slot, nullptr);
+							if (oldAmmo)
+							{
+								itemDrop(t, oldAmmo, false);
+							}
+						}
+					}
+
 					// delete fixed items completely (e.g. when changing armor)
 					i->setOwner(nullptr);
 					_save->removeItem(i);

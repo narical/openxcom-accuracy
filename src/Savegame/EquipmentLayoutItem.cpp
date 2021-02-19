@@ -50,7 +50,8 @@ EquipmentLayoutItem::EquipmentLayoutItem(const BattleItem* item) :
 	_itemType(item->getRules()->getType()),
 	_slot(item->getSlot()->getId()),
 	_slotX(item->getSlotX()), _slotY(item->getSlotY()),
-	_ammoItem{}, _fuseTimer(item->getFuseTimer())
+	_ammoItem{}, _fuseTimer(item->getFuseTimer()),
+	_fixed(item->getRules()->isFixed())
 {
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 	{
@@ -127,6 +128,15 @@ int EquipmentLayoutItem::getFuseTimer() const
 }
 
 /**
+ * Is this a fixed weapon entry?
+ * @return True, if this is a fixed weapon entry.
+ */
+bool EquipmentLayoutItem::isFixed() const
+{
+	return _fixed;
+}
+
+/**
  * Loads the soldier-equipment layout item from a YAML file.
  * @param node YAML node.
  */
@@ -148,6 +158,7 @@ void EquipmentLayoutItem::load(const YAML::Node &node)
 		}
 	}
 	_fuseTimer = node["fuseTimer"].as<int>(-1);
+	_fixed = node["fixed"].as<bool>(false);
 }
 
 /**
@@ -186,6 +197,10 @@ YAML::Node EquipmentLayoutItem::save() const
 	if (_fuseTimer >= 0)
 	{
 		node["fuseTimer"] = _fuseTimer;
+	}
+	if (_fixed)
+	{
+		node["fixed"] = _fixed;
 	}
 	return node;
 }

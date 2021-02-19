@@ -38,6 +38,7 @@ private:
 	int _slotX, _slotY;
 	std::string _ammoItem[RuleItem::AmmoSlotMax];
 	int _fuseTimer;
+	bool _fixed;
 public:
 	/// Creates a new soldier-equipment layout item and loads its contents from YAML.
 	EquipmentLayoutItem(const YAML::Node& node);
@@ -57,6 +58,8 @@ public:
 	const std::string& getAmmoItemForSlot(int i) const;
 	/// Gets the turn until explosion
 	int getFuseTimer() const;
+	/// Is this a fixed weapon entry?
+	bool isFixed() const;
 	/// Loads the soldier-equipment layout item from YAML.
 	void load(const YAML::Node& node);
 	/// Saves the soldier-equipment layout item to YAML.

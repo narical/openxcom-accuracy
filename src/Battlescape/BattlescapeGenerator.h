@@ -104,6 +104,7 @@ private:
 	BattleUnit *addCivilian(Unit *rules, int nodeRank);
 	/// Places an item on a soldier based on equipment layout.
 	bool placeItemByLayout(BattleItem *item, const std::vector<BattleItem*> &itemList);
+	void reloadFixedWeaponsByLayout();
 	/// Loads an XCom MAP file.
 	int loadMAP(MapBlock *mapblock, int xoff, int yoff, int zoff, RuleTerrain *terrain, int objectIDOffset, bool discovered = false, bool craft = false, int ufoIndex = -1);
 	/// Loads an XCom RMP file.
