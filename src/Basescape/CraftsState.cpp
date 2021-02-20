@@ -18,6 +18,7 @@
  */
 #include "CraftsState.h"
 #include <sstream>
+#include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
@@ -101,6 +102,7 @@ CraftsState::CraftsState(Base *base) : _base(base)
 	_lstCrafts->setBackground(_window);
 	_lstCrafts->setMargin(8);
 	_lstCrafts->onMouseClick((ActionHandler)&CraftsState::lstCraftsClick);
+	_lstCrafts->onMouseClick((ActionHandler)&CraftsState::lstCraftsClick, SDL_BUTTON_RIGHT);
 }
 
 /**
@@ -148,11 +150,34 @@ void CraftsState::btnOkClick(Action *)
  * Shows the selected craft's info.
  * @param action Pointer to an action.
  */
-void CraftsState::lstCraftsClick(Action *)
+void CraftsState::lstCraftsClick(Action *action)
 {
-	if (_base->getCrafts()->at(_lstCrafts->getSelectedRow())->getStatus() != "STR_OUT")
+	auto& crafts = *_base->getCrafts();
+	auto row = _lstCrafts->getSelectedRow();
+
+	if (_game->isLeftClick(action))
 	{
-		_game->pushState(new CraftInfoState(_base, _lstCrafts->getSelectedRow()));
+		if (crafts[row]->getStatus() != "STR_OUT")
+		{
+			_game->pushState(new CraftInfoState(_base, row));
+		}
+	}
+	else if (_game->isRightClick(action))
+	{
+		if (row > 0)
+		{
+			// move craft up in the list
+			std::swap(crafts[row], crafts[row - 1]);
+
+			// warp mouse
+			if (row != _lstCrafts->getScroll() && _lstCrafts->getScroll() == 0)
+			{
+				SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() - static_cast<Uint16>(8 * action->getYScale()));
+			}
+
+			// reload the UI
+			init();
+		}
 	}
 }
 
