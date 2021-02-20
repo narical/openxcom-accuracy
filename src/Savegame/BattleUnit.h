@@ -316,6 +316,9 @@ public:
 	bool isOut() const;
 	/// Check if unit stats will cause knock out.
 	bool isOutThresholdExceed() const;
+	/// Unit is removed from game.
+	bool isIgnored() const;
+
 	/// Get the number of time units a certain action takes.
 	RuleItemUseCost getActionTUs(BattleActionType actionType, const BattleItem *item) const;
 	/// Get the number of time units a certain action takes.

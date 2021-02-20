@@ -2148,7 +2148,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		// go through all wounded units under player's control (incl. unconscious)
 		for (std::vector<BattleUnit*>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
 		{
-			if ((*i)->getFaction() == FACTION_PLAYER && (*i)->getStatus() != STATUS_DEAD && (*i)->getStatus() != STATUS_IGNORE_ME && (*i)->getFatalWounds() > 0 && (*i)->indicatorsAreEnabled())
+			if ((*i)->getFaction() == FACTION_PLAYER && (*i)->getStatus() != STATUS_DEAD && !(*i)->isIgnored() && (*i)->getFatalWounds() > 0 && (*i)->indicatorsAreEnabled())
 			{
 				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
 				_btnVisibleUnit[j]->setVisible(true);

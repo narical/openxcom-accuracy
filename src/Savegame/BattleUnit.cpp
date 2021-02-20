@@ -1773,7 +1773,7 @@ int BattleUnit::getFallingPhase() const
  */
 bool BattleUnit::isOut() const
 {
-	return _status == STATUS_DEAD || _status == STATUS_UNCONSCIOUS || _status == STATUS_IGNORE_ME;
+	return _status == STATUS_DEAD || _status == STATUS_UNCONSCIOUS || isIgnored();
 }
 
 /**
@@ -1783,6 +1783,14 @@ bool BattleUnit::isOut() const
 bool BattleUnit::isOutThresholdExceed() const
 {
 	return getHealth() <= 0 || getHealth() <= getStunlevel();
+}
+
+/**
+ * Unit is removed from game.
+ */
+bool BattleUnit::isIgnored() const
+{
+	return _status == STATUS_IGNORE_ME;
 }
 
 /**
@@ -2408,7 +2416,7 @@ void BattleUnit::prepareMorale(int morale)
  */
 void BattleUnit::prepareNewTurn(bool fullProcess)
 {
-	if (_status == STATUS_IGNORE_ME)
+	if (isIgnored())
 	{
 		return;
 	}

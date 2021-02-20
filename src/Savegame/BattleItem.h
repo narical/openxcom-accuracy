@@ -110,6 +110,9 @@ public:
 
 	/// Spend one bullet. (Or spend a given amount of energy from a battery.)
 	bool spendBullet(int spendPerShot);
+
+	/// Check if owner is removed from game.
+	bool isOwnerIgnored() const;
 	/// Gets the item's owner.
 	BattleUnit *getOwner();
 	/// Gets the item's owner.

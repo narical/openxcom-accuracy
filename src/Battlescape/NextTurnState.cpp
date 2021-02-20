@@ -381,7 +381,7 @@ bool NextTurnState::applyEnvironmentalConditionToFaction(UnitFaction faction, En
 
 		for (std::vector<BattleUnit*>::iterator j = _battleGame->getUnits()->begin(); j != _battleGame->getUnits()->end(); ++j)
 		{
-			if ((*j)->getOriginalFaction() == faction && (*j)->getStatus() != STATUS_DEAD && (*j)->getStatus() != STATUS_IGNORE_ME)
+			if ((*j)->getOriginalFaction() == faction && (*j)->getStatus() != STATUS_DEAD && !(*j)->isIgnored())
 			{
 				if (RNG::percent(condition.chancePerTurn))
 				{

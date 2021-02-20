@@ -258,7 +258,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			if ((unit->getId() == selectedUnit) || (_selectedUnit == 0 && !unit->isOut()))
 				_selectedUnit = unit;
 		}
-		if (unit->getStatus() != STATUS_DEAD && unit->getStatus() != STATUS_IGNORE_ME)
+		if (unit->getStatus() != STATUS_DEAD && !unit->isIgnored())
 		{
 			if (const YAML::Node &ai = (*i)["AI"])
 			{
@@ -1151,7 +1151,7 @@ void SavedBattleGame::newTurnUpdateScripts()
 {
 	for (std::vector<BattleUnit*>::iterator i = _units.begin(); i != _units.end(); ++i)
 	{
-		if ((*i)->getStatus() == STATUS_IGNORE_ME)
+		if ((*i)->isIgnored())
 		{
 			continue;
 		}
@@ -1254,7 +1254,7 @@ void SavedBattleGame::endTurn()
 	// hide all aliens (VOF calculations below will turn them visible again)
 	for (std::vector<BattleUnit*>::iterator i = _units.begin(); i != _units.end(); ++i)
 	{
-		if ((*i)->getStatus() == STATUS_IGNORE_ME)
+		if ((*i)->isIgnored())
 		{
 			continue;
 		}
@@ -2043,7 +2043,7 @@ void SavedBattleGame::reviveUnconsciousUnits(bool noTU)
 {
 	for (std::vector<BattleUnit*>::iterator i = getUnits()->begin(); i != getUnits()->end(); ++i)
 	{
-		if ((*i)->getArmor()->getSize() == 1 && (*i)->getStatus() != STATUS_IGNORE_ME)
+		if ((*i)->getArmor()->getSize() == 1 && !(*i)->isIgnored())
 		{
 			Position originalPosition = (*i)->getPosition();
 			if (originalPosition == Position(-1, -1, -1))

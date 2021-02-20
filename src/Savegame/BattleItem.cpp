@@ -478,6 +478,16 @@ void BattleItem::spendHealingItemUse(BattleMediKitAction mediKitAction)
 		setHealQuantity(getHealQuantity() - 1);
 	}
 }
+
+
+/**
+ * Check if owner is removed from game.
+ */
+bool BattleItem::isOwnerIgnored() const
+{
+	return _owner && _owner->isIgnored();
+}
+
 /**
  * Gets the item's owner.
  * @return Pointer to Battleunit.

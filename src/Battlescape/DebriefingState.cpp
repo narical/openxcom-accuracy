@@ -1229,7 +1229,7 @@ void DebriefingState::prepareDebriefing()
 			{
 				playersUnconscious++;
 			}
-			else if ((*j)->getStatus() == STATUS_IGNORE_ME && (*j)->getStunlevel() >= (*j)->getHealth())
+			else if ((*j)->isIgnored() && (*j)->getStunlevel() >= (*j)->getHealth())
 			{
 				// even for ignored xcom units, we need to know if they're conscious or unconscious
 				playersUnconscious++;
@@ -1264,7 +1264,7 @@ void DebriefingState::prepareDebriefing()
 				{
 					(*j)->instaKill();
 				}
-				else if ((*j)->getStatus() == STATUS_IGNORE_ME && (*j)->getStunlevel() >= (*j)->getHealth())
+				else if ((*j)->isIgnored() && (*j)->getStunlevel() >= (*j)->getHealth())
 				{
 					(*j)->instaKill();
 				}
@@ -1388,14 +1388,14 @@ void DebriefingState::prepareDebriefing()
 	std::vector<BattleUnit*> waitingTransformations;
 	for (auto* u : *battle->getUnits())
 	{
-		if (u->getSpawnUnit() && u->getOriginalFaction() == FACTION_HOSTILE && (!u->isOut() || u->getStatus() == STATUS_IGNORE_ME))
+		if (u->getSpawnUnit() && u->getOriginalFaction() == FACTION_HOSTILE && (!u->isOut() || u->isIgnored()))
 		{
 			waitingTransformations.push_back(u);
 		}
 	}
 	for (auto* u : waitingTransformations)
 	{
-		auto status = u->getStatus();
+		auto ignore = u->isIgnored();
 		auto faction = u->getFaction();
 		// convert it, and mind control the resulting unit.
 		// reason: zombies don't create unconscious bodies... ever.
@@ -1404,7 +1404,7 @@ void DebriefingState::prepareDebriefing()
 		BattleUnit *newUnit = _game->getSavedGame()->getSavedBattle()->getBattleGame()->convertUnit(u);
 		u->killedBy(FACTION_HOSTILE); //skip counting as kill
 		newUnit->convertToFaction(faction);
-		if (status == STATUS_IGNORE_ME)
+		if (ignore)
 		{
 			newUnit->goToTimeOut();
 		}
@@ -1490,7 +1490,10 @@ void DebriefingState::prepareDebriefing()
 		{ // so this unit is not dead...
 			if (oldFaction == FACTION_PLAYER)
 			{
-				if ((((*j)->isInExitArea(START_POINT) || (*j)->getStatus() == STATUS_IGNORE_ME) && (battle->getMissionType() != "STR_BASE_DEFENSE" || success)) || !aborted || (aborted && (*j)->isInExitArea(END_POINT)))
+				if (
+					(((*j)->isInExitArea(START_POINT) || (*j)->isIgnored()) && (battle->getMissionType() != "STR_BASE_DEFENSE" || success))
+					|| !aborted
+					|| (aborted && (*j)->isInExitArea(END_POINT)))
 				{ // so game is not aborted or aborted and unit is on exit area
 					StatAdjustment statIncrease;
 					(*j)->postMissionProcedures(_game->getMod(), save, battle, statIncrease);
@@ -1563,7 +1566,7 @@ void DebriefingState::prepareDebriefing()
 			}
 			else if (oldFaction == FACTION_HOSTILE && (!aborted || (*j)->isInExitArea(START_POINT)) && !_destroyBase
 				// mind controlled units may as well count as unconscious
-				&& faction == FACTION_PLAYER && (!(*j)->isOut() || (*j)->getStatus() == STATUS_IGNORE_ME))
+				&& faction == FACTION_PLAYER && (!(*j)->isOut() || (*j)->isIgnored()))
 			{
 				if ((*j)->getTile())
 				{
@@ -1580,7 +1583,7 @@ void DebriefingState::prepareDebriefing()
 			}
 			else if (oldFaction == FACTION_HOSTILE && !aborted && !_destroyBase
 				// surrendered units may as well count as unconscious too
-				&& playersSurvived > 0 && faction != FACTION_PLAYER && (!(*j)->isOut() || (*j)->getStatus() == STATUS_IGNORE_ME)
+				&& playersSurvived > 0 && faction != FACTION_PLAYER && (!(*j)->isOut() || (*j)->isIgnored())
 				&& ((*j)->isSurrendering() || battle->getChronoTrigger() == FORCE_WIN_SURRENDER))
 			{
 				if ((*j)->getTile())
@@ -2347,7 +2350,7 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base)
 					else if (corpseUnit->getStatus() == STATUS_UNCONSCIOUS ||
 							// or it's in timeout because it's unconscious from the previous stage
 							// units can be in timeout and alive, and we assume they flee.
-							(corpseUnit->getStatus() == STATUS_IGNORE_ME &&
+							(corpseUnit->isIgnored() &&
 							corpseUnit->getHealth() > 0 &&
 							corpseUnit->getHealth() < corpseUnit->getStunlevel()))
 					{
@@ -2602,7 +2605,7 @@ void DebriefingState::recoverAlien(BattleUnit *from, Base *base)
 	else
 	{
 		RuleResearch *research = _game->getMod()->getResearch(type);
-		bool surrendered = (!from->isOut() || from->getStatus() == STATUS_IGNORE_ME)
+		bool surrendered = (!from->isOut() || from->isIgnored())
 			&& (from->isSurrendering() || _game->getSavedGame()->getSavedBattle()->getChronoTrigger() == FORCE_WIN_SURRENDER);
 		if (research != 0 && !_game->getSavedGame()->isResearched(research))
 		{

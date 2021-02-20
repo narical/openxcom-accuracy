@@ -697,7 +697,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 
 	for (std::vector<BattleUnit*>::iterator j = _save->getUnits()->begin(); j != _save->getUnits()->end(); ++j)
 	{
-		if ((*j)->getStatus() == STATUS_IGNORE_ME) continue;
+		if ((*j)->isIgnored()) continue;
 		BattleUnit *victim = (*j);
 		BattleUnit *murderer = origMurderer;
 
