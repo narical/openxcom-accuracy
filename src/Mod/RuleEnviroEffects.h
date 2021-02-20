@@ -51,6 +51,7 @@ private:
 	std::map<std::string, std::string> _armorTransformationsName;
 	std::map<const Armor*, Armor*> _armorTransformations;
 	int _mapBackgroundColor;
+	bool _ignoreAutoNightVisionUserSetting;
 	std::string _inventoryShockIndicator;
 	std::string _mapShockIndicator;
 public:
@@ -72,6 +73,8 @@ public:
 	Armor* getArmorTransformation(const Armor* sourceArmor) const;
 	/// Gets the battlescape map background color.
 	int getMapBackgroundColor() const { return _mapBackgroundColor; }
+	/// Gets the corresponding flag.
+	bool ignoreAutoNightVisionUserSetting() const { return _ignoreAutoNightVisionUserSetting; }
 	/// Gets the inventory shock indicator sprite name.
 	const std::string& getInventoryShockIndicator() const { return _inventoryShockIndicator; }
 	/// Gets the map shock indicator sprite name.

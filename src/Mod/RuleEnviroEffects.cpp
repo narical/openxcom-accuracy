@@ -67,7 +67,7 @@ namespace OpenXcom
  * Creates a blank ruleset for a certain type of EnviroEffects.
  * @param type String defining the type.
  */
-RuleEnviroEffects::RuleEnviroEffects(const std::string& type) : _type(type), _mapBackgroundColor(15)
+RuleEnviroEffects::RuleEnviroEffects(const std::string& type) : _type(type), _mapBackgroundColor(15), _ignoreAutoNightVisionUserSetting(false)
 {
 }
 
@@ -93,6 +93,7 @@ void RuleEnviroEffects::load(const YAML::Node& node, const Mod* mod)
 	mod->loadUnorderedNamesToNames(_type, _paletteTransformations, node["paletteTransformations"]);
 	mod->loadUnorderedNamesToNames(_type, _armorTransformationsName, node["armorTransformations"]);
 	_mapBackgroundColor = node["mapBackgroundColor"].as<int>(_mapBackgroundColor);
+	_ignoreAutoNightVisionUserSetting = node["ignoreAutoNightVisionUserSetting"].as<bool>(_ignoreAutoNightVisionUserSetting);
 	_inventoryShockIndicator = node["inventoryShockIndicator"].as<std::string>(_inventoryShockIndicator);
 	_mapShockIndicator = node["mapShockIndicator"].as<std::string>(_mapShockIndicator);
 }

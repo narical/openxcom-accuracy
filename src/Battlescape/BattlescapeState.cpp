@@ -575,10 +575,14 @@ BattlescapeState::BattlescapeState() :
 	// automatic night vision
 	if (_save->getGlobalShade() > Options::oxceAutoNightVisionThreshold)
 	{
-		// turn personal lights off
-		//_save->getTileEngine()->togglePersonalLighting();
-		// turn night vision on
-		_map->toggleNightVision();
+		bool ignore = (enviro && enviro->ignoreAutoNightVisionUserSetting());
+		if (!ignore)
+		{
+			// turn personal lights off
+			//_save->getTileEngine()->togglePersonalLighting();
+			// turn night vision on
+			_map->toggleNightVision();
+		}
 	}
 
 	SDLKey buttons[] = {Options::keyBattleCenterEnemy1,
