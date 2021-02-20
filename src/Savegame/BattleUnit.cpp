@@ -4542,52 +4542,85 @@ void BattleUnit::goToTimeOut()
  * Set special weapon that is handled outside inventory.
  * @param save
  */
-void BattleUnit::setSpecialWeapon(SavedBattleGame *save)
+void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 {
 	const Mod *mod = save->getMod();
-	const RuleItem *item = 0;
 	int i = 0;
 
-	if (getUnitRules())
+	if (_specWeapon[0] && updateFromSave)
 	{
-		item = mod->getItem(getUnitRules()->getMeleeWeapon());
+		// new saves have already build in weapons, we can skip this step, old save need this function
+		return;
+	}
+
+	auto addItem = [&](const RuleItem *item)
+	{
 		if (item && i < SPEC_WEAPON_MAX)
 		{
+			//TODO: move this check to load of ruleset
 			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
 			{
 				throw Exception("Weapon " + item->getType() + " is used as a special weapon on unit " + getUnitRules()->getType() + " but doesn't have it's own ammo - give it a clipSize!");
 			}
+
+			// we have already item of this type, skip
+			for (auto* w : _specWeapon)
+			{
+				if (w && w->getRules() == item)
+				{
+					return;
+				}
+			}
+
 			_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
 		}
+	};
+
+	if (getUnitRules())
+	{
+		addItem(mod->getItem(getUnitRules()->getMeleeWeapon()));
 	}
 
-	item = getArmor()->getSpecialWeapon();
-	if (item && (item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
-	{
-		throw Exception("Weapon " + item->getType() + " is used as a special weapon on armor " + getArmor()->getType() + " but doesn't have it's own ammo - give it a clipSize!");
-	}
+	addItem(getArmor()->getSpecialWeapon());
 
-	if (item && i < SPEC_WEAPON_MAX)
-	{
-		_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
-	}
 	if (getBaseStats()->psiSkill > 0 && getOriginalFaction() == FACTION_HOSTILE)
 	{
-		item = mod->getItem(getUnitRules()->getPsiWeapon());
-		if (item && i < SPEC_WEAPON_MAX)
-		{
-			_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
-		}
+		addItem(mod->getItem(getUnitRules()->getPsiWeapon()));
 	}
 	if (getGeoscapeSoldier())
 	{
-		item = getGeoscapeSoldier()->getRules()->getSpecialWeapon();
-		if (item)
+		addItem(getGeoscapeSoldier()->getRules()->getSpecialWeapon());
+	}
+}
+
+/**
+ * Add special weapon from load save.
+ */
+void BattleUnit::loadSpecialWeapon(BattleItem* item)
+{
+	for (auto*& s : _specWeapon)
+	{
+		if (s == nullptr)
 		{
-			if (i < SPEC_WEAPON_MAX)
-			{
-				_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
-			}
+			s = item;
+			return;
+		}
+	}
+	Log(LOG_ERROR) << "Failed to add buildin item '" << item->getRules()->getType() << "' (id " << item->getId() << ") to unit '" << getType() << "' (id " << getId() << ")";
+}
+
+/**
+ * Remove all special weapons.
+ */
+void BattleUnit::removeSpecialWeapon(SavedBattleGame *save)
+{
+	for (auto*& s : _specWeapon)
+	{
+		if (s)
+		{
+			s->setOwner(nullptr);
+			save->removeItem(s);
+			s = nullptr;
 		}
 	}
 }

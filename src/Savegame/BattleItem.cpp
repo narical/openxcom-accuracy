@@ -1468,6 +1468,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.add<&BattleItem::getGlow>("getGlow");
 	bi.add<&BattleItem::getTotalWeight>("getTotalWeight");
 	bi.add<&BattleItem::isAmmo>("isAmmo");
+	bi.add<&BattleItem::isSpecialWeapon>("isSpecialWeapon");
 
 	bi.add<&BattleItem::getAmmoQuantity>("getAmmoQuantity");
 	bi.add<&setAmmoQuantityScript>("setAmmoQuantity");

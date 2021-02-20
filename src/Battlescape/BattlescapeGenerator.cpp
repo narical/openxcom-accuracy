@@ -236,6 +236,18 @@ void BattlescapeGenerator::setMissionSite(MissionSite *mission)
  */
 void BattlescapeGenerator::nextStage()
 {
+	// check if unit is avaible in next stage
+	auto isUnitStillActive = [](const BattleUnit* u)
+	{
+		return !u->isOut() || u->getStatus() == STATUS_UNCONSCIOUS;
+	};
+	// check if unit is in exit tile
+	auto isInExit = [s = _save](const BattleUnit* u)
+	{
+		Tile *tmpTile = s->getTile(u->getPosition());
+		return u->isInExitArea(END_POINT) || u->liesInExitArea(tmpTile, END_POINT);
+	};
+
 	// preventively drop all units from soldier's inventory (makes handling easier)
 	// 1. no alien/civilian living, dead or unconscious is allowed to transition
 	// 2. no dead xcom unit is allowed to transition
@@ -284,13 +296,10 @@ void BattlescapeGenerator::nextStage()
 		(*i)->clearVisibleUnits();
 		(*i)->clearVisibleTiles();
 
-		Tile *tmpTile = _save->getTile((*i)->getPosition());
-		bool isInExit = (*i)->isInExitArea(END_POINT) || (*i)->liesInExitArea(tmpTile, END_POINT);
-
 		if ((*i)->getStatus() != STATUS_DEAD                              // if they're not dead
 			&& (((*i)->getOriginalFaction() == FACTION_PLAYER               // and they're a soldier
 			&& _save->isAborted()											  // and you aborted
-			&& !isInExit)                                                     // and they're not on the exit
+			&& !isInExit((*i)))                                                     // and they're not on the exit
 			|| (*i)->getOriginalFaction() != FACTION_PLAYER))               // or they're not a soldier
 		{
 			if ((*i)->getOriginalFaction() == FACTION_HOSTILE && !(*i)->isOut())
@@ -322,13 +331,17 @@ void BattlescapeGenerator::nextStage()
 	// this does not include items in your soldier's hands.
 	std::vector<BattleItem*> *takeHomeGuaranteed = _save->getGuaranteedRecoveredItems();
 	std::vector<BattleItem*> *takeHomeConditional = _save->getConditionalRecoveredItems();
-	std::vector<BattleItem*> takeToNextStage, carryToNextStage, removeFromGame;
+	std::vector<BattleItem*> takeToNextStage, carryToNextStage, removeFromGame, specialWeponsRemovedElseWhere;
 
 	bool autowin = false;
 	if (_save->getChronoTrigger() >= FORCE_WIN && _save->getTurn() > _save->getTurnLimit())
 	{
 		autowin = true;
 	}
+
+
+	// this will be `getItems` for next stage, allocate same size plus small buffer for new items
+	carryToNextStage.reserve(_save->getItems()->size() + 16);
 
 	_save->resetTurnCounter();
 
@@ -397,10 +410,35 @@ void BattlescapeGenerator::nextStage()
 					}
 				}
 			}
-			// if a soldier is already holding it, let's let him keep it
-			if ((*i)->getOwner() && (*i)->getOwner()->getFaction() == FACTION_PLAYER)
+
+			if ((*i)->isSpecialWeapon())
 			{
-				toContainer = &carryToNextStage;
+				if (isUnitStillActive((*i)->getOwner()))
+				{
+					// owner of weapon is still in game
+					toContainer = &carryToNextStage;
+				}
+				else
+				{
+					// item is deleted by move to delete list by `removeSpecialWeapon` functuion, skip any operation in this function
+					toContainer = &specialWeponsRemovedElseWhere;
+				}
+			}
+			else
+			{
+				if ((*i)->isOwnerIgnored())
+				{
+					// unit was ingnored in previous stage or was ignored on this state
+					// in both cases we propagate this item to next stage even if it will be not accessible
+					// "timeout" alliens should have they inventory already purged
+					toContainer = &carryToNextStage;
+				}
+				else if ((*i)->getOwner() && (*i)->getOwner()->getFaction() == FACTION_PLAYER)
+				{
+					// if a soldier is already holding it, let's let him keep it
+					// soldier could be timeouted, his items will be recovered with him
+					toContainer = &carryToNextStage;
+				}
 			}
 
 			// at this point, we know what happens with the item, so let's apply it to any ammo as well.
@@ -420,6 +458,15 @@ void BattlescapeGenerator::nextStage()
 		}
 	}
 
+	// remove special weapons
+	for (auto* unit : *_save->getUnits())
+	{
+		if (!isUnitStillActive(unit))
+		{
+			unit->removeSpecialWeapon(_save);
+		}
+	}
+
 	// anything in the "removeFromGame" vector will now be discarded - they're all dead to us now.
 	for (std::vector<BattleItem*>::iterator i = removeFromGame.begin(); i != removeFromGame.end();++i)
 	{
@@ -429,17 +476,11 @@ void BattlescapeGenerator::nextStage()
 		delete *i;
 	}
 
-	// empty the items vector
-	_save->getItems()->clear();
-
 	// rebuild it with only the items we want to keep active in battle for the next stage
 	// here we add all the items that our soldiers are carrying, and we'll add the items on the
 	// inventory tile after we've generated our map. everything else will either be in one of the
 	// recovery arrays, or deleted from existence at this point.
-	for (std::vector<BattleItem*>::iterator i = carryToNextStage.begin(); i != carryToNextStage.end();++i)
-	{
-		_save->getItems()->push_back(*i);
-	}
+	std::swap(*_save->getItems(), carryToNextStage);
 
 	_alienCustomDeploy = _game->getMod()->getDeployment(_save->getAlienCustomDeploy());
 	_alienCustomMission = _game->getMod()->getDeployment(_save->getAlienCustomMission());
@@ -486,6 +527,8 @@ void BattlescapeGenerator::nextStage()
 					(*j)->getGeoscapeSoldier()->setArmor(transformedArmor);
 					// change battleunit's armor
 					(*j)->updateArmorFromSoldier(_game->getMod(), (*j)->getGeoscapeSoldier(), transformedArmor, _save->getDepth());
+					(*j)->removeSpecialWeapon(_save);
+					(*j)->setSpecialWeapon(_save, false);
 				}
 			}
 		}

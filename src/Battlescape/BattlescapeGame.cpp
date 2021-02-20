@@ -504,6 +504,11 @@ void BattlescapeGame::endTurn()
 		{
 			for (BattleItem *item : *_save->getItems())
 			{
+				if (item->isOwnerIgnored())
+				{
+					continue;
+				}
+
 				const RuleItem *rule = item->getRules();
 				const Tile *tile = item->getTile();
 				BattleUnit *unit = item->getOwner();
@@ -536,6 +541,11 @@ void BattlescapeGame::endTurn()
 				{
 					statePushNext(expl);
 				}
+				else if (item->isSpecialWeapon())
+				{
+					// we can't remove special weapon, disable fuse at least
+					item->setFuseTimer(-1);
+				}
 				else
 				{
 					_save->removeItem(item);
@@ -565,6 +575,10 @@ void BattlescapeGame::endTurn()
 		{
 			for (BattleItem *item : *_save->getItems())
 			{
+				if (item->isOwnerIgnored())
+				{
+					continue;
+				}
 				item->fuseTimerEvent();
 			}
 		}
@@ -2243,7 +2257,11 @@ void BattlescapeGame::spawnFromPrimedItems()
 
 	for (std::vector<BattleItem*>::iterator i = _save->getItems()->begin(); i != _save->getItems()->end(); ++i)
 	{
-		if (!(*i)->getRules()->getSpawnUnit().empty() && !(*i)->getXCOMProperty())
+		if ((*i)->isOwnerIgnored())
+		{
+			continue;
+		}
+		if (!(*i)->getRules()->getSpawnUnit().empty() && !(*i)->getXCOMProperty() && !(*i)->isSpecialWeapon())
 		{
 			if ((*i)->getRules()->getBattleType() == BT_GRENADE && (*i)->getFuseTimer() == 0 && (*i)->isFuseEnabled())
 			{
@@ -2469,6 +2487,11 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 	// first fill a vector with items on the ground that were dropped on the alien turn, and have an attraction value.
 	for (std::vector<BattleItem*>::iterator i = _save->getItems()->begin(); i != _save->getItems()->end(); ++i)
 	{
+		if ((*i)->isOwnerIgnored())
+		{
+			continue;
+		}
+
 		if ((*i)->getRules()->getAttraction())
 		{
 			if ((*i)->getTurnFlag() || pickUpWeaponsMoreActively)

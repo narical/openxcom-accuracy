@@ -650,14 +650,20 @@ public:
 	MovementType getMovementType() const;
 	/// Gets the turn cost.
 	int getTurnCost() const;
+
 	/// Create special weapon for unit.
-	void setSpecialWeapon(SavedBattleGame *save);
+	void setSpecialWeapon(SavedBattleGame *save, bool updateFromSave);
+	/// Add special weapon from load save.
+	void loadSpecialWeapon(BattleItem* item);
+	/// Remove all special weapons.
+	void removeSpecialWeapon(SavedBattleGame *save);
 	/// Get special weapon by battle type.
 	BattleItem *getSpecialWeapon(BattleType type) const;
 	/// Get special weapon by name.
 	BattleItem *getSpecialWeapon(const RuleItem *weaponRule) const;
 	/// Gets special weapon that uses an icon, if any.
 	BattleItem *getSpecialIconWeapon(BattleType &type) const;
+
 	/// Checks if this unit is in hiding for a turn.
 	bool isHiding() const {return _hidingForTurn; };
 	/// Sets this unit is in hiding for a turn (or not).

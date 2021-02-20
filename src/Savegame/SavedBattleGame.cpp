@@ -251,7 +251,8 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			unit = new BattleUnit(mod, mod->getUnit(type), originalFaction, id, nullptr, mod->getArmor(armor), mod->getStatAdjustment(savedGame->getDifficulty()), _depth);
 		}
 		unit->load(*i, this->getMod(), this->getMod()->getScriptGlobal());
-		unit->setSpecialWeapon(this);
+		// Handling of buildin weapons will be done after load of all items
+		// unit->setSpecialWeapon(this, true);
 		_units.push_back(unit);
 		if (faction == FACTION_PLAYER)
 		{
@@ -300,7 +301,14 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 					if ((*bu)->getId() == owner)
 					{
 						item->setOwner(*bu);
-						(*bu)->getInventory()->push_back(item);
+						if (item->isSpecialWeapon())
+						{
+							(*bu)->loadSpecialWeapon(item);
+						}
+						else
+						{
+							(*bu)->getInventory()->push_back(item);
+						}
 						break;
 					}
 				}
@@ -337,6 +345,17 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		}
 	}
 	_itemId++;
+
+	for (auto* unit : _units)
+	{
+		if (unit->isIgnored() || unit->getStatus() == STATUS_DEAD)
+		{
+			// dead or kickout units do not have special weapons.
+			continue;
+		}
+
+		unit->setSpecialWeapon(this, true);
+	}
 
 	// tie ammo items to their weapons, running through the items again
 	std::vector<BattleItem*>::iterator weaponi = _items.begin();
@@ -1161,6 +1180,11 @@ void SavedBattleGame::newTurnUpdateScripts()
 
 	for (auto& item : _items)
 	{
+		if (item->isOwnerIgnored())
+		{
+			continue;
+		}
+
 		ModScript::scriptCallback<ModScript::NewTurnItem>(item->getRules(), item, this, this->getTurn(), _side);
 	}
 
@@ -1489,6 +1513,12 @@ void SavedBattleGame::removeItem(BattleItem *item)
 		return false;
 	};
 
+	if (item->isSpecialWeapon())
+	{
+		// you cannot remove it becasue load will create new one, only when unit is killed or ignored we can remove its items.
+		return;
+	}
+
 	if (!purge(_items, item))
 	{
 		return;
@@ -1547,7 +1577,7 @@ void SavedBattleGame::addFixedItems(BattleUnit *unit, const std::vector<const Ru
  */
 void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 {
-	unit->setSpecialWeapon(this);
+	unit->setSpecialWeapon(this, false);
 	Unit* rule = unit->getUnitRules();
 	const Armor* armor = unit->getArmor();
 	// Built in weapons: the unit has this weapon regardless of loadout or what have you.
@@ -1638,7 +1668,9 @@ BattleItem *SavedBattleGame::createItemForUnitBuildin(const RuleItem *rule, Batt
 {
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	item->setOwner(unit);
-	deleteList(item);
+	item->setSlot(nullptr);
+	_items.push_back(item);
+	initItem(item, unit);
 	return item;
 }
 /**
