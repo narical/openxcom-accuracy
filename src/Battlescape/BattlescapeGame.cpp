@@ -658,7 +658,7 @@ void BattlescapeGame::endTurn()
 
 	// "escort the VIPs" missions don't end when all aliens are neutralized
 	// objective type MUST_DESTROY was already handled above
-	bool killingAllAliensIsNotEnough = (_save->getVIPSurvivalPercentage() > 0 && _save->getVIPEscapeType() != ESCAPE_NONE); 
+	bool killingAllAliensIsNotEnough = (_save->getVIPSurvivalPercentage() > 0 && _save->getVIPEscapeType() != ESCAPE_NONE);
 
 	bool battleComplete = (!killingAllAliensIsNotEnough && tally.liveAliens == 0) || tally.liveSoldiers == 0;
 
