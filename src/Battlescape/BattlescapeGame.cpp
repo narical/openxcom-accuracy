@@ -1762,6 +1762,14 @@ void BattlescapeGame::primaryAction(Position pos)
 					// no mind controlling allies, unwanted side effects
 					psiTargetAllowed = false;
 				}
+				else if (_currentAction.type == BA_PANIC && targetUnit->getUnitRules() && !targetUnit->getUnitRules()->canPanic())
+				{
+					psiTargetAllowed = false;
+				}
+				else if (_currentAction.type == BA_MINDCONTROL && targetUnit->getUnitRules() && !targetUnit->getUnitRules()->canBeMindControlled())
+				{
+					psiTargetAllowed = false;
+				}
 				if (psiTargetAllowed)
 				{
 					_currentAction.updateTU();

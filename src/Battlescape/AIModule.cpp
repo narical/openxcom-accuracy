@@ -2509,6 +2509,9 @@ bool AIModule::psiAction()
 					// different bonus per attack.
 					if (cost[j].type == BA_MINDCONTROL)
 					{
+						// target cannot be mind controlled
+						if (victim->getUnitRules() && !victim->getUnitRules()->canBeMindControlled()) continue;
+
 						int controlOdds = 40;
 						int morale = victim->getMorale();
 						int bravery = victim->reduceByBravery(10);
@@ -2565,6 +2568,9 @@ bool AIModule::psiAction()
 					}
 					else if (cost[j].type == BA_PANIC)
 					{
+						// target cannot be panicked
+						if (victim->getUnitRules() && !victim->getUnitRules()->canPanic()) continue;
+
 						weightToAttackMe += 40;
 					}
 

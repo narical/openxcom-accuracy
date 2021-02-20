@@ -426,6 +426,9 @@ private:
 	bool _waitIfOutsideWeaponRange;
 	int _pickUpWeaponsMoreActively;
 	bool _vip;
+	bool _canPanic;
+	bool _canBeMindControlled;
+	int _berserkChance;
 
 public:
 	/// Creates a blank unit ruleset.
@@ -518,6 +521,12 @@ public:
 	bool getShowFullNameInAlienInventory(Mod *mod) const;
 	/// Is this a VIP unit?
 	bool isVIP() const { return _vip; }
+	/// Checks if this unit can panic.
+	bool canPanic() const { return _canPanic; }
+	/// Checks if this unit can be mind controlled.
+	bool canBeMindControlled() const { return _canBeMindControlled; }
+	/// Gets the probability of unit berserking when panicked.
+	int getBerserkChance() const { return _berserkChance; }
 
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "RuleUnit";

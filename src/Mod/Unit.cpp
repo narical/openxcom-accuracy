@@ -33,7 +33,8 @@ Unit::Unit(const std::string &type) :
 	_moraleLossWhenKilled(100), _aggroSound(-1), _moveSound(-1), _intelligence(0), _aggression(0),
 	_spotter(0), _sniper(0), _energyRecovery(30), _specab(SPECAB_NONE), _livingWeapon(false),
 	_psiWeapon("ALIEN_PSI_WEAPON"), _capturable(true), _canSurrender(false), _autoSurrender(false),
-	_isLeeroyJenkins(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _vip(false)
+	_isLeeroyJenkins(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _vip(false),
+	_canPanic(true), _canBeMindControlled(true), _berserkChance(33)
 {
 }
 
@@ -97,6 +98,9 @@ void Unit::load(const YAML::Node &node, Mod *mod)
 	_psiWeapon = node["psiWeapon"].as<std::string>(_psiWeapon);
 	_capturable = node["capturable"].as<bool>(_capturable);
 	_vip = node["vip"].as<bool>(_vip);
+	_canPanic = node["canPanic"].as<bool>(_canPanic);
+	_canBeMindControlled = node["canBeMindControlled"].as<bool>(_canBeMindControlled);
+	_berserkChance = node["berserkChance"].as<int>(_berserkChance);
 
 	_builtInWeaponsNames = node["builtInWeaponSets"].as<std::vector<std::vector<std::string> > >(_builtInWeaponsNames);
 	if (node["builtInWeapons"])
