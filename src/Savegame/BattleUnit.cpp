@@ -5543,9 +5543,6 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getTurretDirection>("getTurretDirection");
 	bu.add<&BattleUnit::getWalkingPhase>("getWalkingPhase");
 	bu.add<&setSpawnUnitScript>("setSpawnUnit");
-	bu.add<&getInventoryItemScript>("getInventoryItem");
-	bu.add<&getInventoryItemScript1>("getInventoryItem");
-	bu.add<&getInventoryItemScript2>("getInventoryItem");
 	bu.add<&BattleUnit::disableIndicators>("disableIndicators");
 
 
@@ -5604,12 +5601,16 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<getRuleSoldierScript>("getRuleSoldier");
 	bu.addFunc<getGeoscapeSoldierScript>("getGeoscapeSoldier");
 	bu.addFunc<getGeoscapeSoldierConstScript>("getGeoscapeSoldier");
+	bu.addFunc<reduceByBraveryScript>("reduceByBravery", "change first arg1 to `(110 - bravery) * arg1 / 100`");
+	bu.addFunc<reduceByResistanceScript>("reduceByResistance", "change first arg1 to `arg1 * resist[arg2]`");
+
 	bu.addFunc<getRightHandWeaponScript>("getRightHandWeapon");
 	bu.addFunc<getRightHandWeaponConstScript>("getRightHandWeapon");
 	bu.addFunc<getLeftHandWeaponScript>("getLeftHandWeapon");
 	bu.addFunc<getLeftHandWeaponConstScript>("getLeftHandWeapon");
-	bu.addFunc<reduceByBraveryScript>("reduceByBravery", "change first arg1 to `(110 - bravery) * arg1 / 100`");
-	bu.addFunc<reduceByResistanceScript>("reduceByResistance", "change first arg1 to `arg1 * resist[arg2]`");
+	bu.add<&getInventoryItemScript>("getInventoryItem");
+	bu.add<&getInventoryItemScript1>("getInventoryItem");
+	bu.add<&getInventoryItemScript2>("getInventoryItem");
 
 	bu.add<&getPositionXScript>("getPosition.getX");
 	bu.add<&getPositionYScript>("getPosition.getY");
