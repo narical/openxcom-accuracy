@@ -653,10 +653,10 @@ public:
 
 	/// Create special weapon for unit.
 	void setSpecialWeapon(SavedBattleGame *save, bool updateFromSave);
-	/// Add special weapon from load save.
-	void loadSpecialWeapon(BattleItem* item);
+	/// Add/assign a special weapon loaded from a save.
+	void addLoadedSpecialWeapon(BattleItem* item);
 	/// Remove all special weapons.
-	void removeSpecialWeapon(SavedBattleGame *save);
+	void removeSpecialWeapons(SavedBattleGame *save);
 	/// Get special weapon by battle type.
 	BattleItem *getSpecialWeapon(BattleType type) const;
 	/// Get special weapon by name.

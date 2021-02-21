@@ -543,7 +543,7 @@ void BattlescapeGame::endTurn()
 				}
 				else if (item->isSpecialWeapon())
 				{
-					// we can't remove special weapon, disable fuse at least
+					// we can't remove special weapons, disable the fuse at least
 					item->setFuseTimer(-1);
 				}
 				else

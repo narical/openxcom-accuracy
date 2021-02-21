@@ -4549,8 +4549,9 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 
 	if (_specWeapon[0] && updateFromSave)
 	{
-		// new saves have already build in weapons, we can skip this step, old save need this function
+		// new saves already contain special built-in weapons, we can stop here
 		return;
+		// old saves still need the below functionality to work properly
 	}
 
 	auto addItem = [&](const RuleItem *item)
@@ -4560,10 +4561,10 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 			//TODO: move this check to load of ruleset
 			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
 			{
-				throw Exception("Weapon " + item->getType() + " is used as a special weapon on unit " + getUnitRules()->getType() + " but doesn't have it's own ammo - give it a clipSize!");
+				throw Exception("Weapon " + item->getType() + " is used as a special built-in weapon on unit " + getUnitRules()->getType() + " but doesn't have it's own ammo - give it a clipSize!");
 			}
 
-			// we have already item of this type, skip
+			// we already have an item of this type, skip it
 			for (auto* w : _specWeapon)
 			{
 				if (w && w->getRules() == item)
@@ -4572,7 +4573,7 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 				}
 			}
 
-			_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
+			_specWeapon[i++] = save->createItemForUnitSpecialBuiltin(item, this);
 		}
 	};
 
@@ -4594,9 +4595,9 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 }
 
 /**
- * Add special weapon from load save.
+ * Add/assign a special weapon loaded from a save.
  */
-void BattleUnit::loadSpecialWeapon(BattleItem* item)
+void BattleUnit::addLoadedSpecialWeapon(BattleItem* item)
 {
 	for (auto*& s : _specWeapon)
 	{
@@ -4606,19 +4607,19 @@ void BattleUnit::loadSpecialWeapon(BattleItem* item)
 			return;
 		}
 	}
-	Log(LOG_ERROR) << "Failed to add buildin item '" << item->getRules()->getType() << "' (id " << item->getId() << ") to unit '" << getType() << "' (id " << getId() << ")";
+	Log(LOG_ERROR) << "Failed to add special built-in item '" << item->getRules()->getType() << "' (id " << item->getId() << ") to unit '" << getType() << "' (id " << getId() << ")";
 }
 
 /**
  * Remove all special weapons.
  */
-void BattleUnit::removeSpecialWeapon(SavedBattleGame *save)
+void BattleUnit::removeSpecialWeapons(SavedBattleGame *save)
 {
 	for (auto*& s : _specWeapon)
 	{
 		if (s)
 		{
-			s->setOwner(nullptr);
+			s->setOwner(nullptr); // stops being a special weapon, so that `removeItem` can remove it
 			save->removeItem(s);
 			s = nullptr;
 		}

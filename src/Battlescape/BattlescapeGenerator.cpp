@@ -236,12 +236,12 @@ void BattlescapeGenerator::setMissionSite(MissionSite *mission)
  */
 void BattlescapeGenerator::nextStage()
 {
-	// check if unit is avaible in next stage
+	// check if the unit is available in the next stage
 	auto isUnitStillActive = [](const BattleUnit* u)
 	{
 		return !u->isOut() || u->getStatus() == STATUS_UNCONSCIOUS;
 	};
-	// check if unit is in exit tile
+	// check if the unit is on the exit tile
 	auto isInExit = [s = _save](const BattleUnit* u)
 	{
 		Tile *tmpTile = s->getTile(u->getPosition());
@@ -331,7 +331,7 @@ void BattlescapeGenerator::nextStage()
 	// this does not include items in your soldier's hands.
 	std::vector<BattleItem*> *takeHomeGuaranteed = _save->getGuaranteedRecoveredItems();
 	std::vector<BattleItem*> *takeHomeConditional = _save->getConditionalRecoveredItems();
-	std::vector<BattleItem*> takeToNextStage, carryToNextStage, removeFromGame, specialWeponsRemovedElseWhere;
+	std::vector<BattleItem*> takeToNextStage, carryToNextStage, removeFromGame, dummyForSpecialWeaponsRemovedElsewhere;
 
 	bool autowin = false;
 	if (_save->getChronoTrigger() >= FORCE_WIN && _save->getTurn() > _save->getTurnLimit())
@@ -415,29 +415,29 @@ void BattlescapeGenerator::nextStage()
 			{
 				if (isUnitStillActive((*i)->getOwner()))
 				{
-					// owner of weapon is still in game
+					// the owner of the weapon is still in the game
 					toContainer = &carryToNextStage;
 				}
 				else
 				{
-					// item is deleted by move to delete list by `removeSpecialWeapon` functuion, skip any operation in this function
-					toContainer = &specialWeponsRemovedElseWhere;
+					// the item will be deleted (moved to the delete list) by the `removeSpecialWeapons` function, skip all operations in this function
+					toContainer = &dummyForSpecialWeaponsRemovedElsewhere;
 				}
 			}
 			else
 			{
 				if ((*i)->isOwnerIgnored())
 				{
-					// unit was ingnored in previous stage or was ignored on this state
-					// in both cases we propagate this item to next stage even if it will be not accessible
-					// "timeout" alliens should have they inventory already purged
+					// the unit was set to "timeout" in a previous stage or in this stage
+					// in both cases we propagate this item to the next stage even if it will not be accessible
+					// "timeout" aliens should have their inventory purged already
 					toContainer = &carryToNextStage;
 				}
 				else if ((*i)->getOwner() && (*i)->getOwner()->getFaction() == FACTION_PLAYER)
 				{
 					// if a soldier is already holding it, let's let him keep it
-					// soldier could be timeouted, his items will be recovered with him
 					toContainer = &carryToNextStage;
+					// Note: if a soldier is recovered at the end, his items will be recovered with him (regardless of whether that soldier was in timeout at the end or not)
 				}
 			}
 
@@ -463,7 +463,7 @@ void BattlescapeGenerator::nextStage()
 	{
 		if (!isUnitStillActive(unit))
 		{
-			unit->removeSpecialWeapon(_save);
+			unit->removeSpecialWeapons(_save);
 		}
 	}
 
@@ -527,7 +527,9 @@ void BattlescapeGenerator::nextStage()
 					(*j)->getGeoscapeSoldier()->setArmor(transformedArmor);
 					// change battleunit's armor
 					(*j)->updateArmorFromSoldier(_game->getMod(), (*j)->getGeoscapeSoldier(), transformedArmor, _save->getDepth());
-					(*j)->removeSpecialWeapon(_save);
+					// remove old special built-in weapons and replace them with new fresh special built-in weapons
+					// TODO? if this was a limited-use weapon, it will have full ammo again!
+					(*j)->removeSpecialWeapons(_save);
 					(*j)->setSpecialWeapon(_save, false);
 				}
 			}

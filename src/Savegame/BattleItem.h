@@ -126,7 +126,7 @@ public:
 	/// Removes the item from previous owner and moves to new owner.
 	void moveToOwner(BattleUnit *owner);
 
-	/// Check if item is buildin weapon outside inveontry.
+	/// Checks if the item is a special built-in weapon (outside of the inventory).
 	bool isSpecialWeapon() const { return getOwner() && !getSlot(); }
 	/// Gets the item's inventory slot.
 	RuleInventory *getSlot() const;

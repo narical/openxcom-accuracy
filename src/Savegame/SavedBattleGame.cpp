@@ -251,7 +251,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			unit = new BattleUnit(mod, mod->getUnit(type), originalFaction, id, nullptr, mod->getArmor(armor), mod->getStatAdjustment(savedGame->getDifficulty()), _depth);
 		}
 		unit->load(*i, this->getMod(), this->getMod()->getScriptGlobal());
-		// Handling of buildin weapons will be done after load of all items
+		// Handling of special built-in weapons will be done during and after the load of items
 		// unit->setSpecialWeapon(this, true);
 		_units.push_back(unit);
 		if (faction == FACTION_PLAYER)
@@ -303,7 +303,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 						item->setOwner(*bu);
 						if (item->isSpecialWeapon())
 						{
-							(*bu)->loadSpecialWeapon(item);
+							(*bu)->addLoadedSpecialWeapon(item);
 						}
 						else
 						{
@@ -346,11 +346,12 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	}
 	_itemId++;
 
+	// Note: this is for backwards-compatibility with older saves
 	for (auto* unit : _units)
 	{
 		if (unit->isIgnored() || unit->getStatus() == STATUS_DEAD)
 		{
-			// dead or kickout units do not have special weapons.
+			// dead or "timeout" units do not have special weapons.
 			continue;
 		}
 
@@ -1515,7 +1516,8 @@ void SavedBattleGame::removeItem(BattleItem *item)
 
 	if (item->isSpecialWeapon())
 	{
-		// you cannot remove it becasue load will create new one, only when unit is killed or ignored we can remove its items.
+		// we cannot remove it because load() would create a new one
+		// only when a unit is killed or set to "timeout", we can remove its items.
 		return;
 	}
 
@@ -1662,9 +1664,9 @@ BattleItem *SavedBattleGame::createItemForUnit(const RuleItem *rule, BattleUnit 
 }
 
 /**
- * Create new built-in item for unit.
+ * Create new special built-in item for unit.
  */
-BattleItem *SavedBattleGame::createItemForUnitBuildin(const RuleItem *rule, BattleUnit *unit)
+BattleItem *SavedBattleGame::createItemForUnitSpecialBuiltin(const RuleItem *rule, BattleUnit *unit)
 {
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	item->setOwner(unit);

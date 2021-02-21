@@ -4391,10 +4391,10 @@ void TileEngine::itemDropInventory(Tile *t, BattleUnit *unit, bool unprimeItems,
 		}
 	);
 
-	//handle buildin items
+	// handle special built-in items
 	if (deleteFixedItems)
 	{
-		unit->removeSpecialWeapon(_save);
+		unit->removeSpecialWeapons(_save);
 	}
 }
 
