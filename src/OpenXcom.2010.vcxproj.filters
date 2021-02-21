@@ -963,9 +963,6 @@
     <ClCompile Include="Savegame\SoldierAvatar.cpp">
       <Filter>Savegame</Filter>
     </ClCompile>
-    <ClCompile Include="Basescape\ChangeHeadquartersState.cpp">
-      <Filter>Basescape</Filter>
-    </ClCompile>
     <ClCompile Include="Battlescape\ConfirmEndMissionState.cpp">
       <Filter>Battlescape</Filter>
     </ClCompile>
@@ -2131,9 +2128,6 @@
     </ClInclude>
     <ClInclude Include="Savegame\SoldierAvatar.h">
       <Filter>Savegame</Filter>
-    </ClInclude>
-    <ClInclude Include="Basescape\ChangeHeadquartersState.h">
-      <Filter>Basescape</Filter>
     </ClInclude>
     <ClInclude Include="Battlescape\ConfirmEndMissionState.h">
       <Filter>Battlescape</Filter>

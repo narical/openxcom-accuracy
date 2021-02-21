@@ -11,8 +11,6 @@ en-US:
   STR_FACILITY_FORBIDDEN_BY_OTHER: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility forbids building this facility."
   STR_FACILITY_OTHER_FORBIDDEN_BY_THIS: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility would be forbidden by this facility."
   STR_NOT_ENOUGH_ITEMS: "NOT ENOUGH MATERIALS!{SMALLLINE}We need more resources to build this facility.{NEWLINE}Missing> {0}: {1}"
-#ChangeHeadquartersState.cpp
-  STR_MOVE_HQ_TO: "Move HQ to"
 #CraftArmorState.cpp
   STR_ID: "ID"
   STR_FIRST_LETTER: "FIRST LETTER"

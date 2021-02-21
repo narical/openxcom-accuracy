@@ -36,7 +36,6 @@
 #include "../Mod/RuleRegion.h"
 #include "../Menu/ErrorMessageState.h"
 #include "DismantleFacilityState.h"
-#include "ChangeHeadquartersState.h"
 #include "../Geoscape/BuildNewBaseState.h"
 #include "../Engine/Action.h"
 #include "BaseInfoState.h"
@@ -555,23 +554,22 @@ void BasescapeState::miniLeftClick(Action *)
 }
 
 /**
- * Opens a dialog to make the selected base your HQ.
+ * Moves the current base to the left in the list of bases.
  * @param action Pointer to an action.
  */
 void BasescapeState::miniRightClick(Action *)
 {
 	size_t baseIndex = _mini->getHoveredBase();
 
-	// first select the base that was clicked on (only for visuals)
-	if (baseIndex < _game->getSavedGame()->getBases()->size())
+	if (baseIndex > 0 && baseIndex < _game->getSavedGame()->getBases()->size())
 	{
-		_base = _game->getSavedGame()->getBases()->at(baseIndex);
-		init();
+		auto& bases = *_game->getSavedGame()->getBases();
 
-		// then ask the user if it should become HQ (unless it is already HQ)
-		if (baseIndex > 0)
+		// only able to move the currently selected base
+		if (bases[baseIndex] == _base)
 		{
-			_game->pushState(new ChangeHeadquartersState(_game->getSavedGame()->getBases()->at(baseIndex)));
+			std::swap(bases[baseIndex], bases[baseIndex - 1]);
+			init();
 		}
 	}
 }

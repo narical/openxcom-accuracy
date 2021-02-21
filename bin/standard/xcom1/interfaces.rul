@@ -1164,18 +1164,6 @@ interfaces:
       - id: text
         color: 218   # blue
         color2: 208  # white
-  - type: changeHeadquarters
-    backgroundImage: BACK13.SCR
-    palette: PAL_BASESCAPE
-    elements:
-      - id: palette
-        color: 6     # oxide
-      - id: window
-        color: 241   # pink
-      - id: button
-        color: 246   # purple
-      - id: text
-        color: 218   # blue
   - type: manufactureMenu
     backgroundImage: BACK17.SCR
     palette: PAL_BASESCAPE
