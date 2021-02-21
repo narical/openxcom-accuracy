@@ -5463,6 +5463,48 @@ void getInventoryItemScript2(BattleUnit* bu, BattleItem *&foundItem, const RuleI
 	}
 }
 
+//TODO: move it to script bindings
+template<auto Member>
+void getListScript(BattleUnit* bu, BattleItem *&foundItem, int i)
+{
+	foundItem = nullptr;
+	if (bu)
+	{
+		auto& ptr = (bu->*Member);
+		if ((size_t)i < std::size(ptr))
+		{
+			foundItem = ptr[i];
+		}
+	}
+}
+
+//TODO: move it to script bindings
+template<auto Member>
+void getListSizeScript(BattleUnit* bu, int& i)
+{
+	i = 0;
+	if (bu)
+	{
+		auto& ptr = (bu->*Member);
+		i = (int)std::size(ptr);
+	}
+}
+
+template<auto Member>
+void getListSizeHackScript(BattleUnit* bu, int& i)
+{
+	i = 0;
+	if (bu)
+	{
+		auto& ptr = (bu->*Member);
+		//count number of elemets unitl null, and inteprted this as size of array
+		i = std::distance(
+			std::begin(ptr),
+			std::find(std::begin(ptr), std::end(ptr), nullptr)
+		);
+	}
+}
+
 
 std::string debugDisplayScript(const BattleUnit* bu)
 {
@@ -5611,6 +5653,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getInventoryItemScript>("getInventoryItem");
 	bu.add<&getInventoryItemScript1>("getInventoryItem");
 	bu.add<&getInventoryItemScript2>("getInventoryItem");
+	bu.add<&getListSizeScript<&BattleUnit::_inventory>>("getInventoryItem.size");
+	bu.add<&getListScript<&BattleUnit::_inventory>>("getInventoryItem");
+	bu.add<&getListSizeHackScript<&BattleUnit::_specWeapon>>("getSpecialItem.size");
+	bu.add<&getListScript<&BattleUnit::_specWeapon>>("getSpecialItem");
 
 	bu.add<&getPositionXScript>("getPosition.getX");
 	bu.add<&getPositionYScript>("getPosition.getY");
