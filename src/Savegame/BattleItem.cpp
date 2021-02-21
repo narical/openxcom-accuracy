@@ -133,14 +133,6 @@ void BattleItem::load(const YAML::Node &node, Mod *mod, const ScriptGlobal *shar
 	_scriptValues.load(node, shared);
 }
 
-void BattleItem::loadSpecialWeapon(const YAML::Node& node)
-{
-	_ammoQuantity = node["ammoqty"].as<int>(_ammoQuantity);
-	_painKiller = node["painKiller"].as<int>(_painKiller);
-	_heal = node["heal"].as<int>(_heal);
-	_stimulant = node["stimulant"].as<int>(_stimulant);
-}
-
 /**
  * Saves the item to a YAML file.
  * @return YAML node.
@@ -195,22 +187,6 @@ YAML::Node BattleItem::save(const ScriptGlobal *shared) const
 	if (_XCOMProperty)
 		node["XCOMProperty"] = _XCOMProperty;
 	_scriptValues.save(node, shared);
-
-	return node;
-}
-
-YAML::Node BattleItem::saveSpecialWeapon() const
-{
-	YAML::Node node;
-	node["type"] = _rules->getType();
-
-	node["ammoqty"] = _ammoQuantity;
-	if (_rules && _rules->getBattleType() == BT_MEDIKIT)
-	{
-		node["painKiller"] = _painKiller;
-		node["heal"] = _heal;
-		node["stimulant"] = _stimulant;
-	}
 
 	return node;
 }

@@ -557,10 +557,6 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
  */
 BattleUnit::~BattleUnit()
 {
-	for (std::vector<BattleItem*>::iterator i = _specWeaponSaved.begin(); i != _specWeaponSaved.end(); ++i)
-	{
-		delete *i;
-	}
 	for (std::vector<BattleUnitKills*>::const_iterator i = _statistics->kills.begin(); i != _statistics->kills.end(); ++i)
 	{
 		delete *i;
@@ -650,24 +646,6 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_disableIndicators = node["disableIndicators"].as<bool>(_disableIndicators);
 	_vip = node["vip"].as<bool>(_vip);
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
-
-	// special handling for special weapons (load info about limited-use weapons and medikits)
-	int dummy = 0;
-	for (YAML::const_iterator i = node["specWeapons"].begin(); i != node["specWeapons"].end(); ++i)
-	{
-		std::string type = (*i)["type"].as<std::string>();
-		if (mod->getItem(type))
-		{
-			BattleItem* item = new BattleItem(mod->getItem(type), &dummy);
-			item->loadSpecialWeapon(*i);
-
-			_specWeaponSaved.push_back(item);
-		}
-		else
-		{
-			Log(LOG_ERROR) << "Failed to load item " << type;
-		}
-	}
 
 	_scriptValues.load(node, shared);
 }
@@ -765,15 +743,6 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	if (!_meleeAttackedBy.empty())
 	{
 		node["meleeAttackedBy"] = _meleeAttackedBy;
-	}
-
-	// special handling for special weapons (save info about limited-use weapons and medikits)
-	for (int i = 0; i < SPEC_WEAPON_MAX; ++i)
-	{
-		if (_specWeapon[i])
-		{
-			node["specWeapons"].push_back(_specWeapon[i]->saveSpecialWeapon());
-		}
 	}
 
 	_scriptValues.save(node, shared);
@@ -4573,7 +4542,7 @@ void BattleUnit::goToTimeOut()
  * Set special weapon that is handled outside inventory.
  * @param save
  */
-void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
+void BattleUnit::setSpecialWeapon(SavedBattleGame *save)
 {
 	const Mod *mod = save->getMod();
 	const RuleItem *item = 0;
@@ -4620,32 +4589,6 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 				_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
 			}
 		}
-	}
-
-	if (updateFromSave)
-	{
-		// special handling for special weapons (update info about limited-use weapons and medikits)
-		for (int j = 0; j < SPEC_WEAPON_MAX; ++j)
-		{
-			if (_specWeapon[j])
-			{
-				for (auto spec : _specWeaponSaved)
-				{
-					if (spec->getRules()->getType() == _specWeapon[j]->getRules()->getType())
-					{
-						_specWeapon[j]->setAmmoQuantity(spec->getAmmoQuantity());
-						if (_specWeapon[j]->getRules()->getBattleType() == BT_MEDIKIT)
-						{
-							_specWeapon[j]->setHealQuantity(spec->getHealQuantity());
-							_specWeapon[j]->setPainKillerQuantity(spec->getPainKillerQuantity());
-							_specWeapon[j]->setStimulantQuantity(spec->getStimulantQuantity());
-						}
-						break;
-					}
-				}
-			}
-		}
-		// Note: _specWeaponSaved is unused from now on; it will be destroyed in ~BattleUnit()
 	}
 }
 
