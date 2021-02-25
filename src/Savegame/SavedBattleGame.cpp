@@ -278,11 +278,17 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		}
 	}
 
-	std::string fromContainer[3] = { "items", "recoverConditional", "recoverGuaranteed" };
-	std::vector<BattleItem*> *toContainer[3] = {&_items, &_recoverConditional, &_recoverGuaranteed};
-	for (int pass = 0; pass != 3; ++pass)
+	const std::tuple<YAML::Node, std::vector<BattleItem*>&> toContainer[] =
 	{
-		for (YAML::const_iterator i = node[fromContainer[pass]].begin(); i != node[fromContainer[pass]].end(); ++i)
+		std::tie(node["items"], _items),
+		std::tie(node["recoverConditional"], _recoverConditional),
+		std::tie(node["recoverGuaranteed"], _recoverGuaranteed),
+		std::tie(node["itemsSpecial"], _items),
+	};
+
+	for (auto& pass : toContainer)
+	{
+		for (YAML::const_iterator i = std::get<0>(pass).begin(); i != std::get<0>(pass).end(); ++i)
 		{
 			std::string type = (*i)["type"].as<std::string>();
 			if (mod->getItem(type))
@@ -336,7 +342,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 					if (pos.x != -1)
 						getTile(pos)->addItem(item, item->getSlot());
 				}
-				toContainer[pass]->push_back(item);
+				std::get<1>(pass).push_back(item);
 			}
 			else
 			{
@@ -360,50 +366,70 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 
 	// tie ammo items to their weapons, running through the items again
 	std::vector<BattleItem*>::iterator weaponi = _items.begin();
-	for (YAML::const_iterator i = node["items"].begin(); i != node["items"].end(); ++i)
+
+	for (auto& pass : toContainer)
 	{
-		if (mod->getItem((*i)["type"].as<std::string>()))
+		// only items sets that are active
+		if (&std::get<1>(pass) != &_items)
 		{
-			auto setItem = [&](int slot, const YAML::Node& n)
+			continue;
+		}
+
+		for (YAML::const_iterator i = std::get<0>(pass).begin(); i != std::get<0>(pass).end(); ++i)
+		{
+			if (mod->getItem((*i)["type"].as<std::string>()))
 			{
-				if (n)
+				auto setItem = [&](int slot, const YAML::Node& n)
 				{
-					int ammoId = n.as<int>(-1);
-					if (ammoId != -1)
+					if (n)
 					{
-						if (ammoId == (*weaponi)->getId())
+						int ammoId = n.as<int>(-1);
+						if (ammoId != -1)
 						{
-							(*weaponi)->setAmmoForSlot(slot, (*weaponi));
-						}
-						else
-						{
-							for (auto item : _items)
+							if (ammoId == (*weaponi)->getId())
 							{
-								if (item->getId() == ammoId)
+								(*weaponi)->setAmmoForSlot(slot, (*weaponi));
+							}
+							else
+							{
+								for (auto item : _items)
 								{
-									(*weaponi)->setAmmoForSlot(slot, item);
-									break;
+									if (item->getId() == ammoId)
+									{
+										(*weaponi)->setAmmoForSlot(slot, item);
+										break;
+									}
 								}
 							}
 						}
 					}
-				}
-			};
+				};
 
-			if (const YAML::Node& ammoSlots = (*i)["ammoItemSlots"])
-			{
-				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+				if (const YAML::Node& ammoSlots = (*i)["ammoItemSlots"])
 				{
-					setItem(slot, ammoSlots[slot]);
+					for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+					{
+						setItem(slot, ammoSlots[slot]);
+					}
 				}
+				else
+				{
+					setItem(0, (*i)["ammoItem"]);
+				}
+				++weaponi;
 			}
-			else
-			{
-				setItem(0, (*i)["ammoItem"]);
-			}
-			++weaponi;
 		}
 	}
+
+	// restore order like before save
+	std::sort(
+		_items.begin(), _items.end(),
+		[](const BattleItem* itemA, const BattleItem* itemB)
+		{
+			return itemA->getId() < itemB->getId();
+		}
+	);
+
 	_vipEscapeType = (EscapeType)(node["vipEscapeType"].as<int>(_vipEscapeType));
 	_vipSurvivalPercentage = node["vipSurvivalPercentage"].as<int>(_vipSurvivalPercentage);
 	_vipsSaved = node["vipsSaved"].as<int>(_vipsSaved);
@@ -577,7 +603,14 @@ YAML::Node SavedBattleGame::save() const
 	}
 	for (std::vector<BattleItem*>::const_iterator i = _items.begin(); i != _items.end(); ++i)
 	{
-		node["items"].push_back((*i)->save(this->getMod()->getScriptGlobal()));
+		if ((*i)->isSpecialWeapon())
+		{
+			node["itemsSpecial"].push_back((*i)->save(this->getMod()->getScriptGlobal()));
+		}
+		else
+		{
+			node["items"].push_back((*i)->save(this->getMod()->getScriptGlobal()));
+		}
 	}
 	node["tuReserved"] = (int)_tuReserved;
 	node["kneelReserved"] = _kneelReserved;
