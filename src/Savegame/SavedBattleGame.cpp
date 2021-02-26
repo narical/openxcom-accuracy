@@ -278,17 +278,23 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		}
 	}
 
-	const std::tuple<YAML::Node, std::vector<BattleItem*>&> toContainer[] =
+	using ItemVec = std::vector<BattleItem*>&;
+
+	// node to load from, vector to load into, offset for maching ammo
+	std::tuple<YAML::Node, ItemVec, size_t> toContainer[] =
 	{
-		std::tie(node["items"], _items),
-		std::tie(node["recoverConditional"], _recoverConditional),
-		std::tie(node["recoverGuaranteed"], _recoverGuaranteed),
-		std::tie(node["itemsSpecial"], _items),
+		std::make_tuple(node["items"], std::ref(_items), 0u),
+		std::make_tuple(node["recoverConditional"], std::ref(_recoverConditional), 0u),
+		std::make_tuple(node["recoverGuaranteed"], std::ref(_recoverGuaranteed), 0u),
+		std::make_tuple(node["itemsSpecial"], std::ref(_items), 0u),
 	};
 
 	for (auto& pass : toContainer)
 	{
-		for (YAML::const_iterator i = std::get<0>(pass).begin(); i != std::get<0>(pass).end(); ++i)
+		// update start point for maching ammo
+		std::get<size_t>(pass) = std::get<ItemVec>(pass).size();
+
+		for (YAML::const_iterator i = std::get<YAML::Node>(pass).begin(); i != std::get<YAML::Node>(pass).end(); ++i)
 		{
 			std::string type = (*i)["type"].as<std::string>();
 			if (mod->getItem(type))
@@ -342,7 +348,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 					if (pos.x != -1)
 						getTile(pos)->addItem(item, item->getSlot());
 				}
-				std::get<1>(pass).push_back(item);
+				std::get<ItemVec>(pass).push_back(item);
 			}
 			else
 			{
@@ -365,20 +371,15 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	}
 
 	// tie ammo items to their weapons, running through the items again
-	std::vector<BattleItem*>::iterator weaponi = _items.begin();
-
 	for (auto& pass : toContainer)
 	{
-		// only items sets that are active
-		if (&std::get<1>(pass) != &_items)
-		{
-			continue;
-		}
-
-		for (YAML::const_iterator i = std::get<0>(pass).begin(); i != std::get<0>(pass).end(); ++i)
+		for (YAML::const_iterator i = std::get<YAML::Node>(pass).begin(); i != std::get<YAML::Node>(pass).end(); ++i)
 		{
 			if (mod->getItem((*i)["type"].as<std::string>()))
 			{
+				// get next weapon to match ammo
+				auto* weapon = std::get<ItemVec>(pass)[std::get<size_t>(pass)++];
+
 				auto setItem = [&](int slot, const YAML::Node& n)
 				{
 					if (n)
@@ -386,17 +387,17 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 						int ammoId = n.as<int>(-1);
 						if (ammoId != -1)
 						{
-							if (ammoId == (*weaponi)->getId())
+							if (ammoId == weapon->getId())
 							{
-								(*weaponi)->setAmmoForSlot(slot, (*weaponi));
+								weapon->setAmmoForSlot(slot, weapon);
 							}
 							else
 							{
-								for (auto item : _items)
+								for (auto* item : std::get<ItemVec>(pass))
 								{
 									if (item->getId() == ammoId)
 									{
-										(*weaponi)->setAmmoForSlot(slot, item);
+										weapon->setAmmoForSlot(slot, item);
 										break;
 									}
 								}
@@ -416,19 +417,21 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 				{
 					setItem(0, (*i)["ammoItem"]);
 				}
-				++weaponi;
 			}
 		}
 	}
 
 	// restore order like before save
-	std::sort(
-		_items.begin(), _items.end(),
-		[](const BattleItem* itemA, const BattleItem* itemB)
-		{
-			return itemA->getId() < itemB->getId();
-		}
-	);
+	for (auto& pass : toContainer)
+	{
+		std::sort(
+			std::get<ItemVec>(pass).begin(), std::get<ItemVec>(pass).end(),
+			[](const BattleItem* itemA, const BattleItem* itemB)
+			{
+				return itemA->getId() < itemB->getId();
+			}
+		);
+	}
 
 	_vipEscapeType = (EscapeType)(node["vipEscapeType"].as<int>(_vipEscapeType));
 	_vipSurvivalPercentage = node["vipSurvivalPercentage"].as<int>(_vipSurvivalPercentage);
