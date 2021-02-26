@@ -145,6 +145,7 @@ std::string Mod::DEBRIEF_MUSIC_GOOD;
 std::string Mod::DEBRIEF_MUSIC_BAD;
 int Mod::DIFFICULTY_COEFFICIENT[5];
 int Mod::SELL_PRICE_COEFFICIENT[5];
+int Mod::DIFFICULTY_BASED_RETAL_DELAY[5];
 int Mod::UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
 bool Mod::EXTENDED_ITEM_RELOAD_COST;
 bool Mod::EXTENDED_RUNNING_COST;
@@ -225,6 +226,12 @@ void Mod::resetGlobalStatics()
 	SELL_PRICE_COEFFICIENT[2] = 100;
 	SELL_PRICE_COEFFICIENT[3] = 100;
 	SELL_PRICE_COEFFICIENT[4] = 100;
+
+	DIFFICULTY_BASED_RETAL_DELAY[0] = 0;
+	DIFFICULTY_BASED_RETAL_DELAY[1] = 0;
+	DIFFICULTY_BASED_RETAL_DELAY[2] = 0;
+	DIFFICULTY_BASED_RETAL_DELAY[3] = 0;
+	DIFFICULTY_BASED_RETAL_DELAY[4] = 0;
 
 	UNIT_RESPONSE_SOUNDS_FREQUENCY[0] = 100; // select unit
 	UNIT_RESPONSE_SOUNDS_FREQUENCY[1] = 100; // start moving
@@ -2545,6 +2552,15 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		for (YAML::const_iterator i = doc["sellPriceCoefficient"].begin(); i != doc["sellPriceCoefficient"].end() && num < MaxDifficultyLevels; ++i)
 		{
 			SELL_PRICE_COEFFICIENT[num] = (*i).as<int>(SELL_PRICE_COEFFICIENT[num]);
+			++num;
+		}
+	}
+	if (doc["difficultyBasedRetaliationDelay"])
+	{
+		size_t num = 0;
+		for (YAML::const_iterator i = doc["difficultyBasedRetaliationDelay"].begin(); i != doc["difficultyBasedRetaliationDelay"].end() && num < MaxDifficultyLevels; ++i)
+		{
+			DIFFICULTY_BASED_RETAL_DELAY[num] = (*i).as<int>(DIFFICULTY_BASED_RETAL_DELAY[num]);
 			++num;
 		}
 	}
