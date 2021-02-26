@@ -49,6 +49,10 @@ interfaces:
         color: 239   # bright green
       - id: button2
         color: 133   # minty green
+      - id: list
+        color: 133   # minty green
+        color2: 138  # yellow
+        border: 239  # bright green
   - type: newGameMenu
     backgroundImage: BACK01.SCR
     elements:

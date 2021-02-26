@@ -49,6 +49,10 @@ interfaces: #done
         color: 1
       - id: button2
         color: 1
+      - id: list
+        color: 1
+        color2: 239
+        border: 1
   - type: newGameMenu
     backgroundImage: BACK01.SCR
     elements:

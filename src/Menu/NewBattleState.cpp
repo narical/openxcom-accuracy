@@ -25,6 +25,8 @@
 #include "../Mod/RuleItem.h"
 #include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"
+#include "../Interface/TextEdit.h"
+#include "../Interface/TextList.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/ComboBox.h"
@@ -61,10 +63,11 @@ namespace OpenXcom
  * Initializes all the elements in the New Battle window.
  * @param game Pointer to the core game.
  */
-NewBattleState::NewBattleState() : _craft(0)
+NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::MISSION), _isRightClick(false)
 {
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
+	_btnQuickSearch = new TextEdit(this, 48, 9, 264, 183);
 	_txtTitle = new Text(320, 17, 0, 9);
 
 	_txtMapOptions = new Text(148, 9, 8, 68);
@@ -74,6 +77,7 @@ NewBattleState::NewBattleState() : _craft(0)
 
 	_txtMission = new Text(100, 9, 8, 30);
 	_cbxMission = new ComboBox(this, 214, 16, 98, 26);
+	_btnMission = new TextButton(16, 16, 81, 26);
 
 	_txtCraft = new Text(100, 9, 8, 50);
 	_cbxCraft = new ComboBox(this, 106, 16, 98, 46);
@@ -83,7 +87,8 @@ NewBattleState::NewBattleState() : _craft(0)
 	_slrDarkness = new Slider(120, 16, 22, 93);
 
 	_txtTerrain = new Text(120, 9, 22, 113);
-	_cbxTerrain = new ComboBox(this, 120, 16, 22, 123);
+	_cbxTerrain = new ComboBox(this, 120, 16, 22+9, 123);
+	_btnTerrain = new TextButton(16, 16, 5+9, 123);
 
 	_txtDepth = new Text(120, 9, 22, 143);
 	_slrDepth = new Slider(120, 16, 22, 153);
@@ -92,7 +97,8 @@ NewBattleState::NewBattleState() : _craft(0)
 	_cbxDifficulty = new ComboBox(this, 120, 16, 178, 93);
 
 	_txtAlienRace = new Text(120, 9, 178, 113);
-	_cbxAlienRace = new ComboBox(this, 120, 16, 178, 123);
+	_cbxAlienRace = new ComboBox(this, 120, 16, 178+9, 123);
+	_btnAlienRace = new TextButton(16, 16, 161+9, 123);
 
 	_txtAlienTech = new Text(120, 9, 178, 143);
 	_slrAlienTech = new Slider(120, 16, 178, 153);
@@ -101,10 +107,13 @@ NewBattleState::NewBattleState() : _craft(0)
 	_btnCancel = new TextButton(100, 16, 110, 176);
 	_btnRandom = new TextButton(100, 16, 212, 176);
 
+	_lstSelect = new TextList(288, 144, 8, 28);
+
 	// Set palette
 	setInterface("newBattleMenu");
 
 	add(_window, "window", "newBattleMenu");
+	add(_btnQuickSearch, "button1", "newBattleMenu");
 	add(_txtTitle, "heading", "newBattleMenu");
 	add(_txtMapOptions, "heading", "newBattleMenu");
 	add(_frameLeft, "frames", "newBattleMenu");
@@ -128,6 +137,12 @@ NewBattleState::NewBattleState() : _craft(0)
 	add(_btnOk, "button2", "newBattleMenu");
 	add(_btnCancel, "button2", "newBattleMenu");
 	add(_btnRandom, "button2", "newBattleMenu");
+
+	add(_btnMission, "button1", "newBattleMenu");
+	add(_btnTerrain, "button1", "newBattleMenu");
+	add(_btnAlienRace, "button1", "newBattleMenu");
+
+	add(_lstSelect, "list", "newBattleMenu");
 
 	add(_cbxTerrain, "button1", "newBattleMenu");
 	add(_cbxAlienRace, "button1", "newBattleMenu");
@@ -235,6 +250,46 @@ NewBattleState::NewBattleState() : _craft(0)
 	_btnCancel->onKeyboardPress((ActionHandler)&NewBattleState::btnCancelClick, Options::keyCancel);
 
 	load();
+
+	// -------------------------------
+
+	bool debugView = Options::debug && _missionTypes.size() > TFTD_DEPLOYMENTS;
+	if (!debugView)
+	{
+		_cbxTerrain->setX(_txtTerrain->getX());
+		_cbxAlienRace->setX(_txtAlienRace->getX());
+	}
+
+	_btnMission->setText("...");
+	_btnMission->onMouseClick((ActionHandler)&NewBattleState::btnMissionChange);
+	_btnMission->onMouseClick((ActionHandler)&NewBattleState::btnMissionChange, SDL_BUTTON_RIGHT);
+	_btnMission->setVisible(debugView);
+
+	_btnTerrain->setText("...");
+	_btnTerrain->onMouseClick((ActionHandler)&NewBattleState::btnTerrainChange);
+	_btnTerrain->onMouseClick((ActionHandler)&NewBattleState::btnTerrainChange, SDL_BUTTON_RIGHT);
+	_btnTerrain->setVisible(debugView);
+
+	_btnAlienRace->setText("...");
+	_btnAlienRace->onMouseClick((ActionHandler)&NewBattleState::btnAlienRaceChange);
+	_btnAlienRace->onMouseClick((ActionHandler)&NewBattleState::btnAlienRaceChange, SDL_BUTTON_RIGHT);
+	_btnAlienRace->setVisible(debugView);
+
+	_lstSelect->setColumns(1, 280);
+	_lstSelect->setBackground(_window);
+	_lstSelect->setAlign(ALIGN_CENTER);
+	_lstSelect->setMargin(8);
+	_lstSelect->setSelectable(true);
+	_lstSelect->onMouseClick((ActionHandler)&NewBattleState::lstSelectClick);
+	_lstSelect->onMouseClick((ActionHandler)&NewBattleState::lstSelectClick, SDL_BUTTON_RIGHT);
+	_lstSelect->onMouseClick((ActionHandler)&NewBattleState::lstSelectClick, SDL_BUTTON_MIDDLE);
+	_lstSelect->setVisible(false);
+
+	_btnQuickSearch->setText(""); // redraw
+	_btnQuickSearch->onEnter((ActionHandler)&NewBattleState::btnQuickSearchApply);
+	_btnQuickSearch->setVisible(false);
+
+	_btnCancel->onKeyboardRelease((ActionHandler)&NewBattleState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 }
 
 /**
@@ -557,6 +612,12 @@ void NewBattleState::btnOkClick(Action *)
  */
 void NewBattleState::btnCancelClick(Action *)
 {
+	if (!_surfaceBackup.empty())
+	{
+		cleanup();
+		return;
+	}
+
 	save();
 	_game->setSavedGame(0);
 	_game->popState();
@@ -635,6 +696,7 @@ void NewBattleState::cbxMissionChange(Action *)
 	_cbxTerrain->setVisible(_terrainTypes.size() > 1);
 	_cbxTerrain->setOptions(terrainStrings, true);
 	_cbxTerrain->setSelected(0);
+	_btnTerrain->setVisible(Options::debug && _missionTypes.size() > TFTD_DEPLOYMENTS && _terrainTypes.size() > 1);
 	cbxTerrainChange(0);
 }
 
@@ -705,6 +767,186 @@ void NewBattleState::cbxTerrainChange(Action *)
 		}
 	}
 	_cbxAlienRace->setOptions(_alienRaces, true);
+}
+
+/**
+ * Shows the advanced mission selector.
+ */
+void NewBattleState::btnMissionChange(Action *action)
+{
+	fillList(NewBattleSelectType::MISSION, _game->isRightClick(action));
+}
+
+/**
+ * Shows the advanced terrain selector.
+ */
+void NewBattleState::btnTerrainChange(Action *action)
+{
+	fillList(NewBattleSelectType::TERRAIN, _game->isRightClick(action));
+}
+
+/**
+ * Shows the advanced alien race selector.
+ */
+void NewBattleState::btnAlienRaceChange(Action *action)
+{
+	fillList(NewBattleSelectType::ALIENRACE, _game->isRightClick(action));
+}
+
+/**
+ * Fills the advanced selector with data.
+ */
+void NewBattleState::fillList(NewBattleSelectType selectType, bool isRightClick)
+{
+	_selectType = selectType;
+	_isRightClick = isRightClick;
+
+	bool firstRun = false;
+	if (_surfaceBackup.empty())
+	{
+		firstRun = true;
+		for (auto surface : _surfaces)
+		{
+			_surfaceBackup[surface] = surface->getVisible();
+			surface->setVisible(false);
+		}
+		_window->setVisible(true);
+		_txtTitle->setVisible(true);
+		_btnCancel->setVisible(true);
+		_btnRandom->setVisible(false);
+		_lstSelect->setVisible(true);
+	}
+
+	std::string searchString = _btnQuickSearch->getText();
+	Unicode::upperCase(searchString);
+
+	size_t counter = 0;
+	auto fill = [&](const std::vector<std::string>& list, bool prefix, size_t scroll)
+	{
+		for (auto& m : list)
+		{
+			if (!searchString.empty())
+			{
+				std::string itemName;
+				if (_isRightClick) { itemName = m; } else { itemName = tr(prefix ? "MAP_" + m : m); }
+				Unicode::upperCase(itemName);
+				if (itemName.find(searchString) == std::string::npos)
+				{
+					counter++;
+					continue;
+				}
+			}
+			_filtered.push_back(counter);
+			counter++;
+			_lstSelect->addRow(1, _isRightClick ? m.c_str() : tr(prefix ? "MAP_" + m : m).c_str());
+		}
+		if (firstRun && _lstSelect->isScrollbarVisible()) _lstSelect->scrollTo(scroll);
+	};
+
+	_filtered.clear();
+	_lstSelect->clearList();
+	if (_selectType == NewBattleSelectType::MISSION)
+	{
+		fill(_missionTypes, false, _cbxMission->getSelected());
+	}
+	else if (_selectType == NewBattleSelectType::TERRAIN)
+	{
+		fill(_terrainTypes, true, _cbxTerrain->getSelected());
+	}
+	else if (_selectType == NewBattleSelectType::ALIENRACE)
+	{
+		fill(_alienRaces, false, _cbxAlienRace->getSelected());
+	}
+}
+
+/**
+ * L-click: Selects an item from the advanced selector and closes the selector.
+ * R-click: Displays the code of the selected item.
+ * M-click: Displays the translation of the selected item.
+ */
+void NewBattleState::lstSelectClick(Action *action)
+{
+	auto selected = _lstSelect->getSelectedRow();
+
+	// quick toggle
+	if (_game->isRightClick(action) || _game->isMiddleClick(action))
+	{
+		auto& list = (_selectType == NewBattleSelectType::MISSION ? _missionTypes : (_selectType == NewBattleSelectType::TERRAIN ? _terrainTypes : _alienRaces));
+		std::string s = list[_filtered[selected]];
+		if (_game->isMiddleClick(action))
+		{
+			s = tr((_selectType == NewBattleSelectType::TERRAIN) ? "MAP_" + s : s);
+		}
+		_lstSelect->setCellText(selected, 0, s.c_str());
+		return;
+	}
+
+	// restore the GUI
+	cleanup();
+
+	// select the new value
+	if (_selectType == NewBattleSelectType::MISSION)
+	{
+		_cbxMission->setSelected(_filtered[selected]);
+		cbxMissionChange(0);
+	}
+	else if (_selectType == NewBattleSelectType::TERRAIN)
+	{
+		_cbxTerrain->setSelected(_filtered[selected]);
+		cbxTerrainChange(0);
+	}
+	else if (_selectType == NewBattleSelectType::ALIENRACE)
+	{
+		_cbxAlienRace->setSelected(_filtered[selected]);
+	}
+}
+
+/**
+ * Restores the GUI after closing the advanced selector.
+ */
+void NewBattleState::cleanup()
+{
+	_btnQuickSearch->setText("");
+	_btnQuickSearch->setVisible(false);
+
+	for (auto& surfacePair : _surfaceBackup)
+	{
+		surfacePair.first->setVisible(surfacePair.second);
+	}
+	_surfaceBackup.clear();
+}
+
+/**
+ * Quick search toggle.
+ * @param action Pointer to an action.
+ */
+void NewBattleState::btnQuickSearchToggle(Action *action)
+{
+	if (_surfaceBackup.empty())
+	{
+		return;
+	}
+
+	if (_btnQuickSearch->getVisible())
+	{
+		_btnQuickSearch->setText("");
+		_btnQuickSearch->setVisible(false);
+		btnQuickSearchApply(action);
+	}
+	else
+	{
+		_btnQuickSearch->setVisible(true);
+		_btnQuickSearch->setFocus(true);
+	}
+}
+
+/**
+ * Quick search.
+ * @param action Pointer to an action.
+ */
+void NewBattleState::btnQuickSearchApply(Action *)
+{
+	fillList(_selectType, _isRightClick);
 }
 
 }
