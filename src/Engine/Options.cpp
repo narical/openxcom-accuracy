@@ -412,8 +412,8 @@ static bool _gameIsInstalled(const std::string &gameName)
 	std::string dataGameZipFile = CrossPlatform::searchDataFile(gameName + ".zip");
 	std::string userGameFolder = _userFolder + gameName;
 	std::string userGameZipFile = _userFolder + gameName + ".zip";
-	return (CrossPlatform::folderExists(dataGameFolder)	&& CrossPlatform::getFolderContents(dataGameFolder).size() > 8)
-	    || (CrossPlatform::folderExists(userGameFolder)	&& CrossPlatform::getFolderContents(userGameFolder).size() > 8)
+	return (CrossPlatform::folderExists(dataGameFolder)	&& CrossPlatform::getFolderContents(dataGameFolder).size() >= 8)
+	    || (CrossPlatform::folderExists(userGameFolder)	&& CrossPlatform::getFolderContents(userGameFolder).size() >= 8)
 		||  CrossPlatform::fileExists( dataGameZipFile )
 		||  CrossPlatform::fileExists( userGameZipFile );
 }

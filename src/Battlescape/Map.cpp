@@ -1209,7 +1209,8 @@ void Map::drawTerrain(Surface *surface)
 								const RuleItem *weapon = action->weapon->getRules();
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
-								int distance = Position::distance2d(Position(itX, itY, itZ), action->actor->getPosition());
+								int distanceSq = _save->getTileEngine()->distanceUnitToPositionSq(action->actor, Position (itX, itY,itZ), false);
+								int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
 								if (_cursorType == CT_AIM)
 								{
@@ -1283,20 +1284,17 @@ void Map::drawTerrain(Surface *surface)
 										}
 									}
 
-									bool outOfRange = distance > weapon->getMaxRange();
+									bool outOfRange = distanceSq > weapon->getMaxRangeSq();
 									// special handling for short ranges and diagonals
-									if (outOfRange && action->actor->directionTo(action->target) % 2 == 1)
+									if (outOfRange)
 									{
-										// special handling for maxRange 1: allow it to target diagonally adjacent tiles, even though they are technically 2 tiles away.
-										if (weapon->getMaxRange() == 1
-											&& distance == 2)
+										// special handling for maxRange 1: allow it to target diagonally adjacent tiles (one diagonal move)
+										if (weapon->getMaxRange() == 1 && distanceSq <= 3)
 										{
 											outOfRange = false;
 										}
-										// special handling for maxRange 2: allow it to target diagonally adjacent tiles on a level above/below, even though they are technically 3 tiles away.
-										else if (weapon->getMaxRange() == 2
-											&& distance == 3
-											&& itZ != action->actor->getPosition().z)
+										// special handling for maxRange 2: allow it to target diagonally adjacent tiles (one diagonal move + one straight move)
+										else if (weapon->getMaxRange() == 2 && distanceSq <= 6)
 										{
 											outOfRange = false;
 										}
