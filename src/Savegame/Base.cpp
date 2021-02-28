@@ -783,9 +783,9 @@ int Base::getAvailableQuarters() const
  * and equipment about to arrive.
  * @return Storage space.
  */
-double Base::getUsedStores() const
+double Base::getUsedStores(bool excludeNormalItems) const
 {
-	double total = _items->getTotalSize(_mod);
+	double total = excludeNormalItems ? 0.0 : _items->getTotalSize(_mod);
 	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
 	{
 		total += (*i)->getTotalItemStorageSize(_mod);
@@ -822,24 +822,12 @@ bool Base::storesOverfull(double offset) const
 }
 
 /**
- * Checks if the base's stores are so full that even crafts cargo can't fit.
+ * Checks if the base's stores are so full that even craft equipment and incoming transfers can't fit.
  */
 bool Base::storesOverfullCritical() const
 {
 	int capacity = getAvailableStores() * 100;
-	double total = 0;
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
-	{
-		total += (*i)->getTotalItemStorageSize(_mod);
-	}
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
-	{
-		if ((*i)->getType() == TRANSFER_CRAFT)
-		{
-			Craft *craft = (*i)->getCraft();
-			total += craft->getTotalItemStorageSize(_mod);
-		}
-	}
+	double total = getUsedStores(true);
 	int used = total * 100;
 	return used > capacity;
 }

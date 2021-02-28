@@ -171,10 +171,10 @@ public:
 	/// Gets the base's available living quarters.
 	int getAvailableQuarters() const;
 	/// Gets the base's used storage space.
-	double getUsedStores() const;
+	double getUsedStores(bool excludeNormalItems = false) const;
 	/// Checks if the base's stores are overfull.
 	bool storesOverfull(double offset = 0.0) const;
-	/// Checks if the base's stores are so full that even cargo crafts can't fit.
+	/// Checks if the base's stores are so full that even craft equipment and incoming transfers can't fit.
 	bool storesOverfullCritical() const;
 	/// Gets the base's available storage space.
 	int getAvailableStores() const;
