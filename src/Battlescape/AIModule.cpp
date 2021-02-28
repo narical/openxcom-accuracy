@@ -1469,7 +1469,8 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 
 	// Get base accuracy for the action
 	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getBattleGame()->getMod());
-	int distance = Position::distance2d(_unit->getPosition(), target->getPosition());
+	int distanceSq = _unit->distance3dToUnitSq(target);
+	int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{
@@ -1498,7 +1499,7 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 		}
 	}
 
-	if (action->type != BA_THROW && distance > action->weapon->getRules()->getMaxRange())
+	if (action->type != BA_THROW && action->weapon->getRules()->isOutOfRange(distanceSq))
 		accuracy = 0;
 
 	int numberOfShots = 1;
@@ -1850,8 +1851,9 @@ bool AIModule::findFirePoint()
 				// Extended behavior: if we have a limited-range weapon, bump up the score for getting closer to the target, down for further
 				if (!waitIfOutsideWeaponRange && extendedFireModeChoiceEnabled)
 				{
-					int distanceToTarget = Position::distance2d(_unit->getPosition(), _aggroTarget->getPosition());
-					if (_attackAction->weapon && distanceToTarget > _attackAction->weapon->getRules()->getMaxRange()) // make sure we can get the ruleset before checking the range
+					int distanceToTargetSq = _unit->distance3dToUnitSq(_aggroTarget);
+					int distanceToTarget = (int)std::ceil(sqrt(float(distanceToTargetSq)));
+					if (_attackAction->weapon && _attackAction->weapon->getRules()->isOutOfRange(distanceToTargetSq)) // make sure we can get the ruleset before checking the range
 					{
 						int proposedDistance = Position::distance2d(pos, _aggroTarget->getPosition());
 						proposedDistance = std::max(proposedDistance, 1);
@@ -2260,7 +2262,8 @@ void AIModule::projectileAction()
 	if (!waitIfOutsideWeaponRange && aiRespectsMaxRange)
 	{
 		// If we want to check and it's not in range, perhaps we should re-think shooting
-		if (distance > _attackAction->weapon->getRules()->getMaxRange())
+		int distanceSq = _unit->distance3dToPositionSq(_attackAction->target);
+		if (_attackAction->weapon->getRules()->isOutOfRange(distanceSq))
 		{
 			return;
 		}
@@ -2486,7 +2489,7 @@ bool AIModule::psiAction()
 				std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), *i) != _unit->getVisibleUnits()->end()))
 			{
 				BattleUnit *victim = (*i);
-				if (Position::distance2d(victim->getPosition(), _unit->getPosition()) > item->getRules()->getMaxRange())
+				if (item->getRules()->isOutOfRange(_unit->distance3dToUnitSq(victim)))
 				{
 					continue;
 				}

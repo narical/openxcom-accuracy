@@ -212,6 +212,10 @@ public:
 	YAML::Node save(const ScriptGlobal *shared) const;
 	/// Gets the BattleUnit's ID.
 	int getId() const;
+	/// Calculates the distance squared between the unit and a given position.
+	int distance3dToPositionSq(const Position& pos) const;
+	/// Calculates the distance squared between the unit and a given other unit.
+	int distance3dToUnitSq(BattleUnit* otherUnit) const;
 	/// Sets the unit's position
 	void setPosition(Position pos, bool updateLastPos = true);
 	/// Gets the unit's position.

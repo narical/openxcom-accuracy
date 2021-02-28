@@ -787,6 +787,45 @@ int BattleUnit::getId() const
 }
 
 /**
+ * Calculates the distance squared between the unit and a given position.
+ * @param pos The position.
+ * @return Distance squared.
+ */
+int BattleUnit::distance3dToPositionSq(const Position& pos) const
+{
+	int x = _pos.x - pos.x;
+	int y = _pos.y - pos.y;
+	int z = _pos.z - pos.z;
+	if (_armor->getSize() > 1)
+	{
+		if (_pos.x < pos.x)
+			x++;
+		if (_pos.y < pos.y)
+			y++;
+	}
+	return x*x + y*y + z*z;
+}
+
+/**
+ * Calculates the distance squared between the unit and a given other unit.
+ * @param otherUnit The other unit.
+ * @param considerZ Whether to consider the z coordinate.
+ * @return Distance squared.
+ */
+int BattleUnit::distance3dToUnitSq(BattleUnit* otherUnit) const
+{
+	// TODO?: distance calculation isn't precise for 2x2 units here
+	// and even though improving just the distance calculation would be easy
+	// it would also require changes on other places:
+	// - we would need to improve AI targeting involving 2x2 units
+	// - we would need to improve reaction fire targeting involving 2x2 units
+	// and that is NOT trivial and currently not worth the effort
+	// PS: targeting involving a player-controlled 2x2 unit/actor was fixed recently, OXC PR #1307 commit dd7f938
+
+	return Position::distanceSq(_pos, otherUnit->getPosition());
+}
+
+/**
  * Changes the BattleUnit's position.
  * @param pos position
  * @param updateLastPos refresh last stored position

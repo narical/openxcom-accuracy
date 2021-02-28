@@ -2158,12 +2158,28 @@ int RuleItem::getMaxRange() const
 }
 
 /**
- * Gets the maximum range of this weapon squared
- * @return The maximum range squared.
+ * Checks whether a given distance is out of range for this item.
+ * @param distanceSq Given distance squared.
+ * @return True, if out of range.
  */
-int RuleItem::getMaxRangeSq() const
+bool RuleItem::isOutOfRange(int distanceSq) const
 {
-	return _maxRange * _maxRange;
+	bool outOfRange = distanceSq > (_maxRange * _maxRange);
+	// special handling for short ranges and diagonals
+	if (outOfRange)
+	{
+		// special handling for maxRange 1: allow it to target diagonally adjacent tiles (one diagonal move)
+		if (_maxRange == 1 && distanceSq <= 3)
+		{
+			outOfRange = false;
+		}
+		// special handling for maxRange 2: allow it to target diagonally adjacent tiles (one diagonal move + one straight move)
+		else if (_maxRange == 2 && distanceSq <= 6)
+		{
+			outOfRange = false;
+		}
+	}
+	return outOfRange;
 }
 
 /**

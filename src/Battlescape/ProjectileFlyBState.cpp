@@ -131,7 +131,7 @@ void ProjectileFlyBState::init()
 	}
 
 	Tile *endTile = _parent->getSave()->getTile(_action.target);
-	int distanceSq = _parent->getTileEngine()->distanceUnitToPositionSq(_action.actor, _action.target, false);
+	int distanceSq = _action.actor->distance3dToPositionSq(_action.target);
 	bool isPlayer = _parent->getSave()->getSide() == FACTION_PLAYER;
 	if (isPlayer) _parent->getMap()->resetObstacles();
 	switch (_action.type)
@@ -140,21 +140,8 @@ void ProjectileFlyBState::init()
 	case BA_AIMEDSHOT:
 	case BA_AUTOSHOT:
 	case BA_LAUNCH:
-		if (distanceSq > weapon->getRules()->getMaxRangeSq())
+		if (weapon->getRules()->isOutOfRange(distanceSq))
 		{
-			// special handling for short ranges and diagonals
-			{
-				// special handling for maxRange 1: allow it to target diagonally adjacent tiles (one diagonal move)
-				if (weapon->getRules()->getMaxRange() == 1 && distanceSq <= 3)
-				{
-					break;
-				}
-				// special handling for maxRange 2: allow it to target diagonally adjacent tiles (one diagonal move + one straight move)
-				else if (weapon->getRules()->getMaxRange() == 2 && distanceSq <= 6)
-				{
-					break;
-				}
-			}
 			// out of range
 			_action.result = "STR_OUT_OF_RANGE";
 			_parent->popState();
@@ -439,13 +426,14 @@ bool ProjectileFlyBState::createNewProjectile()
 		// Since we're just spraying, target the middle of the tile
 		_targetVoxel = _action.waypoints.back();
 		Position targetPosition = _targetVoxel.toTile();
-		Position actorPosition = _action.actor->getPosition();
-		int maxRange = _action.weapon->getRules()->getMaxRange();
 
 		// The waypoint targeting is possibly out of range of the gun, so move the voxel to the max range of the gun if it is
-		int distance = Position::distance2d(actorPosition, targetPosition);
-		if (distance > maxRange)
+		int distanceSq = _action.actor->distance3dToPositionSq(targetPosition);
+		if (_action.weapon->getRules()->isOutOfRange(distanceSq))
 		{
+			Position actorPosition = _action.actor->getPosition();
+			int maxRange = _action.weapon->getRules()->getMaxRange();
+			int distance = (int)std::ceil(sqrt(float(distanceSq)));
 			_targetVoxel = (actorPosition + (targetPosition - actorPosition) * maxRange / distance).toVoxel() + TileEngine::voxelTileCenter;
 			targetPosition = _targetVoxel.toTile();
 		}
