@@ -180,10 +180,11 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) : _lstScroll(
 			}
 		}
 	}
-	if (hasUnassigned)
+	if (hasUnassigned && !itemCategories.empty())
 	{
 		_categoryStrings.push_back("STR_UNASSIGNED");
 	}
+	_categoryStrings.push_back("STR_NOT_EQUIPPED");
 
 	_cbxFilterBy->setOptions(_categoryStrings, true);
 	_cbxFilterBy->setSelected(0);
@@ -297,6 +298,7 @@ void CraftEquipmentState::initList()
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL");
 	bool categoryUnassigned = (selectedCategory == "STR_UNASSIGNED");
 	bool categoryEquipped = (selectedCategory == "STR_EQUIPPED");
+	bool categoryNotEquipped = (selectedCategory == "STR_NOT_EQUIPPED");
 	bool shareAmmoCategories = _game->getMod()->getShareAmmoCategories();
 
 	Craft *c = _base->getCrafts()->at(_craft);
@@ -348,6 +350,13 @@ void CraftEquipmentState::initList()
 				else if (categoryEquipped)
 				{
 					if (!(cQty > 0))
+					{
+						continue;
+					}
+				}
+				else if (categoryNotEquipped)
+				{
+					if (cQty > 0)
 					{
 						continue;
 					}
