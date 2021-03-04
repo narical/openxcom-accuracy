@@ -3931,12 +3931,41 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 	// Mana experience - this is a temporary/experimental approach, can be improved later after modder feedback
 	attack.attacker->addManaExp(attack.weapon_item->getRules()->getManaExperience());
 
-	attack.attacker->addPsiSkillExp();
-	if (Options::allowPsiStrengthImprovement) victim->addPsiStrengthExp();
+	bool isDefaultExpTrainingMode = (attack.weapon_item->getRules()->getExperienceTrainingMode() == ETM_DEFAULT);
+	bool isNaturallyPsiCapable = true;
+	if (attack.attacker->getGeoscapeSoldier() && attack.attacker->getGeoscapeSoldier()->getCurrentStats()->psiSkill <= 0)
+	{
+		isNaturallyPsiCapable = false;
+	}
+	bool isPsiRequired = attack.weapon_item->getRules()->isPsiRequired();
+
+	if (isDefaultExpTrainingMode)
+	{
+		if (isNaturallyPsiCapable)
+		{
+			attack.attacker->addPsiSkillExp();
+		}
+	}
+	if (Options::allowPsiStrengthImprovement && isPsiRequired)
+	{
+		victim->addPsiStrengthExp(); // experience for the victim, not the attacker
+	}
+
 	if (psiAttackCalculate(attack, victim) > 0)
 	{
-		attack.attacker->addPsiSkillExp();
-		attack.attacker->addPsiSkillExp();
+		if (isDefaultExpTrainingMode)
+		{
+			if (isNaturallyPsiCapable)
+			{
+				attack.attacker->addPsiSkillExp();
+				attack.attacker->addPsiSkillExp();
+			}
+		}
+		else if (attack.type == BA_PANIC || attack.type == BA_MINDCONTROL)
+		{
+			// Note: BA_USE is handled elsewhere
+			awardExperience(attack, victim, false);
+		}
 
 		BattleUnitKills killStat;
 		killStat.setUnitStats(victim);
@@ -3986,9 +4015,9 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 	}
 	else
 	{
-		if (Options::allowPsiStrengthImprovement)
+		if (Options::allowPsiStrengthImprovement && isPsiRequired)
 		{
-			victim->addPsiStrengthExp();
+			victim->addPsiStrengthExp(); // experience for the victim, not the attacker
 		}
 		return false;
 	}
