@@ -2,7 +2,6 @@ et:
   STR_CANNOT_DISMANTLE_FACILITY_UPGRADING: "EHITIST EI SAA LAMMUTADA!{SMALLLINE}Uuenduste ajal ei saa ehitist eemaldada."
   STR_CANNOT_UPGRADE_FACILITY_WRONG_SIZE: "SIIA EI SAA EHITADA!{SMALLLINE}Valitud rajatis peab täielikult katma olemasolevat ehitist."
   STR_CANNOT_UPGRADE_FACILITY_WRONG_TYPE: "SIIA EI SAA EHITADA!{SMALLLINE}Olemasolevat rajatist ei saa uuendada."
-  STR_MOVE_HQ_TO: "Liiguta peakorter"
   STR_ID: "ID"
   STR_FIRST_LETTER: "ESIMENE TÄHT"
   STR_SOLDIER_TYPE: "SÕDURI TÜÜP"

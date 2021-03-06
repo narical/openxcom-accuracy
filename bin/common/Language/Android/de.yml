@@ -4,6 +4,7 @@ de:
   STR_HOLD: "Halten zum Drehen"
   STR_SWIPE_DESC: "Wische in die Richtung, in die der Soldat gehen soll."
   STR_HOLD_DESC: "Tippen und halten Sie in die Richtung, in die Ihr Soldat zeigen soll."
+  STR_SYSTEM_UI: "Android Nutzeroberfläche Anzeigemodus"
   STR_ALWAYS_SHOWN: "Immer anzeigen"
   STR_LOW_PROFILE: "Geringes Profil"
   STR_IMMERSIVE: "Immersiver Modus"
