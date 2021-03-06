@@ -33,6 +33,10 @@ AlienRace::AlienRace(const std::string &id) : _id(id), _retaliationAggression(0)
 
 AlienRace::~AlienRace()
 {
+	for (std::vector<std::pair<size_t, WeightedOptions*> >::iterator i = _retaliationMissionDistribution.begin(); i != _retaliationMissionDistribution.end(); ++i)
+	{
+		delete i->second;
+	}
 }
 
 /**
@@ -52,6 +56,16 @@ void AlienRace::load(const YAML::Node &node)
 	_members = node["members"].as< std::vector<std::string> >(_members);
 	_membersRandom = node["membersRandom"].as< std::vector <std::vector<std::string> > >(_membersRandom);
 	_retaliationAggression = node["retaliationAggression"].as<int>(_retaliationAggression);
+
+	if (const YAML::Node& weights = node["retaliationMissionWeights"])
+	{
+		for (YAML::const_iterator nn = weights.begin(); nn != weights.end(); ++nn)
+		{
+			WeightedOptions* nw = new WeightedOptions();
+			nw->load(nn->second);
+			_retaliationMissionDistribution.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
+		}
+	}
 }
 
 /**
@@ -135,6 +149,23 @@ const std::string &AlienRace::getRetaliationMission() const
 int AlienRace::getRetaliationAggression() const
 {
 	return _retaliationAggression;
+}
+
+/**
+ * Chooses one of the available missions.
+ * @param monthsPassed The number of months that have passed in the game world.
+ * @return The string id of the mission.
+ */
+std::string AlienRace::generateRetaliationMission(const size_t monthsPassed) const
+{
+	if (_retaliationMissionDistribution.empty())
+		return "";
+
+	std::vector<std::pair<size_t, WeightedOptions*> >::const_reverse_iterator rw;
+	rw = _retaliationMissionDistribution.rbegin();
+	while (monthsPassed < rw->first)
+		++rw;
+	return rw->second->choose();
 }
 
 }

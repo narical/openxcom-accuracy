@@ -1478,7 +1478,12 @@ void DogfightState::update()
 					// Difference from original: No retaliation until final UFO lands (Original: Is spawned).
 					if (!_game->getSavedGame()->findAlienMission(targetRegion, OBJECTIVE_RETALIATION))
 					{
-						const RuleAlienMission *rule = _game->getMod()->getAlienMission(race->getRetaliationMission());
+						std::string retalMission = race->generateRetaliationMission(_game->getSavedGame()->getMonthsPassed());
+						const RuleAlienMission *rule = _game->getMod()->getAlienMission(retalMission, false);
+						if (!rule)
+						{
+							rule = _game->getMod()->getAlienMission(race->getRetaliationMission());
+						}
 						if (!rule)
 						{
 							rule = _game->getMod()->getRandomMission(OBJECTIVE_RETALIATION, _game->getSavedGame()->getMonthsPassed());
