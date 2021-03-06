@@ -253,8 +253,8 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 
 	// -------------------------------
 
-	bool debugView = Options::debug && _missionTypes.size() > TFTD_DEPLOYMENTS;
-	if (!debugView)
+	bool showExtraButtons = _missionTypes.size() > TFTD_DEPLOYMENTS;
+	if (!showExtraButtons)
 	{
 		_cbxTerrain->setX(_txtTerrain->getX());
 		_cbxAlienRace->setX(_txtAlienRace->getX());
@@ -263,17 +263,17 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 	_btnMission->setText("...");
 	_btnMission->onMouseClick((ActionHandler)&NewBattleState::btnMissionChange);
 	_btnMission->onMouseClick((ActionHandler)&NewBattleState::btnMissionChange, SDL_BUTTON_RIGHT);
-	_btnMission->setVisible(debugView);
+	_btnMission->setVisible(showExtraButtons);
 
 	_btnTerrain->setText("...");
 	_btnTerrain->onMouseClick((ActionHandler)&NewBattleState::btnTerrainChange);
 	_btnTerrain->onMouseClick((ActionHandler)&NewBattleState::btnTerrainChange, SDL_BUTTON_RIGHT);
-	_btnTerrain->setVisible(debugView);
+	_btnTerrain->setVisible(showExtraButtons);
 
 	_btnAlienRace->setText("...");
 	_btnAlienRace->onMouseClick((ActionHandler)&NewBattleState::btnAlienRaceChange);
 	_btnAlienRace->onMouseClick((ActionHandler)&NewBattleState::btnAlienRaceChange, SDL_BUTTON_RIGHT);
-	_btnAlienRace->setVisible(debugView);
+	_btnAlienRace->setVisible(showExtraButtons);
 
 	_lstSelect->setColumns(1, 280);
 	_lstSelect->setBackground(_window);
@@ -696,7 +696,7 @@ void NewBattleState::cbxMissionChange(Action *)
 	_cbxTerrain->setVisible(_terrainTypes.size() > 1);
 	_cbxTerrain->setOptions(terrainStrings, true);
 	_cbxTerrain->setSelected(0);
-	_btnTerrain->setVisible(Options::debug && _missionTypes.size() > TFTD_DEPLOYMENTS && _terrainTypes.size() > 1);
+	_btnTerrain->setVisible(_missionTypes.size() > TFTD_DEPLOYMENTS && _terrainTypes.size() > 1);
 	cbxTerrainChange(0);
 }
 
