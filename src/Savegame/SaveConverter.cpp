@@ -1068,7 +1068,7 @@ void SaveConverter::loadDatSoldier()
 
 			int armor = load<Uint8>(sdata + _rules->getOffset("SOLDIER.DAT_ARMOR"));
 			const std::vector<std::string> &armors = _rules->getArmor();
-			if (armor >= 0 && armor < armors.size())
+			if (armor >= 0 && armor < (int)armors.size())
 			{
 				node["armor"] = armors[armor];
 			}
