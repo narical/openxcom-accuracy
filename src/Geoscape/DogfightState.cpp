@@ -1476,14 +1476,11 @@ void DogfightState::update()
 						// TODO: If the base is removed, the mission is canceled.
 					}
 					// Difference from original: No retaliation until final UFO lands (Original: Is spawned).
-					if (!_game->getSavedGame()->findAlienMission(targetRegion, OBJECTIVE_RETALIATION))
+					if (!_game->getSavedGame()->findAlienMission(targetRegion, OBJECTIVE_RETALIATION, race))
 					{
-						std::string retalMission = race->generateRetaliationMission(_game->getSavedGame()->getMonthsPassed());
+						auto* retalWeights = race->retaliationMissionWeights(_game->getSavedGame()->getMonthsPassed());
+						std::string retalMission = retalWeights ? retalWeights->choose() : "";
 						const RuleAlienMission *rule = _game->getMod()->getAlienMission(retalMission, false);
-						if (!rule)
-						{
-							rule = _game->getMod()->getAlienMission(race->getRetaliationMission());
-						}
 						if (!rule)
 						{
 							rule = _game->getMod()->getRandomMission(OBJECTIVE_RETALIATION, _game->getSavedGame()->getMonthsPassed());

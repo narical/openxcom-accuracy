@@ -37,7 +37,6 @@ private:
 	std::string _id;
 	std::string _baseCustomDeploy;
 	std::string _baseCustomMission;
-	std::string _retaliationMission;
 	std::vector<std::pair<size_t, WeightedOptions*> > _retaliationMissionDistribution;
 	std::vector<std::string> _members;
 	std::vector< std::vector<std::string> > _membersRandom;
@@ -59,12 +58,10 @@ public:
 	const std::string &getMember(int id) const;
 	/// Gets the total number of members of this alien race family.
 	int getMembers() const;
-	/// Gets what mission is created after destroying ufo.
-	const std::string &getRetaliationMission() const;
 	/// Gets how aggressive alien are to spawn retaliation mission after destroying ufo.
 	int getRetaliationAggression() const;
-	/// Generates a retaliation mission based on the given month.
-	std::string generateRetaliationMission(const size_t monthsPassed) const;
+	/// Returns a list of retaliation missions based on the given month.
+	WeightedOptions* retaliationMissionWeights(const size_t monthsPassed) const;
 };
 
 }

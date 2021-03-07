@@ -61,6 +61,7 @@ class Craft;
 class EquipmentLayoutItem;
 class ItemContainer;
 class RuleSoldierTransformation;
+class AlienRace;
 struct MissionStatistics;
 struct BattleUnitKills;
 
@@ -364,7 +365,7 @@ public:
 	/// Read-only access to the current alien missions.
 	const std::vector<AlienMission*> &getAlienMissions() const { return _activeMissions; }
 	/// Finds a mission by region and objective.
-	AlienMission *findAlienMission(const std::string &region, MissionObjective objective) const;
+	AlienMission *findAlienMission(const std::string &region, MissionObjective objective, AlienRace* race = nullptr) const;
 	/// Full access to the current geoscape events.
 	std::vector<GeoscapeEvent*> &getGeoscapeEvents() { return _geoscapeEvents; }
 	/// Read-only access to the current geoscape events.

@@ -65,6 +65,7 @@
 #include "MissionStatistics.h"
 #include "SoldierDeath.h"
 #include "SoldierDiary.h"
+#include "../Mod/AlienRace.h"
 
 namespace OpenXcom
 {
@@ -2480,10 +2481,35 @@ bool SavedGame::getDebugMode() const
  * Find a mission type in the active alien missions.
  * @param region The region string ID.
  * @param objective The active mission objective.
+ * @param race The alien race used for more specific search (by type instead of objective). Optional.
  * @return A pointer to the mission, or 0 if no mission matched.
  */
-AlienMission *SavedGame::findAlienMission(const std::string &region, MissionObjective objective) const
+AlienMission *SavedGame::findAlienMission(const std::string &region, MissionObjective objective, AlienRace* race) const
 {
+	if (race)
+	{
+		auto* retalWeights = race->retaliationMissionWeights(_monthsPassed);
+		if (retalWeights)
+		{
+			auto retalNames = retalWeights->getNames();
+			if (!retalNames.empty())
+			{
+				// if we made it this far, search by type and region
+				for (auto& missionType : retalNames)
+				{
+					for (auto* mission : _activeMissions)
+					{
+						if (mission->getRules().getType() == missionType && mission->getRegion() == region)
+						{
+							return mission;
+						}
+					}
+				}
+				return 0;
+			}
+		}
+	}
+
 	for (auto* mission : _activeMissions)
 	{
 		if (mission->getRules().getObjective() == objective && mission->getRegion() == region)
