@@ -1806,10 +1806,10 @@ void GeoscapeState::time30Minutes()
 		{
 			if (craft->getStatus() == "STR_REFUELLING")
 			{
-				std::string item = craft->getRules()->getRefuelItem();
+				std::string item = craft->refuel();
+
 				if (item.empty())
 				{
-					craft->refuel();
 					// notification
 					if (craft->getStatus() == "STR_READY" && craft->getRules()->notifyWhenRefueled())
 					{
@@ -1836,51 +1836,11 @@ void GeoscapeState::time30Minutes()
 				}
 				else
 				{
-					if (base->getStorageItems()->getItem(item) > 0)
-					{
-						base->getStorageItems()->removeItem(item);
-						craft->refuel();
-						craft->setLowFuel(false);
-						// notification
-						if (craft->getStatus() == "STR_READY" && craft->getRules()->notifyWhenRefueled())
-						{
-							std::string msg = tr("STR_CRAFT_IS_READY").arg(craft->getName(_game->getLanguage())).arg(base->getName());
-							popup(new CraftErrorState(this, msg));
-						}
-						// auto-patrol
-						if (craft->getStatus() == "STR_READY" && craft->getRules()->canAutoPatrol())
-						{
-							if (craft->getIsAutoPatrolling())
-							{
-								Waypoint *w = new Waypoint();
-								w->setLongitude(craft->getLongitudeAuto());
-								w->setLatitude(craft->getLatitudeAuto());
-								if (w != 0 && w->getId() == 0)
-								{
-									w->setId(_game->getSavedGame()->getId("STR_WAY_POINT"));
-									_game->getSavedGame()->getWaypoints()->push_back(w);
-								}
-								craft->setDestination(w);
-								craft->setStatus("STR_OUT");
-							}
-						}
-					}
-					else if (!craft->getLowFuel())
-					{
-						std::string msg = tr("STR_NOT_ENOUGH_ITEM_TO_REFUEL_CRAFT_AT_BASE")
-										   .arg(tr(item))
-										   .arg(craft->getName(_game->getLanguage()))
-										   .arg(base->getName());
-						popup(new CraftErrorState(this, msg));
-						if (craft->getFuel() > 0)
-						{
-							craft->setStatus("STR_READY");
-						}
-						else
-						{
-							craft->setLowFuel(true);
-						}
-					}
+					std::string msg = tr("STR_NOT_ENOUGH_ITEM_TO_REFUEL_CRAFT_AT_BASE")
+										.arg(tr(item))
+										.arg(craft->getName(_game->getLanguage()))
+										.arg(base->getName());
+					popup(new CraftErrorState(this, msg));
 				}
 			}
 		}

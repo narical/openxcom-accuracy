@@ -217,7 +217,7 @@ public:
 	/// Repairs the craft.
 	void repair();
 	/// Refuels the craft.
-	void refuel();
+	std::string refuel();
 	/// Rearms the craft.
 	const RuleItem* rearm();
 	/// Sets the craft's battlescape status.
