@@ -2508,14 +2508,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_pediaReplaceCraftFuelWithRangeType = doc["pediaReplaceCraftFuelWithRangeType"].as<int>(_pediaReplaceCraftFuelWithRangeType);
 	_missionRatings = doc["missionRatings"].as<std::map<int, std::string> >(_missionRatings);
 	_monthlyRatings = doc["monthlyRatings"].as<std::map<int, std::string> >(_monthlyRatings);
-	_fixedUserOptions = doc["fixedUserOptions"].as<std::map<std::string, std::string> >(_fixedUserOptions);
-	_recommendedUserOptions = doc["recommendedUserOptions"].as<std::map<std::string, std::string> >(_recommendedUserOptions);
-	_hiddenMovementBackgrounds = doc["hiddenMovementBackgrounds"].as<std::vector<std::string> >(_hiddenMovementBackgrounds);
-	_baseNamesFirst = doc["baseNamesFirst"].as<std::vector<std::string> >(_baseNamesFirst);
-	_baseNamesMiddle = doc["baseNamesMiddle"].as<std::vector<std::string> >(_baseNamesMiddle);
-	_baseNamesLast = doc["baseNamesLast"].as<std::vector<std::string> >(_baseNamesLast);
-	_operationNamesFirst = doc["operationNamesFirst"].as<std::vector<std::string> >(_operationNamesFirst);
-	_operationNamesLast = doc["operationNamesLast"].as<std::vector<std::string> >(_operationNamesLast);
+	loadUnorderedNamesToNames("mod", _fixedUserOptions, doc["fixedUserOptions"]);
+	loadUnorderedNamesToNames("mod", _recommendedUserOptions, doc["recommendedUserOptions"]);
+	loadUnorderedNames("mod", _hiddenMovementBackgrounds, doc["hiddenMovementBackgrounds"]);
+	loadUnorderedNames("mod", _baseNamesFirst, doc["baseNamesFirst"]);
+	loadUnorderedNames("mod", _baseNamesMiddle, doc["baseNamesMiddle"]);
+	loadUnorderedNames("mod", _baseNamesLast, doc["baseNamesLast"]);
+	loadUnorderedNames("mod", _operationNamesFirst, doc["operationNamesFirst"]);
+	loadUnorderedNames("mod", _operationNamesLast, doc["operationNamesLast"]);
 	_disableUnderwaterSounds = doc["disableUnderwaterSounds"].as<bool>(_disableUnderwaterSounds);
 	_enableUnitResponseSounds = doc["enableUnitResponseSounds"].as<bool>(_enableUnitResponseSounds);
 	for (YAML::const_iterator i = doc["unitResponseSounds"].begin(); i != doc["unitResponseSounds"].end(); ++i)
