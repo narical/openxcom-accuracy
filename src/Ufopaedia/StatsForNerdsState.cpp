@@ -3327,12 +3327,12 @@ void StatsForNerdsState::initCraftWeaponList()
 	{
 		addHeading("_calculatedValues");
 		{
-			// (damage / standard reload * 60) * (accuracy / 100)
-			int avgDPM = craftWeaponRule->getDamage() * craftWeaponRule->getAccuracy() * 60 / craftWeaponRule->getStandardReload() / 100;
+			// (damage / standard reload * 60) * (accuracy / 100) * (50-100% damage spread)
+			int avgDPM = craftWeaponRule->getDamage() * craftWeaponRule->getAccuracy() * 60 * 3 / 4 / craftWeaponRule->getStandardReload() / 100;
 			addInteger(ss, avgDPM, "_averageDPM");
 
-			// (damage * ammoMax) * (accuracy / 100)
-			int avgTotalDamage = craftWeaponRule->getDamage() * craftWeaponRule->getAmmoMax() * craftWeaponRule->getAccuracy() / 100;
+			// (damage * ammoMax) * (accuracy / 100) * (50-100% damage spread)
+			int avgTotalDamage = craftWeaponRule->getDamage() * craftWeaponRule->getAmmoMax() * craftWeaponRule->getAccuracy() * 3 / 4 / 100;
 			addInteger(ss, avgTotalDamage, "_averageTotalDamage");
 
 			endHeading();
