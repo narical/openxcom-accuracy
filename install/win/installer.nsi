@@ -22,8 +22,8 @@
 ;--------------------------------
 ;Defines
 
-	!define GAME_NAME "OpenXcom"
-	!define GAME_VERSION "1.0"
+	!define GAME_NAME "OpenXcom Extended"
+	!define GAME_VERSION "7.0.0"
 	!define GAME_AUTHOR "OpenXcom Developers"
 	!include "version.nsh"
 
@@ -31,12 +31,8 @@
 ;General
 
 	;Name and file
-	Name "${GAME_NAME} ${GAME_VERSION}${GAME_VERSION_GIT}"
-!ifdef NSIS_WIN32_MAKENSIS
-	OutFile "openxcom-v${GAME_VERSION}-win.exe"
-!else
-	OutFile "openxcom_git_master_${GAME_DATE_GIT}.exe"
-!endif
+	Name "${GAME_NAME} ${GAME_VERSION}"
+	OutFile "openxcom_extended_v${GAME_VERSION}-win64.exe"
 
 	;Default installation folder
 	InstallDir "$PROGRAMFILES\${GAME_NAME}"
@@ -115,7 +111,7 @@
 	!insertmacro MUI_UNPAGE_INSTFILES
 	
 Function RunAsUser
-	ShellExecAsUser::ShellExecAsUser "open" "$INSTDIR\OpenXcom.exe"
+	ShellExecAsUser::ShellExecAsUser "open" "$INSTDIR\OpenXcomEx.exe"
 FunctionEnd
 
 ${StrStr}
@@ -262,20 +258,10 @@ Section "$(SETUP_GAME)" SecMain
 
 	SetOutPath "$INSTDIR"
 
-!ifdef NSIS_WIN32_MAKENSIS
-${If} ${RunningX64}
-	File "..\..\bin\x64\Release\OpenXcom.exe"
-	File "..\..\bin\x64\*.dll"
-${Else}
-	File "..\..\bin\Win32\Release\OpenXcom.exe"
-	File "..\..\bin\Win32\*.dll"
-${EndIf}
-!else
-	File "..\..\bin\openxcom.exe"
-!endif
-	File "..\..\LICENSE.txt"
-	File "..\..\CHANGELOG.txt"
-	File /oname=README.txt "..\..\README.md"
+	File "OpenXcomEx.exe"
+	;File "..\..\LICENSE.txt"
+	;File "..\..\CHANGELOG.txt"
+	;File /oname=README.txt "..\..\README.md"
 
 	;Copy UFO files
 	SetOutPath "$INSTDIR\UFO"
@@ -349,8 +335,8 @@ ${EndIf}
 
 	;Write the uninstall keys for Windows
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "DisplayName" "${GAME_NAME} ${GAME_VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "DisplayIcon" '"$INSTDIR\OpenXcom.exe",0'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "DisplayVersion" "${GAME_VERSION}.0.0"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "DisplayIcon" '"$INSTDIR\OpenXcomEx.exe",0'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "DisplayVersion" "${GAME_VERSION}.0"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "Publisher" "${GAME_AUTHOR}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${GAME_NAME}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
@@ -367,9 +353,9 @@ ${EndIf}
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${GAME_NAME}.lnk" "$INSTDIR\OpenXcom.exe"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_CHANGELOG).lnk" "$INSTDIR\CHANGELOG.txt"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_README).lnk" "$INSTDIR\README.txt"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${GAME_NAME}.lnk" "$INSTDIR\OpenXcomEx.exe"
+		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_CHANGELOG).lnk" "$INSTDIR\CHANGELOG.txt"
+		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_README).lnk" "$INSTDIR\README.txt"
 ${If} $PortableMode == ${BST_CHECKED}
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_USER).lnk" "$INSTDIR\user"
 ${Else}
@@ -443,7 +429,7 @@ Section /o "$(SETUP_DESKTOP)" SecDesktop
 
 	SetOutPath "$INSTDIR"
 
-	CreateShortCut "$DESKTOP\${GAME_NAME}.lnk" "$INSTDIR\OpenXcom.exe"
+	CreateShortCut "$DESKTOP\${GAME_NAME}.lnk" "$INSTDIR\OpenXcomEx.exe"
 
 SectionEnd
 
@@ -630,7 +616,7 @@ Section "-un.Main"
 
 	SetOutPath "$TEMP"
 
-	Delete "$INSTDIR\OpenXcom.exe"
+	Delete "$INSTDIR\OpenXcomEx.exe"
 	Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\*.txt"
 	Delete "$INSTDIR\*.md"
@@ -665,10 +651,10 @@ SectionEnd
 ;--------------------------------
 ;Version Information
 
-	VIProductVersion "${GAME_VERSION}.0.0"
+	VIProductVersion "${GAME_VERSION}.0"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${GAME_NAME} Installer"
-	VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${GAME_VERSION}.0.0"
+	VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${GAME_VERSION}.0"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${GAME_AUTHOR}"
-	VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2010-2016 ${GAME_AUTHOR}"
+	VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2010-2021 ${GAME_AUTHOR}"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${GAME_NAME} Installer"
-	VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${GAME_VERSION}.0.0"
+	VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${GAME_VERSION}.0"
