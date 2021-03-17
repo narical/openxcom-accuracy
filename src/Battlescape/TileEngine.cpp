@@ -62,7 +62,7 @@ namespace
  * @param driftFunc Function call for each side step of line.
  */
 template<typename FuncNewPosition, typename FuncDrift>
-bool calculateLineHitHelper(const Position& origin, const Position& target, FuncNewPosition posFunc, FuncDrift driftFunc)
+bool calculateLineHelper(const Position& origin, const Position& target, FuncNewPosition posFunc, FuncDrift driftFunc)
 {
 	int x, x0, x1, delta_x, step_x;
 	int y, y0, y1, delta_y, step_y;
@@ -691,7 +691,7 @@ void TileEngine::addLight(MapSubset gs, Position center, int power, LightLayers 
 				return false;
 			};
 
-			calculateLineHitHelper(startVoxel, endVoxel,
+			calculateLineHelper(startVoxel, endVoxel,
 				[&](Position voxel)
 				{
 					auto resultA = calculateBlock(voxel, lastTileA, lightA, stepsA);
@@ -3539,7 +3539,7 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 	bool bigWall = false;
 	int steps = 0;
 
-	bool hit = calculateLineHitHelper(origin, target,
+	bool hit = calculateLineHelper(origin, target,
 		[&](Position point)
 		{
 			trajectory.push_back(point);
@@ -3623,7 +3623,7 @@ VoxelType TileEngine::calculateLineVoxel(Position origin, Position target, bool 
 		excludeAllUnits = true; // don't start unit spotting before pre-game inventory stuff (large units on the craftInventory tile will cause a crash if they're "spotted")
 	}
 
-	bool hit = calculateLineHitHelper(origin, target,
+	bool hit = calculateLineHelper(origin, target,
 		[&](Position point)
 		{
 			if (storeTrajectory && trajectory)
