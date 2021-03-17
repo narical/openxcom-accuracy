@@ -164,6 +164,44 @@ bool calculateLineHitHelper(const Position& origin, const Position& target, Func
 	return false;
 }
 
+template<typename FuncNewPosition>
+bool calculateParabolaHelper(const Position& origin, const Position& target, double curvature, const Position& delta, FuncNewPosition posFunc)
+{
+	double ro = Position::distance(target, origin);
+
+	if (AreSame(ro, 0.0)) return false;
+
+	double fi = acos((double)(target.z - origin.z) / ro);
+	double te = atan2((double)(target.y - origin.y), (double)(target.x - origin.x));
+
+	te += (delta.x / ro) / 2 * M_PI; //horizontal magic value
+	fi += ((delta.z + delta.y) / ro) / 14 * M_PI * curvature; //another magic value (vertical), to make it in line with fire spread
+
+	double zA = sqrt(ro)*curvature;
+	double zK = 4.0 * zA / ro / ro;
+
+	int x = origin.x;
+	int y = origin.y;
+	int z = origin.z;
+	int i = 8;
+
+	while (z > 0)
+	{
+		x = (int)((double)origin.x + (double)i * cos(te) * sin(fi));
+		y = (int)((double)origin.y + (double)i * sin(te) * sin(fi));
+		z = (int)((double)origin.z + (double)i * cos(fi) - zK * ((double)i - ro / 2.0) * ((double)i - ro / 2.0) + zA);
+
+		if (posFunc(Position(x,y,z)))
+		{
+			return true;
+		}
+
+		++i;
+	}
+
+	return false;
+}
+
 /**
  * Iterate through some subset of map tiles.
  * @param save Map data.
@@ -3639,25 +3677,10 @@ VoxelType TileEngine::calculateLineVoxel(Position origin, Position target, bool 
  */
 int TileEngine::calculateParabolaVoxel(Position origin, Position target, bool storeTrajectory, std::vector<Position> *trajectory, BattleUnit *excludeUnit, double curvature, const Position delta)
 {
-	double ro = Position::distance(target, origin);
+	if (target == origin) return V_EMPTY;//just in case
 
-	if (AreSame(ro, 0.0)) return V_EMPTY;//just in case
-
-	double fi = acos((double)(target.z - origin.z) / ro);
-	double te = atan2((double)(target.y - origin.y), (double)(target.x - origin.x));
-
-	te += (delta.x / ro) / 2 * M_PI; //horizontal magic value
-	fi += ((delta.z + delta.y) / ro) / 14 * M_PI * curvature; //another magic value (vertical), to make it in line with fire spread
-
-	double zA = sqrt(ro)*curvature;
-	double zK = 4.0 * zA / ro / ro;
-
-	int x = origin.x;
-	int y = origin.y;
-	int z = origin.z;
-	int i = 8;
 	int result = V_EMPTY;
-	Position lastPosition = Position(x,y,z);
+	Position lastPosition = origin;
 	Position nextPosition = lastPosition;
 
 	if (storeTrajectory && trajectory)
@@ -3665,31 +3688,32 @@ int TileEngine::calculateParabolaVoxel(Position origin, Position target, bool st
 		//initla value for small hack to glue `calculateLineVoxel` into one continuous arc
 		trajectory->push_back(lastPosition);
 	}
-	while (z > 0)
-	{
-		x = (int)((double)origin.x + (double)i * cos(te) * sin(fi));
-		y = (int)((double)origin.y + (double)i * sin(te) * sin(fi));
-		z = (int)((double)origin.z + (double)i * cos(fi) - zK * ((double)i - ro / 2.0) * ((double)i - ro / 2.0) + zA);
-		//passes through this point?
-		nextPosition = Position(x,y,z);
 
-		if (storeTrajectory && trajectory)
+	calculateParabolaHelper(origin, target, curvature, delta,
+		[&](Position p)
 		{
-			//remove end point of previus trajectory part, becasue next one will add this point again
-			trajectory->pop_back();
-		}
-		result = calculateLineVoxel(lastPosition, nextPosition, storeTrajectory, storeTrajectory ? trajectory : nullptr, excludeUnit);
-		if (result != V_EMPTY)
-		{
-			if (!storeTrajectory && trajectory)
+			//passes through this point?
+			nextPosition = p;
+
+			if (storeTrajectory && trajectory)
 			{
-				result = calculateLineVoxel(lastPosition, nextPosition, false, trajectory, excludeUnit); //pick the INSIDE position of impact
+				//remove end point of previus trajectory part, becasue next one will add this point again
+				trajectory->pop_back();
 			}
-			break;
+			result = calculateLineVoxel(lastPosition, nextPosition, storeTrajectory, storeTrajectory ? trajectory : nullptr, excludeUnit);
+			if (result != V_EMPTY)
+			{
+				if (!storeTrajectory && trajectory)
+				{
+					result = calculateLineVoxel(lastPosition, nextPosition, false, trajectory, excludeUnit); //pick the INSIDE position of impact
+				}
+				return true;
+			}
+			lastPosition = nextPosition;
+			return false;
 		}
-		lastPosition = nextPosition;
-		++i;
-	}
+	);
+
 	return result;
 }
 
