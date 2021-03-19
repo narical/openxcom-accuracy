@@ -729,7 +729,7 @@ public:
 	/// Was this unit summoned by an item?
 	bool isSummonedPlayerUnit() const;
 	/// Marks this unit as resummoned fake civilian and therefore won't count for civilian scoring in the Debriefing.
-	void markAsResummonedFakeCivilian() { _resummonedFakeCivilian = true; }
+	void markAsResummonedFakeCivilian() { _resummonedFakeCivilian = true; _status = STATUS_IGNORE_ME; }
 	/// Is this unit a resummoned fake civilian?
 	bool isResummonedFakeCivilian() const { return _resummonedFakeCivilian; }
 	/// Marks this unit as VIP.
