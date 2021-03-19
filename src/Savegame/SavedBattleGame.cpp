@@ -1226,6 +1226,8 @@ void SavedBattleGame::newTurnUpdateScripts()
 	}
 
 	reviveUnconsciousUnits(false);
+
+	getBattleGame()->convertInfected();
 }
 
 /**

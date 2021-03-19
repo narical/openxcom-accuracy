@@ -1004,7 +1004,7 @@ void BattlescapeGame::handleNonTargetAction()
 		}
 		else if (_currentAction.type == BA_USE)
 		{
-			_save->reviveUnconsciousUnits(true);
+			getTileEngine()->updateGameStateAfterScript(BattleActionAttack::GetBeforeShoot(_currentAction), TileEngine::invalid);
 		}
 		else if (_currentAction.type == BA_HIT)
 		{

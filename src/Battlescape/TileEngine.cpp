@@ -5205,15 +5205,28 @@ bool TileEngine::isPositionValidForUnit(Position &position, BattleUnit *unit, bo
 	return false;
 }
 
+/**
+ * Update game state after script hook execution. We need check state of units
+ * and handle special cases like deaths or unit tranformation.
+ * For now we assume that Light and FOV is affected only in small area,
+ * this mean we could glitch if multiple units are affected by script logic.
+ * @param battleActionAttack Data of action that triggeted script hook.
+ * @param pos Postion to update light and Fov, can be invaild if we do not update light
+ */
 void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos)
 {
 	_save->getBattleGame()->checkForCasualties(nullptr, battleActionAttack, false, false);
 
 	_save->reviveUnconsciousUnits(true);
 
-	// limit area of the following calls to the Position pos
-	calculateFOV(pos, 1, false);
-	calculateLighting(LL_ITEMS, pos, 2, true);
+	_save->getBattleGame()->convertInfected();
+
+	if (pos != TileEngine::invalid)
+	{
+		// limit area of the following calls to the Position pos
+		calculateLighting(LL_ITEMS, pos, 2, true);
+		calculateFOV(pos, 1, false);
+	}
 }
 
 }

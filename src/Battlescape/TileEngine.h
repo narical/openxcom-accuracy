@@ -275,6 +275,7 @@ public:
 	void setDangerZone(Position pos, int radius, BattleUnit *unit);
 	/// Checks if a position is valid for a unit, used for spawning and forced movement.
 	bool isPositionValidForUnit(Position &position, BattleUnit *unit, bool checkSurrounding = false, int startSurroundingCheckDirection = 0);
+	/// Update game state after script hook execution.
 	void updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos);
 
 };
