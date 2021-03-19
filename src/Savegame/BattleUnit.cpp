@@ -5454,6 +5454,24 @@ void setSpawnUnitScript(BattleUnit *bu, const Unit* unitType)
 	}
 }
 
+void getSpawnUnitScript(BattleUnit *bu, const Unit*& unitType)
+{
+	unitType = bu ? bu->getSpawnUnit() : nullptr;
+}
+
+void setSpawnUnitInstantRespawnScript(BattleUnit *bu, int respawn)
+{
+	if (bu && bu->getSpawnUnit())
+	{
+		bu->setRespawn(respawn);
+	}
+}
+
+void getSpawnUnitInstantRespawnScript(BattleUnit *bu, int& respawn)
+{
+	respawn = bu ? bu->getRespawn() : 0;
+}
+
 void getInventoryItemScript(BattleUnit* bu, BattleItem *&foundItem, const RuleItem *itemRules)
 {
 	foundItem = nullptr;
@@ -5623,8 +5641,13 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getDirection>("getDirection");
 	bu.add<&BattleUnit::getTurretDirection>("getTurretDirection");
 	bu.add<&BattleUnit::getWalkingPhase>("getWalkingPhase");
-	bu.add<&setSpawnUnitScript>("setSpawnUnit");
 	bu.add<&BattleUnit::disableIndicators>("disableIndicators");
+
+
+	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawned from curret unit");
+	bu.add<&getSpawnUnitScript>("getSpawnUnit", "return type of zombie will be spawned from curret unit");
+	bu.add<&setSpawnUnitInstantRespawnScript>("setSpawnUnitInstantRespawn", "set 1 to make unit instalty change to spawn zombie unit, other wise it will transform on death");
+	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");
