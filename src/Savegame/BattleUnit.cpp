@@ -5442,7 +5442,7 @@ void getFactionScript(const BattleUnit *bu, int &faction)
 
 void setSpawnUnitScript(BattleUnit *bu, const Unit* unitType)
 {
-	if (bu && unitType)
+	if (bu && unitType && bu->getArmor()->getSize() >= unitType->getArmor()->getSize())
 	{
 		bu->setSpawnUnit(unitType);
 		bu->setRespawn(true);

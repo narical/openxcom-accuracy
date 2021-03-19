@@ -330,8 +330,13 @@ InventoryState::~InventoryState()
 			Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, true);
 			_game->getScreen()->resetDisplay(false);
 		}
-		Tile *inventoryTile = _battleGame->getSelectedUnit()->getTile();
-		_battleGame->getTileEngine()->applyGravity(inventoryTile);
+
+		//fix case when scripts could kill unit before inventory is closed
+		if (BattleUnit* unit =_battleGame->getSelectedUnit())
+		{
+			Tile *inventoryTile = unit->getTile();
+			_battleGame->getTileEngine()->applyGravity(inventoryTile);
+		}
 		_battleGame->getTileEngine()->calculateLighting(LL_ITEMS); // dropping/picking up flares
 		_battleGame->getTileEngine()->recalculateFOV();
 	}

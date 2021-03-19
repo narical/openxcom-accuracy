@@ -2082,6 +2082,10 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 
 	bool visible = unit->getVisible();
 
+	if (getSave()->getSelectedUnit() == unit)
+	{
+		getSave()->setSelectedUnit(nullptr);
+	}
 	getSave()->getBattleState()->resetUiButton();
 	// in case the unit was unconscious
 	getSave()->removeUnconsciousBodyItem(unit);
@@ -2874,21 +2878,26 @@ BattlescapeTally BattlescapeGame::tallyUnits()
 bool BattlescapeGame::convertInfected()
 {
 	bool retVal = false;
-	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	std::vector<BattleUnit*> forTransform;
+	for (BattleUnit* i : *_save->getUnits())
 	{
-		if (!(*i)->isOutThresholdExceed() && (*i)->getRespawn())
+		if (!i->isOutThresholdExceed() && i->getRespawn())
 		{
 			retVal = true;
-			(*i)->setRespawn(false);
-			if (Options::battleNotifyDeath && (*i)->getFaction() == FACTION_PLAYER)
+			i->setRespawn(false);
+			if (Options::battleNotifyDeath && i->getFaction() == FACTION_PLAYER)
 			{
 				Game *game = _parentState->getGame();
-				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_HAS_BEEN_KILLED", (*i)->getGender()).arg((*i)->getName(game->getLanguage()))));
+				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_HAS_BEEN_KILLED", i->getGender()).arg(i->getName(game->getLanguage()))));
 			}
 
-			convertUnit((*i));
-			i = _save->getUnits()->begin();
+			forTransform.push_back(i);
 		}
+	}
+
+	for (BattleUnit* i : forTransform)
+	{
+		convertUnit(i);
 	}
 	return retVal;
 }
