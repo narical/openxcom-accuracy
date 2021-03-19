@@ -2097,14 +2097,7 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 
 	const Unit* type = unit->getSpawnUnit();
 
-	BattleUnit *newUnit = new BattleUnit(getMod(),
-		const_cast<Unit*>(type),
-		FACTION_HOSTILE,
-		_save->getUnits()->back()->getId() + 1,
-		_save->getEnviroEffects(),
-		type->getArmor(),
-		getMod()->getStatAdjustment(_parentState->getGame()->getSavedGame()->getDifficulty()),
-		getDepth());
+	BattleUnit *newUnit = _save->createTempUnit(type, FACTION_HOSTILE);
 
 	getSave()->initUnit(newUnit);
 	newUnit->setTile(tile, _save);
@@ -2112,7 +2105,6 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 	newUnit->setDirection(unit->getDirection());
 	newUnit->clearTimeUnits();
 	getSave()->getUnits()->push_back(newUnit);
-	newUnit->setAIModule(new AIModule(getSave(), newUnit, 0));
 	newUnit->setVisible(visible);
 
 	getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
@@ -2166,19 +2158,7 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 	}
 
 	// Create the unit
-	BattleUnit *newUnit = new BattleUnit(getMod(),
-		type,
-		faction,
-		_save->getUnits()->back()->getId() + 1,
-		faction != FACTION_PLAYER ? _save->getEnviroEffects() : nullptr,
-		type->getArmor(),
-		faction == FACTION_HOSTILE ? getMod()->getStatAdjustment(_parentState->getGame()->getSavedGame()->getDifficulty()) : nullptr,
-		getDepth());
-
-	if (faction == FACTION_PLAYER)
-	{
-		newUnit->setSummonedPlayerUnit(true);
-	}
+	BattleUnit *newUnit = _save->createTempUnit(type, faction);
 
 	// Validate the position for the unit, checking if there's a surrounding tile if necessary
 	int checkDirection = attack.attacker ? (attack.attacker->getDirection() + 4) % 8 : 0;
@@ -2232,10 +2212,6 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		newUnit->setDirection(unitDirection);
 		newUnit->clearTimeUnits();
 		getSave()->getUnits()->push_back(newUnit);
-		if (faction != FACTION_PLAYER)
-		{
-			newUnit->setAIModule(new AIModule(getSave(), newUnit, 0));
-		}
 		bool visible = faction == FACTION_PLAYER;
 		newUnit->setVisible(visible);
 

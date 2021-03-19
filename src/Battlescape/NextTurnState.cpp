@@ -879,15 +879,7 @@ bool NextTurnState::deployReinforcements(const ReinforcementsData &wave)
  */
 BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit *rules, int alienRank, bool civilian)
 {
-	BattleUnit* unit = new BattleUnit(
-		_game->getMod(),
-		rules,
-		civilian ? FACTION_NEUTRAL : FACTION_HOSTILE,
-		_battleGame->getUnits()->back()->getId() + 1,
-		_battleGame->getEnviroEffects(),
-		rules->getArmor(),
-		_game->getMod()->getStatAdjustment(_game->getSavedGame()->getDifficulty()),
-		_battleGame->getDepth());
+	BattleUnit* unit = _battleGame->createTempUnit(rules, civilian ? FACTION_NEUTRAL : FACTION_HOSTILE);
 
 	// 1. try nodes first
 	bool unitPlaced = false;
@@ -897,7 +889,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 		{
 			if (_battleGame->setUnitPosition(unit, node->getPosition()))
 			{
-				unit->setAIModule(new AIModule(_game->getSavedGame()->getSavedBattle(), unit, node));
+				unit->getAIModule()->setStartNode(node);
 				unit->setRankInt(alienRank);
 				unit->setDirection(RNG::generate(0, 7));
 				_battleGame->getUnits()->push_back(unit);
@@ -986,7 +978,6 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 				{
 					if (_battleGame->setUnitPosition(unit, randomPos + Position(0, 0, tryZ)))
 					{
-						unit->setAIModule(new AIModule(_game->getSavedGame()->getSavedBattle(), unit, nullptr));
 						unit->setRankInt(alienRank);
 						unit->setDirection(RNG::generate(0, 7));
 						_battleGame->getUnits()->push_back(unit);
@@ -1002,7 +993,6 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 	// 3. finally just place it somewhere
 	if (!unitPlaced && wave.forceSpawnNearFriend && placeReinforcementNearFriend(unit))
 	{
-		unit->setAIModule(new AIModule(_game->getSavedGame()->getSavedBattle(), unit, nullptr));
 		unit->setRankInt(alienRank);
 		unit->setDirection(RNG::generate(0, 7));
 		_battleGame->getUnits()->push_back(unit);

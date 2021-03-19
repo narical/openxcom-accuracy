@@ -368,6 +368,7 @@ public:
 	void deleteList(BattleItem *item);
 	/// Removes an item from the game.
 	void removeItem(BattleItem *item);
+
 	/// Add buildIn weapon from list to unit.
 	void addFixedItems(BattleUnit *unit, const std::vector<const RuleItem*> &fixed);
 	/// Init new created unit.
@@ -384,6 +385,9 @@ public:
 	BattleItem *createItemForTile(const RuleItem *rule, Tile *tile);
 	/// Create new item for tile.
 	BattleItem *createItemForTile(const std::string& type, Tile *tile);
+	/// Create new temporary unit.
+	BattleUnit *createTempUnit(const Unit *rules, UnitFaction faction, int nextUnitId = -1);
+
 	/// Sets whether the mission was aborted.
 	void setAborted(bool flag);
 	/// Checks if the mission was aborted.

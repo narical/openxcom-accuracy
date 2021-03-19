@@ -79,6 +79,8 @@ public:
 	void setWeaponPickedUp();
 	/// Gets whether the unit was hit.
 	bool getWasHitBy(int attacker) const;
+	/// Set start node.
+	void setStartNode(Node *node) { _fromNode = node; }
 	/// setup a patrol objective.
 	void setupPatrol();
 	/// setup an ambush objective.

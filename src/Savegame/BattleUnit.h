@@ -553,6 +553,11 @@ public:
 	int getMaxViewDistanceAtDay(const Armor *otherUnitArmor) const;
 	/// Get the units's special ability.
 	int getSpecialAbility() const;
+
+	/// Gets the unit's spawn unit.
+	const Unit *getSpawnUnit() const;
+	/// Sets the unit's spawn unit.
+	void setSpawnUnit(const Unit *spawnUnit);
 	/// Set the units's respawn flag.
 	void setRespawn(bool respawn);
 	/// Get the units's respawn flag.
@@ -561,6 +566,7 @@ public:
 	void setAlreadyRespawned(bool alreadyRespawned);
 	/// Get the units's alreadyRespawned flag.
 	bool getAlreadyRespawned() const;
+
 	/// Get the units's rank string.
 	const std::string& getRankString() const;
 	/// Get the geoscape-soldier object.
@@ -575,10 +581,7 @@ public:
 	void kill();
 	/// Set health to 0 and set status dead
 	void instaKill();
-	/// Gets the unit's spawn unit.
-	const Unit *getSpawnUnit() const;
-	/// Sets the unit's spawn unit.
-	void setSpawnUnit(const Unit *spawnUnit);
+
 	/// Gets the unit's aggro sound.
 	int getAggroSound() const;
 	/// Sets the unit's time units.

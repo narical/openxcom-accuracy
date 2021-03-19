@@ -1738,6 +1738,43 @@ BattleItem *SavedBattleGame::createItemForTile(const RuleItem *rule, Tile *tile)
 }
 
 /**
+ * Create new temporary unit. Unit is not added to unit list and is not initialized fully.
+ * @param rules Unit config
+ * @param faction Faction of unit
+ * @param nextUnitId Optional next id of unit, if not given then it try get value based on last unit.
+ * @return New temporary unit.
+ */
+BattleUnit *SavedBattleGame::createTempUnit(const Unit *rules, UnitFaction faction, int nextUnitId)
+{
+	BattleUnit *newUnit = new BattleUnit(
+		getMod(),
+		const_cast<Unit*>(rules),
+		faction,
+		nextUnitId > 0 ? nextUnitId : getUnits()->back()->getId() + 1,
+		faction != FACTION_PLAYER ? getEnviroEffects() : nullptr,
+		rules->getArmor(),
+		faction == FACTION_HOSTILE ? _rule->getStatAdjustment(getGeoscapeSave()->getDifficulty()) : nullptr,
+		getDepth());
+
+	if (faction == FACTION_PLAYER)
+	{
+		//Tanks are created with predefined `nextUnitId` value, if we do not have this value, its summoned unit.
+		if (nextUnitId <= 0)
+		{
+			newUnit->setSummonedPlayerUnit(true);
+		}
+	}
+	else
+	{
+		newUnit->setAIModule(new AIModule(this, newUnit, 0));
+	}
+
+	return newUnit;
+}
+
+
+
+/**
  * Returns whether the battlescape should display the names of the soldiers or their callsigns.
  * @return True, if the battlescape should show player names + statstrings (default behaviour), or false, if the battlescape should display callsigns.
  */
