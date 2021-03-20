@@ -2101,7 +2101,7 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 
 	const Unit* type = unit->getSpawnUnit();
 
-	BattleUnit *newUnit = _save->createTempUnit(type, FACTION_HOSTILE);
+	BattleUnit *newUnit = _save->createTempUnit(type, unit->getSpawnUnitFaction());
 
 	getSave()->initUnit(newUnit);
 	newUnit->setTile(tile, _save);

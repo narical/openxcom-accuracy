@@ -86,6 +86,7 @@ private:
 
 	UnitFaction _faction, _originalFaction;
 	UnitFaction _killedBy;
+	UnitFaction _spawnUnitFaction = FACTION_HOSTILE;
 	int _id;
 	Position _pos;
 	Tile *_tile;
@@ -558,6 +559,10 @@ public:
 	const Unit *getSpawnUnit() const;
 	/// Sets the unit's spawn unit.
 	void setSpawnUnit(const Unit *spawnUnit);
+	/// Gets the faction of spawned unit.
+	UnitFaction getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	/// Set the faction of spawned unit.
+	void setSpawnUnitFaction(UnitFaction f) { _spawnUnitFaction = f; }
 	/// Set the units's respawn flag.
 	void setRespawn(bool respawn);
 	/// Get the units's respawn flag.

@@ -612,12 +612,18 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_kills = node["kills"].as<int>(_kills);
 	_dontReselect = node["dontReselect"].as<bool>(_dontReselect);
 	_charging = 0;
+
 	if (const YAML::Node& spawn = node["spawnUnit"])
 	{
 		_spawnUnit = mod->getUnit(spawn.as<std::string>(), false); //ignored bugged types
+		if (_spawnUnit)
+		{
+			_respawn = node["respawn"].as<bool>(_respawn);
+			_spawnUnitFaction = (UnitFaction)node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
+		}
 	}
+
 	_motionPoints = node["motionPoints"].as<int>(0);
-	_respawn = node["respawn"].as<bool>(_respawn);
 	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
 	_activeHand = node["activeHand"].as<std::string>(_activeHand);
 	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
@@ -706,12 +712,15 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["kills"] = _kills;
 	if (_faction == FACTION_PLAYER && _dontReselect)
 		node["dontReselect"] = _dontReselect;
+
 	if (_spawnUnit)
 	{
 		node["spawnUnit"] = _spawnUnit->getType();
+		node["respawn"] = _respawn;
+		node["spawnUnitFaction"] = (int)_spawnUnitFaction;
 	}
+
 	node["motionPoints"] = _motionPoints;
-	node["respawn"] = _respawn;
 	node["alreadyRespawned"] = _alreadyRespawned;
 	node["activeHand"] = _activeHand;
 	if (!_preferredHandForReactions.empty())
@@ -1656,6 +1665,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		{
 			// converts the victim to a zombie on death
 			setRespawn(true);
+			setSpawnUnitFaction(FACTION_HOSTILE);
 			setSpawnUnit(save->getMod()->getUnit(specialDamegeTransform->getZombieUnit(this)));
 		}
 
@@ -5440,17 +5450,20 @@ void getFactionScript(const BattleUnit *bu, int &faction)
 	faction = 0;
 }
 
+
 void setSpawnUnitScript(BattleUnit *bu, const Unit* unitType)
 {
 	if (bu && unitType && bu->getArmor()->getSize() >= unitType->getArmor()->getSize())
 	{
 		bu->setSpawnUnit(unitType);
 		bu->setRespawn(true);
+		bu->setSpawnUnitFaction(FACTION_HOSTILE);
 	}
 	else if (bu)
 	{
 		bu->setSpawnUnit(nullptr);
 		bu->setRespawn(false);
+		bu->setSpawnUnitFaction(FACTION_HOSTILE);
 	}
 }
 
@@ -5471,6 +5484,23 @@ void getSpawnUnitInstantRespawnScript(BattleUnit *bu, int& respawn)
 {
 	respawn = bu ? bu->getRespawn() : 0;
 }
+
+void setSpawnUnitFactionScript(BattleUnit *bu, int faction)
+{
+	if (bu && bu->getSpawnUnit())
+	{
+		if (faction >= FACTION_PLAYER && faction <= FACTION_NEUTRAL)
+		{
+			bu->setSpawnUnitFaction((UnitFaction)faction);
+		}
+	}
+}
+
+void getSpawnUnitFactionScript(BattleUnit *bu, int& faction)
+{
+	faction = bu ? bu->getSpawnUnitFaction() : 0;
+}
+
 
 void getInventoryItemScript(BattleUnit* bu, BattleItem *&foundItem, const RuleItem *itemRules)
 {
@@ -5644,10 +5674,12 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::disableIndicators>("disableIndicators");
 
 
-	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawned from curret unit");
-	bu.add<&getSpawnUnitScript>("getSpawnUnit", "return type of zombie will be spawned from curret unit");
+	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from curret unit, it will reset every thing to default (hostile & instant)");
+	bu.add<&getSpawnUnitScript>("getSpawnUnit", "get type of zombie will be spawn from curret unit");
 	bu.add<&setSpawnUnitInstantRespawnScript>("setSpawnUnitInstantRespawn", "set 1 to make unit instalty change to spawn zombie unit, other wise it will transform on death");
 	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
+	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will span");
+	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will span");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");

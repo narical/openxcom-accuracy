@@ -1388,9 +1388,16 @@ void DebriefingState::prepareDebriefing()
 	std::vector<BattleUnit*> waitingTransformations;
 	for (auto* u : *battle->getUnits())
 	{
-		if (u->getSpawnUnit() && u->getOriginalFaction() == FACTION_HOSTILE && (!u->isOut() || u->isIgnored()))
+		if (u->getSpawnUnit() && (!u->isOut() || u->isIgnored()))
 		{
-			waitingTransformations.push_back(u);
+			if (u->getOriginalFaction() == FACTION_HOSTILE)
+			{
+				waitingTransformations.push_back(u);
+			}
+			else
+			{
+				//if unit belong to XCOM or CIVILIANS we leave it as-is
+			}
 		}
 	}
 	for (auto* u : waitingTransformations)
