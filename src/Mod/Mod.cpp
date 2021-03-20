@@ -5642,6 +5642,14 @@ void getInvenotryScript(const Mod* mod, const RuleInventory* &inv, const std::st
  */
 void Mod::ScriptRegister(ScriptParserBase *parser)
 {
+	parser->registerPointerType<Unit>();
+	parser->registerPointerType<RuleItem>();
+	parser->registerPointerType<Armor>();
+	parser->registerPointerType<RuleSkill>();
+	parser->registerPointerType<RuleResearch>();
+	parser->registerPointerType<RuleSoldier>();
+	parser->registerPointerType<RuleInventory>();
+
 	Bind<Mod> mod = { parser };
 
 	mod.add<&offset<&Mod::_soundOffsetBattle>>("getSoundOffsetBattle");
