@@ -571,6 +571,8 @@ public:
 	void setAlreadyRespawned(bool alreadyRespawned);
 	/// Get the units's alreadyRespawned flag.
 	bool getAlreadyRespawned() const;
+	/// Remove all spawn unit info.
+	void clearSpawnUnit();
 
 	/// Get the units's rank string.
 	const std::string& getRankString() const;

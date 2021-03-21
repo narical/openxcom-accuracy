@@ -1721,7 +1721,18 @@ void BattleUnit::knockOut(BattlescapeGame *battle)
 	{
 		setRespawn(false);
 		BattleUnit *newUnit = battle->convertUnit(this);
-		newUnit->knockOut(battle);
+
+		if (newUnit)
+		{
+			if (newUnit->getSpawnUnit())
+			{
+				//scripts or rulesets could make new chryssalid from chryssalid, this meam we could have infinite loop there
+				//setting null will break it
+				newUnit->clearSpawnUnit();
+			}
+
+			newUnit->knockOut(battle);
+		}
 	}
 	else
 	{
@@ -4072,6 +4083,18 @@ void BattleUnit::setSpawnUnit(const Unit *spawnUnit)
 }
 
 /**
+ * Clear all information for spawn unit.
+ */
+void BattleUnit::clearSpawnUnit()
+{
+	setSpawnUnit(nullptr);
+	setSpawnUnitFaction(FACTION_HOSTILE);
+	setRespawn(false);
+}
+
+
+
+/**
  * Get the units's rank string.
  * @return rank.
  */
@@ -5461,9 +5484,7 @@ void setSpawnUnitScript(BattleUnit *bu, const Unit* unitType)
 	}
 	else if (bu)
 	{
-		bu->setSpawnUnit(nullptr);
-		bu->setRespawn(false);
-		bu->setSpawnUnitFaction(FACTION_HOSTILE);
+		bu->clearSpawnUnit();
 	}
 }
 

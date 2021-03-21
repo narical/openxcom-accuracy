@@ -2093,8 +2093,22 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 	unit->instaKill();
 
 	auto tile = unit->getTile();
+	if (tile == nullptr)
+	{
+		auto pos = unit->getPosition();
+		if (pos != TileEngine::invalid)
+		{
+			tile = _save->getTile(pos);
+		}
+	}
 
-	getSave()->getTileEngine()->itemDropInventory(tile, unit);
+	// in case of unconscious unit someone could stand on top of it, or take curret unit to invenotry, then we skip spawning any thing
+	if (!tile || (tile->getUnit() != nullptr && tile->getUnit() != unit))
+	{
+		return nullptr;
+	}
+
+	getSave()->getTileEngine()->itemDropInventory(tile, unit, false, true);
 
 	// remove unit-tile link
 	unit->setTile(nullptr, _save);

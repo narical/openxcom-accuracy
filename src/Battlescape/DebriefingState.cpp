@@ -1408,13 +1408,19 @@ void DebriefingState::prepareDebriefing()
 		// reason: zombies don't create unconscious bodies... ever.
 		// the only way we can get into this situation is if psi-capture is enabled.
 		// we can use that knowledge to our advantage to save having to make it unconscious and spawn a body item for it.
-		BattleUnit *newUnit = _game->getSavedGame()->getSavedBattle()->getBattleGame()->convertUnit(u);
-		u->killedBy(FACTION_HOSTILE); //skip counting as kill
-		newUnit->convertToFaction(faction);
 		if (ignore)
 		{
-			newUnit->goToTimeOut();
+			//simplified handling for unit from previous stage
+			BattleUnit *newUnit = battle->createTempUnit(u->getSpawnUnit(), u->getSpawnUnitFaction());
+			battle->getUnits()->push_back(newUnit);
+			newUnit->convertToFaction(faction);
 		}
+		else
+		{
+			BattleUnit *newUnit = _game->getSavedGame()->getSavedBattle()->getBattleGame()->convertUnit(u);
+			newUnit->convertToFaction(faction);
+		}
+		u->killedBy(FACTION_HOSTILE); //skip counting as kill
 	}
 
 	// time to care for units.
