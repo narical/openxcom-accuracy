@@ -56,7 +56,7 @@ private:
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 
-	bool selectPointNearTargetLeeroy(BattleUnit *target) const;
+	bool selectPointNearTargetLeeroy(BattleUnit *target);
 	int selectNearestTargetLeeroy();
 	void meleeActionLeeroy();
 	void dont_think(BattleAction *action);
@@ -100,7 +100,7 @@ public:
 	/// Selects a random known target.
 	bool selectRandomTarget();
 	/// Selects the nearest reachable point relative to a target.
-	bool selectPointNearTarget(BattleUnit *target, int maxTUs) const;
+	bool selectPointNearTarget(BattleUnit *target, int maxTUs);
 	/// Selects a target from a list of units seen by spotter units for out-of-LOS actions
 	bool selectSpottedUnitForSniper();
 	/// Scores a firing mode action based on distance to target and accuracy.

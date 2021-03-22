@@ -1287,7 +1287,7 @@ bool AIModule::selectRandomTarget()
  * @param maxTUs Maximum time units the path to the target can cost.
  * @return True if a point was found.
  */
-bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs) const
+bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
 {
 	int size = _unit->getArmor()->getSize();
 	int sizeTarget = target->getArmor()->getSize();
@@ -1340,7 +1340,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs) const
  * @param target Pointer to a target.
  * @return True if a point was found.
  */
-bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target) const
+bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 {
 	int size = _unit->getArmor()->getSize();
 	int targetsize = target->getArmor()->getSize();
