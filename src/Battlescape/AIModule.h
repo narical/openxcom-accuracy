@@ -46,7 +46,6 @@ private:
 	int _knownEnemies, _visibleEnemies, _spottingEnemies;
 	int _escapeTUs, _ambushTUs;
 	bool _weaponPickedUp;
-	BattleAction *_escapeAction, *_ambushAction, *_attackAction, *_patrolAction, *_psiAction;
 	bool _rifle, _melee, _blaster, _grenade;
 	bool _traceAI, _didPsi;
 	int _AIMode, _intelligence, _closestDist;
@@ -55,6 +54,8 @@ private:
 	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
+
+	BattleAction _escapeAction, _ambushAction, _attackAction, _patrolAction, _psiAction;
 
 	bool selectPointNearTargetLeeroy(BattleUnit *target);
 	int selectNearestTargetLeeroy();

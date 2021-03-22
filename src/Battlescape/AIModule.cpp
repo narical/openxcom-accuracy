@@ -55,11 +55,11 @@ AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
 
 	_reserve = BA_NONE;
 	_intelligence = _unit->getIntelligence();
-	_escapeAction = new BattleAction();
-	_ambushAction = new BattleAction();
-	_attackAction = new BattleAction();
-	_patrolAction = new BattleAction();
-	_psiAction = new BattleAction();
+	_escapeAction = BattleAction();
+	_ambushAction = BattleAction();
+	_attackAction = BattleAction();
+	_patrolAction = BattleAction();
+	_psiAction = BattleAction();
 	_targetFaction = FACTION_PLAYER;
 	if (_unit->getOriginalFaction() == FACTION_NEUTRAL)
 	{
@@ -72,11 +72,7 @@ AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
  */
 AIModule::~AIModule()
 {
-	delete _escapeAction;
-	delete _ambushAction;
-	delete _attackAction;
-	delete _patrolAction;
-	delete _psiAction;
+
 }
 
 /**
@@ -174,10 +170,10 @@ void AIModule::dont_think(BattleAction *action)
 			Log(LOG_INFO) << "LEEROY: LEEROYIN' at someone!";
 		}
 		meleeActionLeeroy();
-		action->type = _attackAction->type;
-		action->target = _attackAction->target;
+		action->type = _attackAction.type;
+		action->target = _attackAction.target;
 		// if this is a firepoint action, set our facing.
-		action->finalFacing = _attackAction->finalFacing;
+		action->finalFacing = _attackAction.finalFacing;
 		action->updateTU();
 	}
 	else
@@ -189,8 +185,8 @@ void AIModule::dont_think(BattleAction *action)
 		setupPatrol();
 		_unit->setCharging(0);
 		_reserve = BA_NONE;
-		action->type = _patrolAction->type;
-		action->target = _patrolAction->target;
+		action->type = _patrolAction.type;
+		action->target = _patrolAction.target;
 	}
 }
 
@@ -203,11 +199,11 @@ void AIModule::think(BattleAction *action)
 	action->type = BA_RETHINK;
 	action->actor = _unit;
 	action->weapon = _unit->getMainHandWeapon(false);
-	_attackAction->diff = _save->getBattleState()->getGame()->getSavedGame()->getDifficultyCoefficient();
-	_attackAction->actor = _unit;
-	_attackAction->weapon = action->weapon;
-	_attackAction->number = action->number;
-	_escapeAction->number = action->number;
+	_attackAction.diff = _save->getBattleState()->getGame()->getSavedGame()->getDifficultyCoefficient();
+	_attackAction.actor = _unit;
+	_attackAction.weapon = action->weapon;
+	_attackAction.number = action->number;
+	_escapeAction.number = action->number;
 	_knownEnemies = countKnownTargets();
 	_visibleEnemies = selectNearestTarget();
 	_spottingEnemies = getSpottingUnits(_unit->getPosition());
@@ -305,13 +301,13 @@ void AIModule::think(BattleAction *action)
 	setupAttack();
 	setupPatrol();
 
-	if (_psiAction->type != BA_NONE && !_didPsi && _save->getTurn() >= _psiAction->weapon->getRules()->getAIUseDelay(mod))
+	if (_psiAction.type != BA_NONE && !_didPsi && _save->getTurn() >= _psiAction.weapon->getRules()->getAIUseDelay(mod))
 	{
 		_didPsi = true;
-		action->type = _psiAction->type;
-		action->target = _psiAction->target;
+		action->type = _psiAction.type;
+		action->target = _psiAction.target;
 		action->number -= 1;
-		action->weapon = _psiAction->weapon;
+		action->weapon = _psiAction.weapon;
 		action->updateTU();
 		return;
 	}
@@ -331,7 +327,7 @@ void AIModule::think(BattleAction *action)
 			evaluate = (!_rifle || !_ambushTUs || _visibleEnemies);
 			break;
 		case AI_COMBAT:
-			evaluate = (_attackAction->type == BA_RETHINK);
+			evaluate = (_attackAction.type == BA_RETHINK);
 			break;
 		case AI_ESCAPE:
 			evaluate = (!_spottingEnemies || !_knownEnemies);
@@ -394,8 +390,8 @@ void AIModule::think(BattleAction *action)
 	{
 	case AI_ESCAPE:
 		_unit->setCharging(0);
-		action->type = _escapeAction->type;
-		action->target = _escapeAction->target;
+		action->type = _escapeAction.type;
+		action->target = _escapeAction.target;
 		// end this unit's turn.
 		action->finalAction = true;
 		// ignore new targets.
@@ -422,21 +418,21 @@ void AIModule::think(BattleAction *action)
 				break;
 			}
 		}
-		action->type = _patrolAction->type;
-		action->target = _patrolAction->target;
+		action->type = _patrolAction.type;
+		action->target = _patrolAction.target;
 		break;
 	case AI_COMBAT:
-		action->type = _attackAction->type;
-		action->target = _attackAction->target;
+		action->type = _attackAction.type;
+		action->target = _attackAction.target;
 		// this may have changed to a grenade.
-		action->weapon = _attackAction->weapon;
+		action->weapon = _attackAction.weapon;
 		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE)
 		{
 			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
 			_unit->spendTimeUnits(4);
 		}
 		// if this is a firepoint action, set our facing.
-		action->finalFacing = _attackAction->finalFacing;
+		action->finalFacing = _attackAction.finalFacing;
 		action->updateTU();
 		// if this is a "find fire point" action, don't increment the AI counter.
 		if (action->type == BA_WALK && _rifle && _unit->getArmor()->allowsMoving()
@@ -447,15 +443,15 @@ void AIModule::think(BattleAction *action)
 		}
 		else if (action->type == BA_LAUNCH)
 		{
-			action->waypoints = _attackAction->waypoints;
+			action->waypoints = _attackAction.waypoints;
 		}
 		break;
 	case AI_AMBUSH:
 		_unit->setCharging(0);
-		action->type = _ambushAction->type;
-		action->target = _ambushAction->target;
+		action->type = _ambushAction.type;
+		action->target = _ambushAction.target;
 		// face where we think our target will appear.
-		action->finalFacing = _ambushAction->finalFacing;
+		action->finalFacing = _ambushAction.finalFacing;
 		// end this unit's turn.
 		action->finalAction = true;
 		break;
@@ -512,7 +508,7 @@ bool AIModule::getWasHitBy(int attacker) const
 void AIModule::setupPatrol()
 {
 	Node *node;
-	_patrolAction->clearTU();
+	_patrolAction.clearTU();
 	if (_toNode != 0 && _unit->getPosition() == _toNode->getPosition())
 	{
 		if (_traceAI)
@@ -585,10 +581,10 @@ void AIModule::setupPatrol()
 		{
 			// can i shoot an object?
 			if (_fromNode->isTarget() &&
-				_attackAction->weapon &&
-				_attackAction->weapon->getRules()->getAccuracySnap() &&
-				_attackAction->weapon->getAmmoForAction(BA_SNAPSHOT) &&
-				_attackAction->weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getDamageType()->isDirect() &&
+				_attackAction.weapon &&
+				_attackAction.weapon->getRules()->getAccuracySnap() &&
+				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT) &&
+				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getDamageType()->isDirect() &&
 				_save->getModuleMap()[_fromNode->getPosition().x / 10][_fromNode->getPosition().y / 10].second > 0)
 			{
 				// scan this room for objects to destroy
@@ -600,11 +596,11 @@ void AIModule::setupPatrol()
 					MapData *md = _save->getTile(Position(i, j, 1))->getMapData(O_OBJECT);
 					if (md && md->isBaseModule())
 					{
-						_patrolAction->actor = _unit;
-						_patrolAction->target = Position(i, j, 1);
-						_patrolAction->weapon = _attackAction->weapon;
-						_patrolAction->type = BA_SNAPSHOT;
-						_patrolAction->updateTU();
+						_patrolAction.actor = _unit;
+						_patrolAction.target = Position(i, j, 1);
+						_patrolAction.weapon = _attackAction.weapon;
+						_patrolAction.type = BA_SNAPSHOT;
+						_patrolAction.updateTU();
 						_foundBaseModuleToDestroy = _save->getBattleGame()->getMod()->getAIDestroyBaseFacilities();
 						return;
 					}
@@ -657,13 +653,13 @@ void AIModule::setupPatrol()
 	if (_toNode != 0)
 	{
 		_toNode->allocateNode();
-		_patrolAction->actor = _unit;
-		_patrolAction->type = BA_WALK;
-		_patrolAction->target = _toNode->getPosition();
+		_patrolAction.actor = _unit;
+		_patrolAction.type = BA_WALK;
+		_patrolAction.target = _toNode->getPosition();
 	}
 	else
 	{
-		_patrolAction->type = BA_RETHINK;
+		_patrolAction.type = BA_RETHINK;
 	}
 }
 
@@ -676,7 +672,7 @@ void AIModule::setupPatrol()
  */
 void AIModule::setupAmbush()
 {
-	_ambushAction->type = BA_RETHINK;
+	_ambushAction.type = BA_RETHINK;
 	int bestScore = 0;
 	_ambushTUs = 0;
 	std::vector<int> path;
@@ -735,7 +731,7 @@ void AIModule::setupAmbush()
 							path = _save->getPathfinding()->copyPath();
 							bestScore = score;
 							_ambushTUs = (pos == _unit->getPosition()) ? 1 : ambushTUs;
-							_ambushAction->target = pos;
+							_ambushAction.target = pos;
 							if (bestScore > FAST_PASS_THRESHOLD)
 							{
 								break;
@@ -748,11 +744,11 @@ void AIModule::setupAmbush()
 
 		if (bestScore > 0)
 		{
-			_ambushAction->type = BA_WALK;
+			_ambushAction.type = BA_WALK;
 			// i should really make a function for this
-			origin = _ambushAction->target.toVoxel() +
+			origin = _ambushAction.target.toVoxel() +
 				// 4 because -2 is eyes and 2 below that is the rifle (or at least that's my understanding)
-				Position(8,8, _unit->getHeight() + _unit->getFloatHeight() - _save->getTile(_ambushAction->target)->getTerrainLevel() - 4);
+				Position(8,8, _unit->getHeight() + _unit->getFloatHeight() - _save->getTile(_ambushAction.target)->getTerrainLevel() - 4);
 			Position currentPos = _aggroTarget->getPosition();
 			_save->getPathfinding()->setUnit(_aggroTarget);
 			Position nextPos;
@@ -769,14 +765,14 @@ void AIModule::setupAmbush()
 				if (_save->getTileEngine()->canTargetUnit(&origin, tile, &target, _unit, false, _aggroTarget))
 				{
 					// if we can virtually fire at the hypothetical target, we know which way to face.
-					_ambushAction->finalFacing = _save->getTileEngine()->getDirectionTo(_ambushAction->target, currentPos);
+					_ambushAction.finalFacing = _save->getTileEngine()->getDirectionTo(_ambushAction.target, currentPos);
 					break;
 				}
 				--tries;
 			}
 			if (_traceAI)
 			{
-				Log(LOG_INFO) << "Ambush estimation will move to " << _ambushAction->target;
+				Log(LOG_INFO) << "Ambush estimation will move to " << _ambushAction.target;
 			}
 			return;
 		}
@@ -795,8 +791,8 @@ void AIModule::setupAmbush()
  */
 void AIModule::setupAttack()
 {
-	_attackAction->type = BA_RETHINK;
-	_psiAction->type = BA_NONE;
+	_attackAction.type = BA_RETHINK;
+	_psiAction.type = BA_NONE;
 
 	bool sniperAttack = false;
 
@@ -845,17 +841,17 @@ void AIModule::setupAttack()
 		}
 	}
 
-	if (_attackAction->type != BA_RETHINK)
+	if (_attackAction.type != BA_RETHINK)
 	{
 		if (_traceAI)
 		{
-			if (_attackAction->type != BA_WALK)
+			if (_attackAction.type != BA_WALK)
 			{
-				Log(LOG_INFO) << "Attack estimation desires to shoot at " << _attackAction->target;
+				Log(LOG_INFO) << "Attack estimation desires to shoot at " << _attackAction.target;
 			}
 			else
 			{
-				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction->target;
+				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
 			}
 		}
 		return;
@@ -867,7 +863,7 @@ void AIModule::setupAttack()
 		{
 			if (_traceAI)
 			{
-				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction->target;
+				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
 			}
 			return;
 		}
@@ -913,11 +909,11 @@ void AIModule::setupEscape()
 
 	while (tries < 150 && !coverFound)
 	{
-		_escapeAction->target = _unit->getPosition(); // start looking in a direction away from the enemy
+		_escapeAction.target = _unit->getPosition(); // start looking in a direction away from the enemy
 
-		if (!_save->getTile(_escapeAction->target))
+		if (!_save->getTile(_escapeAction.target))
 		{
-			_escapeAction->target = _unit->getPosition(); // cornered at the edge of the map perhaps?
+			_escapeAction.target = _unit->getPosition(); // cornered at the edge of the map perhaps?
 		}
 
 		score = 0;
@@ -928,22 +924,22 @@ void AIModule::setupEscape()
 			// or maybe continue to wherever we were running to and not risk looking stupid
 			if (_save->getTile(_unit->lastCover) != 0)
 			{
-				_escapeAction->target = _unit->lastCover;
+				_escapeAction.target = _unit->lastCover;
 			}
 		}
 		else if (tries < 121)
 		{
 			// looking for cover
-			_escapeAction->target.x += randomTileSearch[tries].x;
-			_escapeAction->target.y += randomTileSearch[tries].y;
+			_escapeAction.target.x += randomTileSearch[tries].x;
+			_escapeAction.target.y += randomTileSearch[tries].y;
 			score = BASE_SYSTEMATIC_SUCCESS;
-			if (_escapeAction->target == _unit->getPosition())
+			if (_escapeAction.target == _unit->getPosition())
 			{
 				if (unitsSpottingMe > 0)
 				{
 					// maybe don't stay in the same spot? move or something if there's any point to it?
-					_escapeAction->target.x += RNG::generate(-20,20);
-					_escapeAction->target.y += RNG::generate(-20,20);
+					_escapeAction.target.x += RNG::generate(-20,20);
+					_escapeAction.target.y += RNG::generate(-20,20);
 				}
 				else
 				{
@@ -962,25 +958,25 @@ void AIModule::setupEscape()
 			}
 
 			score = BASE_DESPERATE_SUCCESS; // ruuuuuuun
-			_escapeAction->target = _unit->getPosition();
-			_escapeAction->target.x += RNG::generate(-10,10);
-			_escapeAction->target.y += RNG::generate(-10,10);
-			_escapeAction->target.z = _unit->getPosition().z + RNG::generate(-1,1);
-			if (_escapeAction->target.z < 0)
+			_escapeAction.target = _unit->getPosition();
+			_escapeAction.target.x += RNG::generate(-10,10);
+			_escapeAction.target.y += RNG::generate(-10,10);
+			_escapeAction.target.z = _unit->getPosition().z + RNG::generate(-1,1);
+			if (_escapeAction.target.z < 0)
 			{
-				_escapeAction->target.z = 0;
+				_escapeAction.target.z = 0;
 			}
-			else if (_escapeAction->target.z >= _save->getMapSizeZ())
+			else if (_escapeAction.target.z >= _save->getMapSizeZ())
 			{
-				_escapeAction->target.z = _unit->getPosition().z;
+				_escapeAction.target.z = _unit->getPosition().z;
 			}
 		}
 
 		tries++;
 
 		// THINK, DAMN YOU
-		tile = _save->getTile(_escapeAction->target);
-		int distanceFromTarget = _aggroTarget ? Position::distance2d(_aggroTarget->getPosition(), _escapeAction->target) : 0;
+		tile = _save->getTile(_escapeAction.target);
+		int distanceFromTarget = _aggroTarget ? Position::distance2d(_aggroTarget->getPosition(), _escapeAction.target) : 0;
 		if (dist >= distanceFromTarget)
 		{
 			score -= (distanceFromTarget - dist) * 10;
@@ -996,8 +992,8 @@ void AIModule::setupEscape()
 		}
 		else
 		{
-			spotters = getSpottingUnits(_escapeAction->target);
-			if (std::find(_reachable.begin(), _reachable.end(), _save->getTileIndex(_escapeAction->target))  == _reachable.end())
+			spotters = getSpottingUnits(_escapeAction.target);
+			if (std::find(_reachable.begin(), _reachable.end(), _save->getTileIndex(_escapeAction.target))  == _reachable.end())
 				continue; // just ignore unreachable tiles
 
 			if (_spottingEnemies || spotters)
@@ -1032,13 +1028,13 @@ void AIModule::setupEscape()
 		if (tile && score > bestTileScore)
 		{
 			// calculate TUs to tile; we could be getting this from findReachable() somehow but that would break something for sure...
-			_save->getPathfinding()->calculate(_unit, _escapeAction->target);
-			if (_escapeAction->target == _unit->getPosition() || _save->getPathfinding()->getStartDirection() != -1)
+			_save->getPathfinding()->calculate(_unit, _escapeAction.target);
+			if (_escapeAction.target == _unit->getPosition() || _save->getPathfinding()->getStartDirection() != -1)
 			{
 				bestTileScore = score;
-				bestTile = _escapeAction->target;
+				bestTile = _escapeAction.target;
 				_escapeTUs = _save->getPathfinding()->getTotalTUCost();
-				if (_escapeAction->target == _unit->getPosition())
+				if (_escapeAction.target == _unit->getPosition())
 				{
 					_escapeTUs = 1;
 				}
@@ -1053,10 +1049,10 @@ void AIModule::setupEscape()
 			if (bestTileScore > FAST_PASS_THRESHOLD) coverFound = true; // good enough, gogogo
 		}
 	}
-	_escapeAction->target = bestTile;
+	_escapeAction.target = bestTile;
 	if (_traceAI)
 	{
-		_save->getTile(_escapeAction->target)->setMarkerColor(13);
+		_save->getTile(_escapeAction.target)->setMarkerColor(13);
 	}
 
 	if (bestTileScore <= -100000)
@@ -1065,7 +1061,7 @@ void AIModule::setupEscape()
 		{
 			Log(LOG_INFO) << "Escape estimation failed.";
 		}
-		_escapeAction->type = BA_RETHINK; // do something, just don't look dumbstruck :P
+		_escapeAction.type = BA_RETHINK; // do something, just don't look dumbstruck :P
 		return;
 	}
 	else
@@ -1074,7 +1070,7 @@ void AIModule::setupEscape()
 		{
 			Log(LOG_INFO) << "Escape estimation completed after " << tries << " tries, " << Position::distance2d(_unit->getPosition(), bestTile) << " squares or so away.";
 		}
-		_escapeAction->type = BA_WALK;
+		_escapeAction.type = BA_WALK;
 	}
 }
 
@@ -1162,7 +1158,7 @@ int AIModule::selectNearestTarget()
 				{
 					BattleAction action;
 					action.actor = _unit;
-					action.weapon = _attackAction->weapon;
+					action.weapon = _attackAction.weapon;
 					action.target = (*i)->getPosition();
 					Position origin = _save->getTileEngine()->getOriginVoxel(action, 0);
 					valid = _save->getTileEngine()->canTargetUnit(&origin, (*i)->getTile(), &target, _unit, false);
@@ -1171,8 +1167,8 @@ int AIModule::selectNearestTarget()
 				{
 					if (selectPointNearTarget(*i, _unit->getTimeUnits()))
 					{
-						int dir = _save->getTileEngine()->getDirectionTo(_attackAction->target, (*i)->getPosition());
-						valid = _save->getTileEngine()->validMeleeRange(_attackAction->target, dir, _unit, *i, 0);
+						int dir = _save->getTileEngine()->getDirectionTo(_attackAction.target, (*i)->getPosition());
+						valid = _save->getTileEngine()->validMeleeRange(_attackAction.target, dir, _unit, *i, 0);
 					}
 				}
 				if (valid)
@@ -1214,8 +1210,8 @@ int AIModule::selectNearestTargetLeeroy()
 				bool valid = false;
 				if (selectPointNearTargetLeeroy(*i))
 				{
-					int dir = _save->getTileEngine()->getDirectionTo(_attackAction->target, (*i)->getPosition());
-					valid = _save->getTileEngine()->validMeleeRange(_attackAction->target, dir, _unit, *i, 0);
+					int dir = _save->getTileEngine()->getDirectionTo(_attackAction.target, (*i)->getPosition());
+					valid = _save->getTileEngine()->validMeleeRange(_attackAction.target, dir, _unit, *i, 0);
 				}
 				if (valid)
 				{
@@ -1292,7 +1288,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
 	int size = _unit->getArmor()->getSize();
 	int sizeTarget = target->getArmor()->getSize();
 	int dirTarget = target->getDirection();
-	float dodgeChanceDiff = target->getArmor()->getMeleeDodge(target) * target->getArmor()->getMeleeDodgeBackPenalty() * _attackAction->diff / 160.0f;
+	float dodgeChanceDiff = target->getArmor()->getMeleeDodge(target) * target->getArmor()->getMeleeDodgeBackPenalty() * _attackAction.diff / 160.0f;
 	bool returnValue = false;
 	int distance = 1000;
 	for (int z = -1; z <= 1; ++z)
@@ -1318,7 +1314,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
 						int distanceCurrent = _save->getPathfinding()->getPath().size() - dodgeChanceDiff * _save->getTileEngine()->getArcDirection(dir - 4, dirTarget);
 						if (_save->getPathfinding()->getStartDirection() != -1 && distanceCurrent < distance)
 						{
-							_attackAction->target = checkPath;
+							_attackAction.target = checkPath;
 							returnValue = true;
 							distance = distanceCurrent;
 						}
@@ -1366,7 +1362,7 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 						_save->getPathfinding()->calculate(_unit, checkPath, 0, 100000); // disregard unit's TUs.
 						if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getPath().size() < distance)
 						{
-							_attackAction->target = checkPath;
+							_attackAction.target = checkPath;
 							returnValue = true;
 							distance = _save->getPathfinding()->getPath().size();
 						}
@@ -1391,9 +1387,9 @@ bool AIModule::selectSpottedUnitForSniper()
 	std::vector<std::pair<BattleUnit*, BattleAction>> spottedTargets;
 
 	// Get the TU costs for each available attack type
-	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction->actor, _attackAction->weapon);
-	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction->actor, _attackAction->weapon);
-	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction->actor, _attackAction->weapon);
+	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor, _attackAction.weapon);
+	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, _attackAction.weapon);
+	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, _attackAction.weapon);
 
 	BattleActionCost costThrow;
 	// Only want to check throwing if we have a grenade, the default constructor (line above) conveniently returns false from haveTU()
@@ -1401,11 +1397,11 @@ bool AIModule::selectSpottedUnitForSniper()
 	{
 		// We know we have a grenade, now we need to know if we have the TUs to throw it
 		costThrow.type = BA_THROW;
-		costThrow.actor = _attackAction->actor;
+		costThrow.actor = _attackAction.actor;
 		costThrow.weapon = _unit->getGrenadeFromBelt();
 		costThrow.updateTU();
 		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
-		costThrow += _attackAction->actor->getActionTUs(BA_PRIME, costThrow.weapon);
+		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
 	}
 
 	for (std::vector<BattleUnit*>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
@@ -1414,15 +1410,15 @@ bool AIModule::selectSpottedUnitForSniper()
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = (*i);
-			_attackAction->type = BA_RETHINK;
-			_attackAction->target = (*i)->getPosition();
+			_attackAction.type = BA_RETHINK;
+			_attackAction.target = (*i)->getPosition();
 			extendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, true);
 
-			BattleAction chosenAction = *_attackAction;
+			BattleAction chosenAction = _attackAction;
 			if (chosenAction.type == BA_THROW)
 				chosenAction.weapon = costThrow.weapon;
 
-			if (_attackAction->type != BA_RETHINK)
+			if (_attackAction.type != BA_RETHINK)
 			{
 				std::pair<BattleUnit*, BattleAction> spottedTarget;
 				spottedTarget = std::make_pair((*i), chosenAction);
@@ -1437,16 +1433,16 @@ bool AIModule::selectSpottedUnitForSniper()
 	{
 		int pick = RNG::generate(0, numberOfTargets - 1);
 		_aggroTarget = spottedTargets.at(pick).first;
-		_attackAction->target = _aggroTarget->getPosition();
-		_attackAction->type = spottedTargets.at(pick).second.type;
-		_attackAction->weapon = spottedTargets.at(pick).second.weapon;
+		_attackAction.target = _aggroTarget->getPosition();
+		_attackAction.type = spottedTargets.at(pick).second.type;
+		_attackAction.weapon = spottedTargets.at(pick).second.weapon;
 	}
 	else // We didn't find a suitable target
 	{
 		// Make sure we reset anything we might have changed while testing for targets
 		_aggroTarget = 0;
-		_attackAction->type = BA_RETHINK;
-		_attackAction->weapon = _unit->getMainHandWeapon(false);
+		_attackAction.type = BA_RETHINK;
+		_attackAction.weapon = _unit->getMainHandWeapon(false);
 	}
 
 	return _aggroTarget != 0;
@@ -1562,7 +1558,7 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
  */
 void AIModule::evaluateAIMode()
 {
-	if ((_unit->getCharging() && _attackAction->type != BA_RETHINK))
+	if ((_unit->getCharging() && _attackAction.type != BA_RETHINK))
 	{
 		_AIMode = AI_COMBAT;
 		return;
@@ -1767,9 +1763,9 @@ void AIModule::evaluateAIMode()
 	// enforce the validity of our decision, and try fallback behaviour according to priority.
 	if (_AIMode == AI_COMBAT)
 	{
-		if (_save->getTile(_attackAction->target) && _save->getTile(_attackAction->target)->getUnit())
+		if (_save->getTile(_attackAction.target) && _save->getTile(_attackAction.target)->getUnit())
 		{
-			if (_attackAction->type != BA_RETHINK)
+			if (_attackAction.type != BA_RETHINK)
 			{
 				return;
 			}
@@ -1821,7 +1817,7 @@ bool AIModule::findFirePoint()
 	bool waitIfOutsideWeaponRange = _unit->getGeoscapeSoldier() ? false : _unit->getUnitRules()->waitIfOutsideWeaponRange();
 	bool extendedFireModeChoiceEnabled = _save->getBattleGame()->getMod()->getAIExtendedFireModeChoice();
 	int bestScore = 0;
-	_attackAction->type = BA_RETHINK;
+	_attackAction.type = BA_RETHINK;
 	for (std::vector<Position>::const_iterator i = randomTileSearch.begin(); i != randomTileSearch.end(); ++i)
 	{
 		Position pos = _unit->getPosition() + *i;
@@ -1853,7 +1849,7 @@ bool AIModule::findFirePoint()
 				{
 					int distanceToTargetSq = _unit->distance3dToUnitSq(_aggroTarget);
 					int distanceToTarget = (int)std::ceil(sqrt(float(distanceToTargetSq)));
-					if (_attackAction->weapon && _attackAction->weapon->getRules()->isOutOfRange(distanceToTargetSq)) // make sure we can get the ruleset before checking the range
+					if (_attackAction.weapon && _attackAction.weapon->getRules()->isOutOfRange(distanceToTargetSq)) // make sure we can get the ruleset before checking the range
 					{
 						int proposedDistance = Position::distance2d(pos, _aggroTarget->getPosition());
 						proposedDistance = std::max(proposedDistance, 1);
@@ -1864,8 +1860,8 @@ bool AIModule::findFirePoint()
 				if (score > bestScore)
 				{
 					bestScore = score;
-					_attackAction->target = pos;
-					_attackAction->finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
+					_attackAction.target = pos;
+					_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
 					if (score > FAST_PASS_THRESHOLD)
 					{
 						break;
@@ -1877,16 +1873,16 @@ bool AIModule::findFirePoint()
 
 	if (bestScore > 70)
 	{
-		_attackAction->type = BA_WALK;
+		_attackAction.type = BA_WALK;
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Firepoint found at " << _attackAction->target << ", with a score of: " << bestScore;
+			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
 		}
 		return true;
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "Firepoint failed, best estimation was: " << _attackAction->target << ", with a score of: " << bestScore;
+		Log(LOG_INFO) << "Firepoint failed, best estimation was: " << _attackAction.target << ", with a score of: " << bestScore;
 	}
 
 	return false;
@@ -2036,7 +2032,7 @@ void AIModule::meleeAction()
 			if (newDistance == 1 || selectPointNearTarget(*i, chargeReserve))
 			{
 				_aggroTarget = (*i);
-				_attackAction->type = BA_WALK;
+				_attackAction.type = BA_WALK;
 				_unit->setCharging(_aggroTarget);
 				distance = newDistance;
 			}
@@ -2050,7 +2046,7 @@ void AIModule::meleeAction()
 			meleeAttack();
 		}
 	}
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: "  << _attackAction->target; }
+	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: "  << _attackAction.target; }
 	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "CHARGE!"; }
 }
 
@@ -2082,7 +2078,7 @@ void AIModule::meleeActionLeeroy()
 			if (newDistance == 1 || selectPointNearTargetLeeroy(*i))
 			{
 				_aggroTarget = (*i);
-				_attackAction->type = BA_WALK;
+				_attackAction.type = BA_WALK;
 				_unit->setCharging(_aggroTarget);
 				distance = newDistance;
 			}
@@ -2096,7 +2092,7 @@ void AIModule::meleeActionLeeroy()
 			meleeAttack();
 		}
 	}
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: " << _attackAction->target; }
+	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: " << _attackAction.target; }
 	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "CHARGE!"; }
 }
 
@@ -2107,7 +2103,7 @@ void AIModule::meleeActionLeeroy()
  */
 void AIModule::wayPointAction()
 {
-	BattleActionCost attackCost(BA_LAUNCH, _unit, _attackAction->weapon);
+	BattleActionCost attackCost(BA_LAUNCH, _unit, _attackAction.weapon);
 	if (!attackCost.haveTU())
 	{
 		// cannot make a launcher attack - consider some other behaviour, like running away, or standing motionless.
@@ -2119,9 +2115,9 @@ void AIModule::wayPointAction()
 		if (!validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE))
 			continue;
 		_save->getPathfinding()->calculate(_unit, (*i)->getPosition(), *i, -1);
-		auto ammo = _attackAction->weapon->getAmmoForAction(BA_LAUNCH);
+		auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
 		if (_save->getPathfinding()->getStartDirection() != -1 &&
-			explosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({ BA_LAUNCH, _unit, _attackAction->weapon, ammo }), _attackAction->diff))
+			explosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({ BA_LAUNCH, _unit, _attackAction.weapon, ammo }), _attackAction.diff))
 		{
 			_aggroTarget = *i;
 		}
@@ -2130,21 +2126,21 @@ void AIModule::wayPointAction()
 
 	if (_aggroTarget != 0)
 	{
-		_attackAction->type = BA_LAUNCH;
-		_attackAction->updateTU();
-		if (!_attackAction->haveTU())
+		_attackAction.type = BA_LAUNCH;
+		_attackAction.updateTU();
+		if (!_attackAction.haveTU())
 		{
-			_attackAction->type = BA_RETHINK;
+			_attackAction.type = BA_RETHINK;
 			return;
 		}
-		_attackAction->waypoints.clear();
+		_attackAction.waypoints.clear();
 
 		int PathDirection;
 		int CollidesWith;
-		int maxWaypoints = _attackAction->weapon->getCurrentWaypoints();
+		int maxWaypoints = _attackAction.weapon->getCurrentWaypoints();
 		if (maxWaypoints == -1)
 		{
-			maxWaypoints = 6 + (_attackAction->diff * 2);
+			maxWaypoints = 6 + (_attackAction.diff * 2);
 		}
 		Position LastWayPoint = _unit->getPosition();
 		Position LastPosition = _unit->getPosition();
@@ -2153,7 +2149,7 @@ void AIModule::wayPointAction()
 
 		_save->getPathfinding()->calculate(_unit, _aggroTarget->getPosition(), _aggroTarget, -1);
 		PathDirection = _save->getPathfinding()->dequeuePath();
-		while (PathDirection != -1 && (int)_attackAction->waypoints.size() < maxWaypoints)
+		while (PathDirection != -1 && (int)_attackAction.waypoints.size() < maxWaypoints)
 		{
 			LastPosition = CurrentPosition;
 			_save->getPathfinding()->directionToVector(PathDirection, &DirectionVector);
@@ -2163,7 +2159,7 @@ void AIModule::wayPointAction()
 			CollidesWith = _save->getTileEngine()->calculateLineVoxel(voxelPosA, voxelPosb, false, nullptr, _unit);
 			if (CollidesWith > V_EMPTY && CollidesWith < V_UNIT)
 			{
-				_attackAction->waypoints.push_back(LastPosition);
+				_attackAction.waypoints.push_back(LastPosition);
 				LastWayPoint = LastPosition;
 			}
 			else if (CollidesWith == V_UNIT)
@@ -2171,16 +2167,16 @@ void AIModule::wayPointAction()
 				BattleUnit* target = _save->getTile(CurrentPosition)->getOverlappingUnit(_save);
 				if (target == _aggroTarget)
 				{
-					_attackAction->waypoints.push_back(CurrentPosition);
+					_attackAction.waypoints.push_back(CurrentPosition);
 					LastWayPoint = CurrentPosition;
 				}
 			}
 			PathDirection = _save->getPathfinding()->dequeuePath();
 		}
-		_attackAction->target = _attackAction->waypoints.front();
+		_attackAction.target = _attackAction.waypoints.front();
 		if (LastWayPoint != _aggroTarget->getPosition())
 		{
-			_attackAction->type = BA_RETHINK;
+			_attackAction.type = BA_RETHINK;
 		}
 	}
 }
@@ -2197,7 +2193,7 @@ bool AIModule::sniperAction()
 	{
 		_visibleEnemies = std::max(_visibleEnemies, 1); // Make sure we count at least our target as visible, otherwise we might not shoot!
 
-		if (_traceAI) { Log(LOG_INFO) << "Target for sniper found at (" << _attackAction->target.x << "," << _attackAction->target.y << "," << _attackAction->target.z << ")."; }
+		if (_traceAI) { Log(LOG_INFO) << "Target for sniper found at (" << _attackAction.target.x << "," << _attackAction.target.y << "," << _attackAction.target.z << ")."; }
 		return true;
 	}
 
@@ -2212,7 +2208,7 @@ bool AIModule::sniperAction()
  */
 void AIModule::projectileAction()
 {
-	_attackAction->target = _aggroTarget->getPosition();
+	_attackAction.target = _aggroTarget->getPosition();
 	auto testEffect = [&](BattleActionCost& cost)
 	{
 		if (cost.haveTU())
@@ -2225,7 +2221,7 @@ void AIModule::projectileAction()
 			else
 			{
 				int radius = attack.damage_item->getRules()->getExplosionRadius(attack);
-				if (radius != 0 && explosiveEfficacy(_attackAction->target, _unit, radius, _attackAction->diff) == 0)
+				if (radius != 0 && explosiveEfficacy(_attackAction.target, _unit, radius, _attackAction.diff) == 0)
 				{
 					cost.clearTU();
 				}
@@ -2233,12 +2229,12 @@ void AIModule::projectileAction()
 		}
 	};
 
-	int distance = Position::distance2d(_unit->getPosition(), _attackAction->target);
-	_attackAction->type = BA_RETHINK;
+	int distance = Position::distance2d(_unit->getPosition(), _attackAction.target);
+	_attackAction.type = BA_RETHINK;
 
-	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction->actor, _attackAction->weapon);
-	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction->actor, _attackAction->weapon);
-	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction->actor, _attackAction->weapon);
+	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor, _attackAction.weapon);
+	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, _attackAction.weapon);
+	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, _attackAction.weapon);
 
 	testEffect(costAuto);
 	testEffect(costSnap);
@@ -2262,8 +2258,8 @@ void AIModule::projectileAction()
 	if (!waitIfOutsideWeaponRange && aiRespectsMaxRange)
 	{
 		// If we want to check and it's not in range, perhaps we should re-think shooting
-		int distanceSq = _unit->distance3dToPositionSq(_attackAction->target);
-		if (_attackAction->weapon->getRules()->isOutOfRange(distanceSq))
+		int distanceSq = _unit->distance3dToPositionSq(_attackAction.target);
+		if (_attackAction.weapon->getRules()->isOutOfRange(distanceSq))
 		{
 			return;
 		}
@@ -2274,18 +2270,18 @@ void AIModule::projectileAction()
 	{
 		if (costAuto.haveTU())
 		{
-			_attackAction->type = BA_AUTOSHOT;
+			_attackAction.type = BA_AUTOSHOT;
 			return;
 		}
 		if (!costSnap.haveTU())
 		{
 			if (costAimed.haveTU())
 			{
-				_attackAction->type = BA_AIMEDSHOT;
+				_attackAction.type = BA_AIMEDSHOT;
 			}
 			return;
 		}
-		_attackAction->type = BA_SNAPSHOT;
+		_attackAction.type = BA_SNAPSHOT;
 		return;
 	}
 
@@ -2294,29 +2290,29 @@ void AIModule::projectileAction()
 	{
 		if (costAimed.haveTU())
 		{
-			_attackAction->type = BA_AIMEDSHOT;
+			_attackAction.type = BA_AIMEDSHOT;
 			return;
 		}
 		if (distance < 20 && costSnap.haveTU())
 		{
-			_attackAction->type = BA_SNAPSHOT;
+			_attackAction.type = BA_SNAPSHOT;
 			return;
 		}
 	}
 
 	if (costSnap.haveTU())
 	{
-		_attackAction->type = BA_SNAPSHOT;
+		_attackAction.type = BA_SNAPSHOT;
 		return;
 	}
 	if (costAimed.haveTU())
 	{
-		_attackAction->type = BA_AIMEDSHOT;
+		_attackAction.type = BA_AIMEDSHOT;
 		return;
 	}
 	if (costAuto.haveTU())
 	{
-		_attackAction->type = BA_AUTOSHOT;
+		_attackAction.type = BA_AUTOSHOT;
 	}
 }
 
@@ -2341,7 +2337,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 	}
 
 	BattleActionType chosenAction = BA_RETHINK;
-	BattleAction testAction = *_attackAction;
+	BattleAction testAction = _attackAction;
 	int score = 0;
 	for (auto &i : attackOptions)
 	{
@@ -2359,7 +2355,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		}
 		else
 		{
-			testAction.weapon = _attackAction->weapon;
+			testAction.weapon = _attackAction.weapon;
 		}
 		int newScore = scoreFiringMode(&testAction, _aggroTarget, checkLOF);
 
@@ -2388,7 +2384,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		}
 	}
 
-	_attackAction->type = chosenAction;
+	_attackAction.type = chosenAction;
 }
 
 /**
@@ -2410,7 +2406,7 @@ void AIModule::grenadeAction()
 	if (action.haveTU())
 	{
 		auto radius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
-		if (explosiveEfficacy(_aggroTarget->getPosition(), _unit, radius, _attackAction->diff, true))
+		if (explosiveEfficacy(_aggroTarget->getPosition(), _unit, radius, _attackAction.diff, true))
 		{
 			action.target = _aggroTarget->getPosition();
 		}
@@ -2423,9 +2419,9 @@ void AIModule::grenadeAction()
 		// are we within range?
 		if (_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
 		{
-			_attackAction->weapon = grenade;
-			_attackAction->target = action.target;
-			_attackAction->type = BA_THROW;
+			_attackAction.weapon = grenade;
+			_attackAction.target = action.target;
+			_attackAction.type = BA_THROW;
 			_rifle = false;
 			_melee = false;
 		}
@@ -2546,7 +2542,7 @@ bool AIModule::psiAction()
 					}
 					else if (cost[j].type == BA_USE)
 					{
-						if (RNG::percent(80 - _attackAction->diff * 10)) // Star gods have mercy on us.
+						if (RNG::percent(80 - _attackAction.diff * 10)) // Star gods have mercy on us.
 						{
 							continue;
 						}
@@ -2554,7 +2550,7 @@ bool AIModule::psiAction()
 						int radius = item->getRules()->getExplosionRadius(attack);
 						if (radius > 0)
 						{
-							int efficity = explosiveEfficacy(victim->getPosition(), _unit, radius, _attackAction->diff);
+							int efficity = explosiveEfficacy(victim->getPosition(), _unit, radius, _attackAction.diff);
 							if (efficity)
 							{
 								weightToAttackMe += 2 * efficity * _intelligence; //bonus for boom boom.
@@ -2589,7 +2585,7 @@ bool AIModule::psiAction()
 
 		if (!_aggroTarget || !weightToAttack) return false;
 
-		if (_visibleEnemies && _attackAction->weapon)
+		if (_visibleEnemies && _attackAction.weapon)
 		{
 			BattleActionType actions[] = {
 				BA_AIMEDSHOT,
@@ -2599,13 +2595,13 @@ bool AIModule::psiAction()
 			};
 			for (auto action : actions)
 			{
-				auto ammo = _attackAction->weapon->getAmmoForAction(action);
+				auto ammo = _attackAction.weapon->getAmmoForAction(action);
 				if (!ammo)
 				{
 					continue;
 				}
 
-				int weightPower = ammo->getRules()->getPowerBonus({ action, _attackAction->actor, _attackAction->weapon, ammo });
+				int weightPower = ammo->getRules()->getPowerBonus({ action, _attackAction.actor, _attackAction.weapon, ammo });
 				if (action == BA_HIT)
 				{
 					// prefer psi over melee
@@ -2614,7 +2610,7 @@ bool AIModule::psiAction()
 				else
 				{
 					// prefer machine guns
-					weightPower *= _attackAction->weapon->getActionConf(action)->shots;
+					weightPower *= _attackAction.weapon->getActionConf(action)->shots;
 				}
 				if (weightPower >= weightToAttack)
 				{
@@ -2632,9 +2628,9 @@ bool AIModule::psiAction()
 			Log(LOG_INFO) << "making a psionic attack this turn";
 		}
 
-		_psiAction->type = typeToAttack;
-		_psiAction->target = _aggroTarget->getPosition();
-		_psiAction->weapon = item;
+		_psiAction.type = typeToAttack;
+		_psiAction.target = _aggroTarget->getPosition();
+		_psiAction.weapon = item;
 		return true;
 	}
 	return false;
@@ -2649,9 +2645,9 @@ void AIModule::meleeAttack()
 	while (_unit->getStatus() == STATUS_TURNING)
 		_unit->turn();
 	if (_traceAI) { Log(LOG_INFO) << "Attack unit: " << _aggroTarget->getId(); }
-	_attackAction->target = _aggroTarget->getPosition();
-	_attackAction->type = BA_HIT;
-	_attackAction->weapon = _unit->getUtilityWeapon(BT_MELEE);
+	_attackAction.target = _aggroTarget->getPosition();
+	_attackAction.type = BA_HIT;
+	_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 }
 
 /**
@@ -2706,7 +2702,7 @@ BattleActionType AIModule::getReserveMode()
  */
 void AIModule::selectMeleeOrRanged()
 {
-	BattleItem *range = _attackAction->weapon;
+	BattleItem *range = _attackAction.weapon;
 	BattleItem *melee = _unit->getUtilityWeapon(BT_MELEE);
 
 	if (!melee || !melee->haveAnyAmmo())
@@ -2750,7 +2746,7 @@ void AIModule::selectMeleeOrRanged()
 		if (RNG::percent(meleeOdds))
 		{
 			_rifle = false;
-			_attackAction->weapon = melee;
+			_attackAction.weapon = melee;
 			_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, melee));
 			return;
 		}
