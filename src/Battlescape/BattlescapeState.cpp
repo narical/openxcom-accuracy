@@ -3126,15 +3126,16 @@ void BattlescapeState::finishBattle(bool abort, int inExitArea)
 	// dear civilians and summoned player units,
 	// please drop all borrowed xcom equipment now, so that we can recover it
 	// thank you!
+	std::vector<BattleItem*> itemsToDrop;
 	for (auto* unit : *_save->getUnits())
 	{
 		bool relevantUnitType = unit->getOriginalFaction() == FACTION_NEUTRAL || unit->isSummonedPlayerUnit();
 		if (relevantUnitType && !unit->isOut())
 		{
-			std::vector<BattleItem*> itemsToDrop;
+			itemsToDrop.clear();
 			for (auto* item : *unit->getInventory())
 			{
-				if (item->getXCOMProperty())
+				if (item->getXCOMProperty() || item->getUnit())
 				{
 					itemsToDrop.push_back(item);
 				}
