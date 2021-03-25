@@ -1870,11 +1870,12 @@ void DebriefingState::prepareDebriefing()
 	// recover all our goodies
 	if (playersSurvived > 0)
 	{
+		bool alienAlloysExist = (_recoveryStats.find(ALIEN_ALLOYS) != _recoveryStats.end());
 		for (std::vector<DebriefingStat*>::iterator i = _stats.begin(); i != _stats.end(); ++i)
 		{
 			// alien alloys recovery values are divided by 10 or divided by 150 in case of an alien base
 			int aadivider = 1;
-			if ((*i)->item == _recoveryStats[ALIEN_ALLOYS]->name)
+			if (alienAlloysExist && (*i)->item == _recoveryStats[ALIEN_ALLOYS]->name)
 			{
 				// hardcoded vanilla defaults, in case modders or players fail to install OXCE properly
 				aadivider = (target == "STR_UFO") ? 10 : 150;
