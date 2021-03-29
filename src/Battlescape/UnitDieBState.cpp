@@ -114,10 +114,6 @@ UnitDieBState::~UnitDieBState()
 
 void UnitDieBState::init()
 {
-	if (_unit->getTile() == 0)
-	{
-		_parent->popState();
-	}
 }
 
 /**
