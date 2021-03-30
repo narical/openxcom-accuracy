@@ -549,10 +549,18 @@ public:
 	const std::vector<int> &getAnnoyedSounds() const { return _annoyedSound; }
 	/// Get the unit's move sound.
 	int getMoveSound() const;
+
+
 	/// Get whether the unit is affected by fatal wounds.
 	bool isWoundable() const;
 	/// Get whether the unit is affected by fear.
 	bool isFearable() const;
+	/// Is this unit capable of shooting beyond max. visual range?
+	bool isSniper() const;
+	/// Is small unit.
+	bool isSmallUnit() const;
+	/// Is big unit.
+	bool isBigUnit() const;
 	/// Get the unit's intelligence.
 	int getIntelligence() const;
 	/// Get the unit's aggression.
@@ -566,6 +574,7 @@ public:
 	int getMaxViewDistanceAtDay(const Armor *otherUnitArmor) const;
 	/// Get the units's special ability.
 	int getSpecialAbility() const;
+
 
 	/// Gets the unit's spawn unit.
 	const Unit *getSpawnUnit() const;
@@ -744,8 +753,6 @@ public:
 	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
 	int getSpotterDuration() const;
-	/// Is this unit capable of shooting beyond max. visual range?
-	bool isSniper() const;
 	/// Remembers the unit's XP (used for shotguns).
 	void rememberXP();
 	/// Artificially alter a unit's XP (used for shotguns).

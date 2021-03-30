@@ -361,7 +361,7 @@ int Tile::openDoor(TilePart part, BattleUnit *unit, BattleActionType reserve, bo
 
 	if (_objectsCache[part].isDoor)
 	{
-		if (unit && unit->getArmor()->getSize() > 1) // don't allow double-wide units to open swinging doors due to engine limitations
+		if (unit && unit->isBigUnit()) // don't allow double-wide units to open swinging doors due to engine limitations
 			return -1;
 		if (unit && cost.Time && !cost.haveTU())
 			return 4;

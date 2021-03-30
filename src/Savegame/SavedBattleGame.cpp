@@ -2186,7 +2186,7 @@ Node *SavedBattleGame::getSpawnNode(int nodeRank, BattleUnit *unit)
 		}
 		if ((*i)->getRank() == nodeRank								// ranks must match
 			&& (!((*i)->getType() & Node::TYPE_SMALL)
-				|| unit->getArmor()->getSize() == 1)				// the small unit bit is not set or the unit is small
+				|| unit->isSmallUnit())								// the small unit bit is not set or the unit is small
 			&& (!((*i)->getType() & Node::TYPE_FLYING)
 				|| unit->getMovementType() == MT_FLY)				// the flying unit bit is not set or the unit can fly
 			&& (*i)->getPriority() > 0								// priority 0 is no spawn place
@@ -2243,7 +2243,7 @@ Node *SavedBattleGame::getPatrolNode(bool scout, BattleUnit *unit, Node *fromNod
 		Node *n = getNodes()->at(scout ? i : fromNode->getNodeLinks()->at(i));
 		if ( !n->isDummy()																				// don't consider dummy nodes.
 			&& (n->getFlags() > 0 || n->getRank() > 0 || scout)											// for non-scouts we find a node with a desirability above 0
-			&& (!(n->getType() & Node::TYPE_SMALL) || unit->getArmor()->getSize() == 1)					// the small unit bit is not set or the unit is small
+			&& (!(n->getType() & Node::TYPE_SMALL) || unit->isSmallUnit())								// the small unit bit is not set or the unit is small
 			&& (!(n->getType() & Node::TYPE_FLYING) || unit->getMovementType() == MT_FLY)	// the flying unit bit is not set or the unit can fly
 			&& !n->isAllocated()																		// check if not allocated
 			&& !(n->getType() & Node::TYPE_DANGEROUS)													// don't go there if an alien got shot there; stupid behavior like that
@@ -2268,7 +2268,7 @@ Node *SavedBattleGame::getPatrolNode(bool scout, BattleUnit *unit, Node *fromNod
 	if (compliantNodes.empty())
 	{
 		if (Options::traceAI) { Log(LOG_INFO) << (scout ? "Scout " : "Guard") << " found on patrol node! XXX XXX XXX"; }
-		if (unit->getArmor()->getSize() > 1 && !scout)
+		if (unit->isBigUnit() && !scout)
 		{
 			return getPatrolNode(true, unit, fromNode); // move dammit
 		}
@@ -2460,7 +2460,7 @@ void SavedBattleGame::reviveUnconsciousUnits(bool noTU)
 {
 	for (std::vector<BattleUnit*>::iterator i = getUnits()->begin(); i != getUnits()->end(); ++i)
 	{
-		if ((*i)->getArmor()->getSize() == 1 && !(*i)->isIgnored())
+		if ((*i)->isSmallUnit() && !(*i)->isIgnored())
 		{
 			Position originalPosition = (*i)->getPosition();
 			if (originalPosition == Position(-1, -1, -1))
@@ -2476,7 +2476,7 @@ void SavedBattleGame::reviveUnconsciousUnits(bool noTU)
 			if ((*i)->getStatus() == STATUS_UNCONSCIOUS && !(*i)->isOutThresholdExceed())
 			{
 				Tile *targetTile = getTile(originalPosition);
-				bool largeUnit =  targetTile && targetTile->getUnit() && targetTile->getUnit() != *i && targetTile->getUnit()->getArmor()->getSize() != 1;
+				bool largeUnit =  targetTile && targetTile->getUnit() && targetTile->getUnit() != *i && targetTile->getUnit()->isBigUnit();
 				if (placeUnitNearPosition((*i), originalPosition, largeUnit))
 				{
 					// recover from unconscious

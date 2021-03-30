@@ -772,12 +772,12 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 				if (u != 0 && u != unit)
 				{
 					// don't let large units fall on other units
-					if (unit && unit->getArmor()->getSize() > 1)
+					if (unit && unit->isBigUnit())
 					{
 						return true;
 					}
 					// don't let any units fall on large units
-					if (u != unit && u != missileTarget && !u->isOut() && u->getArmor()->getSize() > 1)
+					if (u != unit && u != missileTarget && !u->isOut() && u->isBigUnit())
 					{
 						return true;
 					}
@@ -1122,9 +1122,9 @@ void Pathfinding::refreshPath()
 		_save->getBattleGame()->setTUReserved(BA_AUTOSHOT);
 	}
 
-	const bool running = _ctrlUsed && _unit->getArmor()->allowsRunning(_unit->getArmor()->getSize() == 1) && _path.size() > 1;
-	const bool strafing = _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->getArmor()->getSize() == 1) && _path.size() == 1;
-	const bool sneaking = _altUsed && _unit->getArmor()->allowsSneaking(_unit->getArmor()->getSize() == 1);
+	const bool running = _ctrlUsed && _unit->getArmor()->allowsRunning(_unit->isSmallUnit()) && _path.size() > 1;
+	const bool strafing = _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->isSmallUnit()) && _path.size() == 1;
+	const bool sneaking = _altUsed && _unit->getArmor()->allowsSneaking(_unit->isSmallUnit());
 
 	const auto bam = strafing ? BAM_STRAFE : running ? BAM_RUN : sneaking ? BAM_SNEAK : BAM_NORMAL;
 	const auto movementType = getMovementType(_unit, nullptr, bam); //preview always for unit not missiles

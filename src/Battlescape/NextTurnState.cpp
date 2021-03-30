@@ -1091,7 +1091,7 @@ bool NextTurnState::placeReinforcementNearFriend(BattleUnit *unit)
 			if (k->getFaction() == unit->getFaction() && k->getPosition() != TileEngine::invalid && k->getArmor()->getSize() >= unit->getArmor()->getSize())
 			{
 				entryPoint = k->getPosition();
-				largeUnit = (k->getArmor()->getSize() != 1);
+				largeUnit = k->isBigUnit();
 			}
 			--tries;
 		}

@@ -1528,7 +1528,7 @@ void Map::drawTerrain(Surface *surface)
 							{
 								adjustment += 7;
 							}
-							if (_save->getSelectedUnit() && _save->getSelectedUnit()->getArmor()->getSize() > 1)
+							if (_save->getSelectedUnit() && _save->getSelectedUnit()->isBigUnit())
 							{
 								adjustment += 1;
 								if (!_previewSettingArrows)
@@ -1579,7 +1579,7 @@ void Map::drawTerrain(Surface *surface)
 		_camera->convertMapToScreen(selectedUnit->getPosition(), &screenPosition);
 		screenPosition += _camera->getMapOffset();
 		Position offset = calculateWalkingOffset(selectedUnit).ScreenOffset;
-		if (selectedUnit->getArmor()->getSize() > 1)
+		if (selectedUnit->isBigUnit())
 		{
 			offset.y += 4;
 		}
@@ -1607,7 +1607,7 @@ void Map::drawTerrain(Surface *surface)
 				screenPosition += _camera->getMapOffset();
 				Position offset;
 				//calculateWalkingOffset(myUnit, &offset);
-				if (myUnit->getArmor()->getSize() > 1)
+				if (myUnit->isBigUnit())
 				{
 					offset.y += 4;
 				}

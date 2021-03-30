@@ -895,7 +895,7 @@ int BattleUnit::distance3dToPositionSq(const Position& pos) const
 	int x = _pos.x - pos.x;
 	int y = _pos.y - pos.y;
 	int z = _pos.z - pos.z;
-	if (_armor->getSize() > 1)
+	if (isBigUnit())
 	{
 		if (_pos.x < pos.x)
 			x++;
@@ -1135,7 +1135,7 @@ void BattleUnit::keepWalking(SavedBattleGame *savedBattleGame, bool fullWalkCycl
 		// diagonal walking takes double the steps
 		middle = 4 + 4 * (_direction % 2);
 		end = 8 + 8 * (_direction % 2);
-		if (_armor->getSize() > 1)
+		if (isBigUnit())
 		{
 			if (_direction < 1 || _direction > 5)
 				middle = end;
@@ -1185,7 +1185,7 @@ void BattleUnit::keepWalking(SavedBattleGame *savedBattleGame, bool fullWalkCycl
 		}
 
 		// motion points calculation for the motion scanner blips
-		if (_armor->getSize() > 1)
+		if (isBigUnit())
 		{
 			_motionPoints += 30;
 		}
@@ -2607,7 +2607,7 @@ void BattleUnit::prepareMana(int mana)
  */
 void BattleUnit::prepareStun(int stun)
 {
-	if (_armor->getSize() == 1 || !isOut())
+	if (isSmallUnit() || !isOut())
 	{
 		healStun(stun);
 	}
@@ -3895,17 +3895,17 @@ int BattleUnit::getMiniMapSpriteIndex() const
 	switch (getFaction())
 	{
 	case FACTION_HOSTILE:
-		if (_armor->getSize() == 1)
+		if (isSmallUnit())
 			return 3;
 		else
 			return 24;
 	case FACTION_NEUTRAL:
-		if (_armor->getSize() == 1)
+		if (isSmallUnit())
 			return 6;
 		else
 			return 12;
 	default:
-		if (_armor->getSize() == 1)
+		if (isSmallUnit())
 			return 0;
 		else
 			return 12;
@@ -4164,6 +4164,35 @@ bool BattleUnit::isWoundable() const
 bool BattleUnit::isFearable() const
 {
 	return !_armor->getFearImmune();
+}
+
+/**
+ * Is this unit capable of shooting beyond max. visual range?
+ * @return True, if unit is capable of shooting beyond max. visual range.
+ */
+bool BattleUnit::isSniper() const
+{
+	if (_unitRules && _unitRules->getSniperPercentage() > 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Gets true when unit is 1x1 sized unit.
+ */
+bool BattleUnit::isSmallUnit() const
+{
+	return _armor->getSize() == 1;
+}
+
+/**
+ * Gets true when unit is 2x2 sized unit.
+ */
+bool BattleUnit::isBigUnit() const
+{
+	return _armor->getSize() > 1;
 }
 
 /**
@@ -5150,19 +5179,6 @@ int BattleUnit::getSpotterDuration() const
 		return _unitRules->getSpotterDuration();
 	}
 	return 0;
-}
-
-/**
- * Is this unit capable of shooting beyond max. visual range?
- * @return True, if unit is capable of shooting beyond max. visual range.
- */
-bool BattleUnit::isSniper() const
-{
-	if (_unitRules && _unitRules->getSniperPercentage() > 0)
-	{
-		return true;
-	}
-	return false;
 }
 
 /**

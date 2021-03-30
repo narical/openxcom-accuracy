@@ -3510,7 +3510,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 				// we can heal a unit that is at the same position, unconscious and healable(=woundable)
 				if ((*i)->getPosition() == selectedUnit->getPosition() && *i != selectedUnit && (*i)->getStatus() == STATUS_UNCONSCIOUS && ((*i)->isWoundable() || weaponRule->getAllowTargetImmune()) && weaponRule->getAllowTargetGround())
 				{
-					if ((*i)->getArmor()->getSize() != 1)
+					if ((*i)->isBigUnit())
 					{
 						// never EVER apply anything to 2x2 units on the ground
 						continue;

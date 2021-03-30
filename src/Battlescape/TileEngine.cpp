@@ -1020,7 +1020,7 @@ Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 	originVoxel.z += -_save->getTile(currentUnit->getPosition())->getTerrainLevel();
 	originVoxel.z += currentUnit->getHeight() + currentUnit->getFloatHeight() - 1; //one voxel lower (eye level)
 	Tile *tileAbove = _save->getTile(currentUnit->getPosition() + Position(0,0,1));
-	if (currentUnit->getArmor()->getSize() > 1)
+	if (currentUnit->isBigUnit())
 	{
 		originVoxel.x += 8;
 		originVoxel.y += 8;
@@ -1390,7 +1390,7 @@ int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit
 	int heightRange;
 
 	int unitRadius = otherUnit->getLoftemps(); //width == loft in default loftemps set
-	if (otherUnit->getArmor()->getSize() > 1)
+	if (otherUnit->isBigUnit())
 	{
 		unitRadius = 3;
 	}
@@ -3495,7 +3495,7 @@ int TileEngine::closeUfoDoors()
 	// prepare a list of tiles on fire/smoke & close any ufo doors
 	for (int i = 0; i < _save->getMapSizeXYZ(); ++i)
 	{
-		if (_save->getTile(i)->getUnit() && _save->getTile(i)->getUnit()->getArmor()->getSize() > 1)
+		if (_save->getTile(i)->getUnit() && _save->getTile(i)->getUnit()->isBigUnit())
 		{
 			BattleUnit *bu = _save->getTile(i)->getUnit();
 			Tile *tile = _save->getTile(i);
@@ -3854,7 +3854,7 @@ VoxelType TileEngine::voxelCheck(Position voxel, BattleUnit *excludeUnit, bool e
 				int x = voxel.x%16;
 				int y = voxel.y%16;
 				int part = 0;
-				if (unit->getArmor()->getSize() > 1)
+				if (unit->isBigUnit())
 				{
 					tilepos = tile->getPosition();
 					part = tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2;

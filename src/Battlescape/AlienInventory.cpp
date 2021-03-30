@@ -96,7 +96,7 @@ void AlienInventory::setSelectedUnit(BattleUnit *unit)
 {
 	_selUnit = unit;
 	_dynamicOffset = 0;
-	if (unit && unit->getArmor()->getSize() > 1)
+	if (unit && unit->isBigUnit())
 	{
 		_dynamicOffset = _game->getMod()->getAlienInventoryOffsetBigUnit();
 	}
