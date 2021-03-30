@@ -827,42 +827,6 @@ int SavedBattleGame::getGlobalShade() const
 }
 
 /**
- * Gets the map width.
- * @return The map width (Size X) in tiles.
- */
-int SavedBattleGame::getMapSizeX() const
-{
-	return _mapsize_x;
-}
-
-/**
- * Gets the map length.
- * @return The map length (Size Y) in tiles.
- */
-int SavedBattleGame::getMapSizeY() const
-{
-	return _mapsize_y;
-}
-
-/**
- * Gets the map height.
- * @return The map height (Size Z) in layers.
- */
-int SavedBattleGame::getMapSizeZ() const
-{
-	return _mapsize_z;
-}
-
-/**
- * Gets the map size in tiles.
- * @return The map size.
- */
-int SavedBattleGame::getMapSizeXYZ() const
-{
-	return _mapsize_x * _mapsize_y * _mapsize_z;
-}
-
-/**
  * Pre-calculate all valid tiles for later use in map drawing.
  */
 void SavedBattleGame::calculateCraftTiles()
