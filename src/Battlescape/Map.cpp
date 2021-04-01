@@ -1911,8 +1911,10 @@ void Map::animate(bool redraw)
 	// animate certain units (large flying units have a propulsion animation)
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
+		const auto pos = (*i)->getPosition();
+
 		// skip units that do not have position
-		if ((*i)->getPosition() == TileEngine::invalid)
+		if (pos == TileEngine::invalid)
 		{
 			continue;
 		}
@@ -1922,11 +1924,11 @@ void Map::animate(bool redraw)
 			(*i)->setFloorAbove(false);
 
 			// make sure this unit isn't obscured by the floor above him, otherwise it looks weird.
-			if (_camera->getViewLevel() > (*i)->getPosition().z)
+			if (_camera->getViewLevel() > pos.z)
 			{
-				for (int z = std::min(_camera->getViewLevel(), _save->getMapSizeZ() - 1); z != (*i)->getPosition().z; --z)
+				for (int z = std::min(_camera->getViewLevel(), _save->getMapSizeZ() - 1); z != pos.z; --z)
 				{
-					if (!_save->getTile(Position((*i)->getPosition().x, (*i)->getPosition().y, z))->hasNoFloor(0))
+					if (!_save->getTile(Position(pos.x, pos.y, z))->hasNoFloor(0))
 					{
 						(*i)->setFloorAbove(true);
 						break;
@@ -2007,19 +2009,22 @@ UnitWalkingOffset Map::calculateWalkingOffset(const BattleUnit *unit) const
 	// If we are walking in between tiles, interpolate it's terrain level.
 	if (unit->getStatus() == STATUS_WALKING || unit->getStatus() == STATUS_FLYING)
 	{
+		const auto posCurr = unit->getPosition();
+		const auto posDest = unit->getDestination();
+		const auto posLast = unit->getLastPosition();
 		if (phase < midphase)
 		{
-			int fromLevel = getTerrainLevel(unit->getPosition(), size);
-			int toLevel = getTerrainLevel(unit->getDestination(), size);
-			if (unit->getPosition().z > unit->getDestination().z)
+			int fromLevel = getTerrainLevel(posCurr, size);
+			int toLevel = getTerrainLevel(posDest, size);
+			if (posCurr.z > posDest.z)
 			{
 				// going down a level, so toLevel 0 becomes +24, -8 becomes  16
-				toLevel += Position::TileZ*(unit->getPosition().z - unit->getDestination().z);
+				toLevel += Position::TileZ*(posCurr.z - posDest.z);
 			}
-			else if (unit->getPosition().z < unit->getDestination().z)
+			else if (posCurr.z < posDest.z)
 			{
 				// going up a level, so toLevel 0 becomes -24, -8 becomes -16
-				toLevel = -Position::TileZ*(unit->getDestination().z - unit->getPosition().z) + abs(toLevel);
+				toLevel = -Position::TileZ*(posDest.z - posCurr.z) + abs(toLevel);
 			}
 			result.TerrainLevelOffset = Interpolate(fromLevel, toLevel, phase, endphase);
 		}
@@ -2027,17 +2032,17 @@ UnitWalkingOffset Map::calculateWalkingOffset(const BattleUnit *unit) const
 		{
 			// from phase 4 onwards the unit behind the scenes already is on the destination tile
 			// we have to get it's last position to calculate the correct offset
-			int fromLevel = getTerrainLevel(unit->getLastPosition(), size);
-			int toLevel = getTerrainLevel(unit->getDestination(), size);
-			if (unit->getLastPosition().z > unit->getDestination().z)
+			int fromLevel = getTerrainLevel(posLast, size);
+			int toLevel = getTerrainLevel(posDest, size);
+			if (posLast.z > posDest.z)
 			{
 				// going down a level, so fromLevel 0 becomes -24, -8 becomes -32
-				fromLevel -= Position::TileZ*(unit->getLastPosition().z - unit->getDestination().z);
+				fromLevel -= Position::TileZ*(posLast.z - posDest.z);
 			}
-			else if (unit->getLastPosition().z < unit->getDestination().z)
+			else if (posLast.z < posDest.z)
 			{
 				// going up a level, so fromLevel 0 becomes +24, -8 becomes 16
-				fromLevel = Position::TileZ*(unit->getDestination().z - unit->getLastPosition().z) - abs(fromLevel);
+				fromLevel = Position::TileZ*(posDest.z - posLast.z) - abs(fromLevel);
 			}
 			result.TerrainLevelOffset = Interpolate(fromLevel, toLevel, phase, endphase);
 		}

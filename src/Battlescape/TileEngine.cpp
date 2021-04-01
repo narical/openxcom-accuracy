@@ -1014,21 +1014,24 @@ bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRe
  */
 Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 {
+	const auto pos = currentUnit->getPosition();
+	auto* tile = currentUnit->getTile();
+
 	// determine the origin and target voxels for the raytrace
 	Position originVoxel;
-	originVoxel = Position((currentUnit->getPosition().x * 16) + 7, (currentUnit->getPosition().y * 16) + 8, currentUnit->getPosition().z*24);
-	originVoxel.z += -_save->getTile(currentUnit->getPosition())->getTerrainLevel();
+	originVoxel = pos.toVoxel() + Position(7, 8, 0); // Why is it x+7??
+	originVoxel.z += -tile->getTerrainLevel();
 	originVoxel.z += currentUnit->getHeight() + currentUnit->getFloatHeight() - 1; //one voxel lower (eye level)
-	Tile *tileAbove = _save->getTile(currentUnit->getPosition() + Position(0,0,1));
+	Tile *tileAbove = _save->getAboveTile(tile);
 	if (currentUnit->isBigUnit())
 	{
 		originVoxel.x += 8;
 		originVoxel.y += 8;
 		originVoxel.z += 1; //topmost voxel
 	}
-	if (originVoxel.z >= (currentUnit->getPosition().z + 1)*24 && (!tileAbove || !tileAbove->hasNoFloor(0)))
+	if (originVoxel.z >= (pos.z + 1)*Position::TileZ && (!tileAbove || !tileAbove->hasNoFloor(0)))
 	{
-		while (originVoxel.z >= (currentUnit->getPosition().z + 1)*24)
+		while (originVoxel.z >= (pos.z + 1)*Position::TileZ)
 		{
 			originVoxel.z--;
 		}
@@ -1743,7 +1746,9 @@ void TileEngine::calculateFOV(Position position, int eventRadius, const bool upd
 	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		if (Position::distance2dSq(position, (*i)->getPosition()) <= updateRadius) //could this unit have observed the event?
+		const auto posUnit = (*i)->getPosition();
+
+		if (Position::distance2dSq(position, posUnit) <= updateRadius) //could this unit have observed the event?
 		{
 			if (updateTiles)
 			{
