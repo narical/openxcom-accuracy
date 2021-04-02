@@ -721,7 +721,7 @@ void clear(bool clearOnly, bool embeddedOnly) {
 		Log(LOG_VERBOSE) << "FileMap::clear(): mapping 'common'";
 		TheVFS.map_common(embeddedOnly);
 		if (LOG_VERBOSE <= Logger::reportingLevel()) {
-			TheVFS.dump(Logger().get(LOG_VERBOSE), "\nFileMap::clear():", Options::listVFSContents);
+			TheVFS.dump(Logger().get(LOG_VERBOSE), "\nFileMap::clear():", Options::oxceListVFSContents);
 		}
 	}
 }
@@ -767,7 +767,7 @@ void setup(const std::vector<const ModInfo* >& active, bool embeddedOnly)
 	}
 	Log(LOG_VERBOSE) << log_ctx << "Active VFS stack:";
 	if (LOG_VERBOSE <= Logger::reportingLevel()) {
-		TheVFS.dump(Logger().get(LOG_VERBOSE), "\n" + log_ctx, Options::listVFSContents);
+		TheVFS.dump(Logger().get(LOG_VERBOSE), "\n" + log_ctx, Options::oxceListVFSContents);
 	}
 }
 [[gnu::unused]]

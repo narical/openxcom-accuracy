@@ -4,11 +4,11 @@
 // General options
 OPT int displayWidth, displayHeight, maxFrameSkip, baseXResolution, baseYResolution, baseXGeoscape, baseYGeoscape, baseXBattlescape, baseYBattlescape,
 	soundVolume, musicVolume, uiVolume, audioSampleRate, audioBitDepth, audioChunkSize, pauseMode, windowedModePositionX, windowedModePositionY, FPS, FPSInactive,
-	changeValueByMouseWheel, dragScrollTimeTolerance, dragScrollPixelTolerance, mousewheelSpeed, autosaveFrequency, autosaveSlots;
+	changeValueByMouseWheel, dragScrollTimeTolerance, dragScrollPixelTolerance, mousewheelSpeed, autosaveFrequency;
 OPT bool fullscreen, asyncBlit, playIntro, useScaleFilter, useHQXFilter, useXBRZFilter, useOpenGL, checkOpenGLErrors, vSyncForOpenGL, useOpenGLSmoothing,
 	autosave, allowResize, borderless, debug, debugUi, fpsCounter, newSeedOnLoad, keepAspectRatio, nonSquarePixelRatio,
 	cursorInBlackBandsInFullscreen, cursorInBlackBandsInWindow, cursorInBlackBandsInBorderlessWindow, maximizeInfoScreens, musicAlwaysLoop, StereoSound, verboseLogging, soldierDiaries, touchEnabled,
-	thumbButtons, rootWindowedMode, rawScreenShots, lazyLoadResources, backgroundMute, listVFSContents, embeddedOnly;
+	rootWindowedMode, lazyLoadResources, backgroundMute;
 OPT std::string language, useOpenGLShader;
 OPT KeyboardType keyboardMode;
 OPT SaveSort saveOrder;
@@ -62,6 +62,7 @@ OPT SDLKey keyBasescapeBuildNewBase, keyBasescapeBaseInfo, keyBasescapeSoldiers,
 
 // OXCE, accessible via GUI
 OPT bool oxceUpdateCheck;
+OPT int autosaveSlots;
 
 OPT bool oxceLinks;
 OPT bool oxceUfoLandingAlert;
@@ -83,6 +84,14 @@ OPT bool oxceEnablePaletteFlickerFix;
 OPT bool oxcePersonalLayoutIncludingArmor;
 OPT bool oxceManufactureFilterSuppliesOK;
 
+OPT bool oxceEmbeddedOnly;
+OPT bool oxceListVFSContents;
+OPT bool oxceRawScreenShots;
+OPT bool oxceThumbButtons;
+
+OPT bool oxceRecommendedOptionsWereSet;
+OPT std::string password;
+
 // OXCE hidden, but moddable via fixedUserOptions and/or recommendedUserOptions
 OPT int oxceStartUpTextMode;
 OPT int oxceManufactureScrollSpeed;
@@ -96,10 +105,6 @@ OPT bool oxceDisableProductionDependencyTree;
 OPT bool oxceDisableHitLog;
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableInventoryTuCost;
-
-OPT bool oxceRecommendedOptionsWereSet;
-
-OPT std::string password;
 
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;
