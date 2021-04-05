@@ -670,6 +670,24 @@ DebriefingState::DebriefingState() : _region(0), _country(0), _positiveScore(tru
 	}
 
 	_positiveScore = (total > 0);
+
+	std::vector<Soldier*> participants;
+	for (std::vector<BattleUnit*>::const_iterator i = _game->getSavedGame()->getSavedBattle()->getUnits()->begin();
+		i != _game->getSavedGame()->getSavedBattle()->getUnits()->end(); ++i)
+	{
+		if ((*i)->getGeoscapeSoldier())
+		{
+			if (Options::fieldPromotions && !(*i)->hasGainedAnyExperience())
+			{
+				// Note: difference from OXC, soldier needs to actually have done something during the mission
+				continue;
+			}
+			participants.push_back((*i)->getGeoscapeSoldier());
+		}
+	}
+	_promotions = _game->getSavedGame()->handlePromotions(participants, _game->getMod());
+
+	_game->getSavedGame()->setBattleGame(0);
 }
 
 /**
@@ -677,10 +695,6 @@ DebriefingState::DebriefingState() : _region(0), _country(0), _positiveScore(tru
  */
 DebriefingState::~DebriefingState()
 {
-	if (_game->isQuitting())
-	{
-		_game->getSavedGame()->setBattleGame(0);
-	}
 	for (std::vector<DebriefingStat*>::iterator i = _stats.begin(); i != _stats.end(); ++i)
 	{
 		delete *i;
@@ -833,21 +847,6 @@ void DebriefingState::btnTransferClick(Action *)
  */
 void DebriefingState::btnOkClick(Action *)
 {
-	std::vector<Soldier*> participants;
-	for (std::vector<BattleUnit*>::const_iterator i = _game->getSavedGame()->getSavedBattle()->getUnits()->begin();
-		i != _game->getSavedGame()->getSavedBattle()->getUnits()->end(); ++i)
-	{
-		if ((*i)->getGeoscapeSoldier())
-		{
-			if (Options::fieldPromotions && !(*i)->hasGainedAnyExperience())
-			{
-				// Note: difference from OXC, soldier needs to actually have done something during the mission
-				continue;
-			}
-			participants.push_back((*i)->getGeoscapeSoldier());
-		}
-	}
-	_game->getSavedGame()->setBattleGame(0);
 	_game->popState();
 	if (_game->getSavedGame()->getMonthsPassed() == -1)
 	{
@@ -865,7 +864,7 @@ void DebriefingState::btnOkClick(Action *)
 		}
 		if (!_destroyBase)
 		{
-			if (_game->getSavedGame()->handlePromotions(participants, _game->getMod()))
+			if (_promotions)
 			{
 				_game->pushState(new PromotionsState);
 			}
@@ -1178,7 +1177,7 @@ void DebriefingState::prepareDebriefing()
 
 	if (!base && _game->getSavedGame()->isIronman())
 	{
-		throw Exception("Your save is corrupted. Don't play Ironman or don't ragequit.");
+		throw Exception("Your save is corrupted. Try asking someone on the Openxcom forum/discord to fix it for you.");
 	}
 
 	// mission site disappears (even when you abort)
