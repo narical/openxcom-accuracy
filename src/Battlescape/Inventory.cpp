@@ -961,8 +961,19 @@ void Inventory::mouseClick(Action *action, State *state)
 										arrangeFloor = true;
 									}
 								}
+
+								auto sound = _selItem->getRules()->getReloadSound();
+								if (sound == Mod::NO_SOUND)
+								{
+									sound = item->getRules()->getReloadSound();
+								}
+								if (sound == Mod::NO_SOUND)
+								{
+									sound = Mod::ITEM_RELOAD;
+								}
+
 								setSelectedItem(0);
-								_game->getMod()->getSoundByDepth(_depth, item->getRules()->getReloadSound())->play();
+								_game->getMod()->getSoundByDepth(_depth, sound)->play();
 								if (arrangeFloor || item->getSlot()->getType() == INV_GROUND)
 								{
 									arrangeGround();

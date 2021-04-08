@@ -3307,7 +3307,17 @@ bool BattleUnit::reloadAmmo()
 		{
 			weapon->setAmmoForSlot(slotAmmo, ammo);
 
-			_lastReloadSound = ruleWeapon->getReloadSound();
+			auto sound = ammo->getRules()->getReloadSound();
+			if (sound == Mod::NO_SOUND)
+			{
+				sound = ruleWeapon->getReloadSound();
+			}
+			if (sound == Mod::NO_SOUND)
+			{
+				sound = Mod::ITEM_RELOAD;
+			}
+
+			_lastReloadSound = sound;
 			return true;
 		}
 	}

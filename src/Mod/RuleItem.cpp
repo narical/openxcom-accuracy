@@ -1058,10 +1058,6 @@ int RuleItem::getRandomSound(const std::vector<int> &vector, int defaultValue) c
  */
 int RuleItem::getReloadSound() const
 {
-	if (_reloadSound.empty())
-	{
-		return Mod::ITEM_RELOAD;
-	}
 	return getRandomSound(_reloadSound);
 }
 
