@@ -341,6 +341,9 @@ public:
 	static int EXPLOSION_OFFSET;
 	static int SMOKE_OFFSET;
 	static int UNDERWATER_SMOKE_OFFSET;
+
+	/// Empty sound.
+	constexpr static int NO_SOUND = -1;
 	static int ITEM_DROP;
 	static int ITEM_THROW;
 	static int ITEM_RELOAD;
@@ -354,6 +357,7 @@ public:
 	static int UFO_EXPLODE;
 	static int INTERCEPTOR_HIT;
 	static int INTERCEPTOR_EXPLODE;
+
 	static int GEOSCAPE_CURSOR;
 	static int BASESCAPE_CURSOR;
 	static int BATTLESCAPE_CURSOR;

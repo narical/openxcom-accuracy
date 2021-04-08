@@ -537,7 +537,7 @@ void UnitWalkBState::playMovementSound()
 	int sound = -1;
 	int unitSound = _unit->getMoveSound();
 	int tileSoundOffset = tile->getFootstepSound(_parent->getSave()->getBelowTile(tile));
-	int tileSound = -1;
+	int tileSound = Mod::NO_SOUND;
 	if (tileSoundOffset > -1)
 	{
 		// play footstep sound 1
@@ -551,7 +551,7 @@ void UnitWalkBState::playMovementSound()
 			tileSound = Mod::WALK_OFFSET + (tileSoundOffset*2) + 1;
 		}
 	}
-	if (unitSound != -1)
+	if (unitSound != Mod::NO_SOUND)
 	{
 		// if a sound is configured in the ruleset, play that one
 		if (_unit->getWalkingPhase() == 0)
@@ -563,7 +563,7 @@ void UnitWalkBState::playMovementSound()
 	{
 		if (_unit->getStatus() == STATUS_WALKING)
 		{
-			if (tileSound > -1)
+			if (tileSound > Mod::NO_SOUND) //TODO: it should be `!=` but its possbile that offset could get negative is based on mod data
 			{
 				sound = tileSound;
 			}

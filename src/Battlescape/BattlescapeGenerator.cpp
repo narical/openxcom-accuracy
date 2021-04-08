@@ -2279,11 +2279,11 @@ void BattlescapeGenerator::loadWeapons(const std::vector<BattleItem*> &itemList)
 void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, const std::string &customUfoName)
 {
 	// reset ambient sound
-	_save->setAmbientSound(-1);
+	_save->setAmbientSound(Mod::NO_SOUND);
 	_save->setAmbienceRandom({});
 
 	// set our ambient sound
-	if (_terrain->getAmbience() != -1)
+	if (_terrain->getAmbience() != Mod::NO_SOUND)
 	{
 		_save->setAmbientSound(_terrain->getAmbience());
 	}

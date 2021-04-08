@@ -505,11 +505,11 @@ bool ProjectileFlyBState::createNewProjectile()
 			// set the soldier in an aiming position
 			_unit->aim(true);
 			// and we have a lift-off
-			if (_ammo->getRules()->getFireSound() != -1)
+			if (_ammo->getRules()->getFireSound() != Mod::NO_SOUND)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), _ammo->getRules()->getFireSound())->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition()));
 			}
-			else if (_action.weapon->getRules()->getFireSound() != -1)
+			else if (_action.weapon->getRules()->getFireSound() != Mod::NO_SOUND)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), _action.weapon->getRules()->getFireSound())->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition()));
 			}
@@ -547,11 +547,11 @@ bool ProjectileFlyBState::createNewProjectile()
 			// set the soldier in an aiming position
 			_unit->aim(true);
 			// and we have a lift-off
-			if (_ammo->getRules()->getFireSound() != -1)
+			if (_ammo->getRules()->getFireSound() != Mod::NO_SOUND)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), _ammo->getRules()->getFireSound())->play(-1, _parent->getMap()->getSoundAngle(projectile->getOrigin()));
 			}
-			else if (_action.weapon->getRules()->getFireSound() != -1)
+			else if (_action.weapon->getRules()->getFireSound() != Mod::NO_SOUND)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), _action.weapon->getRules()->getFireSound())->play(-1, _parent->getMap()->getSoundAngle(projectile->getOrigin()));
 			}

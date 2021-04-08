@@ -3079,7 +3079,7 @@ int BattlescapeGame::getDepth() const
  */
 void BattlescapeGame::playSound(int sound, const Position &pos)
 {
-	if (sound != -1)
+	if (sound != Mod::NO_SOUND)
 	{
 		_parentState->getGame()->getMod()->getSoundByDepth(_save->getDepth(), sound)->play(-1, _parentState->getMap()->getSoundAngle(pos));
 	}
@@ -3090,7 +3090,7 @@ void BattlescapeGame::playSound(int sound, const Position &pos)
  */
 void BattlescapeGame::playSound(int sound)
 {
-	if (sound != -1)
+	if (sound != Mod::NO_SOUND)
 	{
 		_parentState->getGame()->getMod()->getSoundByDepth(_save->getDepth(), sound)->play();
 	}
@@ -3135,7 +3135,7 @@ void BattlescapeGame::playUnitResponseSound(BattleUnit *unit, int type)
 			sound = sounds.front();
 	}
 
-	if (sound != -1)
+	if (sound != Mod::NO_SOUND)
 	{
 		if (!Mix_Playing(4))
 		{

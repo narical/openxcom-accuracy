@@ -739,7 +739,7 @@ void BattlescapeState::init()
 		}
 	}
 
-	if (_save->getAmbientSound() != -1)
+	if (_save->getAmbientSound() != Mod::NO_SOUND)
 	{
 		_game->getMod()->getSoundByDepth(_save->getDepth(), _save->getAmbientSound())->loop();
 		_game->setVolume(Options::soundVolume, Options::musicVolume, Options::uiVolume);
@@ -3115,7 +3115,7 @@ void BattlescapeState::finishBattle(bool abort, int inExitArea)
 		_game->popState();
 	}
 	_game->getCursor()->setVisible(true);
-	if (_save->getAmbientSound() != -1)
+	if (_save->getAmbientSound() != Mod::NO_SOUND)
 	{
 		_game->getMod()->getSoundByDepth(0, _save->getAmbientSound())->stopLoop();
 	}

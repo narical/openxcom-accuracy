@@ -1402,13 +1402,13 @@ void Mod::loadSoundOffset(const std::string &parent, std::vector<int>& sounds, c
 		{
 			for (YAML::const_iterator i = node.begin(); i != node.end(); ++i)
 			{
-				sounds.push_back(-1);
+				sounds.push_back(Mod::NO_SOUND);
 				loadOffsetNode(parent, sounds.back(), *i, maxShared, set, 1);
 			}
 		}
 		else
 		{
-			sounds.push_back(-1);
+			sounds.push_back(Mod::NO_SOUND);
 			loadOffsetNode(parent, sounds.back(), node, maxShared, set, 1);
 		}
 	}
