@@ -1639,11 +1639,22 @@ static void afterLoadHelper(const char* name, Mod* mod, std::map<std::string, T*
 	std::ostringstream errorStream;
 	int errorLimit = 30;
 	int errorCount = 0;
+
+	errorStream << "During linking rulesets of " << name << ":\n";
 	for (auto& rule : list)
 	{
 		try
 		{
 			(rule.second->* func)(mod);
+		}
+		catch (LoadRuleException &e)
+		{
+			++errorCount;
+			errorStream << e.what() << "\n";
+			if (errorCount == errorLimit)
+			{
+				break;
+			}
 		}
 		catch (Exception &e)
 		{
@@ -1710,6 +1721,14 @@ void Mod::loadAll()
 	auto mods = FileMap::getRulesets();
 
 	Log(LOG_INFO) << "Loading begins...";
+	if (Options::oxceModValidationLevel < LOG_ERROR)
+	{
+		Log(LOG_ERROR) << "Validation of mod data disabled, game can crash when run";
+	}
+	else if (Options::oxceModValidationLevel < LOG_WARNING)
+	{
+		Log(LOG_WARNING) << "Validation of mod data reduced, game can behave incorrectly";
+	}
 	_scriptGlobal->beginLoad();
 	_modData.clear();
 	_modData.resize(mods.size());

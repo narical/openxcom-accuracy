@@ -84,6 +84,11 @@ OPT bool oxceEnableSlackingIndicator;
 OPT bool oxceEnablePaletteFlickerFix;
 OPT bool oxcePersonalLayoutIncludingArmor;
 OPT bool oxceManufactureFilterSuppliesOK;
+/**
+ * Verification level of mod data.
+ * Same levels supported as `SeverityLevel`.
+ */
+OPT int oxceModValidationLevel;
 
 OPT bool oxceEmbeddedOnly;
 OPT bool oxceListVFSContents;
