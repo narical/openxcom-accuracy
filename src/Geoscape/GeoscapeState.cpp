@@ -2098,13 +2098,25 @@ void GeoscapeState::time1Hour()
 			}
 		}
 	}
+	bool postpone = false;
 	for (std::vector<MissionSite*>::iterator i = _game->getSavedGame()->getMissionSites()->begin(); i != _game->getSavedGame()->getMissionSites()->end(); ++i)
 	{
 		if (!(*i)->getDetected())
 		{
+			postpone = true;
 			(*i)->setDetected(true);
 			popup(new MissionDetectedState(*i, this));
-			break;
+			break; // only one popup per hour!
+		}
+	}
+	if (postpone)
+	{
+		for (auto* mission : *_game->getSavedGame()->getMissionSites())
+		{
+			if (!mission->getDetected())
+			{
+				mission->setSecondsRemaining(mission->getSecondsRemaining() + 3600); // +1 hour
+			}
 		}
 	}
 
