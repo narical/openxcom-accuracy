@@ -666,9 +666,6 @@
     <ClCompile Include="Menu\OptionsVideoState.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
-    <ClCompile Include="Menu\OptionsModsState.cpp">
-      <Filter>Menu</Filter>
-    </ClCompile>
     <ClCompile Include="Menu\OptionsAudioState.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
@@ -1053,7 +1050,10 @@
     <ClCompile Include="Engine\Unicode.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Menu\OptionsInformExtendedState.cpp">
+    <ClCompile Include="Menu\ModListState.cpp">
+      <Filter>Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu\ModConfirmExtendedState.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
     <ClCompile Include="..\libs\miniz\miniz.c" />
@@ -1813,9 +1813,6 @@
     <ClInclude Include="Menu\OptionsVideoState.h">
       <Filter>Menu</Filter>
     </ClInclude>
-    <ClInclude Include="Menu\OptionsModsState.h">
-      <Filter>Menu</Filter>
-    </ClInclude>
     <ClInclude Include="Menu\OptionsAudioState.h">
       <Filter>Menu</Filter>
     </ClInclude>
@@ -2219,7 +2216,10 @@
     <ClInclude Include="Engine\Unicode.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Menu\OptionsInformExtendedState.h">
+    <ClInclude Include="Menu\ModListState.h">
+      <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu\ModConfirmExtendedState.h">
       <Filter>Menu</Filter>
     </ClInclude>
     <ClInclude Include="..\libs\miniz\miniz.h" />
