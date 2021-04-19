@@ -71,7 +71,7 @@ namespace Options
 	/// Creates the options info.
 	void create();
 	/// Restores default options.
-	void resetDefault();
+	void resetDefault(bool includeMods);
 	/// Initializes the options settings.
 	bool init();
 	/// Loads options from YAML.
