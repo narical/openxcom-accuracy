@@ -61,6 +61,10 @@ namespace Unicode
 	UString convUtf8ToUtf32(const std::string &src);
 	/// Converts a UTF-32 string to UTF-8.
 	std::string convUtf32ToUtf8(const UString &src);
+	/// Converts a wide-char string to multi-byte.
+	std::string convWcToMb(const std::wstring &src, unsigned int cp = 0);
+	/// Converts a multi-byte string to wide-char.
+	std::wstring convMbToWc(const std::string &src, unsigned int cp = 0);
 	/// Checks UTF-8 validity
 	bool isValidUTF8(const std::string& ss);
 	/// Compares two strings by natural order.
