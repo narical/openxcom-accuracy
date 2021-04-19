@@ -1457,7 +1457,9 @@ void crashDump(void *ex, const std::string &err)
 bool openExplorer(const std::string &url)
 {
 #ifdef _WIN32
-	HINSTANCE ret = ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	auto operationW = pathToWindows("open", false);
+	auto urlW = pathToWindows(url, false);
+	HINSTANCE ret = ShellExecuteW(NULL, operationW.c_str(), urlW.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	// The return value is not a true HINSTANCE. If the function succeeds, it returns a value greater than 32.
 	return ((int)ret > 32);
 #elif __APPLE__
