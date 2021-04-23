@@ -20,6 +20,7 @@
 #include "../Engine/Exception.h"
 #include "../Engine/ScriptBind.h"
 #include "Mod.h"
+#include "Armor.h"
 
 namespace OpenXcom
 {
@@ -137,6 +138,26 @@ void Unit::afterLoad(const Mod* mod)
 	else
 	{
 		mod->linkRule(_liveAlien, _liveAlienName);
+	}
+
+	mod->checkForSoftError(_armor == nullptr, _type, "Unit is missing armor", LOG_ERROR);
+	if (_armor)
+	{
+		if (_capturable && _armor->getCorpseBattlescape().front()->isRecoverable() && _spawnUnit == nullptr)
+		{
+			mod->checkForSoftError(_liveAlien == nullptr && Mod::isEmptyRuleName(_civilianRecoveryType), _type, "Unit is capturable but there is no live alien item with same name or civilianRecoveryType");
+		}
+		else
+		{
+			std::string s =
+				!_capturable ? "missing capturable" :
+				!_armor->getCorpseBattlescape().front()->isRecoverable() ? "missing armor recover" :
+				_spawnUnit != nullptr ? "unit have spawn" :
+				"???";
+
+			mod->checkForSoftError(_liveAlien && _liveAlien->getVehicleUnit() == nullptr, _type, "There is live alien item but unit is not recoverable ("+ s +")");
+			mod->checkForSoftError(!Mod::isEmptyRuleName(_civilianRecoveryType), _type, "There is civilianRecoveryType but unit is not recoverable ("+ s +")");
+		}
 	}
 }
 
