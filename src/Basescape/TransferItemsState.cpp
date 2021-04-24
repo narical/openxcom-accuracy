@@ -118,7 +118,7 @@ TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingS
 	_txtAmountDestination->setWordWrap(true);
 
 	_lstItems->setArrowColumn(193, ARROW_VERTICAL);
-	_lstItems->setColumns(4, 162, 58, 40, 20);
+	_lstItems->setColumns(4, 162, 58, 40, 27);
 	_lstItems->setSelectable(true);
 	_lstItems->setBackground(_window);
 	_lstItems->setMargin(2);

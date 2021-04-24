@@ -67,7 +67,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 	_txtSpeed = new Text(210, 9, 32, offset_upper + 60);
 	_txtMaxSpeed = new Text(210, 9, 32, offset_upper + 68);
 	_txtAltitude = new Text(210, 9, 32, offset_upper + 76);
-	_txtSoldier = new Text(60, 9, 164, offset_upper + 60);
+	_txtSoldier = new Text(80, 9, 164, offset_upper + 60);
 	_txtHWP = new Text(80, 9, 164, offset_upper + 68);
 	_txtFuel = new Text(130, 9, 32, offset_upper + 84);
 	_txtDamage = new Text(80, 9, 164, offset_upper + 84);
