@@ -80,7 +80,7 @@ namespace OpenXcom
  * Initializes all the elements in the Debriefing screen.
  * @param game Pointer to the core game.
  */
-DebriefingState::DebriefingState() : _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _pageNumber(0)
+DebriefingState::DebriefingState() : _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0)
 {
 	_missionStatistics = new MissionStatistics();
 
@@ -376,6 +376,12 @@ void DebriefingState::applyVisibility()
 void DebriefingState::init()
 {
 	State::init();
+
+	if (_initDone)
+	{
+		return;
+	}
+	_initDone = true;
 
 	prepareDebriefing();
 
