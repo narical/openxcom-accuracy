@@ -1296,6 +1296,67 @@ void loadHelper(const std::string &parent, std::map<K, V>& v, const YAML::Node &
 	}
 }
 
+/**
+ * Fixed order map, rely on fact that yaml-cpp try preserve map order from loaded file
+ */
+template<typename K, typename V, typename... LoadFuncTag>
+void loadHelper(const std::string &parent, std::vector<std::pair<K, V>>& v, const YAML::Node &node, LoadFuncEditable, LoadFuncTag... rest)
+{
+	if (node)
+	{
+		showInfo(parent, node, YamlTagMapShort, AddTag, RemoveTag);
+
+		auto pushBack = [&](const K& k) -> V&
+		{
+			return v.emplace_back(std::pair<K, V>{ k, V{} }).second;
+		};
+
+		auto findOrPushBack = [&](const K& k) -> V&
+		{
+			for (auto& p : v)
+			{
+				if (p.first == k)
+				{
+					return p.second;
+				}
+			}
+			return pushBack(k);
+		};
+
+		if (isMapHelper(node))
+		{
+			v.clear();
+			for (const std::pair<YAML::Node, YAML::Node>& n : node)
+			{
+				auto key = n.first.as<K>();
+
+				loadHelper(parent, pushBack(key), n.second, rest.funcTagForNew()...);
+			}
+		}
+		else if (isMapAddTagHelper(node))
+		{
+			for (const std::pair<YAML::Node, YAML::Node>& n : node)
+			{
+				auto key = n.first.as<K>();
+
+				loadHelper(parent, findOrPushBack(key), n.second, rest...);
+			}
+		}
+		else if (isListRemoveTagHelper(node)) // we use a list here as we only need the keys
+		{
+			for (const YAML::Node& n : node)
+			{
+				auto key = n.as<K>();
+				Collections::removeIf(v, [&](auto& p){ return p.first == key; });
+			}
+		}
+		else
+		{
+			throwOnBadMapHelper(parent, node);
+		}
+	}
+}
+
 } // namespace
 
 /**
@@ -1614,6 +1675,15 @@ void Mod::loadUnorderedNames(const std::string &parent, std::vector<std::string>
 	loadHelper(parent, names, node, LoadFuncEditable{});
 }
 
+
+
+/**
+ * Loads a map from names to names.
+ */
+void Mod::loadNamesToNames(const std::string &parent, std::vector<std::pair<std::string, std::vector<std::string>>>& names, const YAML::Node &node) const
+{
+	loadHelper(parent, names, node, LoadFuncEditable{}, LoadFuncEditable{});
+}
 
 /**
  * Loads a map from names to names.

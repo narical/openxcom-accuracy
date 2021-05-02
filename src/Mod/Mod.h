@@ -507,6 +507,8 @@ public:
 	void loadUnorderedNames(const std::string &parent, std::vector<std::string>& names, const YAML::Node &node) const;
 
 	/// Loads a map from names to names.
+	void loadNamesToNames(const std::string &parent, std::vector<std::pair<std::string, std::vector<std::string>>>& names, const YAML::Node &node) const;
+	/// Loads a map from names to names.
 	void loadUnorderedNamesToNames(const std::string &parent, std::map<std::string, std::string>& names, const YAML::Node &node) const;
 	/// Loads a map from names to ints.
 	void loadUnorderedNamesToInt(const std::string &parent, std::map<std::string, int>& names, const YAML::Node &node) const;

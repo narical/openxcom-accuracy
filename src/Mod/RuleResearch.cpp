@@ -56,31 +56,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
 	_sequentialGetOneFree = node["sequentialGetOneFree"].as<bool>(_sequentialGetOneFree);
-	if (const YAML::Node &myNode = node["getOneFreeProtected"])
-	{
-		_getOneFreeProtectedName.clear(); // always replace the entire definition
-		if (myNode.IsMap())
-		{
-			_getOneFreeProtectedName.reserve(myNode.size());
-			for (YAML::const_iterator it = myNode.begin(); it != myNode.end(); ++it)
-			{
-				std::string key = it->first.as<std::string>();
-				if (it->second.IsSequence())
-				{
-					std::vector<std::string> value = it->second.as<std::vector<std::string> >();
-					_getOneFreeProtectedName.push_back(std::make_pair(key, value));
-				}
-				else
-				{
-					throw Exception("2: Unsupported type of node 'getOneFreeProtected' for research topic '" + _name + "'");
-				}
-			}
-		}
-		else
-		{
-			throw Exception("1: Unsupported type of node 'getOneFreeProtected' for research topic '" + _name + "'");
-		}
-	}
+	mod->loadNamesToNames(_name, _getOneFreeProtectedName, node["getOneFreeProtected"]);
 	_needItem = node["needItem"].as<bool>(_needItem);
 	_destroyItem = node["destroyItem"].as<bool>(_destroyItem);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
