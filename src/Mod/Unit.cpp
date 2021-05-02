@@ -155,7 +155,13 @@ void Unit::afterLoad(const Mod* mod)
 				_spawnUnit != nullptr ? "unit have spawn" :
 				"???";
 
-			mod->checkForSoftError(_liveAlien && _liveAlien->getVehicleUnit() == nullptr, _type, "There is live alien item but unit is not recoverable ("+ s +")");
+			mod->checkForSoftError(
+				_liveAlien
+				&& _liveAlien->getVehicleUnit() == nullptr
+				&& _spawnUnit == nullptr, // if unit is `_capturable` we can still get live species even if it can spawn unit
+				_type,
+				"There is live alien item but unit is not recoverable ("+ s +")"
+			);
 			mod->checkForSoftError(!Mod::isEmptyRuleName(_civilianRecoveryType), _type, "There is civilianRecoveryType but unit is not recoverable ("+ s +")");
 		}
 	}
