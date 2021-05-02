@@ -49,8 +49,8 @@ class RuleResearch
 	RuleBaseFacilityFunctions _requiresBaseFunc;
 	std::vector<const RuleResearch*> _dependencies, _unlocks, _disables, _reenables, _getOneFree, _requires;
 	bool _sequentialGetOneFree;
-	std::map<std::string, std::vector<std::string> > _getOneFreeProtectedName;
-	std::map<const RuleResearch*, std::vector<const RuleResearch*> > _getOneFreeProtected;
+	std::vector<std::pair<std::string, std::vector<std::string> > > _getOneFreeProtectedName;
+	std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*> > > _getOneFreeProtected;
 	bool _needItem, _destroyItem;
 	int _listOrder;
 
@@ -94,7 +94,7 @@ public:
 	/// Gets the list of ResearchProjects granted at random for free by this research.
 	const std::vector<const RuleResearch*> &getGetOneFree() const;
 	/// Gets the list(s) of ResearchProjects granted at random for free by this research (if a defined prerequisite is met).
-	const std::map<const RuleResearch*, std::vector<const RuleResearch*> > &getGetOneFreeProtected() const;
+	const std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*> > > &getGetOneFreeProtected() const;
 	/// Gets what to look up in the ufopedia.
 	const std::string &getLookup() const;
 	/// Gets the requirements for this ResearchProject.

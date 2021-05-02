@@ -56,7 +56,31 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
 	_sequentialGetOneFree = node["sequentialGetOneFree"].as<bool>(_sequentialGetOneFree);
-	_getOneFreeProtectedName = node["getOneFreeProtected"].as< std::map<std::string, std::vector<std::string> > >(_getOneFreeProtectedName);
+	if (const YAML::Node &myNode = node["getOneFreeProtected"])
+	{
+		_getOneFreeProtectedName.clear(); // always replace the entire definition
+		if (myNode.IsMap())
+		{
+			_getOneFreeProtectedName.reserve(myNode.size());
+			for (YAML::const_iterator it = myNode.begin(); it != myNode.end(); ++it)
+			{
+				std::string key = it->first.as<std::string>();
+				if (it->second.IsSequence())
+				{
+					std::vector<std::string> value = it->second.as<std::vector<std::string> >();
+					_getOneFreeProtectedName.push_back(std::make_pair(key, value));
+				}
+				else
+				{
+					throw Exception("2: Unsupported type of node 'getOneFreeProtected' for research topic '" + _name + "'");
+				}
+			}
+		}
+		else
+		{
+			throw Exception("1: Unsupported type of node 'getOneFreeProtected' for research topic '" + _name + "'");
+		}
+	}
 	_needItem = node["needItem"].as<bool>(_needItem);
 	_destroyItem = node["destroyItem"].as<bool>(_destroyItem);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
@@ -89,13 +113,14 @@ void RuleResearch::afterLoad(const Mod* mod)
 	_getOneFree = mod->getResearch(_getOneFreeName);
 	_requires = mod->getResearch(_requiresName);
 
+	_getOneFreeProtected.reserve(_getOneFreeProtectedName.size());
 	for (auto& n : _getOneFreeProtectedName)
 	{
 		auto left = mod->getResearch(n.first, false);
 		if (left)
 		{
 			auto right = mod->getResearch(n.second);
-			_getOneFreeProtected[left] = right;
+			_getOneFreeProtected.push_back(std::make_pair(left, right));
 		}
 		else
 		{
@@ -215,7 +240,7 @@ const std::vector<const RuleResearch*> &RuleResearch::getGetOneFree() const
  * Gets the list(s) of ResearchProjects granted at random for free by this research (if a defined prerequisite is met).
  * @return The list(s) of ResearchProjects.
  */
-const std::map<const RuleResearch*, std::vector<const RuleResearch*> > &RuleResearch::getGetOneFreeProtected() const
+const std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*> > > &RuleResearch::getGetOneFreeProtected() const
 {
 	return _getOneFreeProtected;
 }

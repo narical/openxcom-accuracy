@@ -370,7 +370,7 @@ void TechTreeViewerState::initLists()
 		const std::vector<const RuleResearch*> disables = rule->getDisabled();
 		const std::vector<const RuleResearch*> reenables = rule->getReenabled();
 		const std::vector<const RuleResearch*> free = rule->getGetOneFree();
-		const std::map<const RuleResearch*, std::vector<const RuleResearch*> > freeProtected = rule->getGetOneFreeProtected();
+		auto& freeProtected = rule->getGetOneFreeProtected();
 
 		for (auto& j : manufactureList)
 		{
@@ -895,7 +895,7 @@ void TechTreeViewerState::initLists()
 		}
 
 		// 9. gives one for free
-		if (free.size() > 0)
+		if (free.size() > 0 || freeProtected.size() > 0)
 		{
 			int remaining = 0;
 			int total = 0;
