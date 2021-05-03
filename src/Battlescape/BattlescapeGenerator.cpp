@@ -1900,11 +1900,15 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 	{
 		std::map<std::string, std::pair<int, int> >::const_iterator prime = mapblock->getItemsFuseTimers()->find((*i).first);
 		RuleItem *rule = _game->getMod()->getItem((*i).first, true);
+		if (rule->getBattleType() == BT_CORPSE)
+		{
+			throw Exception("Placing corpse items (battleType: 11) on the map is not allowed. Item: " + rule->getType() + ", map block: " + mapblock->getName());
+		}
 		for (std::vector<Position>::const_iterator j = (*i).second.begin(); j != (*i).second.end(); ++j)
 		{
 			if ((*j).x >= mapblock->getSizeX() || (*j).y >= mapblock->getSizeY() || (*j).z >= mapblock->getSizeZ())
 			{
-				ss << "Item " << rule->getName() << " is outside of map block " << mapblock->getName() << ", position: [";
+				ss << "Item " << rule->getType() << " is outside of map block " << mapblock->getName() << ", position: [";
 				ss << (*j).x << "," << (*j).y << "," << (*j).z << "], block size: [";
 				ss << mapblock->getSizeX() << "," << mapblock->getSizeY() << "," << mapblock->getSizeZ() << "]";
 				throw Exception(ss.str());
@@ -1927,7 +1931,7 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 		{
 			// mixed = false
 			int index = RNG::generate(0, i->itemList.size() - 1);
-			RuleItem *rule = _game->getMod()->getItem(i->itemList[index]);
+			RuleItem *rule = _game->getMod()->getItem(i->itemList[index], true);
 
 			for (int j = 0; j < i->amount; ++j)
 			{
@@ -1935,12 +1939,16 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 				{
 					// mixed = true
 					index = RNG::generate(0, i->itemList.size() - 1);
-					rule = _game->getMod()->getItem(i->itemList[index]);
+					rule = _game->getMod()->getItem(i->itemList[index], true);
 				}
 
+				if (rule->getBattleType() == BT_CORPSE)
+				{
+					throw Exception("Placing corpse items (battleType: 11) on the map is not allowed. Item: " + rule->getType() + ", map block: " + mapblock->getName());
+				}
 				if (i->position.x >= mapblock->getSizeX() || i->position.y >= mapblock->getSizeY() || i->position.z >= mapblock->getSizeZ())
 				{
-					ss << "Random item " << rule->getName() << " is outside of map block " << mapblock->getName() << ", position: [";
+					ss << "Random item " << rule->getType() << " is outside of map block " << mapblock->getName() << ", position: [";
 					ss << i->position.x << "," << i->position.y << "," << i->position.z << "], block size: [";
 					ss << mapblock->getSizeX() << "," << mapblock->getSizeY() << "," << mapblock->getSizeZ() << "]";
 					throw Exception(ss.str());
