@@ -734,6 +734,8 @@ public:
 	void setAlreadyExploded(bool alreadyExploded) { _alreadyExploded = alreadyExploded; }
 	/// Gets whether this unit can be captured alive (applies to aliens).
 	bool getCapturable() const;
+	/// free up the patrol node target, to allow others to use it.
+	void freePatrolTarget();
 	/// Marks this unit as summoned by an item and therefore won't count for recovery or total player units left.
 	void setSummonedPlayerUnit(bool summonedPlayerUnit);
 	/// Was this unit summoned by an item?

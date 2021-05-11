@@ -4973,6 +4973,14 @@ bool BattleUnit::getCapturable() const
 	return _capturable;
 }
 
+void BattleUnit::freePatrolTarget()
+{
+	if (_currentAIState)
+	{
+		_currentAIState->freePatrolTarget();
+	}
+}
+
 /**
  * Marks this unit as summoned by an item or not.
  * @param summonedPlayerUnit summoned?
