@@ -673,12 +673,15 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_underwaterOnly = node["underwaterOnly"].as<bool>(_underwaterOnly);
 	_landOnly = node["landOnly"].as<bool>(_landOnly);
 	_specialType = node["specialType"].as<int>(_specialType);
-	_vaporColor = node["vaporColor"].as<int>(_vaporColor);
+
+	mod->loadTransparencyOffset(_type, _vaporColor, node["vaporColor"]);
 	_vaporDensity = node["vaporDensity"].as<int>(_vaporDensity);
 	_vaporProbability = node["vaporProbability"].as<int>(_vaporProbability);
-	_vaporColorSurface = node["vaporColorSurface"].as<int>(_vaporColorSurface);
+
+	mod->loadTransparencyOffset(_type, _vaporColorSurface, node["vaporColorSurface"]);
 	_vaporDensitySurface = node["vaporDensitySurface"].as<int>(_vaporDensitySurface);
 	_vaporProbabilitySurface = node["vaporProbabilitySurface"].as<int>(_vaporProbabilitySurface);
+
 	mod->loadSpriteOffset(_type, _customItemPreviewIndex, node["customItemPreviewIndex"], "CustomItemPreviews");
 	_kneelBonus = node["kneelBonus"].as<int>(_kneelBonus);
 	_oneHandedPenalty = node["oneHandedPenalty"].as<int>(_oneHandedPenalty);
