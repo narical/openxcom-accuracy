@@ -2340,6 +2340,8 @@ void BattleUnit::prepareTimeUnits(int tu)
 		}
 		// Each fatal wound to the left or right leg reduces the soldier's TUs by 10%.
 		_tu -= (_tu * ((_fatalWounds[BODYPART_LEFTLEG]+_fatalWounds[BODYPART_RIGHTLEG]) * 10))/100;
+
+		setValueMax(_tu, 0, 0, getBaseStats()->tu);
 	}
 }
 
