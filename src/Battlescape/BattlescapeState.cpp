@@ -3334,6 +3334,7 @@ bool BattlescapeState::allowButtons(bool allowSaving) const
 {
 	return ((allowSaving || _save->getSide() == FACTION_PLAYER || _save->getDebugMode())
 		&& (_battleGame->getPanicHandled() || _firstInit )
+		&& (allowSaving || !_battleGame->isBusy())
 		&& (_map->getProjectile() == 0));
 }
 
