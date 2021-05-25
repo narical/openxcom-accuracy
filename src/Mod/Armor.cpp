@@ -254,7 +254,7 @@ void Armor::afterLoad(const Mod* mod)
 	mod->linkRule(_builtInWeapons, _builtInWeaponsNames);
 	mod->linkRule(_units, _unitsNames);
 	mod->linkRule(_requires, _requiresName);
-	if (_storeItemName == Armor::NONE || Mod::isEmptyRuleName(_storeItemName))
+	if (_storeItemName == Armor::NONE)
 	{
 		_infiniteSupply = true;
 	}
