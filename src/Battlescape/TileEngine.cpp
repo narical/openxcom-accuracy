@@ -4058,7 +4058,7 @@ int TileEngine::meleeAttackCalculate(BattleActionAttack::ReadOnly attack, const 
 	int attackStrength = BattleUnit::getFiringAccuracy(attack, _save->getBattleGame()->getMod());
 	int defenseStrength = victim->getArmor()->getMeleeDodge(victim);
 	int arc = getArcDirection(getDirectionTo(victim->getPositionVexels(), attack.attacker->getPositionVexels()), victim->getDirection());
-	int defenseStrengthPenalty = Clamp((int)(defenseStrength * (arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f)), 0, defenseStrength);
+	int defenseStrengthPenalty = Clamp((int)(defenseStrength * (arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f)), 0, std::max(0, defenseStrength));
 
 	auto type = attack.type;
 	auto attacker = attack.attacker;
