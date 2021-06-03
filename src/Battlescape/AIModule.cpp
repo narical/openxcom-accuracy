@@ -396,6 +396,8 @@ void AIModule::think(BattleAction *action)
 		action->finalAction = true;
 		// ignore new targets.
 		action->desperate = true;
+		// if armor allow runing then run way from there.
+		action->run = _unit->getArmor()->allowsRunning(false);
 		// spin 180 at the end of your route.
 		_unit->setHiding(true);
 		break;
@@ -445,6 +447,10 @@ void AIModule::think(BattleAction *action)
 		{
 			action->waypoints = _attackAction.waypoints;
 		}
+		else if (action->type == BA_AIMEDSHOT || action->type == BA_AUTOSHOT)
+		{
+			action->kneel = _unit->getArmor()->allowsKneeling(false);
+		}
 		break;
 	case AI_AMBUSH:
 		_unit->setCharging(0);
@@ -454,6 +460,7 @@ void AIModule::think(BattleAction *action)
 		action->finalFacing = _ambushAction.finalFacing;
 		// end this unit's turn.
 		action->finalAction = true;
+		action->kneel = _unit->getArmor()->allowsKneeling(false);
 		break;
 	default:
 		break;
