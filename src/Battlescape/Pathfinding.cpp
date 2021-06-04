@@ -903,11 +903,11 @@ bool Pathfinding::previewPath(bool bRemove)
 	int tus = _unit->getTimeUnits();
 	if (_unit->isKneeled())
 	{
-		tus -= 8;
+		tus -= _unit->getKneelUpCost();
 	}
 	int energy = _unit->getEnergy();
 	int size = _unit->getArmor()->getSize() - 1;
-	int total = _unit->isKneeled() ? 8 : 0;
+	int total = _unit->isKneeled() ? _unit->getKneelUpCost() : 0;
 	if (_unit->getArmor()->getTurnBeforeFirstStep())
 	{
 		int dir = getStartDirection();
