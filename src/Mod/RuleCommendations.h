@@ -34,6 +34,7 @@ class RuleSoldierBonus;
 class RuleCommendations
 {
 private:
+	std::string _type;
 	std::map<std::string, std::vector<int> > _criteria;
 	std::vector<std::vector<std::pair<int, std::vector<std::string> > > > _killCriteria;
 	std::string _description;
@@ -43,7 +44,7 @@ private:
 
 public:
 	/// Creates a blank commendation ruleset.
-	RuleCommendations();
+	RuleCommendations(const std::string& type);
 	/// Cleans up the commendation ruleset.
 	~RuleCommendations();
 	/// Loads commendation data from YAML.

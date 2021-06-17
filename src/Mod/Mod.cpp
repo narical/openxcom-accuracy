@@ -2999,10 +2999,11 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	}
 	for (YAML::const_iterator i = doc["commendations"].begin(); i != doc["commendations"].end(); ++i)
 	{
-		std::string type = (*i)["type"].as<std::string>();
-		RuleCommendations *commendations = new RuleCommendations();
-		commendations->load(*i);
-		_commendations[type] = commendations;
+		RuleCommendations *rule = loadRule(*i, &_commendations);
+		if (rule != 0)
+		{
+			rule->load(*i);
+		}
 	}
 	size_t count = 0;
 	for (YAML::const_iterator i = doc["aimAndArmorMultipliers"].begin(); i != doc["aimAndArmorMultipliers"].end() && count < MaxDifficultyLevels; ++i)

@@ -27,7 +27,7 @@ namespace OpenXcom
 /**
  * Creates a blank set of commendation data.
  */
-RuleCommendations::RuleCommendations() : _criteria(), _killCriteria(), _description(""), _sprite(), _soldierBonusTypes()
+RuleCommendations::RuleCommendations(const std::string& type) : _type(type), _criteria(), _killCriteria(), _description(""), _sprite(), _soldierBonusTypes()
 {
 }
 
