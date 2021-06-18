@@ -63,7 +63,7 @@ void RuleCommendations::afterLoad(const Mod* mod)
  * Get the commendation's description.
  * @return string Commendation description.
  */
-std::string RuleCommendations::getDescription() const
+const std::string& RuleCommendations::getDescription() const
 {
 	return _description;
 }
@@ -72,7 +72,7 @@ std::string RuleCommendations::getDescription() const
  * Get the commendation's award criteria.
  * @return map<string, int> Commendation criteria.
  */
-std::map<std::string, std::vector<int> > *RuleCommendations::getCriteria()
+const std::map<std::string, std::vector<int> > *RuleCommendations::getCriteria() const
 {
 	return &_criteria;
 }
@@ -81,7 +81,7 @@ std::map<std::string, std::vector<int> > *RuleCommendations::getCriteria()
  * Get the commendation's award kill criteria.
  * @return vector<string> Commendation kill criteria.
  */
-std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *RuleCommendations::getKillCriteria()
+const std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *RuleCommendations::getKillCriteria() const
 {
 	return &_killCriteria;
 }

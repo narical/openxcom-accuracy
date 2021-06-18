@@ -402,7 +402,7 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 				// Fetch the kill criteria list.
 				if (!(*i).second->getKillCriteria())
 					break;
-				std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *_killCriteriaList = (*i).second->getKillCriteria();
+				const std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *_killCriteriaList = (*i).second->getKillCriteria();
 
 				int totalKillGroups = 0; // holds the total number of kill groups which satisfy one of the OR criteria blocks
 				bool enoughForNextCommendation = false;

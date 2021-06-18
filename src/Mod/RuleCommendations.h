@@ -52,11 +52,11 @@ public:
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Get the commendation's description.
-	std::string getDescription() const;
+	const std::string& getDescription() const;
 	/// Get the commendation's award criteria.
-	std::map<std::string, std::vector<int> > *getCriteria();
+	const std::map<std::string, std::vector<int> > *getCriteria() const;
 	/// Get the commendation's award kill related criteria.
-	std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *getKillCriteria();
+	const std::vector<std::vector<std::pair<int, std::vector<std::string> > > > *getKillCriteria() const;
 	/// Get the commendation's sprite.
 	int getSprite() const;
 	/// Gets the soldier bonus type corresponding to the commendation's decoration level.
