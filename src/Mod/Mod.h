@@ -514,8 +514,13 @@ public:
 	void loadUnorderedNamesToNames(const std::string &parent, std::map<std::string, std::string>& names, const YAML::Node &node) const;
 	/// Loads a map from names to ints.
 	void loadUnorderedNamesToInt(const std::string &parent, std::map<std::string, int>& names, const YAML::Node &node) const;
+	/// Loads a map from names to vector of ints.
+	void loadUnorderedNamesToInts(const std::string &parent, std::map<std::string, std::vector<int>>& names, const YAML::Node &node) const;
 	/// Loads a map from names to names to int.
 	void loadUnorderedNamesToNamesToInt(const std::string &parent, std::map<std::string, std::map<std::string, int>>& names, const YAML::Node &node) const;
+
+	/// Loads data for kill criteria from Commendations.
+	void loadKillCriteria(const std::string &parent, std::vector<std::vector<std::pair<int, std::vector<std::string> > > >& names, const YAML::Node &node) const;
 
 
 	/// Convert names to correct rule objects

@@ -42,13 +42,13 @@ RuleCommendations::~RuleCommendations()
  * Loads the commendations from YAML.
  * @param node YAML node.
  */
-void RuleCommendations::load(const YAML::Node &node)
+void RuleCommendations::load(const YAML::Node &node, const Mod* mod)
 {
 	_description = node["description"].as<std::string>(_description);
-	_criteria = node["criteria"].as<std::map<std::string, std::vector<int> > >(_criteria);
+	mod->loadUnorderedNamesToInts(_type, _criteria, node["criteria"]);
 	_sprite = node["sprite"].as<int>(_sprite);
-	_killCriteria = node["killCriteria"].as<std::vector<std::vector<std::pair<int, std::vector<std::string> > > > >(_killCriteria);
-	_soldierBonusTypesNames = node["soldierBonusTypes"].as<std::vector<std::string> >(_soldierBonusTypesNames);
+	mod->loadKillCriteria(_type, _killCriteria, node["killCriteria"]);
+	mod->loadNames(_type, _soldierBonusTypesNames, node["soldierBonusTypes"]);
 }
 
 /**

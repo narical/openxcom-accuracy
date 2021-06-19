@@ -1720,12 +1720,69 @@ void Mod::loadUnorderedNamesToInt(const std::string &parent, std::map<std::strin
 }
 
 /**
+ * Loads a map from names to vector of ints.
+ */
+void Mod::loadUnorderedNamesToInts(const std::string &parent, std::map<std::string, std::vector<int>>& names, const YAML::Node &node) const
+{
+	loadHelper(parent, names, node, LoadFuncEditable{}, LoadFuncStandard{});
+}
+
+/**
  * Loads a map from names to names to int.
  */
 void Mod::loadUnorderedNamesToNamesToInt(const std::string &parent, std::map<std::string, std::map<std::string, int>>& names, const YAML::Node &node) const
 {
 	loadHelper(parent, names, node, LoadFuncEditable{}, LoadFuncEditable{});
 }
+
+/**
+ * Loads data for kill criteria from Commendations.
+ */
+void Mod::loadKillCriteria(const std::string &parent, std::vector<std::vector<std::pair<int, std::vector<std::string> > > >& v, const YAML::Node &node) const
+{
+	//TODO: very specific use case, not all levels fully supported
+	if (node)
+	{
+		auto loadInner = [&](std::vector<std::pair<int, std::vector<std::string>>>& vv, const YAML::Node &n)
+		{
+			showInfo(parent, n, YamlTagSeqShort);
+
+			if (isListHelper(n))
+			{
+				vv = n.as<std::vector<std::pair<int, std::vector<std::string>>>>();
+			}
+			else
+			{
+				throwOnBadListHelper(parent, n);
+			}
+		};
+
+		showInfo(parent, node, YamlTagSeqShort, AddTag);
+
+		if (isListHelper(node))
+		{
+			v.clear();
+			v.reserve(node.size());
+			for (const YAML::Node& n : node)
+			{
+				loadInner(v.emplace_back(), n);
+			}
+		}
+		else if (isListAddTagHelper(node))
+		{
+			v.reserve(v.size() + node.size());
+			for (const YAML::Node& n : node)
+			{
+				loadInner(v.emplace_back(), n);
+			}
+		}
+		else
+		{
+			throwOnBadListHelper(parent, node);
+		}
+	}
+}
+
 
 
 
@@ -3002,7 +3059,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleCommendations *rule = loadRule(*i, &_commendations);
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, this);
 		}
 	}
 	size_t count = 0;

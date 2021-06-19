@@ -48,7 +48,7 @@ public:
 	/// Cleans up the commendation ruleset.
 	~RuleCommendations();
 	/// Loads commendation data from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::Node& node, const Mod* mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Get the commendation's description.
