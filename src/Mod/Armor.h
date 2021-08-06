@@ -106,6 +106,7 @@ private:
 	bool _isPilotArmor;
 	bool _allowTwoMainWeapons;
 	bool _instantWoundRecovery;
+	bool _isAlwaysVisible = false;
 	int _standHeight, _kneelHeight, _floatHeight;
 public:
 	/// Creates a blank armor ruleset.
@@ -242,6 +243,7 @@ public:
 	ForcedTorso getForcedTorso() const;
 	/// Gets built-in weapons of armor.
 	const std::vector<const RuleItem*> &getBuiltInWeapons() const;
+
 	/// Gets max view distance at dark in BattleScape.
 	int getVisibilityAtDark() const;
 	/// Gets max view distance at day in BattleScape.
@@ -262,6 +264,9 @@ public:
 	int getPsiCamouflage() const;
 	/// Gets personal light radius;
 	int getPersonalLight() const;
+	/// Gets if unit should be always visible.
+	bool isAlwaysVisible() const { return _isAlwaysVisible; }
+
 	/// Gets how armor react to fear.
 	bool getFearImmune(bool def = false) const;
 	/// Gets how armor react to bleeding.

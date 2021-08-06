@@ -165,6 +165,8 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	_heatVision = node["heatVision"].as<int>(_heatVision);
 	_psiVision = node["psiVision"].as<int>(_psiVision);
 	_psiCamouflage = node["psiCamouflage"].as<int>(_psiCamouflage);
+	_isAlwaysVisible =  node["alwaysVisible"].as<bool>(_isAlwaysVisible);
+
 	_stats.merge(node["stats"].as<UnitStats>(_stats));
 	if (const YAML::Node &dmg = node["damageModifier"])
 	{

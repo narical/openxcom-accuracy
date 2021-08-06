@@ -2928,7 +2928,7 @@ void BattleUnit::setVisible(bool flag)
  */
 bool BattleUnit::getVisible() const
 {
-	if (getFaction() == FACTION_PLAYER)
+	if (getFaction() == FACTION_PLAYER || _armor->isAlwaysVisible())
 	{
 		return true;
 	}
@@ -5361,6 +5361,15 @@ void isAimingScript(const BattleUnit *bu, int &ret)
 	ret = 0;
 }
 
+void makeVisibleScript(BattleUnit *bu)
+{
+	if (bu)
+	{
+		bu->setVisible(true);
+		return;
+	}
+}
+
 struct burnShadeScript
 {
 	static RetEnum func(int &curr, int burn, int shade)
@@ -5713,6 +5722,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getTurretDirection>("getTurretDirection");
 	bu.add<&BattleUnit::getWalkingPhase>("getWalkingPhase");
 	bu.add<&BattleUnit::disableIndicators>("disableIndicators");
+
+	bu.add<&BattleUnit::getVisible>("isVisible");
+	bu.add<&makeVisibleScript>("makeVisible");
 
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from curret unit, it will reset every thing to default (hostile & instant)");
