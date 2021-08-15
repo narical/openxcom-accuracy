@@ -5442,6 +5442,16 @@ void addBaseStatRangeScript(BattleUnit *bu, int val)
 	}
 }
 
+void setFireScript(BattleUnit *bu, int val)
+{
+	if (bu)
+	{
+		val = Clamp(val, 0, 1000);
+		bu->setFire(val);
+	}
+}
+
+
 void getVisibleUnitsCountScript(BattleUnit *bu, int &ret)
 {
 	if (bu)
@@ -5765,6 +5775,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFake<100>("getMoraleMax");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("setMorale");
 	bu.add<&addBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("addMorale");
+
+
+	bu.add<&BattleUnit::getFire>("getFire");
+	bu.add<&setFireScript>("setFire");
 
 
 	bu.add<&setArmorValueScript>("setArmor", "first arg is side, second one is new value of armor");
