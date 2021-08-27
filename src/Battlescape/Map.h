@@ -90,6 +90,7 @@ private:
 	bool _followProjectile;
 	bool _projectileInFOV;
 	std::list<Explosion *> _explosions;
+	std::vector<std::vector<Particle>> _vaporParticlesInit;
 	std::vector<std::vector<Particle>> _vaporParticles;
 	bool _explosionInFOV, _launch;
 	BattlescapeMessage *_message;

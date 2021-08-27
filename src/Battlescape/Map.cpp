@@ -171,6 +171,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 		}
 	}
 
+	_vaporParticlesInit.resize(_camera->getMapSizeY() * _camera->getMapSizeX());
 	_vaporParticles.resize(_camera->getMapSizeY() * _camera->getMapSizeX());
 }
 
@@ -1786,6 +1787,30 @@ void Map::animate(bool redraw)
 		_save->getTile(i)->animate();
 	}
 
+	// init vapor vector
+	for (auto i : Collections::rangeValueLess(_vaporParticlesInit.size()))
+	{
+		auto& vi = _vaporParticlesInit[i];
+		auto& vDest = _vaporParticles[i];
+		if (vi.empty())
+		{
+			continue;
+		}
+
+		if (vDest.empty())
+		{
+			vi.swap(vDest);
+		}
+		else
+		{
+			vDest.insert(std::begin(vDest), std::begin(vi), std::end(vi));
+		}
+
+		std::sort(std::begin(vDest), std::end(vDest), [](const Particle& a, const Particle& b){ return a.getVoxelZ() < b.getVoxelZ(); });
+
+		Collections::removeAll(vi);
+	}
+
 	// animate vapor
 	for (auto& tilePar : _vaporParticles)
 	{
@@ -2032,9 +2057,8 @@ Projectile *Map::getProjectile() const
  */
 void Map::addVaporParticle(const Tile* tile, Particle particle)
 {
-	auto& v = _vaporParticles[_camera->getMapSizeX() * tile->getPosition().y + tile->getPosition().x];
-	auto p = std::partition_point(std::begin(v), std::end(v), [&](const Particle& a){ return a.getVoxelZ() < particle.getVoxelZ(); });
-	v.insert(p, particle);
+	auto& v = _vaporParticlesInit[_camera->getMapSizeX() * tile->getPosition().y + tile->getPosition().x];
+	v.push_back(particle);
 }
 
 /**
