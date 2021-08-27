@@ -2033,8 +2033,8 @@ Projectile *Map::getProjectile() const
 void Map::addVaporParticle(const Tile* tile, Particle particle)
 {
 	auto& v = _vaporParticles[_camera->getMapSizeX() * tile->getPosition().y + tile->getPosition().x];
-	v.push_back(particle);
-	std::sort(v.begin(), v.end(), [](const Particle& a, const Particle& b){ return a.getVoxelZ() < b.getVoxelZ(); });
+	auto p = std::partition_point(std::begin(v), std::end(v), [&](const Particle& a){ return a.getVoxelZ() < particle.getVoxelZ(); });
+	v.insert(p, particle);
 }
 
 /**
