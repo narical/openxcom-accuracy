@@ -1423,7 +1423,7 @@ void DebriefingState::prepareDebriefing()
 		}
 		else
 		{
-			BattleUnit *newUnit = _game->getSavedGame()->getSavedBattle()->getBattleGame()->convertUnit(u);
+			BattleUnit *newUnit = battle->convertUnit(u);
 			newUnit->convertToFaction(faction);
 		}
 		u->killedBy(FACTION_HOSTILE); //skip counting as kill

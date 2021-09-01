@@ -1772,6 +1772,67 @@ BattleUnit *SavedBattleGame::createTempUnit(const Unit *rules, UnitFaction facti
 	return newUnit;
 }
 
+/**
+ * Converts a unit into a unit of another type.
+ * @param unit The unit to convert.
+ * @return Pointer to the new unit.
+ */
+BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
+{
+	// only ever respawn once
+	unit->setAlreadyRespawned(true);
+
+	bool visible = unit->getVisible();
+
+	if (getSelectedUnit() == unit)
+	{
+		setSelectedUnit(nullptr);
+	}
+
+	// in case the unit was unconscious
+	removeUnconsciousBodyItem(unit);
+
+	unit->instaKill();
+
+	auto tile = unit->getTile();
+	if (tile == nullptr)
+	{
+		auto pos = unit->getPosition();
+		if (pos != TileEngine::invalid)
+		{
+			tile = getTile(pos);
+		}
+	}
+
+	// in case of unconscious unit someone could stand on top of it, or take curret unit to invenotry, then we skip spawning any thing
+	if (!tile || (tile->getUnit() != nullptr && tile->getUnit() != unit))
+	{
+		return nullptr;
+	}
+
+	getTileEngine()->itemDropInventory(tile, unit, false, true);
+
+	// remove unit-tile link
+	unit->setTile(nullptr, this);
+
+	const Unit* type = unit->getSpawnUnit();
+
+	BattleUnit *newUnit = createTempUnit(type, unit->getSpawnUnitFaction());
+
+	initUnit(newUnit);
+	newUnit->setTile(tile, this);
+	newUnit->setPosition(unit->getPosition());
+	newUnit->setDirection(unit->getDirection());
+	newUnit->clearTimeUnits();
+	getUnits()->push_back(newUnit);
+	newUnit->setVisible(visible);
+
+	getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
+	getTileEngine()->applyGravity(newUnit->getTile());
+	newUnit->dontReselect();
+	return newUnit;
+}
+
 
 
 /**

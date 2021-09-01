@@ -387,6 +387,8 @@ public:
 	BattleItem *createItemForTile(const std::string& type, Tile *tile);
 	/// Create new temporary unit.
 	BattleUnit *createTempUnit(const Unit *rules, UnitFaction faction, int nextUnitId = -1);
+	/// Converts a unit into a unit of another type.
+	BattleUnit *convertUnit(BattleUnit *unit);
 
 	/// Sets whether the mission was aborted.
 	void setAborted(bool flag);
