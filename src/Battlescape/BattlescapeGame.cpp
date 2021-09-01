@@ -2201,7 +2201,7 @@ void BattlescapeGame::spawnFromPrimedItems()
 
 	for (std::vector<BattleItem*>::iterator i = _save->getItems()->begin(); i != _save->getItems()->end(); ++i)
 	{
-		if ((*i)->isOwnerIgnored())
+		if ((*i)->isOwnerIgnored() || !(*i)->getTile())
 		{
 			continue;
 		}
