@@ -177,7 +177,7 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	}
 	mod->loadInts(_type, _loftempsSet, node["loftempsSet"]);
 	if (node["loftemps"])
-		_loftempsSet.push_back(node["loftemps"].as<int>());
+		_loftempsSet = { node["loftemps"].as<int>() };
 	_deathFrames = node["deathFrames"].as<int>(_deathFrames);
 	_constantAnimation = node["constantAnimation"].as<bool>(_constantAnimation);
 	_forcedTorso = (ForcedTorso)node["forcedTorso"].as<int>(_forcedTorso);
