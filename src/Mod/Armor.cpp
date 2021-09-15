@@ -264,15 +264,16 @@ void Armor::afterLoad(const Mod* mod)
 	mod->linkRule(_specWeapon, _specWeaponName);
 
 
-	if (_corpseBattle.size() != (size_t)getTotalSize())
 	{
-		if (_corpseBattle.size() != 0)
+		auto totalSize = (size_t)getTotalSize();
+
+		mod->checkForSoftError(_corpseBattle.size() != totalSize, _type, "Number of battle corpse items for 'corpseBattle' does not match the armor size.", LOG_ERROR);
+		mod->checkForSoftError(_loftempsSet.size() != totalSize, _type, "Number of defined templates for 'loftempsSet' or 'loftemps' does not match the armor size.", LOG_ERROR);
+
+		auto s = mod->getVoxelData()->size() / 16;
+		for (auto& lof : _loftempsSet)
 		{
-			throw Exception("Number of battle corpse items does not match the armor size.");
-		}
-		else
-		{
-			throw Exception("Missing battle corpse item(s).");
+			mod->checkForSoftError((size_t)lof >= s, _type, "Value " + std::to_string(lof) + " in 'loftempsSet' or 'loftemps' is larger than number of avaiable templates.", LOG_ERROR);
 		}
 	}
 
