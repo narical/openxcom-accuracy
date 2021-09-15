@@ -92,7 +92,7 @@ private:
 	};
 
 	SavedBattleGame *_save;
-	std::vector<Uint16> *_voxelData;
+	const std::vector<Uint16> *_voxelData;
 	std::vector<VisibilityBlockCache> _blockVisibility;
 	RuleInventory *_inventorySlotGround;
 	constexpr static int heightFromCenter[11] = {0,-2,+2,-4,+4,-6,+6,-8,+8,-12,+12};

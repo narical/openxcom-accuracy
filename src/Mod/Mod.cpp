@@ -970,7 +970,7 @@ Palette *Mod::getPalette(const std::string &name, bool error) const
  * Returns the list of voxeldata in the mod.
  * @return Pointer to the list of voxeldata.
  */
-std::vector<Uint16> *Mod::getVoxelData()
+const std::vector<Uint16> *Mod::getVoxelData() const
 {
 	return &_voxelData;
 }
