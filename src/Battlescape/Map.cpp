@@ -1859,10 +1859,8 @@ void Map::animate(bool redraw)
 				}
 			}
 		}
-		if (_save->getDepth() > 0 && !(*i)->getFloorAbove())
-		{
-			(*i)->breathe();
-		}
+
+		(*i)->breathe();
 	}
 
 	if (redraw) _redraw = true;

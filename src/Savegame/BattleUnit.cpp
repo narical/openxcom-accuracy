@@ -4450,11 +4450,35 @@ bool BattleUnit::hasInventory() const
  * If this unit is breathing, what frame should be displayed?
  * @return frame number.
  */
-int BattleUnit::getBreathFrame() const
+int BattleUnit::getBreathExhaleFrame() const
 {
-	if (_floorAbove)
-		return 0;
-	return _breathFrame;
+	if (_breathing)
+	{
+		auto frame = _breathFrame - BUBBLES_FIRST_FRAME;
+		if (frame >= 0)
+		{
+			return frame;
+		}
+	}
+
+	return -1;
+}
+
+/**
+ * Count frames to next start of breath animation.
+ */
+int BattleUnit::getBreathInhaleFrame() const
+{
+	if (_breathing)
+	{
+		auto frame = BUBBLES_FIRST_FRAME - _breathFrame;
+		if (frame >= 0)
+		{
+			return frame;
+		}
+	}
+
+	return -1;
 }
 
 /**
@@ -4463,17 +4487,25 @@ int BattleUnit::getBreathFrame() const
 void BattleUnit::breathe()
 {
 	// _breathFrame of -1 means this unit doesn't produce bubbles
-	if (_breathFrame < 0 || isOut())
+	if (_breathFrame < 0)
 	{
 		_breathing = false;
 		return;
 	}
 
-	if (!_breathing || _status == STATUS_WALKING)
+	// moving or knock out do not breathe, even when still alive :)
+	if (isOut() || _status == STATUS_WALKING)
+	{
+		_breathing = false;
+		_breathFrame = 0;
+		return;
+	}
+
+	if (!_breathing)
 	{
 		// deviation from original: TFTD used a static 10% chance for every animation frame,
 		// instead let's use 5%, but allow morale to affect it.
-		_breathing = (_status != STATUS_WALKING && RNG::seedless(0, 99) < (105 - _morale));
+		_breathing = RNG::seedless(0, 99) < (105 - _morale);
 		_breathFrame = 0;
 	}
 
@@ -4483,7 +4515,7 @@ void BattleUnit::breathe()
 		_breathFrame++;
 
 		// we've reached the end of the cycle, get rid of the bubbles
-		if (_breathFrame >= 17)
+		if (_breathFrame > BUBBLES_LAST_FRAME)
 		{
 			_breathFrame = 0;
 			_breathing = false;

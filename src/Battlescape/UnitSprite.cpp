@@ -195,12 +195,14 @@ void UnitSprite::draw(BattleUnit* unit, int part, int x, int y, int shade, Graph
 		return;
 	}
 
+	auto* armor = _unit->getArmor();
+
 	_itemR = getIfVisible(_unit->getRightHandWeapon());
 	_itemL = getIfVisible(_unit->getLeftHandWeapon());
 
-	_unitSurface = _mod->getSurfaceSet(_unit->getArmor()->getSpriteSheet());
+	_unitSurface = _mod->getSurfaceSet(armor->getSpriteSheet());
 
-	_drawingRoutine = _unit->getArmor()->getDrawingRoutine();
+	_drawingRoutine = armor->getDrawingRoutine();
 
 	_burn = 0;
 	int overkill = _unit->getOverKillDamage();
@@ -209,11 +211,11 @@ void UnitSprite::draw(BattleUnit* unit, int part, int x, int y, int shade, Graph
 	{
 		if (overkill > maxHp)
 		{
-			_burn = 16 * (_unit->getFallingPhase() + 1) / _unit->getArmor()->getDeathFrames();
+			_burn = 16 * (_unit->getFallingPhase() + 1) / armor->getDeathFrames();
 		}
 		else
 		{
-			_burn = 16 * overkill * (_unit->getFallingPhase() + 1) / _unit->getArmor()->getDeathFrames() / maxHp;
+			_burn = 16 * overkill * (_unit->getFallingPhase() + 1) / armor->getDeathFrames() / maxHp;
 		}
 	}
 
@@ -251,9 +253,9 @@ void UnitSprite::draw(BattleUnit* unit, int part, int x, int y, int shade, Graph
 	{
 		_fireSurface->getFrame(4 + (_animationFrame / 2) % 4)->blitNShade(_dest, _x, _y, 0, _mask);
 	}
-	if (_breathSurface && unit->getBreathFrame() > 0)
+	if (_breathSurface && _helmet && unit->getBreathExhaleFrame() >= 0 && armor->drawBubbles() && !unit->getFloorAbove())
 	{
-		auto tmpSurface = _breathSurface->getFrame(unit->getBreathFrame() - 1);
+		auto tmpSurface = _breathSurface->getFrame(unit->getBreathExhaleFrame());
 		if (tmpSurface)
 		{
 			// lower the bubbles for shorter or kneeling units.
