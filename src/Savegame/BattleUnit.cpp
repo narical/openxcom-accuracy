@@ -5976,6 +5976,16 @@ void medikitBattleActionImpl(BindBase& b)
 	b.addCustomConst("medikit_action_painkiller", BMA_PAINKILLER);
 }
 
+void commonBattleUnitAnimations(ScriptParserBase* parser)
+{
+	Bind<BattleUnit> bu = { parser, BindBase::ExtensionBinding{} };
+
+	bu.add<&BattleUnit::getFloorAbove>("isFloorAbove", "check if floor is show above unit");
+	bu.add<&BattleUnit::getBreathExhaleFrame>("getBreathExhaleFrame", "return aninmation frame of breath bubbles, -1 mean no animation");
+	bu.add<&BattleUnit::getBreathInhaleFrame>("getBreathInhaleFrame", "return number of frames to next breath animation start, 0 mean animation started, -1 no animation");
+}
+
+
 }
 
 /**
@@ -5988,6 +5998,7 @@ ModScript::RecolorUnitParser::RecolorUnitParser(ScriptGlobal* shared, const std:
 	b.addCustomFunc<burnShadeScript>("add_burn_shade");
 
 	commonImpl(b, mod);
+	commonBattleUnitAnimations(this);
 
 	b.addCustomConst("blit_item_righthand", BODYPART_ITEM_RIGHTHAND);
 	b.addCustomConst("blit_item_lefthand", BODYPART_ITEM_LEFTHAND);
@@ -6005,6 +6016,7 @@ ModScript::SelectUnitParser::SelectUnitParser(ScriptGlobal* shared, const std::s
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleUnitAnimations(this);
 
 	setDefault("add sprite_index sprite_offset; return sprite_index;");
 }
@@ -6021,6 +6033,7 @@ ModScript::SelectMoveSoundUnitParser::SelectMoveSoundUnitParser(ScriptGlobal* sh
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleUnitAnimations(this);
 
 	moveTypesImpl(b);
 }
