@@ -1161,6 +1161,8 @@ struct BindBase
 	struct SetAndGet{};
 	/// Tag type to choose allowed operations
 	struct OnlyGet{};
+	/// Tag type to skip adding defualt operations
+	struct ExtensionBinding{ explicit ExtensionBinding() = default; };
 
 	ScriptParserBase* parser;
 	BindBase(ScriptParserBase* p) : parser{ p }
@@ -1196,7 +1198,12 @@ struct Bind : BindBase
 
 	}
 
-	Bind(ScriptParserBase* p, std::string r) : BindBase{ p }, prefix{ r }
+	Bind(ScriptParserBase* p, ExtensionBinding e) : Bind{ p, T::ScriptName, e }
+	{
+
+	}
+
+	Bind(ScriptParserBase* p, std::string r) : BindBase{ p }, prefix{ std::move(r) }
 	{
 		parser->addParser<helper::FuncGroup<helper::BindSet<T*>>>("set", BindBase::functionInvisible);
 		parser->addParser<helper::FuncGroup<helper::BindSet<const T*>>>("set", BindBase::functionInvisible);
@@ -1205,6 +1212,11 @@ struct Bind : BindBase
 		parser->addParser<helper::FuncGroup<helper::BindClear<T*>>>("clear", BindBase::functionInvisible);
 		parser->addParser<helper::FuncGroup<helper::BindClear<const T*>>>("clear", BindBase::functionInvisible);
 		parser->addParser<helper::FuncGroup<helper::BindEq<const T*>>>("test_eq", BindBase::functionInvisible);
+	}
+
+	Bind(ScriptParserBase* p, std::string r, ExtensionBinding) : BindBase{ p }, prefix{ std::move(r) }
+	{
+		// no default operations defined!
 	}
 
 	std::string getName(const std::string& s)
