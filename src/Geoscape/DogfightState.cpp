@@ -1382,12 +1382,7 @@ void DogfightState::update()
 		}
 		if (!_destroyCraft && (_destroyUfo || _mode == _btnDisengage))
 		{
-			// keep original target
-			if (_mode == _btnDisengage || _craft->getDestination() == _ufo || !Options::oxceKeepCraftCommandsAfterDogfight)
-			{
-				_craft->returnToBase();
-			}
-			
+			_craft->returnToBase();
 			// Need to give the craft at least one step advantage over the hunter-killer (to be able to escape)
 			if (_ufoIsAttacking)
 			{
@@ -1403,9 +1398,7 @@ void DogfightState::update()
 			std::vector<Craft*> followers = _ufo->getCraftFollowers();
 			for (std::vector<Craft*>::iterator i = followers.begin(); i != followers.end(); ++i)
 			{
-				if (((*i)->getNumSoldiers() == 0 && (*i)->getNumVehicles() == 0) ||
-					!(*i)->getRules()->getAllowLanding() ||
-					((*i)->getDestination() != _ufo && Options::oxceKeepCraftCommandsAfterDogfight))
+				if (((*i)->getNumSoldiers() == 0 && (*i)->getNumVehicles() == 0) || !(*i)->getRules()->getAllowLanding())
 				{
 					(*i)->returnToBase();
 				}
