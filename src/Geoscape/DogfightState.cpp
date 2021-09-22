@@ -1382,7 +1382,13 @@ void DogfightState::update()
 		}
 		if (!_destroyCraft && (_destroyUfo || _mode == _btnDisengage))
 		{
-			_craft->returnToBase();
+			// keep original target if attacked by a HK (and didn't disengage manually)
+			bool keepOriginalTarget = _ufoIsAttacking && _craft->getDestination() != _ufo;
+			if (!keepOriginalTarget || _mode == _btnDisengage)
+			{
+				_craft->returnToBase();
+			}
+			
 			// Need to give the craft at least one step advantage over the hunter-killer (to be able to escape)
 			if (_ufoIsAttacking)
 			{
