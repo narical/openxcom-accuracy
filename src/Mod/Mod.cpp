@@ -5952,14 +5952,14 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 
 	Bind<Mod> mod = { parser };
 
-	mod.add<&offset<&Mod::_soundOffsetBattle>>("getSoundOffsetBattle");
-	mod.add<&offset<&Mod::_soundOffsetGeo>>("getSoundOffsetGeo");
-	mod.add<&offset<&Mod::_surfaceOffsetBasebits>>("getSpriteOffsetBasebits");
-	mod.add<&offset<&Mod::_surfaceOffsetBigobs>>("getSpriteOffsetBigobs");
-	mod.add<&offset<&Mod::_surfaceOffsetFloorob>>("getSpriteOffsetFloorob");
-	mod.add<&offset<&Mod::_surfaceOffsetHandob>>("getSpriteOffsetHandob");
-	mod.add<&offset<&Mod::_surfaceOffsetHit>>("getSpriteOffsetHit");
-	mod.add<&offset<&Mod::_surfaceOffsetSmoke>>("getSpriteOffsetSmoke");
+	mod.add<&offset<&Mod::_soundOffsetBattle>>("getSoundOffsetBattle", "convert mod sound index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_soundOffsetGeo>>("getSoundOffsetGeo", "convert mod sound index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetBasebits>>("getSpriteOffsetBasebits", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetBigobs>>("getSpriteOffsetBigobs", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetFloorob>>("getSpriteOffsetFloorob", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetHandob>>("getSpriteOffsetHandob", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetHit>>("getSpriteOffsetHit", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
+	mod.add<&offset<&Mod::_surfaceOffsetSmoke>>("getSpriteOffsetSmoke", "convert mod surface index in first argument to runtime index in given set, second argument is mod id");
 	mod.add<&Mod::getMaxDarknessToSeeUnits>("getMaxDarknessToSeeUnits");
 	mod.add<&Mod::getMaxViewDistance>("getMaxViewDistance");
 	mod.add<&getSmokeReduction>("getSmokeReduction");
