@@ -370,7 +370,7 @@ ru:
   sickBayRelativeBonus: "Отн. бонус к скорости лечения"
   prisonType: "Вид камер"
   rightClickActionType: "Действие по правой кнопке мыши"
-  leavesBehindOnSell: "Прекр. работу после продажи"
+  leavesBehindOnSell: "Заменяющий модуль"
   removalTime: "Время на снос"
   canBeBuiltOver: "Может надстраиваться?"
   buildOverFacilities: "Надстраивается над"

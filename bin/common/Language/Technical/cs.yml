@@ -103,7 +103,7 @@ cs:
   manaExperience: ""
   arcingShot: "Oblouková?"
   isFireExtinguisher: "Hasí oheň?"
-  isExplodingInHands: ""
+  isExplodingInHands: "Bouchne v inventáři?"
   waypoints: "Max záchytných bodů"
   sprayWaypoints: "Pokrop záchytné body"
 #
@@ -153,8 +153,8 @@ cs:
   costPanic: "Cena zpanikaření"
 #
   weight: "Váha"
-  throwRange: ""
-  underwaterThrowRange: ""
+  throwRange: "Dosah vrhu"
+  underwaterThrowRange: "Dosah vrhu pod vodou"
   throwMultiplier: "Výpočet přes. vrhu"
   accuracyThrow: "Přesnost vrhu"
   costThrow: "Cena vrhnutí"
@@ -299,7 +299,7 @@ cs:
   DRAWING_ROUTINE_XARQUID: ""
   DRAWING_ROUTINE_INVERTED_CYBERDISC: ""
 #
-  stats: ""
+  stats: "Modifikátory statistik"
   movementType: "Typ pohybu"
   allowsRunning: "Umožňuje běh?"
   allowsStrafing: "Umožňuje úkrok?"
