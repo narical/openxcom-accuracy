@@ -2064,6 +2064,12 @@ interfaces:
       - id: buttonEnd
         pos: [220, 140]
         size: [20, 20]
+  - type: systemMenu
+    elements:
+      - id: text
+        color: 138   # yellow
+      - id: button
+        color: 239   # bright green
   - type: articleArmor
     elements:
       - id: button

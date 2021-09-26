@@ -2228,6 +2228,12 @@ interfaces: #done
         pos: [90, 55]
         color: 6
         color2: 12
+  - type: systemMenu
+    elements:
+      - id: text
+        color: 239
+      - id: button
+        color: 1
   - type: articleTFTD
     palette: PAL_BASESCAPE
     backgroundImage: BACK08.SCR
