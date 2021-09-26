@@ -402,9 +402,11 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	mod->loadSoundOffset(_type, _hitSound, node["hitSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _hitMissSound, node["hitMissSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _meleeSound, node["meleeSound"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _meleeHitSound, node["meleeHitSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _meleeMissSound, node["meleeMissSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _psiSound, node["psiSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _psiMissSound, node["psiMissSound"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _explosionHitSound, node["explosionHitSound"], "BATTLE.CAT");
 
 	mod->loadSpriteOffset(_type, _hitAnimation, node["hitAnimation"], "SMOKE.PCK");
 	mod->loadSpriteOffset(_type, _hitMissAnimation, node["hitMissAnimation"], "SMOKE.PCK");
@@ -419,9 +421,6 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_meleeMissAnimFrames = node["meleeMissAnimFrames"].as<int>(_meleeMissAnimFrames);
 	_psiAnimFrames = node["psiAnimFrames"].as<int>(_psiAnimFrames);
 	_psiMissAnimFrames = node["psiMissAnimFrames"].as<int>(_psiMissAnimFrames);
-
-	mod->loadSoundOffset(_type, _meleeHitSound, node["meleeHitSound"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _explosionHitSound, node["explosionHitSound"], "BATTLE.CAT");
 
 	if (node["battleType"])
 	{
