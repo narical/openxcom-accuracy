@@ -859,7 +859,7 @@ ko:
   STR_STAMINA: "기력"
   STR_HEALTH: "체력"
   STR_BRAVERY: "용기"
-  STR_REACTIONS: "반응속도"
+  STR_REACTIONS: "반응"
   STR_FIRING_ACCURACY: "사격 정확도"
   STR_THROWING_ACCURACY: "투척 정확도"
   STR_STRENGTH: "근력"
