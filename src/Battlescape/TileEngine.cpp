@@ -1968,6 +1968,12 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		0,
 	};
 
+	// to avoid 0 that casue infinite loop we set minimal reaction handed by logic, should correacty handle units with 1 point in reaction and 1/1000 TU
+	if (reaction.reactionScore <= 0.001)
+	{
+		return reaction;
+	}
+
 	auto setReaction = [](ReactionScore& re, BattleActionType type, BattleItem* weapon)
 	{
 		re.attackType = type;
