@@ -1461,6 +1461,8 @@ bool openExplorer(const std::string &url)
 	HINSTANCE ret = ShellExecuteW(NULL, L"open", Unicode::convMbToWc(url, CP_UTF8).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	// The return value is not a true HINSTANCE. If the function succeeds, it returns a value greater than 32.
 	return (static_cast<int>(reinterpret_cast<uintptr_t>(ret)) > 32);
+#elif __MOBILE__
+	return false;
 #elif __APPLE__
 	std::string cmd = "open \"" + url + "\"";
 	return (system(cmd.c_str()) == 0);
