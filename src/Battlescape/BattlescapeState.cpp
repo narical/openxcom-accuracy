@@ -195,6 +195,16 @@ BattlescapeState::BattlescapeState() :
 	_btnSkills = new BattlescapeButton(32, 24, screenWidth - 32, 25); // we need screenWidth, because that is independent of the black bars on the screen
 	_btnSkills->setVisible(false);
 
+	{
+		auto posX = (screenWidth - 32);
+		for (auto& pos :  _posSpecialActions)
+		{
+			pos = posX;
+			posX -= 32;
+		}
+	}
+
+
 	// Reset touch flags
 	_game->resetTouchButtonFlags();
 
@@ -2211,53 +2221,48 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 		hasSkills = soldier->getRules()->isSkillMenuDefined();
 	}
 
+	resetUiButton();
+
+	int offset = 0;
+	auto show = [&](BattlescapeButton* btn, int spriteIndex)
+	{
+		if (offset < SPECIAL_BUTTONS_MAX)
+		{
+			_game->getMod()->getSurfaceSet("SPICONS.DAT")->getFrame(spriteIndex)->blitNShade(btn, 0, 0);
+			btn->setVisible(true);
+			btn->setX(_posSpecialActions[offset]);
+			++offset;
+		}
+	};
+
+
 	if (hasSpecialWeapon)
 	{
-		showUiButton(BTN_SPECIAL, specialWeapon->getRules()->getSpecialIconSprite());
+		show(_btnSpecial, specialWeapon->getRules()->getSpecialIconSprite());
 	}
-	else if (hasSkills)
+	if (hasSkills)
 	{
-		showUiButton(BTN_SKILL, soldier->getRules()->getSkillIconSprite());
+		show(_btnSkills, soldier->getRules()->getSkillIconSprite());
 	}
-	else if (hasPsiWeapon)
+	if (hasPsiWeapon)
 	{
-		showUiButton(BTN_PSI);
-	}
-	else
-	{
-		resetUiButton();
-	}
-}
-
-void BattlescapeState::showUiButton(ButtonType buttonType, int spriteIndex)
-{
-	switch (buttonType) {
-		case BTN_PSI:
-			showPsiButton(true);
-			showSpecialButton(false);
-			showSkillsButton(false);
-			break;
-		case BTN_SPECIAL:
-			showPsiButton(false);
-			showSpecialButton(true, spriteIndex);
-			showSkillsButton(false);
-			break;
-		case BTN_SKILL:
-			showPsiButton(false);
-			showSpecialButton(false);
-			showSkillsButton(true, spriteIndex);
-			break;
-		default:
-			resetUiButton();
-			break;
+		show(_btnPsi, 1);
 	}
 }
 
 void BattlescapeState::resetUiButton()
 {
-	showPsiButton(false);
-	showSpecialButton(false);
-	showSkillsButton(false);
+	BattlescapeButton* btns[] = {
+		_btnPsi,
+		_btnSkills,
+		_btnSpecial,
+	};
+
+	for (auto* btn : btns)
+	{
+		btn->setVisible(false);
+		btn->setX(_posSpecialActions[0]);
+	}
 }
 
 /**
@@ -3244,41 +3249,6 @@ void BattlescapeState::showLaunchButton(bool show)
 }
 
 /**
- * Shows the PSI button.
- * @param show Show PSI button?
- */
-void BattlescapeState::showPsiButton(bool show)
-{
-	_btnPsi->setVisible(show);
-}
-
-/**
- * Shows the special button.
- * @param show Show special button?
- */
-void BattlescapeState::showSpecialButton(bool show, int sprite)
-{
-	if (show)
-	{
-		_game->getMod()->getSurfaceSet("SPICONS.DAT")->getFrame(sprite)->blitNShade(_btnSpecial, 0, 0);
-	}
-	_btnSpecial->setVisible(show);
-}
-
-/**
- * Shows the skills button.
- * @param show Show skills button?
- */
-void BattlescapeState::showSkillsButton(bool show, int sprite)
-{
-	if (show)
-	{
-		_game->getMod()->getSurfaceSet("SPICONS.DAT")->getFrame(sprite)->blitNShade(_btnSkills, 0, 0);
-	}
-	_btnSkills->setVisible(show);
-}
-
-/**
  * Clears mouse-scrolling state (isMouseScrolling).
  */
 void BattlescapeState::clearMouseScrollingState()
@@ -3674,6 +3644,11 @@ void BattlescapeState::resize(int &dX, int &dY)
 		{
 			(*i)->setX((*i)->getX() + dX);
 		}
+	}
+
+	for (auto& pos : _posSpecialActions)
+	{
+		pos += dX;
 	}
 
 }
