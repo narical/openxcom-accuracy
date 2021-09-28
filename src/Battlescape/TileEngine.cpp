@@ -1785,7 +1785,7 @@ bool TileEngine::checkReactionFire(BattleUnit *unit, const BattleAction &origina
 		// start iterating through the possible reactors until the current unit is the one with the highest score.
 		while (reactor != 0)
 		{
-			if (!tryReaction(reactor, unit, originalAction))
+			if (reactor->count > 10 || !tryReaction(reactor, unit, originalAction))
 			{
 				for (std::vector<ReactionScore>::iterator i = spotters.begin(); i != spotters.end(); ++i)
 				{
@@ -1804,6 +1804,7 @@ bool TileEngine::checkReactionFire(BattleUnit *unit, const BattleAction &origina
 			// nice shot, kid. don't get cocky.
 			result = true;
 			reactor->reactionScore -= reactor->reactionReduction;
+			reactor->count += 1;
 			reactor = getReactor(spotters, unit);
 		}
 	}
@@ -1965,7 +1966,8 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		nullptr,
 		BA_NONE,
 		unit->getReactionScore(),
-		0,
+		0.0,
+		1,
 	};
 
 	// to avoid 0 that casue infinite loop we set minimal reaction handed by logic, should correacty handle units with 1 point in reaction and 1/1000 TU

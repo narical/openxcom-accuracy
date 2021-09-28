@@ -89,6 +89,7 @@ private:
 		BattleActionType attackType;
 		double reactionScore;
 		double reactionReduction;
+		int count;
 	};
 
 	SavedBattleGame *_save;
