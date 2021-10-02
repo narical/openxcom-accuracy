@@ -3255,8 +3255,8 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.add<void(*)(SavedBattleGame*, ScriptText, int, int, int), &flashMessageVariadicScriptImpl>("flashMessage");
 	sbg.add<void(*)(SavedBattleGame*, ScriptText, int, int, int, int), &flashMessageVariadicScriptImpl>("flashMessage");
 
-	sbg.add<&randomChanceScript>("randomChance");
-	sbg.add<&randomRangeScript>("randomRange");
+	sbg.add<&randomChanceScript>("randomChance", "first argument is percent in range 0 - 100, then return in that argument random 1 or 0 based on percent");
+	sbg.add<&randomRangeScript>("randomRange", "set in first argument random value from range given in two last arguments");
 	sbg.add<&turnSideScript>("getTurnSide", "Return the faction whose turn it is.");
 	sbg.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
 	sbg.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
