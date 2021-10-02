@@ -5818,8 +5818,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getSpawnUnitScript>("getSpawnUnit", "get type of zombie will be spawn from curret unit");
 	bu.add<&setSpawnUnitInstantRespawnScript>("setSpawnUnitInstantRespawn", "set 1 to make unit instalty change to spawn zombie unit, other wise it will transform on death");
 	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
-	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will span");
-	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will span");
+	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will spawn");
+	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will spawn");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");
