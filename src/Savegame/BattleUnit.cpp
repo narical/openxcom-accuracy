@@ -5575,6 +5575,16 @@ void getFactionScript(const BattleUnit *bu, int &faction)
 	faction = 0;
 }
 
+void getOriginalFactionScript(const BattleUnit *bu, int &faction)
+{
+	if (bu)
+	{
+		faction = (int)bu->getOriginalFaction();
+		return;
+	}
+	faction = 0;
+}
+
 
 void setSpawnUnitScript(BattleUnit *bu, const Unit* unitType)
 {
@@ -5864,7 +5874,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
 
 	bu.add<&getVisibleUnitsCountScript>("getVisibleUnitsCount");
-	bu.add<&getFactionScript>("getFaction");
+	bu.add<&getFactionScript>("getFaction", "get current faction of unit");
+	bu.add<&getOriginalFactionScript>("getOriginalFaction", "get original faction of unit");
 
 	bu.add<&BattleUnit::getOverKillDamage>("getOverKillDamage");
 	bu.addRules<Armor, &BattleUnit::getArmor>("getRuleArmor");
