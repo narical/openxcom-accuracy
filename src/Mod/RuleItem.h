@@ -53,7 +53,31 @@ enum ExperienceTrainingMode {
 	ETM_PSI_STRENGTH_OR_SKILL, ETM_PSI_STRENGTH_OR_SKILL_2X,
 	ETM_NOTHING
 };
-enum BattleActionType : Uint8 { BA_NONE, BA_TURN, BA_WALK, BA_KNEEL, BA_PRIME, BA_UNPRIME, BA_THROW, BA_AUTOSHOT, BA_SNAPSHOT, BA_AIMEDSHOT, BA_HIT, BA_USE, BA_LAUNCH, BA_MINDCONTROL, BA_PANIC, BA_RETHINK, BA_CQB };
+enum BattleActionType : Uint8
+{
+	BA_NONE = 0,
+
+	BA_TURN = 1,
+	BA_WALK = 2,
+	BA_KNEEL = 3,
+
+	BA_PRIME = 4,
+	BA_UNPRIME = 5,
+	BA_THROW = 6,
+	BA_AUTOSHOT = 7,
+	BA_SNAPSHOT = 8,
+	BA_AIMEDSHOT = 9,
+	BA_HIT = 10,
+
+	BA_USE = 11,
+	BA_LAUNCH = 12,
+	BA_MINDCONTROL = 13,
+	BA_PANIC = 14,
+
+	BA_RETHINK = 15,
+
+	BA_CQB = 16,
+};
 
 enum class BattleActionOrigin { CENTRE = 0, LEFT, RIGHT }; // Used for off-centre shooting.
 
