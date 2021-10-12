@@ -409,7 +409,7 @@ void DebriefingState::init()
 	}
 
 	// compare stuff from after and before recovery
-	if (_base)
+	if (_base && _showSellButton)
 	{
 		int row = 0;
 		ItemContainer *origBaseItems = _game->getSavedGame()->getSavedBattle()->getBaseStorageItems();
@@ -1992,6 +1992,13 @@ void DebriefingState::prepareDebriefing()
 	if (craft)
 	{
 		reequipCraft(base, craft, true);
+	}
+	else
+	{
+		if (target != "STR_BASE" || _destroyBase)
+		{
+			hideSellTransferButtons();
+		}
 	}
 
 	if (target == "STR_BASE")
