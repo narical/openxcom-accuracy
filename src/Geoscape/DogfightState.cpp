@@ -288,7 +288,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	// HK options
 	if (_ufoIsAttacking)
 	{
-		if (_ufo->getCraftStats().speedMax > _craft->getCraftStats().speedMax)
+		if (_ufo->getCraftStats().speedMax >= _craft->getCraftStats().speedMax)
 		{
 			_disableDisengage = true;
 		}
