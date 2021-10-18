@@ -2208,11 +2208,14 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 
 void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 {
-	bool hasPsiWeapon = battleUnit->getSpecialWeapon(BT_PSIAMP) != 0;
+	BattleItem *psiWeapon = battleUnit->getSpecialWeapon(BT_PSIAMP);
 
 	BattleType type = BT_NONE;
 	BattleItem *specialWeapon = battleUnit->getSpecialIconWeapon(type); // updates type!
 	bool hasSpecialWeapon = specialWeapon && type != BT_NONE && type != BT_AMMO && type != BT_GRENADE && type != BT_PROXIMITYGRENADE && type != BT_FLARE && type != BT_CORPSE;
+
+	// if we have psi amp with icon then it will show one button only, but if we have two psi amps and one with icon is second (this is important) then we will show both buttons.
+	bool hasPsiWeapon = psiWeapon != 0 && psiWeapon != specialWeapon;
 
 	bool hasSkills = false;
 	auto soldier = battleUnit->getGeoscapeSoldier();
