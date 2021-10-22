@@ -287,8 +287,8 @@ void Armor::afterLoad(const Mod* mod)
 
 		if (!numCorpse++)
 		{
-			// only first item need be corpse
-			mod->checkForSoftError(c->getBattleType() != BT_CORPSE, _type, "First Battle corpse item need have corpse item type");
+			// only the first item needs to be a corpse item
+			mod->checkForSoftError(c->getBattleType() != BT_CORPSE, _type, "The first battle corpse item must be of item type 'corpse' (battleType: 11)");
 		}
 		else
 		{
