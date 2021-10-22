@@ -1507,6 +1507,8 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.addCustomConst("BA_PRIME", BA_PRIME);
 	bi.addCustomConst("BA_UNPRIME", BA_UNPRIME);
 	bi.addCustomConst("BA_NONE", BA_NONE);
+	bi.addCustomConst("BA_TRIGGER_TIMED_GRENADE", BA_TRIGGER_TIMED_GRENADE);
+	bi.addCustomConst("BA_TRIGGER_PROXY_GRENADE", BA_TRIGGER_PROXY_GRENADE);
 }
 
 namespace

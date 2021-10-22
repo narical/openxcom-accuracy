@@ -77,6 +77,9 @@ enum BattleActionType : Uint8
 	BA_RETHINK = 15,
 
 	BA_CQB = 16,
+
+	BA_TRIGGER_TIMED_GRENADE = 17,
+	BA_TRIGGER_PROXY_GRENADE = 18,
 };
 
 enum class BattleActionOrigin { CENTRE = 0, LEFT, RIGHT }; // Used for off-centre shooting.
