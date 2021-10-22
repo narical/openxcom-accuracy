@@ -163,6 +163,21 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_maxArmor[SIDE_RIGHT] = _armor->getRightSideArmor();
 	_maxArmor[SIDE_REAR] = _armor->getRearArmor();
 	_maxArmor[SIDE_UNDER] = _armor->getUnderArmor();
+	{
+		for (auto bonusRule : *soldier->getBonuses(nullptr))
+		{
+			_maxArmor[SIDE_FRONT] += bonusRule->getFrontArmor();
+			_maxArmor[SIDE_LEFT]  += bonusRule->getLeftSideArmor();
+			_maxArmor[SIDE_RIGHT] += bonusRule->getRightSideArmor();
+			_maxArmor[SIDE_REAR]  += bonusRule->getRearArmor();
+			_maxArmor[SIDE_UNDER] += bonusRule->getUnderArmor();
+		}
+		_maxArmor[SIDE_FRONT] = std::max(0, _maxArmor[SIDE_FRONT]);
+		_maxArmor[SIDE_LEFT]  = std::max(0, _maxArmor[SIDE_LEFT]);
+		_maxArmor[SIDE_RIGHT] = std::max(0, _maxArmor[SIDE_RIGHT]);
+		_maxArmor[SIDE_REAR]  = std::max(0, _maxArmor[SIDE_REAR]);
+		_maxArmor[SIDE_UNDER] = std::max(0, _maxArmor[SIDE_UNDER]);
+	}
 	_currentArmor[SIDE_FRONT] = _maxArmor[SIDE_FRONT];
 	_currentArmor[SIDE_LEFT] = _maxArmor[SIDE_LEFT];
 	_currentArmor[SIDE_RIGHT] = _maxArmor[SIDE_RIGHT];
@@ -237,6 +252,21 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_maxArmor[SIDE_RIGHT] = _armor->getRightSideArmor();
 	_maxArmor[SIDE_REAR] = _armor->getRearArmor();
 	_maxArmor[SIDE_UNDER] = _armor->getUnderArmor();
+	{
+		for (auto bonusRule : *soldier->getBonuses(nullptr))
+		{
+			_maxArmor[SIDE_FRONT] += bonusRule->getFrontArmor();
+			_maxArmor[SIDE_LEFT]  += bonusRule->getLeftSideArmor();
+			_maxArmor[SIDE_RIGHT] += bonusRule->getRightSideArmor();
+			_maxArmor[SIDE_REAR]  += bonusRule->getRearArmor();
+			_maxArmor[SIDE_UNDER] += bonusRule->getUnderArmor();
+		}
+		_maxArmor[SIDE_FRONT] = std::max(0, _maxArmor[SIDE_FRONT]);
+		_maxArmor[SIDE_LEFT]  = std::max(0, _maxArmor[SIDE_LEFT]);
+		_maxArmor[SIDE_RIGHT] = std::max(0, _maxArmor[SIDE_RIGHT]);
+		_maxArmor[SIDE_REAR]  = std::max(0, _maxArmor[SIDE_REAR]);
+		_maxArmor[SIDE_UNDER] = std::max(0, _maxArmor[SIDE_UNDER]);
+	}
 	_currentArmor[SIDE_FRONT] = _maxArmor[SIDE_FRONT];
 	_currentArmor[SIDE_LEFT] = _maxArmor[SIDE_LEFT];
 	_currentArmor[SIDE_RIGHT] = _maxArmor[SIDE_RIGHT];
