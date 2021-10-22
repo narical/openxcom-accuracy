@@ -81,6 +81,7 @@ void RuleEventScript::load(const YAML::Node &node)
 	_researchTriggers = node["researchTriggers"].as<std::map<std::string, bool> >(_researchTriggers);
 	_itemTriggers = node["itemTriggers"].as<std::map<std::string, bool> >(_itemTriggers);
 	_facilityTriggers = node["facilityTriggers"].as<std::map<std::string, bool> >(_facilityTriggers);
+	_xcomBaseInRegionTriggers = node["xcomBaseInRegionTriggers"].as<std::map<std::string, bool> >(_xcomBaseInRegionTriggers);
 	_affectsGameProgression = node["affectsGameProgression"].as<bool>(_affectsGameProgression);
 }
 
