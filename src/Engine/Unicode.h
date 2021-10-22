@@ -65,8 +65,14 @@ namespace Unicode
 	std::string convWcToMb(const std::wstring &src, unsigned int cp = 0);
 	/// Converts a multi-byte string to wide-char.
 	std::wstring convMbToWc(const std::string &src, unsigned int cp = 0);
+
 	/// Checks UTF-8 validity
 	bool isValidUTF8(const std::string& ss);
+	/// Count code points in utf8 string.
+	std::size_t codePointLengthUTF8(const std::string &str);
+	/// Substring based on code points in utf8 string.
+	std::string codePointSubstrUTF8(const std::string &str, std::size_t pos, std::size_t count = std::string::npos);
+
 	/// Compares two strings by natural order.
 	bool naturalCompare(const std::string &a, const std::string &b);
 	/// Compares two strings case-insensitive.
