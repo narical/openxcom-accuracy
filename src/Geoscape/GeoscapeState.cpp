@@ -3340,12 +3340,18 @@ void GeoscapeState::determineAlienMissions()
 	std::map<int, bool> conditions;
 
 	std::set<std::string> xcomBaseRegions;
+	std::set<std::string> xcomBaseCountries;
 	for (auto& xcomBase : *save->getBases())
 	{
 		auto region = save->locateRegion(*xcomBase);
 		if (region)
 		{
 			xcomBaseRegions.insert(region->getRules()->getType());
+		}
+		auto country = save->locateCountry(*xcomBase);
+		if (country)
+		{
+			xcomBaseCountries.insert(country->getRules()->getType());
 		}
 	}
 
@@ -3404,6 +3410,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseRegions.find(triggerXcomBase.first) != xcomBaseRegions.end());
 						triggerHappy = (found == triggerXcomBase.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// xcom base requirements by country
+					for (auto& triggerXcomBase2 : arcScript->getXcomBaseInCountryTriggers())
+					{
+						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
+						triggerHappy = (found == triggerXcomBase2.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3542,6 +3559,17 @@ void GeoscapeState::determineAlienMissions()
 						break;
 				}
 			}
+			if (triggerHappy)
+			{
+				// xcom base requirements by country
+				for (auto& triggerXcomBase2 : command->getXcomBaseInCountryTriggers())
+				{
+					bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
+					triggerHappy = (found == triggerXcomBase2.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
 			// levels one and two passed: insert this command into the array.
 			if (triggerHappy)
 			{
@@ -3650,6 +3678,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseRegions.find(triggerXcomBase.first) != xcomBaseRegions.end());
 						triggerHappy = (found == triggerXcomBase.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// xcom base requirements by country
+					for (auto& triggerXcomBase2 : eventScript->getXcomBaseInCountryTriggers())
+					{
+						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
+						triggerHappy = (found == triggerXcomBase2.second);
 						if (!triggerHappy)
 							break;
 					}

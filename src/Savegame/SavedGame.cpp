@@ -2628,6 +2628,50 @@ Region *SavedGame::locateRegion(const Target &target) const
 	return locateRegion(target.getLongitude(), target.getLatitude());
 }
 
+/** @brief Check if a point is contained in a country.
+ * This function object checks if a point is contained inside a country.
+ */
+class CountryContainsPoint
+{
+	typedef const Country* argument_type;
+	typedef bool result_type;
+
+public:
+	/// Remember the coordinates.
+	CountryContainsPoint(double lon, double lat) : _lon(lon), _lat(lat) { /* Empty by design. */ }
+	/// Check if the country contains the stored point.
+	bool operator()(const Country* country) const { return country->getRules()->insideCountry(_lon, _lat); }
+private:
+	double _lon, _lat;
+};
+
+/**
+ * Find the country containing this location.
+ * @param lon The longitude.
+ * @param lat The latitude.
+ * @return Pointer to the country, or 0.
+ */
+Country* SavedGame::locateCountry(double lon, double lat) const
+{
+	std::vector<Country*>::const_iterator found = std::find_if(_countries.begin(), _countries.end(), CountryContainsPoint(lon, lat));
+	if (found != _countries.end())
+	{
+		return *found;
+	}
+	//Log(LOG_DEBUG) << "Failed to find a country at location [" << lon << ", " << lat << "].";
+	return 0;
+}
+
+/**
+ * Find the country containing this target.
+ * @param target The target to locate.
+ * @return Pointer to the country, or 0.
+ */
+Country* SavedGame::locateCountry(const Target& target) const
+{
+	return locateCountry(target.getLongitude(), target.getLatitude());
+}
+
 /*
  * @return the month counter.
  */

@@ -374,6 +374,10 @@ public:
 	Region *locateRegion(double lon, double lat) const;
 	/// Locate a region containing a Target.
 	Region *locateRegion(const Target &target) const;
+	/// Locate a country containing a position.
+	Country* locateCountry(double lon, double lat) const;
+	/// Locate a country containing a Target.
+	Country* locateCountry(const Target& target) const;
 	/// Return the month counter.
 	int getMonthsPassed() const;
 	/// Return the GraphRegionToggles.

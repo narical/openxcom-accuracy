@@ -39,6 +39,7 @@ private:
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
 	std::map<std::string, bool> _xcomBaseInRegionTriggers;
+	std::map<std::string, bool> _xcomBaseInCountryTriggers;
 public:
 	/// Creates a new arc script.
 	RuleArcScript(const std::string& type);
@@ -80,6 +81,8 @@ public:
 	const std::map<std::string, bool> &getFacilityTriggers() const { return _facilityTriggers; }
 	/// Gets the xcom base triggers that may apply to this command.
 	const std::map<std::string, bool> &getXcomBaseInRegionTriggers() const { return _xcomBaseInRegionTriggers; }
+	/// Gets the xcom base triggers that may apply to this command.
+	const std::map<std::string, bool> &getXcomBaseInCountryTriggers() const { return _xcomBaseInCountryTriggers; }
 
 };
 

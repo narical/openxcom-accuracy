@@ -112,6 +112,7 @@ void RuleMissionScript::load(const YAML::Node& node)
 	_itemTriggers = node["itemTriggers"].as<std::map<std::string, bool> >(_itemTriggers);
 	_facilityTriggers = node["facilityTriggers"].as<std::map<std::string, bool> >(_facilityTriggers);
 	_xcomBaseInRegionTriggers = node["xcomBaseInRegionTriggers"].as<std::map<std::string, bool> >(_xcomBaseInRegionTriggers);
+	_xcomBaseInCountryTriggers = node["xcomBaseInCountryTriggers"].as<std::map<std::string, bool> >(_xcomBaseInCountryTriggers);
 	_useTable = node["useTable"].as<bool>(_useTable);
 	if (_varName.empty() && (_maxRuns > 0 || _avoidRepeats > 0))
 	{
@@ -266,6 +267,14 @@ const std::map<std::string, bool> &RuleMissionScript::getFacilityTriggers() cons
 const std::map<std::string, bool> &RuleMissionScript::getXcomBaseInRegionTriggers() const
 {
 	return _xcomBaseInRegionTriggers;
+}
+
+/**
+ * @return a list of xcom base triggers that govern execution of this script.
+ */
+const std::map<std::string, bool> &RuleMissionScript::getXcomBaseInCountryTriggers() const
+{
+	return _xcomBaseInCountryTriggers;
 }
 
 /**
