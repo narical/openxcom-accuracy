@@ -374,20 +374,12 @@ static bool iterateUTF8CodePoints(const unsigned char* begin, const unsigned cha
  */
 bool isValidUTF8(const std::string& ss)
 {
-	auto early_end = false;
-
 	if (false == iterateUTF8CodePoints(
 			reinterpret_cast<const unsigned char*>(ss.data()),
 			reinterpret_cast<const unsigned char*>(ss.data() + ss.size()),
 			[&](unsigned char s0)
 			{
 				/* 0xxxxxxx */
-				if (s0 == 0)
-				{
-					early_end = true;
-					return false;
-				}
-
 				return true;
 			},
 			[&](unsigned char s0, unsigned char s1)
@@ -427,7 +419,7 @@ bool isValidUTF8(const std::string& ss)
 		)
 	)
 	{
-		return early_end;
+		return false;
 	}
 
 	return true;
@@ -441,7 +433,6 @@ bool isValidUTF8(const std::string& ss)
 std::size_t codePointLengthUTF8(const std::string &str)
 {
 	std::size_t size = 0;
-	auto early_end = false;
 
 	if (false == iterateUTF8CodePoints(
 			reinterpret_cast<const unsigned char*>(str.data()),
@@ -449,12 +440,6 @@ std::size_t codePointLengthUTF8(const std::string &str)
 			[&](unsigned char s0)
 			{
 				/* 0xxxxxxx */
-				if (s0 == 0)
-				{
-					early_end = true;
-					return false;
-				}
-
 				size += 1;
 				return true;
 			},
@@ -479,10 +464,7 @@ std::size_t codePointLengthUTF8(const std::string &str)
 		)
 	)
 	{
-		if (false == early_end)
-		{
-			throw Exception("Invalid utf8 string for length");
-		}
+		throw Exception("Invalid utf8 string for length");
 	}
 
 	return size;
@@ -848,6 +830,12 @@ static auto dummy = ([]
 	assert(isValidUTF8("\xf0\x9f") == false);
 	assert(isValidUTF8("\xf0") == false);
 
+	//handling of embedded zeros
+	assert(isValidUTF8(std::string{'\0','\0','\xc5','\x9b'}) == true);
+	assert(codePointLengthUTF8(std::string{'\0','\0','\xc5','\x9b'}) == 3);
+
+	assert(isValidUTF8(std::string{'\0','\0','\xc5'}) == false);
+	assert_throw(codePointLengthUTF8(std::string{'\0','\0','\xc5'}));
 
 
 	//test substr
