@@ -328,10 +328,11 @@ std::string Soldier::getName(bool statstring, unsigned int maxLength) const
 {
 	if (statstring && !_statString.empty())
 	{
-		UString name = Unicode::convUtf8ToUtf32(_name);
-		if (name.length() + _statString.length() > maxLength)
+		auto nameCodePointLength = Unicode::codePointLengthUTF8(_name);
+		auto statCodePointLength = Unicode::codePointLengthUTF8(_statString);
+		if (nameCodePointLength + statCodePointLength > maxLength)
 		{
-			return Unicode::convUtf32ToUtf8(name.substr(0, maxLength - _statString.length())) + "/" + _statString;
+			return Unicode::codePointSubstrUTF8(_name, 0, maxLength - statCodePointLength) + "/" + _statString;
 		}
 		else
 		{
@@ -362,16 +363,10 @@ std::string Soldier::getCallsign(unsigned int maxLength) const
 {
 	std::ostringstream ss;
 	ss << "\"";
-	ss << _callsign;
+	ss << Unicode::codePointSubstrUTF8(_callsign, 0, maxLength);
 	ss << "\"";
-	if (_callsign.length() + 2 > maxLength)
-	{
-		return ss.str().substr(0, maxLength);
-	}
-	else
-	{
-		return ss.str();
-	}
+
+	return ss.str();
 }
 
 /**
