@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstring>
+#include <assert.h>
 #include "Logger.h"
 #include "Exception.h"
 #ifdef _WIN32
@@ -35,7 +36,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #endif
 
 namespace OpenXcom
