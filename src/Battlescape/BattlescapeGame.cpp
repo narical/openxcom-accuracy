@@ -518,7 +518,7 @@ void BattlescapeGame::endTurn()
 				}
 				if (tile)
 				{
-					if (item->fuseEndTurnEffect())
+					if (item->fuseTimeEvent())
 					{
 						if (rule->getBattleType() == BT_GRENADE) // it's a grenade to explode now
 						{
@@ -579,7 +579,7 @@ void BattlescapeGame::endTurn()
 				{
 					continue;
 				}
-				item->fuseTimerEvent();
+				item->fuseEndTurnUpdate();
 			}
 		}
 

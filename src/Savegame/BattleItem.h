@@ -98,9 +98,9 @@ public:
 	/// Set fuse trigger.
 	void setFuseEnabled(bool enable);
 	/// Called on end of turn is triggered.
-	void fuseTimerEvent();
+	void fuseEndTurnUpdate();
 	/// Get if item can trigger end of turn effect.
-	bool fuseEndTurnEffect();
+	bool fuseTimeEvent();
 	/// Called when item fuse is triggered on throw.
 	bool fuseThrowEvent();
 	/// Called when item fuse is triggered on throw.
