@@ -24,6 +24,7 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "Craft.h"
 #include "CraftWeapon.h"
+#include "SavedGame.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Mod.h"
@@ -462,7 +463,7 @@ void Base::setEngineers(int engineers)
  * @param alreadyDedected Was ufo already detected, `true` mean we track it without probability.
  * @return 0 - not detected, 1 - detected by conventional radar, 2 - detected by hyper-wave decoder.
  */
-UfoDetection Base::detect(const Ufo *target, bool alreadyTracked) const
+UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const
 {
 	auto distance = XcomDistance(getDistance(target));
 	auto hyperwave = false;
@@ -534,7 +535,7 @@ UfoDetection Base::detect(const Ufo *target, bool alreadyTracked) const
 	}
 
 	ModScript::DetectUfoFromBase::Output args { detectionType, detectionChance, };
-	ModScript::DetectUfoFromBase::Worker work { target, distance, alreadyTracked, radar_chance, radar_max_range, hyperwave_chance, hyperwave_max_range, };
+	ModScript::DetectUfoFromBase::Worker work { target, save, distance, alreadyTracked, radar_chance, radar_max_range, hyperwave_chance, hyperwave_max_range, };
 
 	work.execute(target->getRules()->getScript<ModScript::DetectUfoFromBase>(), args);
 

@@ -151,7 +151,7 @@ public:
 	/// Sets the base's engineers.
 	void setEngineers(int engineers);
 	/// Checks if a target is detected by the base's radar.
-	UfoDetection detect(const Ufo *target, bool alreadyTracked) const;
+	UfoDetection detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const;
 	/// Gets the base's available soldiers.
 	int getAvailableSoldiers(bool checkCombatReadiness = false, bool includeWounded = false) const;
 	/// Gets the base's total soldiers.

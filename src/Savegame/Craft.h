@@ -201,7 +201,7 @@ public:
 	/// Returns the crew to their base (using transfers).
 	void evacuateCrew(const Mod *mod);
 	/// Checks if a target is detected by the craft's radar.
-	UfoDetection detect(const Ufo *target, bool alreadyTracked) const;
+	UfoDetection detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const;
 	/// Handles craft logic.
 	bool think();
 	/// Does a craft full checkup.

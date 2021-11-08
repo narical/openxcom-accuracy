@@ -1087,7 +1087,7 @@ void Craft::checkup()
  * @param target Pointer to target to compare.
  * @return True if it's detected, False otherwise.
  */
-UfoDetection Craft::detect(const Ufo *target, bool alreadyTracked) const
+UfoDetection Craft::detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const
 {
 	auto distance = XcomDistance(getDistance(target));
 
@@ -1117,7 +1117,7 @@ UfoDetection Craft::detect(const Ufo *target, bool alreadyTracked) const
 	}
 
 	ModScript::DetectUfoFromCraft::Output args { detectionType, detectionChance, };
-	ModScript::DetectUfoFromCraft::Worker work { target, this, distance, alreadyTracked, _stats.radarChance, _stats.radarRange, };
+	ModScript::DetectUfoFromCraft::Worker work { target, save, this, distance, alreadyTracked, _stats.radarChance, _stats.radarRange, };
 
 	work.execute(target->getRules()->getScript<ModScript::DetectUfoFromCraft>(), args);
 

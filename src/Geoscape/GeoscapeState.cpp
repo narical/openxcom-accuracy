@@ -1894,15 +1894,16 @@ void GeoscapeState::time30Minutes()
 
 				auto detected = DETECTION_NONE;
 				auto alreadyTracked = ufo->getDetected();
+				auto save = _game->getSavedGame();
 
 				for (auto base : *_game->getSavedGame()->getBases())
 				{
-					detected = maskBitOr(detected, base->detect(ufo, alreadyTracked));
+					detected = maskBitOr(detected, base->detect(ufo, save, alreadyTracked));
 				}
 
 				for (auto craft : *activeCrafts)
 				{
-					detected = maskBitOr(detected, craft->detect(ufo, alreadyTracked));
+					detected = maskBitOr(detected, craft->detect(ufo, save, alreadyTracked));
 				}
 
 				if (!alreadyTracked)

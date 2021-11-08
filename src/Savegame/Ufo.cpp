@@ -1368,7 +1368,8 @@ void Ufo::ScriptRegister(ScriptParserBase* parser)
 ModScript::DetectUfoFromBaseParser::DetectUfoFromBaseParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
 	"detection_type",
 	"detection_chance",
-	"ufo", "distance", "already_tracked", "radar_total_strength", "radar_max_distance", "hyperwave_total_strength", "hyperwave_max_distance", }
+	"ufo", "geoscape_game",
+	"distance", "already_tracked", "radar_total_strength", "radar_max_distance", "hyperwave_total_strength", "hyperwave_max_distance", }
 {
 	BindBase b { this };
 
@@ -1378,7 +1379,8 @@ ModScript::DetectUfoFromBaseParser::DetectUfoFromBaseParser(ScriptGlobal* shared
 ModScript::DetectUfoFromCraftParser::DetectUfoFromCraftParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
 	"detection_type",
 	"detection_chance",
-	"ufo", "craft", "distance", "already_tracked", "radar_total_strength", "radar_max_distance", }
+	"ufo", "geoscape_game", "craft",
+	"distance", "already_tracked", "radar_total_strength", "radar_max_distance", }
 {
 	BindBase b { this };
 
