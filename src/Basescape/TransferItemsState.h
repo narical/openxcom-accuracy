@@ -62,6 +62,8 @@ private:
 	double _distance;
 	Uint8 _ammoColor;
 	Timer *_timerInc, *_timerDec;
+	TransferSortDirection _previousSort, _currentSort;
+
 	/// Gets the category of the current selection.
 	std::string getCategory(int sel) const;
 	/// Determines if the current selection belongs to a given category.
