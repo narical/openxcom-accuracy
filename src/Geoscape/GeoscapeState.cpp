@@ -2424,7 +2424,7 @@ void GeoscapeState::time1Day()
 			{
 				for (ResearchProject* otherProject : otherBase->getResearch())
 				{
-					if (research->getName() == otherProject->getRules()->getName())
+					if (research == otherProject->getRules())
 					{
 						if (saveGame->hasUndiscoveredGetOneFree(research, true))
 						{
