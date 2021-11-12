@@ -20,6 +20,7 @@
 #include "BattleItem.h"
 #include <sstream>
 #include <algorithm>
+#include "../Engine/Collections.h"
 #include "../Engine/Surface.h"
 #include "../Engine/Script.h"
 #include "../Engine/ScriptBind.h"
@@ -289,12 +290,12 @@ void BattleUnit::prepareUnitSounds()
 
 	if (_geoscapeSoldier)
 	{
-		_aggroSound = Mod::NO_SOUND;
+		Collections::removeAll(_aggroSound);
 		_moveSound = _armor->getMoveSound() != Mod::NO_SOUND ? _armor->getMoveSound() : Mod::NO_SOUND; // there's no soldier move sound, thus hardcoded -1
 	}
 	else if (_unitRules)
 	{
-		_aggroSound = _unitRules->getAggroSound();
+		_aggroSound = _unitRules->getAggroSounds();
 		_moveSound = _armor->getMoveSound() != Mod::NO_SOUND ? _armor->getMoveSound() : _unitRules->getMoveSound();
 	}
 
@@ -4199,12 +4200,25 @@ void BattleUnit::instaKill()
 }
 
 /**
- * Get sound to play when unit aggros.
- * @return sound
+ * Gets whether the unit has any aggro sounds.
+ * @return True, if the unit has any aggro sounds.
  */
-int BattleUnit::getAggroSound() const
+bool BattleUnit::hasAggroSound() const
 {
-	return _aggroSound;
+	return !_aggroSound.empty();
+}
+
+/**
+ * Gets a unit's random aggro sound.
+ * @return The sound id.
+ */
+int BattleUnit::getRandomAggroSound() const
+{
+	if (hasAggroSound())
+	{
+		return _aggroSound[RNG::generate(0, _aggroSound.size() - 1)];
+	}
+	return -1;
 }
 
 /**

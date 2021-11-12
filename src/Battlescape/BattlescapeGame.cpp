@@ -369,9 +369,9 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 
 	if (unit->getCharging() != 0)
 	{
-		if (unit->getAggroSound() != -1 && !_playedAggroSound)
+		if (unit->hasAggroSound() && !_playedAggroSound)
 		{
-			getMod()->getSoundByDepth(_save->getDepth(), unit->getAggroSound())->play(-1, getMap()->getSoundAngle(unit->getPosition()));
+			getMod()->getSoundByDepth(_save->getDepth(), unit->getRandomAggroSound())->play(-1, getMap()->getSoundAngle(unit->getPosition()));
 			_playedAggroSound = true;
 		}
 	}

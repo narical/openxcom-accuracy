@@ -409,9 +409,9 @@ private:
 	std::string _armorName;
 	const Armor* _armor;
 	int _standHeight, _kneelHeight, _floatHeight;
-	std::vector<int> _deathSound, _panicSound, _berserkSound;
+	std::vector<int> _deathSound, _panicSound, _berserkSound, _aggroSound;
 	std::vector<int> _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
-	int _value, _moraleLossWhenKilled, _aggroSound, _moveSound;
+	int _value, _moraleLossWhenKilled, _moveSound;
 	int _intelligence, _aggression, _spotter, _sniper, _energyRecovery;
 	SpecialAbility _specab;
 	const RuleItem* _liveAlien = nullptr;
@@ -497,8 +497,8 @@ public:
 	const RuleItem* getLiveAlienGeoscape() const { return _liveAlien; }
 	/// Gets the unit's spawn unit.
 	const Unit *getSpawnUnit() const;
-	/// Gets the unit's war cry.
-	int getAggroSound() const;
+	/// Gets the unit's warcries.
+	const std::vector<int> &getAggroSounds() const;
 	/// Gets how much energy this unit recovers per turn.
 	int getEnergyRecovery() const;
 	/// Checks if this unit has a built in weapon.

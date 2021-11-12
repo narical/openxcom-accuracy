@@ -141,9 +141,9 @@ private:
 	UnitStats _stats;
 	int _standHeight, _kneelHeight, _floatHeight;
 	int _lastReloadSound;
-	std::vector<int> _deathSound;
+	std::vector<int> _deathSound, _aggroSound;
 	std::vector<int> _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
-	int _value, _aggroSound, _moveSound;
+	int _value, _moveSound;
 	int _intelligence, _aggression;
 	int _maxViewDistanceAtDark, _maxViewDistanceAtDay;
 	int _maxViewDistanceAtDarkSquared;
@@ -592,8 +592,10 @@ public:
 	/// Set health to 0 and set status dead
 	void instaKill();
 
-	/// Gets the unit's aggro sound.
-	int getAggroSound() const;
+	/// Gets whether the unit has any aggro sounds.
+	bool hasAggroSound() const;
+	/// Gets a unit's random aggro sound.
+	int getRandomAggroSound() const;
 	/// Sets the unit's time units.
 	void setTimeUnits(int tu);
 	/// Get the faction that killed this unit.
