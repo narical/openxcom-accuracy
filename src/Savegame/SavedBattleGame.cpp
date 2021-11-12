@@ -1819,13 +1819,13 @@ BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
 
 	BattleUnit *newUnit = createTempUnit(type, unit->getSpawnUnitFaction());
 
-	initUnit(newUnit);
+	newUnit->clearTimeUnits();
+	newUnit->setVisible(visible);
 	newUnit->setTile(tile, this);
 	newUnit->setPosition(unit->getPosition());
 	newUnit->setDirection(unit->getDirection());
-	newUnit->clearTimeUnits();
 	getUnits()->push_back(newUnit);
-	newUnit->setVisible(visible);
+	initUnit(newUnit);
 
 	getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
 	getTileEngine()->applyGravity(newUnit->getTile());

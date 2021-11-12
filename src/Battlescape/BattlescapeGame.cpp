@@ -2174,7 +2174,6 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		size_t itemLevel = (size_t)(getMod()->getAlienItemLevels().at(month).at(RNG::generate(0,9)));
 
 		// Initialize the unit and its position
-		getSave()->initUnit(newUnit, itemLevel);
 		newUnit->setTile(_save->getTile(position), _save);
 		newUnit->setPosition(position);
 		newUnit->setDirection(unitDirection);
@@ -2182,6 +2181,7 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		getSave()->getUnits()->push_back(newUnit);
 		bool visible = faction == FACTION_PLAYER;
 		newUnit->setVisible(visible);
+		getSave()->initUnit(newUnit, itemLevel);
 
 		getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
 		getTileEngine()->applyGravity(newUnit->getTile());

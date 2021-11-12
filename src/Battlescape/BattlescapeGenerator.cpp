@@ -1330,8 +1330,8 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 				{
 					if (_save->setUnitPosition(unit, _save->getTile(i)->getPosition()))
 					{
-						_save->initUnit(unit);
 						_save->getUnits()->push_back(unit);
+						_save->initUnit(unit);
 						return unit;
 					}
 				}
