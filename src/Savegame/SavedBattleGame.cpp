@@ -3243,7 +3243,7 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 
 	Bind<SavedBattleGame> sbg = { parser };
 
-	sbg.add<&SavedBattleGame::getTurn>("getTurn");
+	sbg.add<&SavedBattleGame::getTurn>("getTurn", "Current turn, 0 - before battle, 1 - fisrt turn, each stage reset this value.");
 	sbg.add<&SavedBattleGame::getAnimFrame>("getAnimFrame");
 	sbg.add<&getTileScript>("getTile", "Get tile on position x, y, z");
 
