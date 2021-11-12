@@ -637,12 +637,12 @@ bool BattleItem::occupiesSlot(int x, int y, BattleItem *item) const
  * Gets the item's floor sprite.
  * @return Return current floor sprite.
  */
-Surface *BattleItem::getFloorSprite(SurfaceSet *set, int animFrame, int shade) const
+const Surface *BattleItem::getFloorSprite(const SurfaceSet *set, int animFrame, int shade) const
 {
 	int i = _rules->getFloorSprite();
 	if (i != -1)
 	{
-		Surface *surf = set->getFrame(i);
+		const Surface *surf = set->getFrame(i);
 		//enforce compatibility with basic version
 		if (surf == nullptr)
 		{
@@ -671,12 +671,12 @@ Surface *BattleItem::getFloorSprite(SurfaceSet *set, int animFrame, int shade) c
  * Gets the item's inventory sprite.
  * @return Return current inventory sprite.
  */
-Surface *BattleItem::getBigSprite(SurfaceSet *set, int animFrame) const
+const Surface *BattleItem::getBigSprite(const SurfaceSet *set, int animFrame) const
 {
 	int i = _rules->getBigSprite();
 	if (i != -1)
 	{
-		Surface *surf = set->getFrame(i);
+		const Surface *surf = set->getFrame(i);
 		//enforce compatibility with basic version
 		if (surf == nullptr)
 		{
@@ -1619,7 +1619,7 @@ ModScript::TryMeleeAttackItemParser::TryMeleeAttackItemParser(ScriptGlobal* shar
 /**
  * Init all required data in script using object data.
  */
-void BattleItem::ScriptFill(ScriptWorkerBlit* w, BattleItem* item, int part, int anim_frame, int shade)
+void BattleItem::ScriptFill(ScriptWorkerBlit* w, const BattleItem* item, int part, int anim_frame, int shade)
 {
 	w->clear();
 	if(item)

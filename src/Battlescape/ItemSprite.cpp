@@ -41,10 +41,11 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-ItemSprite::ItemSprite(Surface* dest, Mod* mod, int frame) :
-	_itemSurface(mod->getSurfaceSet("FLOOROB.PCK")),
+ItemSprite::ItemSprite(Surface* dest, const Mod* mod, int frame) :
+	_itemSurface(const_cast<Mod*>(mod)->getSurfaceSet("FLOOROB.PCK")),
 	_animationFrame(frame),
-	_dest(dest)
+	_dest(dest),
+	_save(save)
 {
 
 }
@@ -61,9 +62,9 @@ ItemSprite::~ItemSprite()
  * Draws a item, using the drawing rules of the item or unit if it's corpse.
  * This function is called by Map, for each item on the screen.
  */
-void ItemSprite::draw(BattleItem* item, int x, int y, int shade)
+void ItemSprite::draw(const BattleItem* item, int x, int y, int shade)
 {
-	Surface* sprite = item->getFloorSprite(_itemSurface, _animationFrame, shade);
+	const Surface* sprite = item->getFloorSprite(_itemSurface, _animationFrame, shade);
 	if (sprite)
 	{
 		ScriptWorkerBlit work;
@@ -75,9 +76,9 @@ void ItemSprite::draw(BattleItem* item, int x, int y, int shade)
 /**
  * Draws shadow of item.
  */
-void ItemSprite::drawShadow(BattleItem* item, int x, int y)
+void ItemSprite::drawShadow(const BattleItem* item, int x, int y)
 {
-	Surface* sprite = item->getFloorSprite(_itemSurface, _animationFrame, 16);
+	const Surface* sprite = item->getFloorSprite(_itemSurface, _animationFrame, 16);
 	if (sprite)
 	{
 		sprite->blitNShade(_dest, x, y, 16);

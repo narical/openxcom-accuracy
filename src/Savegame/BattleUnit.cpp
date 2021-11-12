@@ -3164,7 +3164,7 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
 	// otherwise pick the one with the least snapshot TUs
 	int tuRightHand = getActionTUs(BA_SNAPSHOT, weaponRightHand).Time;
 	int tuLeftHand = getActionTUs(BA_SNAPSHOT, weaponLeftHand).Time;
-	BattleItem *weaponCurrentHand = getActiveHand(weaponLeftHand, weaponRightHand);
+	BattleItem *weaponCurrentHand = const_cast<BattleItem*>(getActiveHand(weaponLeftHand, weaponRightHand));
 	//prioritize blaster
 	if (!quickest && _faction != FACTION_PLAYER)
 	{
@@ -3287,7 +3287,7 @@ void BattleUnit::setActiveLeftHand()
 /**
  * Choose what weapon was last use by unit.
  */
-BattleItem *BattleUnit::getActiveHand(BattleItem *left, BattleItem *right) const
+const BattleItem *BattleUnit::getActiveHand(const BattleItem *left, const BattleItem *right) const
 {
 	if (_activeHand == "STR_RIGHT_HAND" && right) return right;
 	if (_activeHand == "STR_LEFT_HAND" && left) return left;
@@ -6131,7 +6131,7 @@ ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, cons
 /**
  * Init all required data in script using object data.
  */
-void BattleUnit::ScriptFill(ScriptWorkerBlit* w, BattleUnit* unit, int body_part, int anim_frame, int shade, int burn)
+void BattleUnit::ScriptFill(ScriptWorkerBlit* w, const BattleUnit* unit, int body_part, int anim_frame, int shade, int burn)
 {
 	w->clear();
 	if(unit)

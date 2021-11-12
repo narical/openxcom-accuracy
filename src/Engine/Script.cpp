@@ -447,7 +447,7 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 //						Script class
 ////////////////////////////////////////////////////////////
 
-void ScriptWorkerBlit::executeBlit(Surface* src, Surface* dest, int x, int y, int shade)
+void ScriptWorkerBlit::executeBlit(const Surface* src, Surface* dest, int x, int y, int shade)
 {
 	executeBlit(src, dest, x, y, shade, GraphSubset{ dest->getWidth(), dest->getHeight() } );
 }
@@ -458,9 +458,9 @@ void ScriptWorkerBlit::executeBlit(Surface* src, Surface* dest, int x, int y, in
  * @param x x offset of source surface.
  * @param y y offset of source surface.
  */
-void ScriptWorkerBlit::executeBlit(Surface* src, Surface* dest, int x, int y, int shade, GraphSubset mask)
+void ScriptWorkerBlit::executeBlit(const Surface* src, Surface* dest, int x, int y, int shade, GraphSubset mask)
 {
-	ShaderMove<Uint8> srcShader(src, x, y);
+	ShaderMove<const Uint8> srcShader(src, x, y);
 	ShaderMove<Uint8> destShader(dest, 0, 0);
 
 	destShader.setDomain(mask);

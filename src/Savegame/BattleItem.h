@@ -72,7 +72,7 @@ public:
 	/// Register all useful function used by script.
 	static void ScriptRegister(ScriptParserBase* parser);
 	/// Init all required data in script using object data.
-	static void ScriptFill(ScriptWorkerBlit* w, BattleItem* item, int part, int anim_frame, int shade);
+	static void ScriptFill(ScriptWorkerBlit* w, const BattleItem* item, int part, int anim_frame, int shade);
 
 	/// Creates a item of the specified type.
 	BattleItem(const RuleItem *rules, int *id);
@@ -143,9 +143,9 @@ public:
 	/// Checks if the item is occupying a slot.
 	bool occupiesSlot(int x, int y, BattleItem *item = 0) const;
 	/// Gets the item's floor sprite.
-	Surface *getFloorSprite(SurfaceSet *set, int animFrame, int shade) const;
+	const Surface *getFloorSprite(const SurfaceSet *set, int animFrame, int shade) const;
 	/// Gets the item's inventory sprite.
-	Surface *getBigSprite(SurfaceSet *set, int animFrame) const;
+	const Surface *getBigSprite(const SurfaceSet *set, int animFrame) const;
 
 	/// Check if item can use any ammo.
 	bool isWeaponWithAmmo() const;

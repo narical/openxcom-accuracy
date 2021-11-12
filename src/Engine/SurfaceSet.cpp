@@ -200,6 +200,23 @@ Surface *SurfaceSet::getFrame(int i)
 }
 
 /**
+ * Returns a particular frame from the surface set.
+ * @param i Frame number in the set.
+ * @return Pointer to the respective surface.
+ */
+const Surface *SurfaceSet::getFrame(int i) const
+{
+	if ((size_t)i < _frames.size())
+	{
+		if (_frames[i])
+		{
+			return &_frames[i];
+		}
+	}
+	return nullptr;
+}
+
+/**
  * Creates and returns a particular frame in the surface set.
  * @param i Frame number in the set.
  * @return Pointer to the respective surface.

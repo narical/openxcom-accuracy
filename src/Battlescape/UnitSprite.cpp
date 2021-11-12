@@ -40,13 +40,13 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-UnitSprite::UnitSprite(Surface* dest, Mod* mod, int frame, bool helmet) :
+UnitSprite::UnitSprite(Surface* dest, const Mod* mod, int frame, bool helmet) :
 	_unit(0), _itemR(0), _itemL(0),
 	_unitSurface(0),
-	_itemSurface(mod->getSurfaceSet("HANDOB.PCK")),
-	_fireSurface(mod->getSurfaceSet("SMOKE.PCK")),
-	_breathSurface(mod->getSurfaceSet("BREATH-1.PCK", false)),
-	_facingArrowSurface(mod->getSurfaceSet("DETBLOB.DAT")),
+	_itemSurface(const_cast<Mod*>(mod)->getSurfaceSet("HANDOB.PCK")),
+	_fireSurface(const_cast<Mod*>(mod)->getSurfaceSet("SMOKE.PCK")),
+	_breathSurface(const_cast<Mod*>(mod)->getSurfaceSet("BREATH-1.PCK", false)),
+	_facingArrowSurface(const_cast<Mod*>(mod)->getSurfaceSet("DETBLOB.DAT")),
 	_dest(dest), _mod(mod),
 	_part(0), _animationFrame(frame), _drawingRoutine(0),
 	_helmet(helmet),
@@ -75,7 +75,7 @@ const int InvalidSpriteIndex = -256;
 /**
  * Get item if can be visible on sprite.
  */
-BattleItem *getIfVisible(BattleItem *item)
+const BattleItem *getIfVisible(const BattleItem *item)
 {
 	if (item && (!item->getRules()->isFixed() || item->getRules()->getFixedShow()))
 	{
@@ -91,7 +91,7 @@ BattleItem *getIfVisible(BattleItem *item)
  * @param item item what we want draw.
  * @return Graphic part.
  */
-void UnitSprite::selectItem(Part& p, BattleItem *item, int dir)
+void UnitSprite::selectItem(Part& p, const BattleItem *item, int dir)
 {
 	const auto* rule = item->getRules();
 	auto index = item->getRules()->getHandSprite();
@@ -179,7 +179,7 @@ void UnitSprite::blitBody(Part& body)
  * Draws a unit, using the drawing rules of the unit.
  * This function is called by Map, for each unit on the screen.
  */
-void UnitSprite::draw(BattleUnit* unit, int part, int x, int y, int shade, GraphSubset mask, bool isAltPressed)
+void UnitSprite::draw(const BattleUnit* unit, int part, int x, int y, int shade, GraphSubset mask, bool isAltPressed)
 {
 	_x = x;
 	_y = y;
@@ -200,7 +200,7 @@ void UnitSprite::draw(BattleUnit* unit, int part, int x, int y, int shade, Graph
 	_itemR = getIfVisible(_unit->getRightHandWeapon());
 	_itemL = getIfVisible(_unit->getLeftHandWeapon());
 
-	_unitSurface = _mod->getSurfaceSet(armor->getSpriteSheet());
+	_unitSurface = const_cast<Mod*>(_mod)->getSurfaceSet(armor->getSpriteSheet());
 
 	_drawingRoutine = armor->getDrawingRoutine();
 
