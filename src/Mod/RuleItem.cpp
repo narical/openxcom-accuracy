@@ -1675,17 +1675,17 @@ int RuleItem::getSpecialChance() const
  * @param texture Pointer to the surface set to get the sprite from.
  * @param surface Pointer to the surface to draw to.
  */
-void RuleItem::drawHandSprite(const SurfaceSet *texture, Surface *surface, const BattleItem *item, int animFrame) const
+void RuleItem::drawHandSprite(const SurfaceSet *texture, Surface *surface, const BattleItem *item, const SavedBattleGame *save, int animFrame) const
 {
 	//TODO: spit this function to one using only `this` and another using only `item`
 	const Surface *frame = nullptr;
 	if (item)
 	{
-		frame = item->getBigSprite(texture, animFrame);
+		frame = item->getBigSprite(texture, save, animFrame);
 		if (frame)
 		{
 			ScriptWorkerBlit scr;
-			BattleItem::ScriptFill(&scr, item, BODYPART_ITEM_INVENTORY, animFrame, 0);
+			BattleItem::ScriptFill(&scr, item, save, BODYPART_ITEM_INVENTORY, animFrame, 0);
 			scr.executeBlit(frame, surface, this->getHandSpriteOffX(), this->getHandSpriteOffY(), 0);
 		}
 	}

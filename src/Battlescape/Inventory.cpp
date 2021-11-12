@@ -297,6 +297,7 @@ void Inventory::drawGridLabels(bool showTuCost)
 void Inventory::drawItems()
 {
 	const int Pulsate[8] = { 0, 1, 2, 3, 4, 3, 2, 1 };
+	const SavedBattleGame* save = _game->getSavedGame()->getSavedBattle();
 	Surface *tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6);
 	auto primers = [&](int x, int y, bool a)
 	{
@@ -317,7 +318,7 @@ void Inventory::drawItems()
 		// Soldier items
 		for (std::vector<BattleItem*>::iterator i = _selUnit->getInventory()->begin(); i != _selUnit->getInventory()->end(); ++i)
 		{
-			const Surface *frame = (*i)->getBigSprite(texture, _animFrame);
+			const Surface *frame = (*i)->getBigSprite(texture, save, _animFrame);
 
 			if ((*i) == _selItem || !frame)
 				continue;
@@ -337,7 +338,7 @@ void Inventory::drawItems()
 			{
 				continue;
 			}
-			BattleItem::ScriptFill(&work, *i, BODYPART_ITEM_INVENTORY, _animFrame, 0);
+			BattleItem::ScriptFill(&work, *i, save, BODYPART_ITEM_INVENTORY, _animFrame, 0);
 			work.executeBlit(frame, _items, x, y, 0);
 
 			// two-handed indicator
@@ -369,7 +370,7 @@ void Inventory::drawItems()
 		auto& occupiedSlots = *clearOccupiedSlotsCache();
 		for (std::vector<BattleItem*>::iterator i = _selUnit->getTile()->getInventory()->begin(); i != _selUnit->getTile()->getInventory()->end(); ++i)
 		{
-			const Surface *frame = (*i)->getBigSprite(texture, _animFrame);
+			const Surface *frame = (*i)->getBigSprite(texture, save, _animFrame);
 			// note that you can make items invisible by setting their width or height to 0 (for example used with tank corpse items)
 			if ((*i) == _selItem || (*i)->getRules()->getInventoryHeight() == 0 || (*i)->getRules()->getInventoryWidth() == 0 || !frame)
 				continue;
@@ -392,7 +393,7 @@ void Inventory::drawItems()
 			int x, y;
 			x = ((*i)->getSlot()->getX() + ((*i)->getSlotX() - _groundOffset) * RuleInventory::SLOT_W);
 			y = ((*i)->getSlot()->getY() + (*i)->getSlotY() * RuleInventory::SLOT_H);
-			BattleItem::ScriptFill(&work, *i, BODYPART_ITEM_INVENTORY, _animFrame, 0);
+			BattleItem::ScriptFill(&work, *i, save, BODYPART_ITEM_INVENTORY, _animFrame, 0);
 			work.executeBlit(frame, _items, x, y, 0);
 
 			// grenade primer indicators
@@ -469,7 +470,7 @@ void Inventory::drawSelectedItem()
 	if (_selItem)
 	{
 		_selection->clear();
-		_selItem->getRules()->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _selection, _selItem, _animFrame);
+		_selItem->getRules()->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _selection, _selItem, _game->getSavedGame()->getSavedBattle(), _animFrame);
 	}
 }
 

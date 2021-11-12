@@ -23,6 +23,7 @@
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"
 #include "../Savegame/Soldier.h"
+#include "../Savegame/SavedBattleGame.h"
 #include "../Mod/RuleInventory.h"
 #include "../Mod/Mod.h"
 #include "../Engine/ShaderDraw.h"
@@ -40,14 +41,14 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-UnitSprite::UnitSprite(Surface* dest, const Mod* mod, int frame, bool helmet) :
+UnitSprite::UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet) :
 	_unit(0), _itemR(0), _itemL(0),
 	_unitSurface(0),
 	_itemSurface(const_cast<Mod*>(mod)->getSurfaceSet("HANDOB.PCK")),
 	_fireSurface(const_cast<Mod*>(mod)->getSurfaceSet("SMOKE.PCK")),
 	_breathSurface(const_cast<Mod*>(mod)->getSurfaceSet("BREATH-1.PCK", false)),
 	_facingArrowSurface(const_cast<Mod*>(mod)->getSurfaceSet("DETBLOB.DAT")),
-	_dest(dest), _mod(mod),
+	_dest(dest), _save(save), _mod(mod),
 	_part(0), _animationFrame(frame), _drawingRoutine(0),
 	_helmet(helmet),
 	_x(0), _y(0), _shade(0), _burn(0),
@@ -105,7 +106,7 @@ void UnitSprite::selectItem(Part& p, const BattleItem *item, int dir)
 	auto result = ModScript::scriptFunc2<ModScript::SelectItemSprite>(
 		rule,
 		index, dir,
-		item, p.bodyPart, _animationFrame, _shade
+		item, _save, p.bodyPart, _animationFrame, _shade
 	);
 
 	p.src = _itemSurface->getFrame(result);
@@ -129,7 +130,7 @@ void UnitSprite::selectUnit(Part& p, int index, int dir)
 	auto result = ModScript::scriptFunc2<ModScript::SelectUnitSprite>(
 		armor,
 		index, dir,
-		_unit, p.bodyPart, _animationFrame, _shade
+		_unit, _save, p.bodyPart, _animationFrame, _shade
 	);
 
 	p.src = _unitSurface->getFrame(result);
@@ -146,7 +147,7 @@ void UnitSprite::blitItem(Part& item)
 		return;
 	}
 	ScriptWorkerBlit work;
-	BattleItem::ScriptFill(&work, (item.bodyPart == BODYPART_ITEM_RIGHTHAND ? _itemR : _itemL), item.bodyPart, _animationFrame, _shade);
+	BattleItem::ScriptFill(&work, (item.bodyPart == BODYPART_ITEM_RIGHTHAND ? _itemR : _itemL), _save, item.bodyPart, _animationFrame, _shade);
 
 	_dest->lock();
 
@@ -166,7 +167,7 @@ void UnitSprite::blitBody(Part& body)
 		return;
 	}
 	ScriptWorkerBlit work;
-	BattleUnit::ScriptFill(&work, _unit, body.bodyPart, _animationFrame, _shade, _burn);
+	BattleUnit::ScriptFill(&work, _unit, _save, body.bodyPart, _animationFrame, _shade, _burn);
 
 	_dest->lock();
 

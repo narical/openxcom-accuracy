@@ -88,11 +88,11 @@ class ModScript
 	//					unit script
 	////////////////////////////////////////////////////////////
 
-	struct RecolorUnitParser : ScriptParserEvents<Output, const BattleUnit*, int, int, int, int>
+	struct RecolorUnitParser : ScriptParserEvents<Output, const BattleUnit*, const SavedBattleGame*, int, int, int, int>
 	{
 		RecolorUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct SelectUnitParser : ScriptParserEvents<Output, const BattleUnit*, int, int, int>
+	struct SelectUnitParser : ScriptParserEvents<Output, const BattleUnit*, const SavedBattleGame*, int, int, int>
 	{
 		SelectUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
@@ -169,11 +169,11 @@ class ModScript
 	{
 		NewTurnItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct RecolorItemParser : ScriptParserEvents<Output, const BattleItem*, int, int, int>
+	struct RecolorItemParser : ScriptParserEvents<Output, const BattleItem*, const SavedBattleGame*, int, int, int>
 	{
 		RecolorItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct SelectItemParser : ScriptParserEvents<Output, const BattleItem*, int, int, int>
+	struct SelectItemParser : ScriptParserEvents<Output, const BattleItem*, const SavedBattleGame*, int, int, int>
 	{
 		SelectItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};

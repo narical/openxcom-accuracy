@@ -25,6 +25,7 @@ namespace OpenXcom
 
 class BattleUnit;
 class BattleItem;
+class SavedBattleGame;
 class SurfaceSet;
 class Mod;
 
@@ -52,6 +53,7 @@ private:
 	const BattleItem *_itemR, *_itemL;
 	const SurfaceSet *_unitSurface, *_itemSurface, *_fireSurface, *_breathSurface, *_facingArrowSurface;
 	Surface *_dest;
+	const SavedBattleGame *_save;
 	const Mod *_mod;
 	int _part, _animationFrame, _drawingRoutine;
 	bool _helmet;
@@ -106,7 +108,7 @@ private:
 	void blitBody(Part& body);
 public:
 	/// Creates a new UnitSprite at the specified position and size.
-	UnitSprite(Surface* dest, const Mod* mod, int frame, bool helmet);
+	UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet);
 	/// Cleans up the UnitSprite.
 	~UnitSprite();
 	/// Draws the unit.
