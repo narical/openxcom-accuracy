@@ -1833,7 +1833,7 @@ void BattlescapeState::btnNightVisionClick(Action *action)
  */
 bool BattlescapeState::playableUnitSelected()
 {
-	return _save->getSelectedUnit() != 0 && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode());
+	return _save->getSelectedUnit() != 0 && allowButtons();
 }
 
 /**
