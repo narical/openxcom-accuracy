@@ -56,18 +56,28 @@ void RuleRegion::load(const YAML::Node &node)
 	}
 	_type = node["type"].as<std::string>(_type);
 	_cost = node["cost"].as<int>(_cost);
-	std::vector< std::vector<double> > areas;
-	areas = node["areas"].as< std::vector< std::vector<double> > >(areas);
-	for (size_t i = 0; i != areas.size(); ++i)
-	{
-		_lonMin.push_back(Deg2Rad(areas[i][0]));
-		_lonMax.push_back(Deg2Rad(areas[i][1]));
-		_latMin.push_back(Deg2Rad(areas[i][2]));
-		_latMax.push_back(Deg2Rad(areas[i][3]));
 
-		if (_latMin.back() > _latMax.back())
-			std::swap(_latMin.back(), _latMax.back());
+	if (node["deleteOldAreas"].as<bool>(false))
+	{
+		_lonMin.clear();
+		_lonMax.clear();
+		_latMin.clear();
+		_latMax.clear();
 	}
+	if (auto& areaNode = node["areas"])
+	{
+		for (const auto& area : areaNode.as<std::vector<std::array<double, 4>>>())
+		{
+			_lonMin.push_back(Deg2Rad(area[0]));
+			_lonMax.push_back(Deg2Rad(area[1]));
+			_latMin.push_back(Deg2Rad(area[2]));
+			_latMax.push_back(Deg2Rad(area[3]));
+
+			if (_latMin.back() > _latMax.back())
+				std::swap(_latMin.back(), _latMax.back());
+		}
+	}
+
 	_missionZones = node["missionZones"].as< std::vector<MissionZone> >(_missionZones);
 	{
 		int zn = 0;
