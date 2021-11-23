@@ -1828,7 +1828,7 @@ void BattlescapeState::btnNightVisionClick(Action *action)
 
 /**
  * Determines whether a playable unit is selected. Normally only player side units can be selected, but in debug mode one can play with aliens too :)
- * Is used to see if stats can be displayed and action buttons will work.
+ * Is used to see if action buttons will work.
  * @return Whether a playable unit is selected.
  */
 bool BattlescapeState::playableUnitSelected()
@@ -1923,7 +1923,7 @@ void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<Num
  */
 void BattlescapeState::drawHandsItems()
 {
-	BattleUnit *battleUnit = playableUnitSelected() ? _save->getSelectedUnit() : nullptr;
+	BattleUnit *battleUnit = _battleGame->playableUnitSelected() ? _save->getSelectedUnit() : nullptr;
 	bool left = battleUnit ? battleUnit->isLeftHandPreferredForReactions() : false;
 	bool right = battleUnit ? battleUnit->isRightHandPreferredForReactions() : false;
 	drawItem(battleUnit ? battleUnit->getLeftHandWeapon() : nullptr, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left);
@@ -1944,7 +1944,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		_visibleUnit[i] = 0;
 	}
 
-	bool playableUnit = playableUnitSelected();
+	bool playableUnit = _battleGame->playableUnitSelected();
 	_rank->setVisible(playableUnit);
 	_rankTiny->setVisible(playableUnit);
 	_numTimeUnits->setVisible(playableUnit);
