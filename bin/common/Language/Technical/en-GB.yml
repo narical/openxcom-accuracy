@@ -333,6 +333,11 @@ en-GB:
   stun: "Stun"
   mana: "Mana"
   units: "Compatible units"
+  frontArmor: "Front Armor"
+  sideArmor: "Side Armor"
+  leftArmorDiff: "Left Armor Diff"
+  rearArmor: "Rear Armor"
+  underArmor: "Under Armor"
 #
   buildCost: "Build cost"
   buildCostItems: "Build materials:"

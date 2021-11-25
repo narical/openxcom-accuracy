@@ -2587,6 +2587,12 @@ void StatsForNerdsState::initSoldierBonusList()
 
 	addUnitStatBonus(ss, *bonusRule->getStats(), "stats");
 
+	addInteger(ss, bonusRule->getFrontArmor(), "frontArmor");
+	addInteger(ss, bonusRule->getRightSideArmor(), "sideArmor");
+	addInteger(ss, bonusRule->getLeftSideArmor() - bonusRule->getRightSideArmor(), "leftArmorDiff");
+	addInteger(ss, bonusRule->getRearArmor(), "rearArmor");
+	addInteger(ss, bonusRule->getUnderArmor(), "underArmor");
+
 	addInteger(ss, bonusRule->getVisibilityAtDark(), "visibilityAtDark");
 
 	addHeading("recovery");
