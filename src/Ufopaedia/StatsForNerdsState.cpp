@@ -1708,6 +1708,8 @@ void StatsForNerdsState::initItemList()
 	for (int i = 0; i < 2; i++)
 	{
 		const RuleDamageType *rule = (i == 0) ? itemRule->getDamageType() : itemRule->getMeleeType();
+		const RuleDamageType *ruleByResistType = mod->getDamageType(rule->ResistType);
+
 		if (i == 0)
 		{
 			ItemDamageType damageTypeDefault = DT_NONE;
@@ -1735,7 +1737,7 @@ void StatsForNerdsState::initItemList()
 			addRuleStatBonus(ss, *itemRule->getDamageBonusRaw(), "damageBonus");
 			if (!_showDebug)
 			{
-				addInteger(ss, rule->FixRadius, "blastRadius", mod->getDamageType(rule->ResistType)->FixRadius);
+				addInteger(ss, rule->FixRadius, "blastRadius", ruleByResistType->FixRadius);
 			}
 			addHeading("damageAlter");
 		}
@@ -1749,58 +1751,58 @@ void StatsForNerdsState::initItemList()
 
 		if (_showDebug || i > 0)
 		{
-			addInteger(ss, rule->FixRadius, "FixRadius", mod->getDamageType(rule->ResistType)->FixRadius);
+			addInteger(ss, rule->FixRadius, "FixRadius", ruleByResistType->FixRadius);
 		}
 
-		addDamageRandomType(ss, rule->RandomType, "RandomType", mod->getDamageType(rule->ResistType)->RandomType);
+		addDamageRandomType(ss, rule->RandomType, "RandomType", ruleByResistType->RandomType);
 
-		addBoolean(ss, rule->FireBlastCalc, "FireBlastCalc", mod->getDamageType(rule->ResistType)->FireBlastCalc);
-		addBoolean(ss, rule->IgnoreDirection, "IgnoreDirection", mod->getDamageType(rule->ResistType)->IgnoreDirection);
-		addBoolean(ss, rule->IgnoreSelfDestruct, "IgnoreSelfDestruct", mod->getDamageType(rule->ResistType)->IgnoreSelfDestruct);
-		addBoolean(ss, rule->IgnorePainImmunity, "IgnorePainImmunity", mod->getDamageType(rule->ResistType)->IgnorePainImmunity);
-		addBoolean(ss, rule->IgnoreNormalMoraleLose, "IgnoreNormalMoraleLose", mod->getDamageType(rule->ResistType)->IgnoreNormalMoraleLose);
-		addBoolean(ss, rule->IgnoreOverKill, "IgnoreOverKill", mod->getDamageType(rule->ResistType)->IgnoreOverKill);
+		addBoolean(ss, rule->FireBlastCalc, "FireBlastCalc", ruleByResistType->FireBlastCalc);
+		addBoolean(ss, rule->IgnoreDirection, "IgnoreDirection", ruleByResistType->IgnoreDirection);
+		addBoolean(ss, rule->IgnoreSelfDestruct, "IgnoreSelfDestruct", ruleByResistType->IgnoreSelfDestruct);
+		addBoolean(ss, rule->IgnorePainImmunity, "IgnorePainImmunity", ruleByResistType->IgnorePainImmunity);
+		addBoolean(ss, rule->IgnoreNormalMoraleLose, "IgnoreNormalMoraleLose", ruleByResistType->IgnoreNormalMoraleLose);
+		addBoolean(ss, rule->IgnoreOverKill, "IgnoreOverKill", ruleByResistType->IgnoreOverKill);
 
-		addFloatAsPercentage(ss, rule->ArmorEffectiveness, "ArmorEffectiveness", mod->getDamageType(rule->ResistType)->ArmorEffectiveness);
-		addFloatAsPercentage(ss, rule->RadiusEffectiveness, "RadiusEffectiveness", mod->getDamageType(rule->ResistType)->RadiusEffectiveness);
-		addFloat(ss, rule->RadiusReduction, "RadiusReduction", mod->getDamageType(rule->ResistType)->RadiusReduction);
+		addFloatAsPercentage(ss, rule->ArmorEffectiveness, "ArmorEffectiveness", ruleByResistType->ArmorEffectiveness);
+		addFloatAsPercentage(ss, rule->RadiusEffectiveness, "RadiusEffectiveness", ruleByResistType->RadiusEffectiveness);
+		addFloat(ss, rule->RadiusReduction, "RadiusReduction", ruleByResistType->RadiusReduction);
 
-		addInteger(ss, rule->FireThreshold, "FireThreshold", mod->getDamageType(rule->ResistType)->FireThreshold);
-		addInteger(ss, rule->SmokeThreshold, "SmokeThreshold", mod->getDamageType(rule->ResistType)->SmokeThreshold);
+		addInteger(ss, rule->FireThreshold, "FireThreshold", ruleByResistType->FireThreshold);
+		addInteger(ss, rule->SmokeThreshold, "SmokeThreshold", ruleByResistType->SmokeThreshold);
 
-		addFloatAsPercentage(ss, rule->ToArmorPre, "ToArmorPre", mod->getDamageType(rule->ResistType)->ToArmorPre);
-		addBoolean(ss, rule->RandomArmorPre, "RandomArmorPre", mod->getDamageType(rule->ResistType)->RandomArmorPre);
+		addFloatAsPercentage(ss, rule->ToArmorPre, "ToArmorPre", ruleByResistType->ToArmorPre);
+		addBoolean(ss, rule->RandomArmorPre, "RandomArmorPre", ruleByResistType->RandomArmorPre);
 
-		addFloatAsPercentage(ss, rule->ToArmor, "ToArmor", mod->getDamageType(rule->ResistType)->ToArmor);
-		addBoolean(ss, rule->RandomArmor, "RandomArmor", mod->getDamageType(rule->ResistType)->RandomArmor);
+		addFloatAsPercentage(ss, rule->ToArmor, "ToArmor", ruleByResistType->ToArmor);
+		addBoolean(ss, rule->RandomArmor, "RandomArmor", ruleByResistType->RandomArmor);
 
-		addFloatAsPercentage(ss, rule->ToHealth, "ToHealth", mod->getDamageType(rule->ResistType)->ToHealth);
-		addBoolean(ss, rule->RandomHealth, "RandomHealth", mod->getDamageType(rule->ResistType)->RandomHealth);
+		addFloatAsPercentage(ss, rule->ToHealth, "ToHealth", ruleByResistType->ToHealth);
+		addBoolean(ss, rule->RandomHealth, "RandomHealth", ruleByResistType->RandomHealth);
 
-		addFloatAsPercentage(ss, rule->ToStun, "ToStun", mod->getDamageType(rule->ResistType)->ToStun);
-		addBoolean(ss, rule->RandomStun, "RandomStun", mod->getDamageType(rule->ResistType)->RandomStun);
+		addFloatAsPercentage(ss, rule->ToStun, "ToStun", ruleByResistType->ToStun);
+		addBoolean(ss, rule->RandomStun, "RandomStun", ruleByResistType->RandomStun);
 
-		addFloatAsPercentage(ss, rule->ToWound, "ToWound", mod->getDamageType(rule->ResistType)->ToWound);
-		addBoolean(ss, rule->RandomWound, "RandomWound", mod->getDamageType(rule->ResistType)->RandomWound);
+		addFloatAsPercentage(ss, rule->ToWound, "ToWound", ruleByResistType->ToWound);
+		addBoolean(ss, rule->RandomWound, "RandomWound", ruleByResistType->RandomWound);
 
-		addFloatAsPercentage(ss, rule->ToTime, "ToTime", mod->getDamageType(rule->ResistType)->ToTime);
-		addBoolean(ss, rule->RandomTime, "RandomTime", mod->getDamageType(rule->ResistType)->RandomTime);
+		addFloatAsPercentage(ss, rule->ToTime, "ToTime", ruleByResistType->ToTime);
+		addBoolean(ss, rule->RandomTime, "RandomTime", ruleByResistType->RandomTime);
 
-		addFloatAsPercentage(ss, rule->ToEnergy, "ToEnergy", mod->getDamageType(rule->ResistType)->ToEnergy);
-		addBoolean(ss, rule->RandomEnergy, "RandomEnergy", mod->getDamageType(rule->ResistType)->RandomEnergy);
+		addFloatAsPercentage(ss, rule->ToEnergy, "ToEnergy", ruleByResistType->ToEnergy);
+		addBoolean(ss, rule->RandomEnergy, "RandomEnergy", ruleByResistType->RandomEnergy);
 
-		addFloatAsPercentage(ss, rule->ToMorale, "ToMorale", mod->getDamageType(rule->ResistType)->ToMorale);
-		addBoolean(ss, rule->RandomMorale, "RandomMorale", mod->getDamageType(rule->ResistType)->RandomMorale);
+		addFloatAsPercentage(ss, rule->ToMorale, "ToMorale", ruleByResistType->ToMorale);
+		addBoolean(ss, rule->RandomMorale, "RandomMorale", ruleByResistType->RandomMorale);
 
-		addFloatAsPercentage(ss, rule->ToItem, "ToItem", mod->getDamageType(rule->ResistType)->ToItem);
-		addBoolean(ss, rule->RandomItem, "RandomItem", mod->getDamageType(rule->ResistType)->RandomItem);
+		addFloatAsPercentage(ss, rule->ToItem, "ToItem", ruleByResistType->ToItem);
+		addBoolean(ss, rule->RandomItem, "RandomItem", ruleByResistType->RandomItem);
 
-		addFloatAsPercentage(ss, rule->ToMana, "ToMana", mod->getDamageType(rule->ResistType)->ToMana);
-		addBoolean(ss, rule->RandomMana, "RandomMana", mod->getDamageType(rule->ResistType)->RandomMana);
+		addFloatAsPercentage(ss, rule->ToMana, "ToMana", ruleByResistType->ToMana);
+		addBoolean(ss, rule->RandomMana, "RandomMana", ruleByResistType->RandomMana);
 
-		addFloatAsPercentage(ss, rule->ToTile, "ToTile", mod->getDamageType(rule->ResistType)->ToTile);
-		addBoolean(ss, rule->RandomTile, "RandomTile", mod->getDamageType(rule->ResistType)->RandomTile);
-		addInteger(ss, rule->TileDamageMethod, "TileDamageMethod", mod->getDamageType(rule->ResistType)->TileDamageMethod);
+		addFloatAsPercentage(ss, rule->ToTile, "ToTile", ruleByResistType->ToTile);
+		addBoolean(ss, rule->RandomTile, "RandomTile", ruleByResistType->RandomTile);
+		addInteger(ss, rule->TileDamageMethod, "TileDamageMethod", ruleByResistType->TileDamageMethod);
 
 		endHeading();
 	}
