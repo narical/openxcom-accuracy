@@ -1754,7 +1754,18 @@ void StatsForNerdsState::initItemList()
 			addInteger(ss, rule->FixRadius, "FixRadius", ruleByResistType->FixRadius);
 		}
 
-		addDamageRandomType(ss, rule->RandomType, "RandomType", ruleByResistType->RandomType);
+		bool isCustomDefault = (i == 0 ? itemRule->isDamageTypeSet() : itemRule->isMeleeTypeSet());
+		if (!isCustomDefault)
+		{
+			// default RandomType is 8 (DRT_STANDARD)
+			// but the RandomType of a default ResistType 0 (DT_NONE) is 5 (DRT_NONE)
+			// so we need this exceptional handling here to correctly show what's modded/changed and what's not
+			addDamageRandomType(ss, rule->RandomType, "RandomType", DRT_STANDARD);
+		}
+		else
+		{
+			addDamageRandomType(ss, rule->RandomType, "RandomType", ruleByResistType->RandomType);
+		}
 
 		addBoolean(ss, rule->FireBlastCalc, "FireBlastCalc", ruleByResistType->FireBlastCalc);
 		addBoolean(ss, rule->IgnoreDirection, "IgnoreDirection", ruleByResistType->IgnoreDirection);

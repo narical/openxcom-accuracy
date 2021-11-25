@@ -350,6 +350,7 @@ private:
 	std::vector<const RuleItem*> _compatibleAmmo[AmmoSlotMax];
 	std::unordered_map<const RuleItem*, int> _compatibleAmmoSlots;
 	RuleDamageType _damageType, _meleeType;
+	bool _damageTypeSet, _meleeTypeSet;
 	RuleItemAction _confAimed, _confAuto, _confSnap, _confMelee;
 	int _accuracyUse, _accuracyMind, _accuracyPanic, _accuracyThrow, _accuracyCloseQuarters;
 	int _noLOSAccuracyPenalty;
@@ -693,8 +694,10 @@ public:
 
 	/// Gets the item's damage type.
 	const RuleDamageType *getDamageType() const;
+	bool isDamageTypeSet() const { return _damageTypeSet; }
 	/// Gets the item's melee damage type for range weapons.
 	const RuleDamageType *getMeleeType() const;
+	bool isMeleeTypeSet() const { return _meleeTypeSet; }
 	/// Gets the item's type.
 	BattleType getBattleType() const;
 	/// Gets the item's fuse type.
