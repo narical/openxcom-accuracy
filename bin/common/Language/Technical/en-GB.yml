@@ -53,6 +53,8 @@ en-GB:
   DRT_NONE: "no damage"
   DRT_UFO_WITH_TWO_DICE: "0-200% spread (2 dice roll)"
   DRT_EASY: "50-200% spread"
+  DRT_STANDARD: "standard damage range"
+  DRT_EXPLOSION: "explosion damage range"
 #
   BFT_NONE: "none"
   BFT_INSTANT: "instant"
