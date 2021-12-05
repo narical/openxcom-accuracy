@@ -41,6 +41,17 @@ struct UnitStats
 	using Type = Sint16;
 	using Ptr = Type UnitStats::*;
 
+	/// Max value that is allowed to set to stat, less that max value allowed by type.
+	constexpr static int BaseStatLimit = 8000;
+
+	/// How much more stun can be than health.
+	constexpr static int StunMultipler = 4;
+	/// Max value allowed for stun value.
+	constexpr static int StunStatLimit = BaseStatLimit * StunMultipler;
+
+	/// How much more over kill can go to negative than health.
+	constexpr static int OverkillMultipler = 4;
+
 	Type tu, stamina, health, bravery, reactions, firing, throwing, strength, psiStrength, psiSkill, melee, mana;
 
 	UnitStats() : tu(0), stamina(0), health(0), bravery(0), reactions(0), firing(0), throwing(0), strength(0), psiStrength(0), psiSkill(0), melee(0), mana(0) {};
@@ -263,7 +274,7 @@ struct UnitStats
 	{
 		if (t)
 		{
-			val = std::min(std::max(val, 1), 1000);
+			val = std::min(std::max(val, 1), BaseStatLimit);
 			((t->*Stat).*StatMax) = val;
 		}
 	}
@@ -274,7 +285,7 @@ struct UnitStats
 		if (t)
 		{
 			//limit range to prevent overflow
-			val = std::min(std::max(val, -1000), 1000);
+			val = std::min(std::max(val, -BaseStatLimit), BaseStatLimit);
 			setMaxStatScript<T, Stat, StatMax>(t, val + ((t->*Stat).*StatMax));
 		}
 	}
@@ -284,7 +295,7 @@ struct UnitStats
 	{
 		if (t)
 		{
-			val = std::min(std::max(val, 1), 1000);
+			val = std::min(std::max(val, 1), BaseStatLimit);
 			((t->*Stat).*StatMax) = val;
 
 			//update current value
@@ -301,7 +312,7 @@ struct UnitStats
 		if (t)
 		{
 			//limit range to prevent overflow
-			val = std::min(std::max(val, -1000), 1000);
+			val = std::min(std::max(val, -BaseStatLimit), BaseStatLimit);
 			setMaxAndCurrStatScript<T, Stat, Curr, StatMax>(t, val + ((t->*Stat).*StatMax));
 		}
 	}
