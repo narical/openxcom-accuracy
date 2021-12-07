@@ -1342,6 +1342,12 @@ void Ufo::ScriptRegister(ScriptParserBase* parser)
 	u.addField<&Ufo::_stats, &RuleUfoStats::getBase, &RuleCraftStats::shieldCapacity>("getShieldMax");
 	u.add<&Ufo::getShieldPercentage>("getShieldPercentage");
 
+	u.add<&Ufo::isHunterKiller>("isHunterKiller");
+	u.add<&Ufo::isHunting>("isHunting");
+	u.add<&Ufo::isEscorting>("isEscorting");
+	u.add<&Ufo::getHuntBehavior>("getHuntBehavior");
+	u.add<&Ufo::getHuntMode>("getHuntMode");
+
 	u.add<&Ufo::getDetected>("getDetected");
 	u.add<&Ufo::getHyperDetected>("getHyperDetected");
 
