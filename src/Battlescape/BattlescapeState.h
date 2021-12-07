@@ -232,6 +232,8 @@ public:
 	void warning(const std::string &message);
 	/// Show warning message, no translation.
 	void warningRaw(const std::string &message);
+	/// Show warning message that stay longer on screen, no translation.
+	void warningLongRaw(const std::string &message);
 	/// Gets melee damage preview.
 	std::string getMeleeDamagePreview(BattleUnit *actor, BattleItem *weapon) const;
 	/// Handles keypresses.
