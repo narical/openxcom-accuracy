@@ -3163,28 +3163,26 @@ void ScriptParserEventsBase::parseCode(ScriptContainerEventsBase& container, con
 /**
  * Load global data from YAML.
  */
-void ScriptParserEventsBase::load(const YAML::Node& node)
+void ScriptParserEventsBase::load(const YAML::Node& scripts)
 {
 	ScriptParserBase::load(node);
-	if(const YAML::Node& scripts = node["scripts"])
+
+	if (const YAML::Node& curr = scripts[getName()])
 	{
-		if (const YAML::Node& curr = scripts[getName()])
+		for (const YAML::Node& i : curr)
 		{
-			for (const YAML::Node& i : curr)
+			EventData data = EventData{};
+			data.offset = i["offset"].as<double>(0) * OffsetScale;
+			if (data.offset == 0 || data.offset >= (int)OffsetMax || data.offset <= -(int)OffsetMax)
 			{
-				EventData data = EventData{};
-				data.offset = i["offset"].as<double>(0) * OffsetScale;
-				if (data.offset == 0 || data.offset >= (int)OffsetMax || data.offset <= -(int)OffsetMax)
-				{
-					Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
-					continue;
-				}
-				ScriptContainerBase scp;
-				if (parseBase(scp, "Global Event Script", i["code"].as<std::string>("")))
-				{
-					data.script = std::move(scp);
-					_eventsData.push_back(std::move(data));
-				}
+				Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
+				continue;
+			}
+			ScriptContainerBase scp;
+			if (parseBase(scp, "Global Event Script", i["code"].as<std::string>("")))
+			{
+				data.script = std::move(scp);
+				_eventsData.push_back(std::move(data));
 			}
 		}
 	}
@@ -3576,9 +3574,12 @@ void ScriptGlobal::load(const YAML::Node& node)
 			}
 		}
 	}
-	for (auto& p : _parserNames)
+	if (const YAML::Node& s = node["scripts"])
 	{
-		p.second->load(node);
+		for (auto& p : _parserNames)
+		{
+			p.second->load(s);
+		}
 	}
 }
 
