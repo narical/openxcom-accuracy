@@ -3167,22 +3167,154 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 {
 	ScriptParserBase::load(scripts);
 
+	// helper functions to get position in data vector
+	auto findPos = [&](const std::string& n)
+	{
+		return std::find_if(std::begin(_eventsData), std::end(_eventsData), [&](const EventData& p) { return p.name == n; });
+	};
+	auto havePos = [&](std::vector<EventData>::iterator it)
+	{
+		return it != std::end(_eventsData);
+	};
+	auto removePos = [&](std::vector<EventData>::iterator it)
+	{
+		_eventsData.erase(it);
+	};
+
+	auto getNode = [&](const YAML::Node& i, const std::string& nodeName)
+	{
+		const auto& n = i[nodeName];
+		return std::make_tuple(nodeName, n, !!n);
+	};
+	auto haveNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		return std::get<bool>(nn);
+	};
+	auto getDescriptionNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		return std::string("'") + std::get<std::string>(nn) + "' at line " + std::to_string(std::get<YAML::Node>(nn).Mark().line);
+	};
+	auto getNameFromNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		auto name = std::get<YAML::Node>(nn).as<std::string>();
+		if (name.empty())
+		{
+			throw Exception("Invalid name for " + getDescriptionNode(nn));
+		}
+		return name;
+	};
+
 	if (const YAML::Node& curr = scripts[getName()])
 	{
 		for (const YAML::Node& i : curr)
 		{
-			EventData data = EventData{};
-			data.offset = i["offset"].as<double>(0) * OffsetScale;
-			if (data.offset == 0 || data.offset >= (int)OffsetMax || data.offset <= -(int)OffsetMax)
+			const auto deleteNode = getNode(i, "delete");
+			const auto newNode = getNode(i, "new");
+			const auto overrideNode = getNode(i, "override");
+			const auto updateNode = getNode(i, "update");
+
 			{
-				Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
-				continue;
+				// check for duplicates
+				const std::tuple<std::string, YAML::Node, bool>* last = nullptr;
+				for (auto* p : { &deleteNode, &newNode, &updateNode, &overrideNode })
+				{
+					if (haveNode(*p))
+					{
+						if (last)
+						{
+							throw Exception("Conflict of " + getDescriptionNode(*last) + " and " + getDescriptionNode(*p));
+						}
+						else
+						{
+							last = p;
+						}
+					}
+				}
 			}
-			ScriptContainerBase scp;
-			if (parseBase(scp, "Global Event Script", i["code"].as<std::string>("")))
+
+			if (haveNode(deleteNode))
 			{
-				data.script = std::move(scp);
-				_eventsData.push_back(std::move(data));
+				auto name = getNameFromNode(deleteNode);
+
+				auto it = findPos(name);
+				if (havePos(it))
+				{
+					removePos(it);
+				}
+				else
+				{
+					Log(LOG_WARNING) << "Unknow script name '" + name  + "' for " + getDescriptionNode(deleteNode);
+				}
+			}
+			else
+			{
+				int offset = 0;
+				ScriptContainerBase scp;
+
+
+				offset = i["offset"].as<double>(0) * OffsetScale;
+				if (offset == 0 || offset >= (int)OffsetMax || offset <= -(int)OffsetMax)
+				{
+					//TODO make it a exception
+					Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
+					continue;
+				}
+
+				if (false == parseBase(scp, "Global Event Script", i["code"].as<std::string>("")))
+				{
+					continue;
+				}
+
+
+				if (haveNode(updateNode))
+				{
+					auto name = getNameFromNode(updateNode);
+
+					auto it = findPos(name);
+					if (havePos(it))
+					{
+						it->offset = offset;
+						it->script = std::move(scp);
+					}
+					else
+					{
+						Log(LOG_WARNING) << "Unknow script name '" + name  + "' for " + getDescriptionNode(updateNode);
+					}
+				}
+				else if (haveNode(overrideNode))
+				{
+					auto name = getNameFromNode(overrideNode);
+
+					auto it = findPos(name);
+					if (havePos(it))
+					{
+						it->offset = offset;
+						it->script = std::move(scp);
+					}
+					else
+					{
+						throw Exception("Unknow script name '" + name  + "' for " + getDescriptionNode(overrideNode));
+					}
+				}
+				else
+				{
+					std::string name;
+					if (haveNode(newNode))
+					{
+						name = getNameFromNode(newNode);
+
+						auto it = findPos(name);
+						if (havePos(it))
+						{
+							throw Exception("Script script name '" + name  + "' already used for " + getDescriptionNode(newNode));
+						}
+					}
+					EventData data = EventData{};
+					data.name = name;
+					data.offset = offset;
+					data.script = std::move(scp);
+					_eventsData.push_back(std::move(data));
+				}
 			}
 		}
 	}
