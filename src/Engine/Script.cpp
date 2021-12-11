@@ -3165,7 +3165,7 @@ void ScriptParserEventsBase::parseCode(ScriptContainerEventsBase& container, con
  */
 void ScriptParserEventsBase::load(const YAML::Node& scripts)
 {
-	ScriptParserBase::load(node);
+	ScriptParserBase::load(scripts);
 
 	if (const YAML::Node& curr = scripts[getName()])
 	{
