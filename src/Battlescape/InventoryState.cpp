@@ -795,7 +795,7 @@ void InventoryState::saveGlobalLayout(int index, bool includingArmor)
 	_createInventoryTemplate(*tmpl);
 
 	// optionally save armor info too
-	if (includingArmor)
+	if (includingArmor && _battleGame->getSelectedUnit()->getGeoscapeSoldier())
 	{
 		_game->getSavedGame()->setGlobalEquipmentLayoutArmor(index, _battleGame->getSelectedUnit()->getArmor()->getType());
 	}
