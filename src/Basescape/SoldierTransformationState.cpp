@@ -524,7 +524,7 @@ void SoldierTransformationState::performTransformation()
 		_base->getTransfers()->push_back(transfer);
 	}
 
-	destinationSoldier->transform(_game->getMod(), _transformationRule, _sourceSoldier);
+	destinationSoldier->transform(_game->getMod(), _transformationRule, _sourceSoldier, _base);
 }
 
 void SoldierTransformationState::retire()

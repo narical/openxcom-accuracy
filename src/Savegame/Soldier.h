@@ -42,6 +42,7 @@ class SoldierDiary;
 class SavedGame;
 class RuleSoldierTransformation;
 class RuleSoldierBonus;
+class Base;
 struct BaseSumDailyRecovery;
 
 /**
@@ -271,7 +272,7 @@ public:
 	/// Returns whether the unit is eligible for a certain transformation
 	bool isEligibleForTransformation(RuleSoldierTransformation *transformationRule);
 	/// Performs a transformation on this soldier
-	void transform(const Mod *mod, RuleSoldierTransformation *transformationRule, Soldier *sourceSoldier);
+	void transform(const Mod *mod, RuleSoldierTransformation *transformationRule, Soldier *sourceSoldier, Base *base);
 	/// Calculates how this project changes the soldier's stats
 	UnitStats calculateStatChanges(const Mod *mod, RuleSoldierTransformation *transformationRule, Soldier *sourceSoldier, int mode, const RuleSoldier *sourceSoldierType);
 	/// Gets all the soldier bonuses
