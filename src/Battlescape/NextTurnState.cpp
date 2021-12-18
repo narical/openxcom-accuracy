@@ -257,7 +257,12 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 	}
 
 	std::string messageReinforcements;
-	if (_battleGame->getSide() == FACTION_HOSTILE && !_battleGame->getBattleGame()->areAllEnemiesNeutralized())
+	bool allowReinforcements = _battleGame->getSide() == FACTION_HOSTILE && _battleGame->getTurn() > 0;
+	if (_battleGame->getSide() == FACTION_PLAYER && _battleGame->getTurn() == 0)
+	{
+		allowReinforcements = true;
+	}
+	if (allowReinforcements && !_battleGame->getBattleGame()->areAllEnemiesNeutralized())
 	{
 		bool showAlert = determineReinforcements();
 		if (showAlert)
@@ -523,6 +528,8 @@ bool NextTurnState::determineReinforcements()
 {
 	const AlienDeployment* deployment = _game->getMod()->getDeployment(_battleGame->getReinforcementsDeployment(), true);
 
+	int currentTurnReinforcements = _battleGame->getTurn();
+
 	if (!deployment)
 	{
 		// for backwards-compatibility! this save does not contain the data needed for this functionality...
@@ -547,14 +554,14 @@ bool NextTurnState::determineReinforcements()
 			}
 			else if (!wave.turns.empty())
 			{
-				if (std::find(wave.turns.begin(), wave.turns.end(), _currentTurn) == wave.turns.end())
+				if (std::find(wave.turns.begin(), wave.turns.end(), currentTurnReinforcements) == wave.turns.end())
 				{
 					continue;
 				}
 			}
 			else
 			{
-				if (_currentTurn < wave.minTurn || (wave.maxTurn != -1 && _currentTurn > wave.maxTurn))
+				if (currentTurnReinforcements < wave.minTurn || (wave.maxTurn != -1 && currentTurnReinforcements > wave.maxTurn))
 				{
 					continue;
 				}
