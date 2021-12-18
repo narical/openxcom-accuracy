@@ -2387,6 +2387,8 @@ void GeoscapeState::time1Day()
 			}
 			if (!newPossibleManufacture.empty())
 			{
+				Collections::sortVector(newPossibleManufacture);
+				Collections::sortVectorMakeUnique(newPossibleManufacture);
 				popup(new NewPossibleManufactureState(base, newPossibleManufacture));
 			}
 			std::vector<RuleItem *> newPossiblePurchase;
@@ -2397,6 +2399,8 @@ void GeoscapeState::time1Day()
 			}
 			if (!newPossiblePurchase.empty())
 			{
+				Collections::sortVector(newPossiblePurchase);
+				Collections::sortVectorMakeUnique(newPossiblePurchase);
 				popup(new NewPossiblePurchaseState(base, newPossiblePurchase));
 			}
 			std::vector<RuleCraft *> newPossibleCraft;
@@ -2407,6 +2411,8 @@ void GeoscapeState::time1Day()
 			}
 			if (!newPossibleCraft.empty())
 			{
+				Collections::sortVector(newPossibleCraft);
+				Collections::sortVectorMakeUnique(newPossibleCraft);
 				popup(new NewPossibleCraftState(base, newPossibleCraft));
 			}
 			std::vector<RuleBaseFacility *> newPossibleFacilities;
@@ -2417,6 +2423,8 @@ void GeoscapeState::time1Day()
 			}
 			if (!newPossibleFacilities.empty())
 			{
+				Collections::sortVector(newPossibleFacilities);
+				Collections::sortVectorMakeUnique(newPossibleFacilities);
 				popup(new NewPossibleFacilityState(base, _globe, newPossibleFacilities));
 			}
 			// 3j. now iterate through all the bases and remove this project from their labs (unless it can still yield more stuff!)
