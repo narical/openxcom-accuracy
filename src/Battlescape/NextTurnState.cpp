@@ -983,7 +983,17 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 			{
 				for (auto tryZ : tmpZList)
 				{
-					if (_battleGame->setUnitPosition(unit, randomPos + Position(0, 0, tryZ)))
+					Position finalPos = randomPos + Position(0, 0, tryZ);
+					if (unit->getMovementType() != MT_FLY)
+					{
+						Tile* t = _battleGame->getTile(finalPos);
+						if (t == 0 || t->getTUCost(O_FLOOR, unit->getMovementType()) == 255)
+						{
+							// non-flying units cannot spawn on e.g. a water tile (e.g. in the POLAR terrain)
+							continue;
+						}
+					}
+					if (_battleGame->setUnitPosition(unit, finalPos))
 					{
 						unit->setRankInt(alienRank);
 						unit->setDirection(RNG::generate(0, 7));
