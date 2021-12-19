@@ -2274,7 +2274,7 @@ void GeoscapeState::time1Day()
 			base->removeResearch(project);
 			project = nullptr;
 
-			// 3b. handle interrogation and spawned items/events
+			// 3b. handle interrogation
 			if (Options::retainCorpses && research->destroyItem())
 			{
 				auto ruleUnit = mod->getUnit(research->getName(), false);
@@ -2286,25 +2286,6 @@ void GeoscapeState::time1Day()
 						base->getStorageItems()->addItem(ruleCorpse->getType());
 					}
 				}
-			}
-			RuleItem *spawnedItem = _game->getMod()->getItem(research->getSpawnedItem());
-			if (spawnedItem)
-			{
-				Transfer *t = new Transfer(1);
-				t->setItems(research->getSpawnedItem());
-				base->getTransfers()->push_back(t);
-			}
-			RuleEvent* spawnedEventRule = _game->getMod()->getEvent(research->getSpawnedEvent());
-			if (spawnedEventRule)
-			{
-				GeoscapeEvent* newEvent = new GeoscapeEvent(*spawnedEventRule);
-				int minutes = (spawnedEventRule->getTimer() + (RNG::generate(0, spawnedEventRule->getTimerRandom()))) / 30 * 30;
-				if (minutes < 60) minutes = 60; // just in case
-				newEvent->setSpawnCountdown(minutes);
-				saveGame->getGeoscapeEvents().push_back(newEvent);
-
-				// remember that it has been generated
-				saveGame->addGeneratedEvent(spawnedEventRule);
 			}
 			// 3c. handle getonefrees (topic+lookup)
 			if ((bonus = saveGame->selectGetOneFree(research)))
@@ -2427,7 +2408,7 @@ void GeoscapeState::time1Day()
 				Collections::sortVectorMakeUnique(newPossibleFacilities);
 				popup(new NewPossibleFacilityState(base, _globe, newPossibleFacilities));
 			}
-			// 3j. now iterate through all the bases and remove this project from their labs (unless it can still yield more stuff!)
+
 			std::vector<const RuleResearch*> topicsToCheck;
 			topicsToCheck.push_back(research);
 			if (bonus)
@@ -2436,6 +2417,7 @@ void GeoscapeState::time1Day()
 			}
 			for (auto *myResearchRule : topicsToCheck)
 			{
+				// 3j. now iterate through all the bases and remove this project from their labs (unless it can still yield more stuff!)
 				for (Base *otherBase : *saveGame->getBases())
 				{
 					for (ResearchProject *otherProject : otherBase->getResearch())
@@ -2458,6 +2440,27 @@ void GeoscapeState::time1Day()
 							}
 						}
 					}
+				}
+				// 3k. handle spawned items
+				RuleItem* spawnedItem = _game->getMod()->getItem(myResearchRule->getSpawnedItem());
+				if (spawnedItem)
+				{
+					Transfer* t = new Transfer(1);
+					t->setItems(myResearchRule->getSpawnedItem());
+					base->getTransfers()->push_back(t);
+				}
+				// 3l. handle spawned events
+				RuleEvent* spawnedEventRule = _game->getMod()->getEvent(myResearchRule->getSpawnedEvent());
+				if (spawnedEventRule)
+				{
+					GeoscapeEvent* newEvent = new GeoscapeEvent(*spawnedEventRule);
+					int minutes = (spawnedEventRule->getTimer() + (RNG::generate(0, spawnedEventRule->getTimerRandom()))) / 30 * 30;
+					if (minutes < 60) minutes = 60; // just in case
+					newEvent->setSpawnCountdown(minutes);
+					saveGame->getGeoscapeEvents().push_back(newEvent);
+
+					// remember that it has been generated
+					saveGame->addGeneratedEvent(spawnedEventRule);
 				}
 			}
 		}
