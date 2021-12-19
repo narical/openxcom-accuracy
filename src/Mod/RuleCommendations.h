@@ -41,6 +41,8 @@ private:
 	int _sprite;
 	std::vector<std::string> _soldierBonusTypesNames;
 	std::vector<const RuleSoldierBonus*> _soldierBonusTypes;
+	std::vector<std::string> _missionMarkerNames; // these are not alien deployment type names!
+	std::vector<std::string> _missionTypeNames;   // these are not alien deployment type names!
 
 public:
 	/// Creates a blank commendation ruleset.
@@ -61,6 +63,10 @@ public:
 	int getSprite() const;
 	/// Gets the soldier bonus type corresponding to the commendation's decoration level.
 	const RuleSoldierBonus *getSoldierBonus(int decorationLevel) const;
+	/// Gets the commendation's mission marker filter.
+	const std::vector<std::string>& getMissionMarkerNames() const;
+	/// Gets the commendation's mission type filter.
+	const std::vector<std::string>& getMissionTypeNames() const;
 
 };
 

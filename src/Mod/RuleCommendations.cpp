@@ -49,6 +49,8 @@ void RuleCommendations::load(const YAML::Node &node, const Mod* mod)
 	_sprite = node["sprite"].as<int>(_sprite);
 	mod->loadKillCriteria(_type, _killCriteria, node["killCriteria"]);
 	mod->loadNames(_type, _soldierBonusTypesNames, node["soldierBonusTypes"]);
+	mod->loadNames(_type, _missionMarkerNames, node["missionMarkerFilter"]);
+	mod->loadNames(_type, _missionTypeNames, node["missionTypeFilter"]);
 }
 
 /**
@@ -108,6 +110,24 @@ const RuleSoldierBonus *RuleCommendations::getSoldierBonus(int decorationLevel) 
 		return _soldierBonusTypes.at(index);
 	}
 	return nullptr;
+}
+
+/**
+ * Gets the commendation's mission marker filter.
+ * @return vector<string> Mission marker types.
+ */
+const std::vector<std::string>& RuleCommendations::getMissionMarkerNames() const
+{
+	return _missionMarkerNames;
+}
+
+/**
+ * Gets the commendation's mission type filter.
+ * @return vector<string> Mission types.
+ */
+const std::vector<std::string>& RuleCommendations::getMissionTypeNames() const
+{
+	return _missionTypeNames;
 }
 
 }

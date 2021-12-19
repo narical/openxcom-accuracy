@@ -307,7 +307,7 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 			// These criteria have no nouns, so only the nextCommendationLevel["noNoun"] will ever be used.
 			else if( nextCommendationLevel.count("noNoun") == 1 &&
 				  ( ((*j).first == "totalKills" && (unsigned int)getKillTotal() < (unsigned int)(*j).second.at(nextCommendationLevel["noNoun"])) ||
-					((*j).first == "totalMissions" && _missionIdList.size() < (unsigned int)(*j).second.at(nextCommendationLevel["noNoun"])) ||
+					((*j).first == "totalMissions" && getMissionTotalFiltered(missionStatistics, (*i).second) < (*j).second.at(nextCommendationLevel["noNoun"])) ||
 					((*j).first == "totalWins" && getWinTotal(missionStatistics) < (*j).second.at(nextCommendationLevel["noNoun"])) ||
 					((*j).first == "totalScore" && getScoreTotal(missionStatistics) < (*j).second.at(nextCommendationLevel["noNoun"])) ||
 					((*j).first == "totalStuns" && getStunTotal() < (*j).second.at(nextCommendationLevel["noNoun"])) ||
@@ -773,6 +773,51 @@ int SoldierDiary::getKillTotal() const
 int SoldierDiary::getMissionTotal() const
 {
 	return _missionIdList.size();
+}
+
+/**
+ *
+ */
+int SoldierDiary::getMissionTotalFiltered(std::vector<MissionStatistics*>* missionStatistics, const RuleCommendations* rule) const
+{
+	if (!rule->getMissionTypeNames().empty())
+	{
+		int total = 0;
+		for (auto* ms : *missionStatistics)
+		{
+			if (ms->success)
+			{
+				if (std::find(_missionIdList.begin(), _missionIdList.end(), ms->id) != _missionIdList.end())
+				{
+					if (std::find(rule->getMissionTypeNames().begin(), rule->getMissionTypeNames().end(), ms->type) != rule->getMissionTypeNames().end())
+					{
+						++total;
+					}
+				}
+			}
+		}
+		return total;
+	}
+	else if (!rule->getMissionMarkerNames().empty())
+	{
+		int total = 0;
+		for (auto* ms : *missionStatistics)
+		{
+			if (ms->success)
+			{
+				if (std::find(_missionIdList.begin(), _missionIdList.end(), ms->id) != _missionIdList.end())
+				{
+					if (std::find(rule->getMissionMarkerNames().begin(), rule->getMissionMarkerNames().end(), ms->markerName) != rule->getMissionMarkerNames().end())
+					{
+						++total;
+					}
+				}
+			}
+		}
+		return total;
+	}
+
+	return (int)_missionIdList.size();
 }
 
 /**
