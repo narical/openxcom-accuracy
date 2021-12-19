@@ -701,6 +701,11 @@ void TechTreeViewerState::initLists()
 
 			std::string name = tr(rule->getSpawnedItem());
 			name.insert(0, "  ");
+			if (rule->getSpawnedItemCount() > 1)
+			{
+				name.append(" x");
+				name.append(std::to_string(rule->getSpawnedItemCount()));
+			}
 			_lstRight->addRow(1, name.c_str());
 			_lstRight->setRowColor(row, _white);
 			_rightTopics.push_back(rule->getSpawnedItem());

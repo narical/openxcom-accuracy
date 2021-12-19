@@ -2446,7 +2446,7 @@ void GeoscapeState::time1Day()
 				if (spawnedItem)
 				{
 					Transfer* t = new Transfer(1);
-					t->setItems(myResearchRule->getSpawnedItem());
+					t->setItems(myResearchRule->getSpawnedItem(), std::max(1, myResearchRule->getSpawnedItemCount()));
 					base->getTransfers()->push_back(t);
 				}
 				// 3l. handle spawned events
