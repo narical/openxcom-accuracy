@@ -94,6 +94,7 @@ private:
 	std::string _customUfo;
 	std::string _enviroEffects, _startingCondition;
 	std::string _unlockedResearch, _missionBountyItem;
+	int _missionBountyItemCount;
 	int _bughuntMinTurn;
 	std::vector<DeploymentData> _data;
 	std::vector<ReinforcementsData> _reinforcements;
@@ -143,6 +144,8 @@ public:
 	std::string getUnlockedResearch() const;
 	/// Gets the item to be recovered/given after a successful mission.
 	std::string getMissionBountyItem() const;
+	/// Gets the number of items to be recovered/given after a successful mission.
+	int getMissionBountyItemCount() const { return _missionBountyItemCount; }
 	/// Gets the bug hunt mode minimum turn requirement (default = 0 = not used).
 	int getBughuntMinTurn() const;
 	/// Gets a pointer to the data.

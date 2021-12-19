@@ -2123,13 +2123,14 @@ void DebriefingState::prepareDebriefing()
 		const RuleItem *bountyItem = _game->getMod()->getItem(ruleDeploy->getMissionBountyItem());
 		if (bountyItem)
 		{
-			addItemsToBaseStores(bountyItem, base, 1, true);
+			int bountyQty = std::max(1, ruleDeploy->getMissionBountyItemCount());
+			addItemsToBaseStores(bountyItem, base, bountyQty, true);
 			auto specialType = bountyItem->getSpecialType();
 			if (specialType > 1)
 			{
 				if (_recoveryStats.find(specialType) != _recoveryStats.end())
 				{
-					addStat(_recoveryStats[specialType]->name, 1, _recoveryStats[specialType]->value);
+					addStat(_recoveryStats[specialType]->name, bountyQty, bountyQty * _recoveryStats[specialType]->value);
 				}
 			}
 		}
