@@ -159,7 +159,7 @@ en-GB:
   STR_GET_FOR_FREE_FROM: "Get for free from:"
   STR_IS_LOOKUP_OF: "Is lookup of:"
   STR_LOOKUP: "Lookup:"
-  STR_SPAWNED_ITEM: "Spawned item:"
+  STR_SPAWNED_ITEMS: "Spawned items:"
   STR_SPAWNED_EVENT: "Spawned event:"
   STR_REQUIRED_BY: "Required by:"
   STR_LEADS_TO: "Leads to:"

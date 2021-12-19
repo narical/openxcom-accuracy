@@ -46,6 +46,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	_cutscene = node["cutscene"].as<std::string>(_cutscene);
 	_spawnedItem = node["spawnedItem"].as<std::string>(_spawnedItem);
 	_spawnedItemCount = node["spawnedItemCount"].as<int>(_spawnedItemCount);
+	mod->loadUnorderedNames(_name, _spawnedItemList, node["spawnedItemList"]);
 	_spawnedEvent = node["spawnedEvent"].as<std::string>(_spawnedEvent);
 	_cost = node["cost"].as<int>(_cost);
 	_points = node["points"].as<int>(_points);

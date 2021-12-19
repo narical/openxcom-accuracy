@@ -691,14 +691,16 @@ void TechTreeViewerState::initLists()
 		}
 
 		// spawned item
-		if (!Mod::isEmptyRuleName(rule->getSpawnedItem()))
+		if (!Mod::isEmptyRuleName(rule->getSpawnedItem()) || !rule->getSpawnedItemList().empty())
 		{
-			_lstRight->addRow(1, tr("STR_SPAWNED_ITEM").c_str());
+			_lstRight->addRow(1, tr("STR_SPAWNED_ITEMS").c_str());
 			_lstRight->setRowColor(row, _blue);
 			_rightTopics.push_back("-");
 			_rightFlags.push_back(TTV_NONE);
 			++row;
-
+		}
+		if (!Mod::isEmptyRuleName(rule->getSpawnedItem()))
+		{
 			std::string name = tr(rule->getSpawnedItem());
 			name.insert(0, "  ");
 			if (rule->getSpawnedItemCount() > 1)
@@ -709,6 +711,16 @@ void TechTreeViewerState::initLists()
 			_lstRight->addRow(1, name.c_str());
 			_lstRight->setRowColor(row, _white);
 			_rightTopics.push_back(rule->getSpawnedItem());
+			_rightFlags.push_back(TTV_ITEMS);
+			++row;
+		}
+		for (auto& sil : rule->getSpawnedItemList())
+		{
+			std::string name = tr(sil);
+			name.insert(0, "  ");
+			_lstRight->addRow(1, name.c_str());
+			_lstRight->setRowColor(row, _white);
+			_rightTopics.push_back(sil);
 			_rightFlags.push_back(TTV_ITEMS);
 			++row;
 		}
@@ -1520,6 +1532,17 @@ void TechTreeViewerState::initLists()
 			if (temp->getSpawnedItem() == rule->getType())
 			{
 				spawnedBy.push_back(j);
+			}
+			else
+			{
+				for (auto& sil : temp->getSpawnedItemList())
+				{
+					if (sil == rule->getType())
+					{
+						spawnedBy.push_back(j);
+						break;
+					}
+				}
 			}
 		}
 		if (spawnedBy.size() > 0)
