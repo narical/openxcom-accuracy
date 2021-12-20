@@ -439,7 +439,7 @@ public:
 	/// Checks if a UFO is on the ignore list.
 	bool isUfoOnIgnoreList(int ufoId);
 	/// Handles a soldier's death.
-	std::vector<Soldier*>::iterator killSoldier(Soldier *soldier, BattleUnitKills *cause = 0);
+	std::vector<Soldier*>::iterator killSoldier(const Mod* mod, Soldier *soldier, BattleUnitKills *cause = 0);
 	/// enables/disables autosell for an item type
 	void setAutosell(const RuleItem *itype, const bool enabled);
 	/// get autosell state for an item type

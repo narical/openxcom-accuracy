@@ -1111,7 +1111,7 @@ void GeoscapeState::time5Seconds()
 					{
 						if ((*k)->getCraft() == (*j))
 						{
-							k = _game->getSavedGame()->killSoldier(*k);
+							k = _game->getSavedGame()->killSoldier(_game->getMod(), *k);
 						}
 						else
 						{

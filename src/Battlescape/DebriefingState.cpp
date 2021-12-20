@@ -1486,11 +1486,9 @@ void DebriefingState::prepareDebriefing()
 					}
 					// transformed armor doesn't get recovered
 					soldier->setTransformedArmor(0);
-					// soldiers are buried in the default armor (...nicer stats in memorial)
-					soldier->setArmor(_game->getMod()->getArmor(soldier->getRules()->getArmor()));
 
 					(*j)->getStatistics()->KIA = true;
-					save->killSoldier(soldier); // in case we missed the soldier death on battlescape
+					save->killSoldier(_game->getMod(), soldier); // in case we missed the soldier death on battlescape
 				}
 				else
 				{ // non soldier player = tank
@@ -1575,11 +1573,9 @@ void DebriefingState::prepareDebriefing()
 						}
 						// transformed armor doesn't get recovered
 						soldier->setTransformedArmor(0);
-						// soldiers are buried in the default armor (...nicer stats in memorial)
-						soldier->setArmor(_game->getMod()->getArmor(soldier->getRules()->getArmor()));
 
 						(*j)->getStatistics()->MIA = true;
-						save->killSoldier(soldier);
+						save->killSoldier(_game->getMod(), soldier);
 					}
 				}
 			}
