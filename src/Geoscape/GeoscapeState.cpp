@@ -1775,7 +1775,19 @@ void GeoscapeState::time30Minutes()
 	// Decrease mission countdowns
 	for (auto am : _game->getSavedGame()->getAlienMissions())
 	{
+		size_t abCount = _game->getSavedGame()->getAlienBases()->size();
+
 		am->think(*_game, *_globe);
+
+		if (abCount < _game->getSavedGame()->getAlienBases()->size())
+		{
+			AlienBase* newAlienBase = _game->getSavedGame()->getAlienBases()->back();
+			if (!newAlienBase->isDiscovered() && am->getRules().showAlienBase())
+			{
+				newAlienBase->setDiscovered(true);
+				popup(new AlienBaseState(newAlienBase, this));
+			}
+		}
 	}
 
 	// Remove finished missions

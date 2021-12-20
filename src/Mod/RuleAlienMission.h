@@ -142,6 +142,8 @@ public:
 	bool isEndlessInfiltration() const;
 	/// Should the mission site despawn even if targeted?
 	bool despawnEvenIfTargeted() const { return _despawnEvenIfTargeted; }
+	/// Should the spawned alien base be revealed immediately?
+	bool showAlienBase() const { return _showAlienBase; }
 	/// Gets the ID of the research topic that interrupts this mission (if any).
 	const std::string &getInterruptResearch() const { return _interruptResearch; }
 	/// the type of missionSite to spawn (if any)
@@ -181,6 +183,8 @@ private:
 	bool _endlessInfiltration;
 	/// Should the mission site despawn even if targeted?
 	bool _despawnEvenIfTargeted;
+	/// Should the spawned alien base be revealed immediately?
+	bool _showAlienBase;
 	/// the research topic that interrupts this mission type (when discovered)
 	std::string _interruptResearch;
 	/// the type of missionSite to spawn (if any)
