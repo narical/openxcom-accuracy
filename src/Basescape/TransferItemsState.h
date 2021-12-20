@@ -63,6 +63,7 @@ private:
 	Uint8 _ammoColor;
 	Timer *_timerInc, *_timerDec;
 	TransferSortDirection _previousSort, _currentSort;
+	bool _errorShown;
 
 	/// Gets the category of the current selection.
 	std::string getCategory(int sel) const;
@@ -86,6 +87,8 @@ public:
 	/// Handlers for Quick Search.
 	void btnQuickSearchToggle(Action *action);
 	void btnQuickSearchApply(Action *action);
+	/// Handler for pressing the "Transfer all" hotkey.
+	void btnTransferAllClick(Action *action);
 	/// Completes the transfer between bases.
 	void completeTransfer();
 	/// Handler for clicking the Cancel button.

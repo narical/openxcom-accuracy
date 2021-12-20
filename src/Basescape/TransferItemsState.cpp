@@ -63,7 +63,7 @@ namespace OpenXcom
 TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingState *debriefingState) :
 	_baseFrom(baseFrom), _baseTo(baseTo), _debriefingState(debriefingState),
 	_sel(0), _total(0), _pQty(0), _cQty(0), _aQty(0), _iQty(0.0), _distance(0.0), _ammoColor(0),
-	_previousSort(TransferSortDirection::BY_LIST_ORDER), _currentSort(TransferSortDirection::BY_LIST_ORDER)
+	_previousSort(TransferSortDirection::BY_LIST_ORDER), _currentSort(TransferSortDirection::BY_LIST_ORDER), _errorShown(false)
 {
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
@@ -254,6 +254,7 @@ TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingS
 
 	_cbxCategory->setOptions(_cats, true);
 	_cbxCategory->onChange((ActionHandler)&TransferItemsState::cbxCategoryChange);
+	_cbxCategory->onKeyboardPress((ActionHandler)&TransferItemsState::btnTransferAllClick, Options::keyTransferAll);
 
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&TransferItemsState::btnQuickSearchApply);
@@ -629,6 +630,39 @@ void TransferItemsState::btnCancelClick(Action *)
 }
 
 /**
+ * Increase all items to max, i.e. transfer everything.
+ * @param action Pointer to an action.
+ */
+void TransferItemsState::btnTransferAllClick(Action *)
+{
+	bool allItemsSelected = true;
+	for (size_t i = 0; i < _lstItems->getTexts(); ++i)
+	{
+		if (_items[_rows[i]].type == TRANSFER_ITEM && _items[_rows[i]].amount < _items[_rows[i]].qtySrc)
+		{
+			allItemsSelected = false;
+			break;
+		}
+	}
+
+	size_t backup = _sel;
+	_errorShown = false;
+	for (size_t i = 0; i < _lstItems->getTexts(); ++i)
+	{
+		if (_items[_rows[i]].type == TRANSFER_ITEM)
+		{
+			_sel = i;
+			allItemsSelected ? decreaseByValue(INT_MAX) : increaseByValue(INT_MAX);
+			if (_errorShown)
+			{
+				break; // stop on first error
+			}
+		}
+	}
+	_sel = backup;
+}
+
+/**
  * Starts increasing the item.
  * @param action Pointer to an action.
  */
@@ -890,6 +924,7 @@ void TransferItemsState::increaseByValue(int change)
 		_timerInc->stop();
 		RuleInterface *menuInterface = _game->getMod()->getInterface("transferMenu");
 		_game->pushState(new ErrorMessageState(errorMessage, _palette, menuInterface->getElement("errorMessage")->color, "BACK13.SCR", menuInterface->getElement("errorPalette")->color));
+		_errorShown = true;
 	}
 }
 

@@ -298,6 +298,7 @@ en-GB:
   STR_MARK_ALL_AS_SEEN: "Mark All As Seen"
   STR_SELL_ALL: "Sell All"
   STR_SELL_ALL_BUT_ONE: "Sell All But One"
+  STR_TRANSFER_ALL: "Transfer All"
   STR_REMOVE_SOLDIERS_FROM_ALL_CRAFTS: "Remove Soldiers From All Crafts"
   STR_REMOVE_SOLDIERS_FROM_CRAFT: "Remove Soldiers From Craft"
   STR_REMOVE_EQUIPMENT_FROM_CRAFT: "Remove Equipment From Craft"

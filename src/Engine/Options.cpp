@@ -367,6 +367,7 @@ void create()
 	_info.push_back(OptionInfo("keyMarkAllAsSeen", &keyMarkAllAsSeen, SDLK_x, "STR_MARK_ALL_AS_SEEN", "STR_OXCE"));
 	_info.push_back(OptionInfo("keySellAll", &keySellAll, SDLK_x, "STR_SELL_ALL", "STR_OXCE"));
 	_info.push_back(OptionInfo("keySellAllButOne", &keySellAllButOne, SDLK_z, "STR_SELL_ALL_BUT_ONE", "STR_OXCE"));
+	_info.push_back(OptionInfo("keyTransferAll", &keyTransferAll, SDLK_x, "STR_TRANSFER_ALL", "STR_OXCE"));
 	_info.push_back(OptionInfo("keyRemoveSoldiersFromAllCrafts", &keyRemoveSoldiersFromAllCrafts, SDLK_x, "STR_REMOVE_SOLDIERS_FROM_ALL_CRAFTS", "STR_OXCE"));
 	_info.push_back(OptionInfo("keyRemoveSoldiersFromCraft", &keyRemoveSoldiersFromCraft, SDLK_z, "STR_REMOVE_SOLDIERS_FROM_CRAFT", "STR_OXCE"));
 	_info.push_back(OptionInfo("keyRemoveEquipmentFromCraft", &keyRemoveEquipmentFromCraft, SDLK_x, "STR_REMOVE_EQUIPMENT_FROM_CRAFT", "STR_OXCE"));

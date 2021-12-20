@@ -48,6 +48,7 @@ OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, k
 	keyCraftLoadoutSave, keyCraftLoadoutLoad,
 	keyMarkAllAsSeen,
 	keySellAll, keySellAllButOne,
+	keyTransferAll,
 	keyRemoveSoldiersFromCraft, keyRemoveSoldiersFromAllCrafts,
 	keyRemoveEquipmentFromCraft,
 	keyRemoveArmorFromCraft, keyRemoveArmorFromAllCrafts,
