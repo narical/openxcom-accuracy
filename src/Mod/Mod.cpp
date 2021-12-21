@@ -2157,6 +2157,10 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 		{
 			loadFile(*i, parsers);
 		}
+		catch (Exception &e)
+		{
+			throw Exception(i->fullpath + ": " + std::string(e.what()));
+		}
 		catch (YAML::Exception &e)
 		{
 			throw Exception(i->fullpath + ": " + std::string(e.what()));
