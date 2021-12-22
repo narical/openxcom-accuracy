@@ -269,6 +269,7 @@ interfaces:
         color: 138   # yellow
       - id: list
         color: 133   # minty green
+        color2: 138  # yellow
         border: 239  # bright green
       - id: button
         color: 133   # minty green

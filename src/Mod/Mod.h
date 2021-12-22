@@ -145,7 +145,7 @@ class Mod
 private:
 	Music *_muteMusic;
 	Sound *_muteSound;
-	std::string _playingMusic;
+	std::string _playingMusic, _currentMusicTrack;
 
 	std::map<std::string, Palette*> _palettes;
 	std::map<std::string, Font*> _fonts;
@@ -419,6 +419,8 @@ public:
 	Music *getMusic(const std::string &name, bool error = true) const;
 	/// Gets the available music tracks.
 	const std::map<std::string, Music*> &getMusicTrackList() const;
+	const std::string& getCurrentMusicTrack() const { return _currentMusicTrack; }
+	void setCurrentMusicTrack(const std::string& currentMusicTrack) { _currentMusicTrack = currentMusicTrack; }
 	/// Plays a particular music.
 	void playMusic(const std::string &name, int id = 0);
 	/// Gets a particular sound.

@@ -908,6 +908,14 @@ void Mod::playMusic(const std::string &name, int id)
 		if (music != _muteMusic)
 		{
 			_playingMusic = name;
+			for (auto& item : _musics)
+			{
+				if (item.second == music)
+				{
+					setCurrentMusicTrack(item.first);
+					break;
+				}
+			}
 		}
 		Log(LOG_VERBOSE)<<"Mod::playMusic('" << name << "'): playing " << _playingMusic;
 	}
