@@ -247,7 +247,7 @@ public:
 	/// Gets the total amount of Containment space.
 	int getAvailableContainment(int prisonType) const;
 	/// Gets the total amount of used Containment space.
-	int getUsedContainment(int prisonType) const;
+	int getUsedContainment(int prisonType, bool onlyExternal = false) const;
 	/// Sets the craft's battlescape status.
 	void setInBattlescape(bool inbattle);
 	/// Gets if the craft is in battlescape.
@@ -282,6 +282,7 @@ public:
 	std::list<std::vector<BaseFacility*>::iterator> getDisconnectedFacilities(BaseFacility *remove);
 	/// destroy a facility and deal with the side effects.
 	void destroyFacility(std::vector<BaseFacility*>::iterator facility);
+	void cleanupPrisons(int prisonType);
 	/// Cleans up the defenses vector and optionally reclaims the tanks and their ammo.
 	void cleanupDefenses(bool reclaimItems);
 

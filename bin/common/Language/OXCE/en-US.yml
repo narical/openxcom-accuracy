@@ -60,6 +60,7 @@ en-US:
   STR_KILL_SELECTED: "Kill"
   STR_SELL_SELECTED: "Sell"
   STR_GO_TO_TRANSFERS: "Transfer..."
+  STR_PRISON_CLEANUP: "Prison Cleanup"
 #ManufactureDependenciesTreeState.cpp
   STR_TOPIC: "Topic>{ALT} {0}"
   STR_SHOW_ALL: "Show all"
