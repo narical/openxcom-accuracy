@@ -2287,7 +2287,7 @@ void GeoscapeState::time1Day()
 			project = nullptr;
 
 			// 3b. handle interrogation
-			if (Options::retainCorpses && research->destroyItem())
+			if (Options::retainCorpses && research->needItem() && research->destroyItem())
 			{
 				auto ruleUnit = mod->getUnit(research->getName(), false);
 				if (ruleUnit)
