@@ -213,7 +213,7 @@ namespace OpenXcom
 	/**
 	 * Constructor (only setting type of base class).
 	 */
-	ArticleDefinitionTextImage::ArticleDefinitionTextImage() : ArticleDefinition(UFOPAEDIA_TYPE_TEXTIMAGE), text_width(0)
+	ArticleDefinitionTextImage::ArticleDefinitionTextImage() : ArticleDefinition(UFOPAEDIA_TYPE_TEXTIMAGE), text_width(0), align_bottom(false)
 	{}
 
 	/**
@@ -228,6 +228,7 @@ namespace OpenXcom
 		if (image_id.find("_CPAL") != std::string::npos)
 			customPalette = true;
 		text_width = node["text_width"].as<int>(text_width);
+		align_bottom = node["align_bottom"].as<bool>(align_bottom);
 		rect_text = node["rect_text"].as<ArticleDefinitionRect>(rect_text);
 	}
 

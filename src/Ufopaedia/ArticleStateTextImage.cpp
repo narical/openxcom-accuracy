@@ -65,7 +65,8 @@ namespace OpenXcom
 
 		if (defs->rect_text.width == 0)
 		{
-			_txtInfo = new Text(defs->text_width, 162, 5, 23 + text_height);
+			int txtInfoHeight = defs->align_bottom ? 200 - 2 - 23 - text_height : 162;
+			_txtInfo = new Text(defs->text_width, txtInfoHeight, 5, 23 + text_height);
 		}
 		else
 		{
@@ -77,6 +78,10 @@ namespace OpenXcom
 		_txtInfo->setSecondaryColor(Palette::blockOffset(15) + 4);
 		_txtInfo->setWordWrap(true);
 		_txtInfo->setScrollable(true);
+		if (defs->align_bottom)
+		{
+			_txtInfo->setVerticalAlign(ALIGN_BOTTOM);
+		}
 		_txtInfo->setText(tr(defs->getTextForPage(_state->current_page)));
 
 		centerAllSurfaces();

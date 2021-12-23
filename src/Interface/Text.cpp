@@ -36,7 +36,10 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-Text::Text(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _big(0), _small(0), _font(0), _fontOrig(0), _lang(0), _wrap(false), _invert(false), _contrast(false), _indent(false), _scroll(false), _ignoreSeparators(false), _align(ALIGN_LEFT), _valign(ALIGN_TOP), _color(0), _color2(0), _scrollY(0)
+Text::Text(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y),
+	_big(0), _small(0), _font(0), _fontOrig(0), _lang(0),
+	_wrap(false), _invert(false), _contrast(false), _indent(false), _scroll(false), _ignoreSeparators(false),
+	_align(ALIGN_LEFT), _valign(ALIGN_TOP), _color(0), _color2(0), _scrollY(0)
 {
 }
 
@@ -514,7 +517,7 @@ void Text::draw()
 
 	height = getTextHeight();
 
-	if (_scroll)
+	if (_scroll && (getHeight() - height < 0))
 	{
 		y = _scrollY;
 	}

@@ -221,6 +221,7 @@ namespace OpenXcom
 
 		std::string image_id;
 		int text_width;
+		bool align_bottom;
 		ArticleDefinitionRect rect_text;
 	};
 
