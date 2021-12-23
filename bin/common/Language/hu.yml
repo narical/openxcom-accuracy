@@ -1,7 +1,7 @@
 hu:
   STR_OPENXCOM: "OpenXcom"
-  STR_NEW_GAME: "Új Játék"
-  STR_LOAD_SAVED_GAME: "Játék Betöltése"
+  STR_NEW_GAME: "Új játék"
+  STR_LOAD_SAVED_GAME: "Játék betöltése"
   STR_SELECT_DIFFICULTY_LEVEL: "Válassz Nehézségi Szintet"
   STR_1_BEGINNER: "1> Kezdő"
   STR_2_EXPERIENCED: "2> Tapasztalt"

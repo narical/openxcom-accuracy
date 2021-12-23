@@ -42,6 +42,16 @@ uk:
   STR_CANCEL: "Скасувати"
   STR_COST_UC: "ЦІНА>"
   STR_CONSTRUCTION_TIME_UC: "ЧАС БУДІВНИЦТВА>"
+  STR_DAY:
+    one: "{N} день"
+    few: "{N} днів"
+    many: "{N} днів"
+    other: "{N} днів"
+  STR_HOUR:
+    one: "{N} година"
+    few: "{N} годин"
+    many: "{N} годин"
+    other: "{N} годин"
   STR_MAINTENANCE_UC: "ОБСЛУГОВУВАННЯ>"
   STR_OK: "OK"
   STR_INSTALLATION: "Встановлення"
