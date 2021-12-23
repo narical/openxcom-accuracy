@@ -29,6 +29,7 @@
 #include "../Mod/RuleManufacture.h"
 #include "../Mod/RuleMissionScript.h"
 #include "../Mod/RuleResearch.h"
+#include "../Mod/RuleSoldierTransformation.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Engine/Unicode.h"
@@ -366,6 +367,7 @@ void TechTreeViewerState::initLists()
 		std::vector<std::string> requiredByManufacture;
 		std::vector<std::string> requiredByFacilities;
 		std::vector<std::string> requiredByItems;
+		std::vector<std::string> requiredByTransformations;
 		std::vector<std::string> leadsTo;
 		const std::vector<const RuleResearch*> unlocks = rule->getUnlocked();
 		const std::vector<const RuleResearch*> disables = rule->getDisabled();
@@ -412,6 +414,18 @@ void TechTreeViewerState::initLists()
 				if (i == rule)
 				{
 					requiredByItems.push_back(item);
+				}
+			}
+		}
+
+		for (auto& transf : _game->getMod()->getSoldierTransformationList())
+		{
+			RuleSoldierTransformation* temp = _game->getMod()->getSoldierTransformation(transf);
+			for (auto& i : temp->getRequiredResearch())
+			{
+				if (i == rule->getName())
+				{
+					requiredByTransformations.push_back(transf);
 				}
 			}
 		}
@@ -822,6 +836,27 @@ void TechTreeViewerState::initLists()
 				}
 				_rightTopics.push_back((*i));
 				_rightFlags.push_back(TTV_ITEMS);
+				++row;
+			}
+		}
+
+		// 6e. required by transformations
+		if (requiredByTransformations.size() > 0)
+		{
+			_lstRight->addRow(1, tr("STR_REQUIRED_BY_TRANSFORMATIONS").c_str());
+			_lstRight->setRowColor(row, _blue);
+			_rightTopics.push_back("-");
+			_rightFlags.push_back(TTV_NONE);
+			++row;
+
+			for (std::vector<std::string>::const_iterator i = requiredByTransformations.begin(); i != requiredByTransformations.end(); ++i)
+			{
+				std::string name = tr((*i));
+				name.insert(0, "  ");
+				_lstRight->addRow(1, name.c_str());
+				_lstRight->setRowColor(row, _white);
+				_rightTopics.push_back("-");
+				_rightFlags.push_back(TTV_NONE);
 				++row;
 			}
 		}

@@ -163,6 +163,7 @@ en-GB:
   STR_SPAWNED_ITEMS: "Spawned items:"
   STR_SPAWNED_EVENT: "Spawned event:"
   STR_REQUIRED_BY: "Required by:"
+  STR_REQUIRED_BY_TRANSFORMATIONS: "Required by transformations:"
   STR_LEADS_TO: "Leads to:"
   STR_UNLOCKS: "Unlocks:"
   STR_DISABLES: "Disables:"
