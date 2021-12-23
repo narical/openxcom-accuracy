@@ -1924,6 +1924,11 @@ void DebriefingState::prepareDebriefing()
 				(*i)->qty = (*i)->qty / aadivider;
 				(*i)->score = (*i)->score / aadivider;
 			}
+			else if (aadivider < -1)
+			{
+				(*i)->qty = (*i)->qty * (-1) * aadivider;
+				(*i)->score = (*i)->score * (-1) * aadivider;
+			}
 
 			// recoverable battlescape tiles are now converted to items and put in base inventory
 			if ((*i)->recovery && (*i)->qty > 0)
