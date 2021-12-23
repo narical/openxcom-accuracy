@@ -31,6 +31,7 @@
 #include "../Mod/RuleResearch.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
+#include "../Engine/Unicode.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
@@ -1196,6 +1197,83 @@ void TechTreeViewerState::initLists()
 				_leftFlags.push_back(TTV_ITEMS);
 				++row;
 			}
+		}
+
+		// empty line
+		_lstLeft->addRow(1, "");
+		_leftTopics.push_back("-");
+		_leftFlags.push_back(TTV_NONE);
+		++row;
+
+		// cost per unit
+		if (rule->getManufactureCost() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_TTV_COST_PER_UNIT").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+
+			std::ostringstream txt;
+			txt << "  ";
+			txt << Unicode::formatFunding(rule->getManufactureCost());
+			_lstLeft->addRow(1, txt.str().c_str());
+			_lstLeft->setRowColor(row, _white);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+		}
+		// engineer hours
+		if (rule->getManufactureTime() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_TTV_ENGINEER_HOURS").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+
+			int days = rule->getManufactureTime() / 24;
+			int hours = rule->getManufactureTime() % 24;
+			std::ostringstream txt;
+			txt << "  ";
+			txt << rule->getManufactureTime();
+			txt << " (";
+			if (days > 0)
+			{
+				txt << tr("STR_DAY_SHORT").arg(days);
+			}
+			if (hours > 0)
+			{
+				if (days > 0)
+				{
+					txt << "/";
+				}
+				txt << tr("STR_HOUR_SHORT").arg(hours);
+			}
+			txt << ")";
+			_lstLeft->addRow(1, txt.str().c_str());
+			_lstLeft->setRowColor(row, _white);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+		}
+		// work space required
+		if (rule->getRequiredSpace() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_TTV_WORK_SPACE_REQUIRED").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+
+			std::ostringstream txt;
+			txt << "  ";
+			txt << rule->getRequiredSpace();
+			_lstLeft->addRow(1, txt.str().c_str());
+			_lstLeft->setRowColor(row, _white);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
 		}
 
 		row = 0;
