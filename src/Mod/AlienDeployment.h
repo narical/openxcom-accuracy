@@ -125,6 +125,7 @@ private:
 	int _baseDetectionRange, _baseDetectionChance, _huntMissionMaxFrequency;
 	std::vector<std::pair<size_t, WeightedOptions*> > _huntMissionDistribution;
 	std::vector<std::pair<size_t, WeightedOptions*> > _alienBaseUpgrades;
+	bool _resetAlienBaseAgeAfterUpgrade;
 public:
 	/// Creates a blank Alien Deployment ruleset.
 	AlienDeployment(const std::string &type);
@@ -264,6 +265,8 @@ public:
 
 	/// Generates an alien base upgrade.
 	std::string generateAlienBaseUpgrade(const size_t baseAgeInMonths) const;
+	/// Should the age of an alien base be reset after an upgrade?
+	bool resetAlienBaseAgeAfterUpgrade() const { return _resetAlienBaseAgeAfterUpgrade; }
 
 };
 
