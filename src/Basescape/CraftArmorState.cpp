@@ -472,7 +472,12 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 			SavedGame *save;
 			save = _game->getSavedGame();
 			Armor *a = _game->getMod()->getArmor(save->getLastSelectedArmor());
-			if (a && a->getCanBeUsedBy(s->getRules()))
+			bool armorUnlocked = true;
+			if (a && a->getRequiredResearch() && !_game->getSavedGame()->isResearched(a->getRequiredResearch()))
+			{
+				armorUnlocked = false;
+			}
+			if (armorUnlocked && a && a->getCanBeUsedBy(s->getRules()))
 			{
 				if (save->getMonthsPassed() != -1)
 				{
