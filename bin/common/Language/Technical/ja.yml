@@ -53,6 +53,8 @@ ja:
   DRT_NONE: "ノーダメージ"
   DRT_UFO_WITH_TWO_DICE: "0-200% で分布（2ダイスロール）"
   DRT_EASY: "50-200% で分布"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "なし"
   BFT_INSTANT: "即座"
@@ -333,6 +335,11 @@ ja:
   stun: "気絶"
   mana: "MP"
   units: "互換ユニット"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "建造費"
   buildCostItems: "建材："

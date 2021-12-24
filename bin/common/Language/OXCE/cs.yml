@@ -116,7 +116,6 @@ cs:
   STR_UNLOCKED_BY: "Čím odemknuto:"
   STR_DISABLED_BY: "Čím znepřístupněn:"
   STR_GET_FOR_FREE_FROM: "Obdrž zdarma za:"
-  STR_SPAWNED_ITEM: "Vytvoří předmět:"
   STR_SPAWNED_EVENT: "Vytvoří událost:"
   STR_REQUIRED_BY: "Čím vyžadován:"
   STR_LEADS_TO: "Vede k:"

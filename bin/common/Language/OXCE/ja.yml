@@ -126,7 +126,6 @@ ja:
   STR_GET_FOR_FREE_FROM: "以下から無料入手："
   STR_IS_LOOKUP_OF: "現在調査中："
   STR_LOOKUP: "調査："
-  STR_SPAWNED_ITEM: "生成アイテム："
   STR_SPAWNED_EVENT: "発生イベント："
   STR_REQUIRED_BY: "以下の必要条件："
   STR_LEADS_TO: "関連先："

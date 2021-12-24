@@ -53,6 +53,8 @@ it:
   DRT_NONE: "no danno"
   DRT_UFO_WITH_TWO_DICE: "0-200% spread (2 lanci dado)"
   DRT_EASY: "50-200% spread"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "nessuno"
   BFT_INSTANT: "istantaneo"
@@ -333,6 +335,11 @@ it:
   stun: "Stordimento"
   mana: "Mana"
   units: "Unità compatibili"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "Costo costruzione"
   buildCostItems: "Materiale costruzione:"

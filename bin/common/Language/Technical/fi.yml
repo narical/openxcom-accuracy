@@ -53,6 +53,8 @@ fi:
   DRT_NONE: "ei vahinkoa"
   DRT_UFO_WITH_TWO_DICE: "0-200% väli (2 nopan heitto)"
   DRT_EASY: "50-200% väli"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "ei mitään"
   BFT_INSTANT: "välitön"
@@ -333,6 +335,11 @@ fi:
   stun: "Tainnutus"
   mana: "Mana"
   units: "Yhteensopivat yksiköt"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "Rakennushinta"
   buildCostItems: "Rakennusaineet:"

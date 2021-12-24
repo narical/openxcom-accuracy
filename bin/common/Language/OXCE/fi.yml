@@ -125,7 +125,6 @@ fi:
   STR_GET_FOR_FREE_FROM: "Ilmaiseksi antavat:"
   STR_IS_LOOKUP_OF: "Haun kohteena seuraaville:"
   STR_LOOKUP: "Hakee seuraavia:"
-  STR_SPAWNED_ITEM: "Syntyvät esineet:"
   STR_SPAWNED_EVENT: "Syntynyt tapahtuma:"
   STR_REQUIRED_BY: "Vaatijat:"
   STR_LEADS_TO: "Johdokset:"

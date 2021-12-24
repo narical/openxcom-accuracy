@@ -53,6 +53,8 @@ de:
   DRT_NONE: "Kein Schaden"
   DRT_UFO_WITH_TWO_DICE: "0-200% Streuung (2 Würfel)"
   DRT_EASY: "50-200% Streuung"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: ""
   BFT_INSTANT: "Sofort"
@@ -333,6 +335,11 @@ de:
   stun: "Betäubung"
   mana: "Mana"
   units: "Kompatible Einheiten"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "Baukosten"
   buildCostItems: "Baumaterialien:"

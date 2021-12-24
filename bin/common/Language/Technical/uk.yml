@@ -53,6 +53,8 @@ uk:
   DRT_NONE: "без пошкоджень"
   DRT_UFO_WITH_TWO_DICE: "Розкид 0-200% (2 кидки)"
   DRT_EASY: "Розкид 50-200%"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "жоден"
   BFT_INSTANT: "миттєво"
@@ -333,6 +335,11 @@ uk:
   stun: "Оглушення"
   mana: "Мана"
   units: "Сумісні одиниці"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "Вартість будівництва"
   buildCostItems: "Будівельні матеріали:"

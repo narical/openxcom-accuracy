@@ -53,6 +53,8 @@ ro:
   DRT_NONE: ""
   DRT_UFO_WITH_TWO_DICE: ""
   DRT_EASY: ""
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: ""
   BFT_INSTANT: ""
@@ -333,6 +335,11 @@ ro:
   stun: ""
   mana: ""
   units: ""
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: ""
   buildCostItems: ""

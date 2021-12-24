@@ -53,6 +53,8 @@ pl:
   DRT_NONE: "brak obrażeń"
   DRT_UFO_WITH_TWO_DICE: "Rozkład 0-200% (2 rzuty kostką)"
   DRT_EASY: "rzut 50-200%"
+  DRT_STANDARD: "zakres obrażeń standardowych"
+  DRT_EXPLOSION: "zakres obrażeń od wybuchu"
 #
   BFT_NONE: "brak"
   BFT_INSTANT: "natychmiastowe"
@@ -333,6 +335,11 @@ pl:
   stun: "oszołomienie"
   mana: "Mana"
   units: "Kompatybilne jednostki"
+  frontArmor: "Pancerz przedni"
+  sideArmor: "Pancerz boczny"
+  leftArmorDiff: "Pancerz lewy (różnica)"
+  rearArmor: "Pancerz tylny"
+  underArmor: "Pancerz dolny"
 #
   buildCost: "Koszt budowy"
   buildCostItems: "Materiały do budowy:"

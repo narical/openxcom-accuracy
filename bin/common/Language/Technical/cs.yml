@@ -53,6 +53,8 @@ cs:
   DRT_NONE: "žádné poškození"
   DRT_UFO_WITH_TWO_DICE: "rozptyl 0-200 % (2 hody kostkou)"
   DRT_EASY: "rozptyl 50-200 %"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "žádné"
   BFT_INSTANT: "instantní"
@@ -333,6 +335,11 @@ cs:
   stun: "Omráčení"
   mana: "Mana"
   units: "Kompatibilní jednotky"
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: "Cena postavení"
   buildCostItems: "Materiály k výrobě:"

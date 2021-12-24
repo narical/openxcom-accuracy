@@ -53,6 +53,8 @@ ru:
   DRT_NONE: "не наносит урона"
   DRT_UFO_WITH_TWO_DICE: "Урон 0-200% (с 2 бросками кубика)"
   DRT_EASY: "Урон 50-200%"
+  DRT_STANDARD: "обычный разброс урона"
+  DRT_EXPLOSION: "фугасный разброс урона"
 #
   BFT_NONE: "отсутствует"
   BFT_INSTANT: "мгновен. действия"
@@ -333,6 +335,11 @@ ru:
   stun: "Оглушение"
   mana: "Мана"
   units: "Могут использовать"
+  frontArmor: "Фронтальная броня"
+  sideArmor: "Боковая броня"
+  leftArmorDiff: "Бонус к броне слева"
+  rearArmor: "Тыловая броня"
+  underArmor: "Нижняя броня"
 #
   buildCost: "Цена постройки"
   buildCostItems: "Материалы для строит.:"

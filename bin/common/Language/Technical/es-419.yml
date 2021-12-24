@@ -53,6 +53,8 @@ es-419:
   DRT_NONE: "sin daño"
   DRT_UFO_WITH_TWO_DICE: "0-200% dispersión(2 tiradas de dados)"
   DRT_EASY: "50-200% dispersión"
+  DRT_STANDARD: ""
+  DRT_EXPLOSION: ""
 #
   BFT_NONE: "ningún"
   BFT_INSTANT: "instante"
@@ -333,6 +335,11 @@ es-419:
   stun: ""
   mana: ""
   units: ""
+  frontArmor: ""
+  sideArmor: ""
+  leftArmorDiff: ""
+  rearArmor: ""
+  underArmor: ""
 #
   buildCost: ""
   buildCostItems: ""
