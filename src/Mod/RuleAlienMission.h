@@ -65,6 +65,11 @@ struct MissionWave
 	 * The UFO executes a special action based on the mission objective.
 	 */
 	bool objective;
+	/// This wave performs the mission objective in a rectangular (non-point) area.
+	/**
+	 * Make the UFO land on a random landing site (instead of always top left). Make the mission site spawn exactly on the landing site.
+	 */
+	bool objectiveOnTheLandingSite;
 	/// The chance to become a hunter-killer UFO upon spawning.
 	/**
 	 * -1 (default): take the info from RuleUfo

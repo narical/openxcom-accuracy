@@ -768,6 +768,14 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 			ufo.setStatus(Ufo::DESTROYED);
 
 			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZone);
+			if (wave.objectiveOnTheLandingSite)
+			{
+				// Note: 'area' is a local variable; we're not changing the ruleset
+				area.lonMin = ufo.getLongitude();
+				area.lonMax = ufo.getLongitude();
+				area.latMin = ufo.getLatitude();
+				area.latMax = ufo.getLatitude();
+			}
 			MissionSite *missionSite = spawnMissionSite(game, mod, area, &ufo);
 			if (missionSite)
 			{
@@ -1067,6 +1075,14 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
 
 	if (_missionSiteZone != -1 && wave.objective && trajectory.getZone(nextWaypoint) == (size_t)(_rule.getSpawnZone()))
 	{
+		if (wave.objectiveOnTheLandingSite)
+		{
+			// DISCLAIMER: we assume the entire area rectangle is usable for landing, i.e. we can land anywhere inside of it
+			// no checks for land texture
+			// no checks for fake underwater texture
+			// no checks for being inside of the region
+			return region.getRandomPoint(_rule.getSpawnZone(), _missionSiteZone);
+		}
 		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZone);
 		return std::make_pair(area->lonMin, area->latMin);
 	}
