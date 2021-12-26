@@ -3279,7 +3279,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 			int randomSoldiers = node.as<int>(0);
 			if (randomSoldiers > 0 && soldierTypes.empty())
 			{
-				Log(LOG_ERROR) << "Cannot generate soldiers for the starting base. There are no available soldier types.";
+				Log(LOG_ERROR) << "Cannot generate soldiers for the starting base. There are no available soldier types. Maybe all of them are locked by research?";
 			}
 			else
 			{
