@@ -739,7 +739,7 @@ void DogfightState::think()
 		update();
 		_craftDamageAnimTimer->think(this, 0);
 	}
-	if (!_ufoIsAttacking)
+	if (!_ufoIsAttacking || _ufo->getStatus() == Ufo::LANDED)
 	{
 		if (!_craft->isInDogfight() || _craft->getDestination() != _ufo || _ufo->getStatus() == Ufo::LANDED)
 		{
