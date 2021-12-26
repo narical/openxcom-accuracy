@@ -3925,7 +3925,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
-						else if (!(*j).isPoint() && (*j).texture < 0)
+						else if (!(*j).isPoint() && ((*j).texture < 0 || !missionRules->getSiteType().empty()))
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
