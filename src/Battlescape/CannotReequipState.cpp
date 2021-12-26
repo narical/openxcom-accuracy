@@ -38,7 +38,7 @@ namespace OpenXcom
  * @param missingItems List of items still needed for reequip.
  * @param base Relevant xcom base.
  */
-CannotReequipState::CannotReequipState(std::vector<ReequipStat> missingItems, Base *base) : _base(base)
+CannotReequipState::CannotReequipState(std::vector<ReequipStat> &missingItems, Base *base) : _missingItems(missingItems), _base(base)
 {
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
@@ -95,13 +95,6 @@ CannotReequipState::CannotReequipState(std::vector<ReequipStat> missingItems, Ba
 	_lstItems->setSelectable(true);
 	_lstItems->setBackground(_window);
 	_lstItems->setMargin(2);
-
-	for (std::vector<ReequipStat>::iterator i = missingItems.begin(); i != missingItems.end(); ++i)
-	{
-		std::ostringstream ss;
-		ss << i->qty;
-		_lstItems->addRow(3, tr(i->item).c_str(), ss.str().c_str(), i->craft.c_str());
-	}
 }
 
 /**
@@ -109,6 +102,26 @@ CannotReequipState::CannotReequipState(std::vector<ReequipStat> missingItems, Ba
  */
 CannotReequipState::~CannotReequipState()
 {
+}
+
+/**
+ * Resets stuff when coming back from other screens.
+ */
+void CannotReequipState::init()
+{
+	State::init();
+
+	_lstItems->clearList();
+
+	for (std::vector<ReequipStat>::iterator i = _missingItems.begin(); i != _missingItems.end(); ++i)
+	{
+		if (i->qty > 0)
+		{
+			std::ostringstream ss;
+			ss << i->qty;
+			_lstItems->addRow(3, tr(i->item).c_str(), ss.str().c_str(), i->craft.c_str());
+		}
+	}
 }
 
 /**
@@ -135,7 +148,32 @@ void CannotReequipState::btnManufactureClick(Action *)
  */
 void CannotReequipState::btnPurchaseClick(Action *)
 {
-	_game->pushState(new PurchaseState(_base));
+	_game->pushState(new PurchaseState(_base, this));
+}
+
+/**
+ * Gets the list of missing items.
+ */
+const std::vector<ReequipStat>& CannotReequipState::getMissingItems() const
+{
+	return _missingItems;
+}
+
+/**
+ * Decreases the number of missing items by the bought amount.
+ * @param rule Type of item.
+ * @param amount Number of items bought.
+ */
+void CannotReequipState::decreaseMissingItemCount(const RuleItem* rule, int amount)
+{
+	for (auto& i : _missingItems)
+	{
+		if (i.item == rule->getType())
+		{
+			i.qty = std::max(0, i.qty - amount);
+			break;
+		}
+	}
 }
 
 }

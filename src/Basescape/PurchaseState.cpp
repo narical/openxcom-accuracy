@@ -49,6 +49,7 @@
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Armor.h"
 #include "../Ufopaedia/Ufopaedia.h"
+#include "../Battlescape/CannotReequipState.h"
 
 namespace OpenXcom
 {
@@ -58,8 +59,24 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQty(0), _cQty(0), _iQty(0.0), _ammoColor(0)
+PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(base), _parent(parent), _sel(0), _total(0), _pQty(0), _cQty(0), _iQty(0.0), _ammoColor(0)
 {
+	_autoBuyDone = false;
+	if (_parent)
+	{
+		for (auto& i : _parent->getMissingItems())
+		{
+			if (i.qty > 0)
+			{
+				auto* rule = _game->getMod()->getItem(i.item);
+				if (rule)
+				{
+					_missingItemsMap[rule] = i.qty;
+				}
+			}
+		}
+	}
+
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnQuickSearch = new TextEdit(this, 48, 9, 10, 13);
@@ -137,6 +154,10 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 
 	_cats.push_back("STR_ALL_ITEMS");
 	_cats.push_back("STR_FILTER_HIDDEN");
+	if (!_missingItemsMap.empty())
+	{
+		_cats.push_back("STR_FILTER_MISSING");
+	}
 
 	auto providedBaseFunc = _base->getProvidedBaseFunc({});
 	const std::vector<std::string> &soldiers = _game->getMod()->getSoldiersList();
@@ -239,6 +260,10 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 			_cats.clear();
 			_cats.push_back("STR_ALL_ITEMS");
 			_cats.push_back("STR_FILTER_HIDDEN");
+			if (!_missingItemsMap.empty())
+			{
+				_cats.push_back("STR_FILTER_MISSING");
+			}
 			_vanillaCategories = _cats.size();
 		}
 		const std::vector<std::string> &categories = _game->getMod()->getItemCategoriesList();
@@ -256,6 +281,10 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 	}
 
 	_cbxCategory->setOptions(_cats, true);
+	if (!_missingItemsMap.empty())
+	{
+		_cbxCategory->setSelected(2); // STR_FILTER_MISSING
+	}
 	_cbxCategory->onChange((ActionHandler)&PurchaseState::cbxCategoryChange);
 
 	_btnQuickSearch->setText(""); // redraw
@@ -265,6 +294,23 @@ PurchaseState::PurchaseState(Base *base) : _base(base), _sel(0), _total(0), _pQt
 	_btnOk->onKeyboardRelease((ActionHandler)&PurchaseState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 
 	updateList();
+
+	_autoBuyDone = true;
+	if (!_missingItemsMap.empty())
+	{
+		_txtPurchases->setText(tr("STR_COST_OF_PURCHASES").arg(Unicode::formatFunding(_total)));
+		std::ostringstream ss5;
+		ss5 << _base->getUsedStores();
+		if (std::abs(_iQty) > 0.05)
+		{
+			ss5 << "(";
+			if (_iQty > 0.05)
+				ss5 << "+";
+			ss5 << std::fixed << std::setprecision(1) << _iQty << ")";
+		}
+		ss5 << ":" << _base->getAvailableStores();
+		_txtSpaceUsed->setText(tr("STR_SPACE_USED").arg(ss5.str()));
+	}
 
 	_timerInc = new Timer(250);
 	_timerInc->onTimer((StateHandler)&PurchaseState::increase);
@@ -391,7 +437,7 @@ bool PurchaseState::isHidden(int sel) const
 		}
 		if (!itemName.empty())
 		{
-			std::map<std::string, bool> hiddenMap = _game->getSavedGame()->getHiddenPurchaseItems();
+			auto& hiddenMap = _game->getSavedGame()->getHiddenPurchaseItems();
 			std::map<std::string, bool>::const_iterator iter = hiddenMap.find(itemName);
 			if (iter != hiddenMap.end())
 			{
@@ -406,6 +452,40 @@ bool PurchaseState::isHidden(int sel) const
 	}
 
 	return false;
+}
+
+/**
+ * Determines if a row item is in the map of missing items.
+ * @param sel Selected row.
+ * @returns Number of missing items.
+ */
+int PurchaseState::getMissingQty(int sel) const
+{
+	switch (_items[sel].type)
+	{
+	case TRANSFER_SOLDIER:
+	case TRANSFER_SCIENTIST:
+	case TRANSFER_ENGINEER:
+	case TRANSFER_CRAFT:
+		return 0;
+	case TRANSFER_ITEM:
+		RuleItem* rule = (RuleItem*)_items[sel].rule;
+		if (rule)
+		{
+			std::map<RuleItem*, int>::const_iterator iter = _missingItemsMap.find(rule);
+			if (iter != _missingItemsMap.end())
+			{
+				return iter->second;
+			}
+			else
+			{
+				// not found = not missing
+				return 0;
+			}
+		}
+	}
+
+	return 0;
 }
 
 /**
@@ -452,42 +532,72 @@ void PurchaseState::updateList()
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL_ITEMS");
 	bool categoryUnassigned = (selectedCategory == "STR_UNASSIGNED");
 	bool categoryHidden = (selectedCategory == "STR_FILTER_HIDDEN");
+	bool categoryMissing = (selectedCategory == "STR_FILTER_MISSING");
 
 	for (size_t i = 0; i < _items.size(); ++i)
 	{
 		// filter
-		bool hidden = isHidden(i);
-		if (categoryHidden)
+		if (categoryMissing)
 		{
-			if (!hidden)
+			int missingQty = getMissingQty(i);
+			if (missingQty > 0)
 			{
-				continue;
-			}
-		}
-		else if (hidden)
-		{
-			continue;
-		}
-		else if (selCategory >= _vanillaCategories)
-		{
-			if (categoryUnassigned && _items[i].type == TRANSFER_ITEM)
-			{
-				RuleItem* rule = (RuleItem*)_items[i].rule;
-				if (!rule->getCategories().empty())
+				if (!_autoBuyDone)
 				{
-					continue;
+					RuleItem* rule = (RuleItem*)_items[i].rule;
+					if (rule->isAlien())
+					{
+						// don't buy automatically
+					}
+					else
+					{
+						_items[i].amount += missingQty; // buy automatically
+
+						_iQty  += missingQty * rule->getSize(); // update total size
+						_total += missingQty * _items[i].cost;  // update total cost
+					}
 				}
 			}
-			else if (categoryFilterEnabled && !belongsToCategory(i, selectedCategory))
+			else
 			{
 				continue;
 			}
 		}
 		else
 		{
-			if (categoryFilterEnabled && selectedCategory != getCategory(i))
+			bool hidden = isHidden(i);
+			if (categoryHidden)
+			{
+				if (!hidden)
+				{
+					continue;
+				}
+			}
+			else if (hidden)
 			{
 				continue;
+			}
+			else if (selCategory >= _vanillaCategories)
+			{
+				if (categoryUnassigned && _items[i].type == TRANSFER_ITEM)
+				{
+					RuleItem* rule = (RuleItem*)_items[i].rule;
+					if (!rule->getCategories().empty())
+					{
+						continue;
+					}
+				}
+				else if (categoryFilterEnabled && !belongsToCategory(i, selectedCategory))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				if (categoryFilterEnabled && selectedCategory != getCategory(i))
+				{
+					continue;
+				}
 			}
 		}
 
@@ -535,6 +645,25 @@ void PurchaseState::updateList()
  */
 void PurchaseState::btnOkClick(Action *)
 {
+	if (!_missingItemsMap.empty())
+	{
+		std::string errorMessage;
+		if (_total > _game->getSavedGame()->getFunds())
+		{
+			errorMessage = tr("STR_NOT_ENOUGH_MONEY");
+		}
+		if (_base->storesOverfull(_iQty))
+		{
+			errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE");
+		}
+		if (!errorMessage.empty())
+		{
+			RuleInterface* menuInterface = _game->getMod()->getInterface("buyMenu");
+			_game->pushState(new ErrorMessageState(errorMessage, _palette, menuInterface->getElement("errorMessage")->color, "BACK13.SCR", menuInterface->getElement("errorPalette")->color));
+			return;
+		}
+	}
+
 	_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() - _total);
 	for (std::vector<TransferRow>::const_iterator i = _items.begin(); i != _items.end(); ++i)
 	{
@@ -583,6 +712,11 @@ void PurchaseState::btnOkClick(Action *)
 					t = new Transfer(rule->getTransferTime());
 					t->setItems(rule->getType(), i->amount);
 					_base->getTransfers()->push_back(t);
+					if (_parent && !_missingItemsMap.empty() && _missingItemsMap.find(rule) != _missingItemsMap.end())
+					{
+						// remember the decreased amount for next buy
+						_parent->decreaseMissingItemCount(rule, i->amount);
+					}
 				}
 				break;
 			}

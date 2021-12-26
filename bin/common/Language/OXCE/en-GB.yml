@@ -86,6 +86,7 @@ en-GB:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Default (no supplies)"
   STR_FILTER_FACILITY_REQUIRED: "Facility Missing"
   STR_FILTER_HIDDEN: "Hidden"
+  STR_FILTER_MISSING: "Missing"
 #NewResearchListState.cpp
   STR_SORT_DEFAULT: "Default"
   STR_SORT_BY_COST: "By cost"
