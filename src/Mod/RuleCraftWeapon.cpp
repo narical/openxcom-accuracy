@@ -98,6 +98,10 @@ void RuleCraftWeapon::afterLoad(const Mod* mod)
 	mod->linkRule(_clip, _clipName);
 
 
+	if (_projectileType < CWPT_LASER_BEAM && _projectileSpeed <= 0 && _damage > 0)
+	{
+		throw Exception("Missile-like craft weapons (with 'damage' > 0) must have a positive 'projectileSpeed'.");
+	}
 	if (_launcher == nullptr)
 	{
 		throw Exception("Launcher item is required for a craft weapon");
