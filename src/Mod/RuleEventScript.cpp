@@ -29,7 +29,9 @@ namespace OpenXcom
  */
 RuleEventScript::RuleEventScript(const std::string &type) :
 	_type(type), _firstMonth(0), _lastMonth(-1), _executionOdds(100), _minDifficulty(0), _maxDifficulty(4),
-	_minScore(INT_MIN), _maxScore(INT_MAX), _minFunds(INT64_MIN), _maxFunds(INT64_MAX), _affectsGameProgression(false)
+	_minScore(INT_MIN), _maxScore(INT_MAX), _minFunds(INT64_MIN), _maxFunds(INT64_MAX),
+	_missionMinRuns(0), _missionMaxRuns(-1),
+	_affectsGameProgression(false)
 {
 }
 
@@ -78,6 +80,9 @@ void RuleEventScript::load(const YAML::Node &node)
 	_maxScore = node["maxScore"].as<int>(_maxScore);
 	_minFunds = node["minFunds"].as<int64_t>(_minFunds);
 	_maxFunds = node["maxFunds"].as<int64_t>(_maxFunds);
+	_missionVarName = node["missionVarName"].as<std::string>(_missionVarName);
+	_missionMinRuns = node["missionMinRuns"].as<int>(_missionMinRuns);
+	_missionMaxRuns = node["missionMaxRuns"].as<int>(_missionMaxRuns);
 	_researchTriggers = node["researchTriggers"].as<std::map<std::string, bool> >(_researchTriggers);
 	_itemTriggers = node["itemTriggers"].as<std::map<std::string, bool> >(_itemTriggers);
 	_facilityTriggers = node["facilityTriggers"].as<std::map<std::string, bool> >(_facilityTriggers);

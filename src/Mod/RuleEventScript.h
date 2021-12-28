@@ -36,6 +36,8 @@ private:
 	int _firstMonth, _lastMonth, _executionOdds, _minDifficulty, _maxDifficulty;
 	int _minScore, _maxScore;
 	int64_t _minFunds, _maxFunds;
+	std::string _missionVarName;
+	int _missionMinRuns, _missionMaxRuns;
 	std::map<std::string, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
@@ -73,6 +75,12 @@ public:
 	int64_t getMinFunds() const { return _minFunds; }
 	/// Gets the maximum funds (from current month) for this command to run.
 	int64_t getMaxFunds() const { return _maxFunds; }
+	/// Gets the name of the mission script tracking variable.
+	const std::string& getMissionVarName() const { return _missionVarName; }
+	/// Gets the minimum number of missions generated for this command to run.
+	int getMissionMinRuns() const { return _missionMinRuns; }
+	/// Gets the maximum number of missions generated for this command to run.
+	int getMissionMaxRuns() const { return _missionMaxRuns; }
 	/// Gets the research triggers that may apply to this command.
 	const std::map<std::string, bool> &getResearchTriggers() const { return _researchTriggers; }
 	/// Gets the item triggers that may apply to this command.
