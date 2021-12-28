@@ -3893,15 +3893,48 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 				}
 			}
 
-			// check mission setup similar to TFTD's STR_ALIEN_ARTIFACT, but with non-point areas
+			// -----------------------------------------------------------
+			// Summary of mission site spawning algorithms (objective: 3)
+			// -----------------------------------------------------------
+
+			// Type 1:
+			// - no UFOs involved
+			// - only 1 wave
+			// - the wave specifies the alien deployment directly (e.g. `ufo: STR_ARTIFACT_SITE_P1 # spawn this site directly`)
+			// - example (1): STR_ALIEN_ARTIFACT (TFTD)
+			// Support for non-point areas: yes, without any additional ruleset changes required
 			const MissionWave& wave = missionRules->getWave(0);
 			bool spawnMissionSiteDirectly = (mod->getDeployment(wave.ufoType) && !mod->getUfo(wave.ufoType) && !mod->getDeployment(wave.ufoType)->getMarkerName().empty());
 
-			// check mission setup similar to TFTD's STR_ALIEN_SURFACE_ATTACK, but with non-point areas (site type specified directly by the mission type)
-			bool spawnMissionSiteOnUfoLanding = !missionRules->getSiteType().empty();
+			// Type 2:
+			// - no UFOs involved
+			// - only 1 wave
+			// - the wave does NOT specify the alien deployment directly (e.g. `ufo: dummy #don't spawn a ufo, we only want the site`)
+			//   -> option A: alien deployment is chosen randomly = from the area's texture definition
+			//   -> option B: alien deployment is specified by the mission's `siteType` (overrides option A if both are defined)
+			// - example (2A): STR_ALIEN_SHIP_ATTACK (TFTD)
+			// - example (2B): none in vanilla, only mods
+			// Support for non-point areas: yes, without any additional ruleset changes required
+			// bool spawnMissionSiteByTexture = area.texture < 0
+			// bool spawnMissionSiteBySiteType = !missionRules->getSiteType().empty();
 
-			// check mission setup similar to TFTD's STR_ALIEN_SURFACE_ATTACK, but with non-point areas (site type chosen randomly = by the texture)
-			// area.texture < 0
+			// Type 3:
+			// - with UFOs waves
+			// - only 1 wave with `objective: true`
+			// - the wave does NOT specify the alien deployment (because it already specifies the UFO type)
+			//   -> option A: alien deployment is chosen randomly = from the area's texture definition
+			//   -> option B: alien deployment is specified by the mission's `siteType` (overrides option A if both are defined)
+			// - example (3A): STR_ALIEN_SURFACE_ATTACK (TFTD)
+			// - example (3B): none in vanilla, only mods
+			// Support for non-point areas: yes, but it is recommended to use one more wave attribute: `objectiveOnTheLandingSite: true`
+			//   -> false: UFO always lands in the top-left corner of the area; site spawns randomly inside the area
+			//   ->  true: UFO lands randomly inside the area; site spawns exactly on the UFO landing site
+			// bool spawnMissionSiteByTexture = area.texture < 0
+			bool spawnMissionSiteBySiteType = !missionRules->getSiteType().empty();
+
+			// -----------------------------------------------
+			// End of the summary
+			// -----------------------------------------------
 
 			for (std::vector<std::string>::iterator i = regions.begin(); i != regions.end();)
 			{
@@ -3935,7 +3968,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
-						else if (!(*j).isPoint() && ((*j).texture < 0 || spawnMissionSiteOnUfoLanding || spawnMissionSiteDirectly))
+						else if (!(*j).isPoint() && ((*j).texture < 0 || spawnMissionSiteBySiteType || spawnMissionSiteDirectly))
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
