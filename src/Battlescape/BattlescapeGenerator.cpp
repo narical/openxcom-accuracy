@@ -725,6 +725,7 @@ void BattlescapeGenerator::run()
 			}
 			else // trouble: no texture and no deployment terrain, most likely scenario is a UFO landing on water: use the first available terrain
 			{
+				Log(LOG_WARNING) << "Trouble: no texture and no deployment terrain, most likely scenario is a UFO landing on water: using the first available terrain...";
 				_terrain = _game->getMod()->getTerrain(_game->getMod()->getTerrainList().front(), true);
 			}
 		}
