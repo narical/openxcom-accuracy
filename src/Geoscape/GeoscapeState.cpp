@@ -3893,6 +3893,16 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 				}
 			}
 
+			// check mission setup similar to TFTD's STR_ALIEN_ARTIFACT, but with non-point areas
+			const MissionWave& wave = missionRules->getWave(0);
+			bool spawnMissionSiteDirectly = (mod->getDeployment(wave.ufoType) && !mod->getUfo(wave.ufoType) && !mod->getDeployment(wave.ufoType)->getMarkerName().empty());
+
+			// check mission setup similar to TFTD's STR_ALIEN_SURFACE_ATTACK, but with non-point areas (site type specified directly by the mission type)
+			bool spawnMissionSiteOnUfoLanding = !missionRules->getSiteType().empty();
+
+			// check mission setup similar to TFTD's STR_ALIEN_SURFACE_ATTACK, but with non-point areas (site type chosen randomly = by the texture)
+			// area.texture < 0
+
 			for (std::vector<std::string>::iterator i = regions.begin(); i != regions.end();)
 			{
 				// we don't want the same mission running in any given region twice simultaneously, so prune the list as needed.
@@ -3925,7 +3935,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
-						else if (!(*j).isPoint() && ((*j).texture < 0 || !missionRules->getSiteType().empty()))
+						else if (!(*j).isPoint() && ((*j).texture < 0 || spawnMissionSiteOnUfoLanding || spawnMissionSiteDirectly))
 						{
 							validAreas.push_back(std::make_pair(region->getType(), counter));
 						}
