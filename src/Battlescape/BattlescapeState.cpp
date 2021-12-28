@@ -1924,10 +1924,34 @@ void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<Num
 void BattlescapeState::drawHandsItems()
 {
 	BattleUnit *battleUnit = _battleGame->playableUnitSelected() ? _save->getSelectedUnit() : nullptr;
-	bool left = battleUnit ? battleUnit->isLeftHandPreferredForReactions() : false;
-	bool right = battleUnit ? battleUnit->isRightHandPreferredForReactions() : false;
-	drawItem(battleUnit ? battleUnit->getLeftHandWeapon() : nullptr, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left);
-	drawItem(battleUnit ? battleUnit->getRightHandWeapon() : nullptr, _btnRightHandItem, _numAmmoRight, _numMedikitRight, _numTwoHandedIndicatorRight, right);
+	bool left = false;
+	bool right = false;
+	BattleItem* leftHandItem = nullptr;
+	BattleItem* rightHandItem = nullptr;
+	if (battleUnit)
+	{
+		left = battleUnit->isLeftHandPreferredForReactions();
+		right = battleUnit->isRightHandPreferredForReactions();
+		leftHandItem = battleUnit->getLeftHandWeapon();
+		rightHandItem = battleUnit->getRightHandWeapon();
+		if (!leftHandItem || !rightHandItem)
+		{
+			// even if both hands are empty, draw the special item just in one hand
+			BattleItem** emptyHandItemPtr = leftHandItem ? &rightHandItem : &leftHandItem;
+			auto typesToCheck = { BT_MELEE, BT_PSIAMP, BT_FIREARM, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE };
+			for (auto& type : typesToCheck)
+			{
+				*emptyHandItemPtr = battleUnit->getSpecialWeapon(type);
+				if (*emptyHandItemPtr && (*emptyHandItemPtr)->getRules()->isSpecialUsingEmptyHand())
+				{
+					break;
+				}
+				*emptyHandItemPtr = nullptr;
+			}
+		}
+	}
+	drawItem(leftHandItem, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left);
+	drawItem(rightHandItem, _btnRightHandItem, _numAmmoRight, _numMedikitRight, _numTwoHandedIndicatorRight, right);
 }
 
 /**
