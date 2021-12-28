@@ -3817,7 +3817,7 @@ void GeoscapeState::determineAlienMissions()
 			auto upgrade = mod->getDeployment(upgradeId, false);
 			if (upgrade && upgrade != alienBase->getDeployment())
 			{
-				if (alienBase->getDeployment()->resetAlienBaseAgeAfterUpgrade())
+				if (alienBase->getDeployment()->resetAlienBaseAgeAfterUpgrade() || upgrade->resetAlienBaseAge())
 				{
 					// reset base age to zero
 					alienBase->setStartMonth(month);

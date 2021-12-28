@@ -187,7 +187,7 @@ AlienDeployment::AlienDeployment(const std::string &type) :
 	_genMissionFrequency(0), _genMissionLimit(1000),
 	_objectiveType(-1), _objectivesRequired(0), _objectiveCompleteScore(0), _objectiveFailedScore(0), _despawnPenalty(0), _abortPenalty(0), _points(0),
 	_turnLimit(0), _cheatTurn(20), _chronoTrigger(FORCE_LOSE), _keepCraftAfterFailedMission(false), _allowObjectiveRecovery(false), _escapeType(ESCAPE_NONE), _vipSurvivalPercentage(0),
-	_baseDetectionRange(0), _baseDetectionChance(100), _huntMissionMaxFrequency(60), _resetAlienBaseAgeAfterUpgrade(false)
+	_baseDetectionRange(0), _baseDetectionChance(100), _huntMissionMaxFrequency(60), _resetAlienBaseAgeAfterUpgrade(false), _resetAlienBaseAge(false)
 {
 }
 
@@ -326,6 +326,7 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 		}
 	}
 	_resetAlienBaseAgeAfterUpgrade = node["resetAlienBaseAgeAfterUpgrade"].as<bool>(_resetAlienBaseAgeAfterUpgrade);
+	_resetAlienBaseAge = node["resetAlienBaseAge"].as<bool>(_resetAlienBaseAge);
 }
 
 /**
