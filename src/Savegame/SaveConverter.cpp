@@ -515,7 +515,7 @@ void SaveConverter::loadDatZonal()
 	}
 	YAML::Node node;
 	node["regions"] = chances;
-	_save->getAlienStrategy().load(node);
+	_save->getAlienStrategy().load(node, _mod);
 }
 
 /**
@@ -546,7 +546,7 @@ void SaveConverter::loadDatActs()
 		subnode["missions"] = i->second;
 		node["possibleMissions"].push_back(subnode);
 	}
-	_save->getAlienStrategy().load(node);
+	_save->getAlienStrategy().load(node, _mod);
 }
 
 /**
