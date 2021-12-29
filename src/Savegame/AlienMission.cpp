@@ -77,7 +77,7 @@ private:
  * @param node The YAML node containing the data.
  * @param game The game data, required to locate the alien base.
  */
-void AlienMission::load(const YAML::Node& node, SavedGame &game)
+void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 {
 	_region = node["region"].as<std::string>(_region);
 	_race = node["race"].as<std::string>(_race);
@@ -105,6 +105,24 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game)
 		_base = *found;
 	}
 	_missionSiteZone = node["missionSiteZone"].as<int>(_missionSiteZone);
+
+	// fix invalid saves
+	RuleRegion* region = mod->getRegion(_region, false);
+	if (!region)
+	{
+		Log(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid region: " << _region;
+		_interrupted = true;
+		if (_missionSiteZone > -1)
+		{
+			_missionSiteZone = 0;
+		}
+		_region = mod->getRegionsList().front();
+		if (_liveUfos > 0)
+		{
+			Log(LOG_ERROR) << "Mission still has some live UFOs, please leave them be until they disappear.";
+		}
+		Log(LOG_ERROR) << "Mission was interrupted! Temporarily assigned to a new region: " << _region;
+	}
 }
 
 /**
@@ -722,6 +740,13 @@ private:
  */
 void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe)
 {
+	if (_interrupted)
+	{
+		ufo.setDetected(false);
+		ufo.setStatus(Ufo::DESTROYED);
+		return;
+	}
+
 	const Mod &mod = *engine.getMod();
 	SavedGame &game = *engine.getSavedGame();
 	const size_t curWaypoint = ufo.getTrajectoryPoint();

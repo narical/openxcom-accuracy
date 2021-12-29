@@ -64,7 +64,7 @@ public:
 	/// Cleans up the mission info.
 	~AlienMission();
 	/// Loads the mission from YAML.
-	void load(const YAML::Node& node, SavedGame &game);
+	void load(const YAML::Node& node, SavedGame &game, const Mod* mod);
 	/// Saves the mission to YAML.
 	YAML::Node save() const;
 	/// Gets the mission's ruleset.
