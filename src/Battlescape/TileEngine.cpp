@@ -2552,7 +2552,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 		{
 			layer = LL_AMBIENT; // roof destroyed, update sunlight in this tile column
 		}
-		else if (effectGenerated)
+		else if (terrainChanged || effectGenerated)
 		{
 			layer = LL_FIRE; // spawned fire or smoke that can block light.
 		}
