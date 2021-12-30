@@ -57,6 +57,7 @@ SlideshowState::SlideshowState(const SlideshowHeader &slideshowHeader, const std
 		caption->setColor(it->color);
 		caption->setText(tr(it->caption));
 		caption->setAlign(it->align);
+		caption->setVerticalAlign(it->valign);
 		caption->setWordWrap(true);
 		caption->setVisible(false);
 		_captions.push_back(caption);

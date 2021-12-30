@@ -39,8 +39,9 @@ struct SlideshowSlide
 	std::string caption; // STR id of caption text
 	int w, h, x, y, color; // caption rect and color info
 	TextHAlign align; // caption alignment
+	TextVAlign valign; // caption vertical alignment
 	int transitionSeconds; // number of seconds to show this slide
-	SlideshowSlide() : w(0), h(0), x(0), y(0), color(0), align(ALIGN_LEFT), transitionSeconds(0) { }
+	SlideshowSlide() : w(0), h(0), x(0), y(0), color(0), align(ALIGN_LEFT), valign(ALIGN_TOP), transitionSeconds(0) { }
 };
 
 class RuleVideo
