@@ -291,7 +291,6 @@ void BaseDefenseState::btnOkClick(Action *)
 			// unmark base...
 			_base->setRetaliationTarget(false);
 
-			// ... and also remove the retaliation mission completely
 			AlienMission* am = _base->getRetaliationMission();
 			if (!am)
 			{
@@ -306,7 +305,17 @@ void BaseDefenseState::btnOkClick(Action *)
 				}
 				am = _game->getSavedGame()->findAlienMission((*k)->getRules()->getType(), OBJECTIVE_RETALIATION);
 			}
-			_game->getSavedGame()->deleteRetaliationMission(am, _base);
+
+			if (am && am->getRules().isMultiUfoRetaliation())
+			{
+				// Remember that more UFOs may be coming
+				am->setMultiUfoRetaliationInProgress(true);
+			}
+			else
+			{
+				// Delete the mission and any live UFOs
+				_game->getSavedGame()->deleteRetaliationMission(am, _base);
+			}
 		}
 	}
 }

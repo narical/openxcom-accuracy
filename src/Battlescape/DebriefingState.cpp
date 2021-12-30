@@ -2002,15 +2002,24 @@ void DebriefingState::prepareDebriefing()
 		}
 	}
 
-	if (target == "STR_BASE")
+	if (base && target == "STR_BASE")
 	{
-		AlienMission* am = base ? base->getRetaliationMission() : nullptr;
+		AlienMission* am = base->getRetaliationMission();
 		if (!am && _region)
 		{
 			// backwards-compatibility
 			am = _game->getSavedGame()->findAlienMission(_region->getRules()->getType(), OBJECTIVE_RETALIATION);
 		}
-		_game->getSavedGame()->deleteRetaliationMission(am, base);
+		if (!_destroyBase && am && am->getRules().isMultiUfoRetaliation())
+		{
+			// Remember that more UFOs may be coming (again, just in case)
+			am->setMultiUfoRetaliationInProgress(true);
+		}
+		else
+		{
+			// Delete the mission and any live UFOs
+			_game->getSavedGame()->deleteRetaliationMission(am, base);
+		}
 
 		if (!_destroyBase)
 		{

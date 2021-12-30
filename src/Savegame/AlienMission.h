@@ -53,7 +53,7 @@ private:
 	size_t _nextUfoCounter;
 	size_t _spawnCountdown;
 	size_t _liveUfos;
-	bool _interrupted;
+	bool _interrupted, _multiUfoRetaliationInProgress;
 	int _uniqueID, _missionSiteZone;
 	const AlienBase *_base;
 public:
@@ -104,6 +104,8 @@ public:
 	void decreaseLiveUfos() { --_liveUfos; }
 	/// Sets the interrupted flag.
 	void setInterrupted(bool interrupted) { _interrupted = interrupted; }
+	/// Sets the multiUfoRetaliationInProgress flag.
+	void setMultiUfoRetaliationInProgress(bool multiUfoRetaliationInProgress) { _multiUfoRetaliationInProgress = multiUfoRetaliationInProgress; }
 	/// Handle UFO reaching a waypoint.
 	void ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe);
 	/// Handle UFO lifting from the ground.

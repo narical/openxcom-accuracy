@@ -145,6 +145,8 @@ public:
 	int getRetaliationOdds() const;
 	/// Should the infiltration end after first cycle or continue indefinitely?
 	bool isEndlessInfiltration() const;
+	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
+	bool isMultiUfoRetaliation() const { return _multiUfoRetaliation; }
 	/// Should the mission site despawn even if targeted?
 	bool despawnEvenIfTargeted() const { return _despawnEvenIfTargeted; }
 	/// Should the spawned alien base be revealed immediately?
@@ -186,6 +188,8 @@ private:
 	int _retaliationOdds;
 	/// Should the infiltration end after first cycle or continue indefinitely?
 	bool _endlessInfiltration;
+	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
+	bool _multiUfoRetaliation;
 	/// Should the mission site despawn even if targeted?
 	bool _despawnEvenIfTargeted;
 	/// Should the spawned alien base be revealed immediately?

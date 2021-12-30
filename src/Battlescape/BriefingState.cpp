@@ -39,6 +39,8 @@
 #include "../Engine/RNG.h"
 #include "../Engine/Screen.h"
 #include "../Menu/CutsceneState.h"
+#include "../Savegame/AlienMission.h"
+#include "../Mod/RuleAlienMission.h"
 
 namespace OpenXcom
 {
@@ -187,10 +189,17 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 
 	if (_infoOnly) return;
 
-	if (mission == "STR_BASE_DEFENSE")
+	if (base && mission == "STR_BASE_DEFENSE")
 	{
 		// And make sure the base is unmarked.
 		base->setRetaliationTarget(false);
+
+		auto* am = base->getRetaliationMission();
+		if (am && am->getRules().isMultiUfoRetaliation())
+		{
+			// Remember that more UFOs may be coming
+			am->setMultiUfoRetaliationInProgress(true);
+		}
 	}
 }
 
