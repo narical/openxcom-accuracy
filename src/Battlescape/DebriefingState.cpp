@@ -2004,6 +2004,14 @@ void DebriefingState::prepareDebriefing()
 
 	if (target == "STR_BASE")
 	{
+		AlienMission* am = base ? base->getRetaliationMission() : nullptr;
+		if (!am && _region)
+		{
+			// backwards-compatibility
+			am = _game->getSavedGame()->findAlienMission(_region->getRules()->getType(), OBJECTIVE_RETALIATION);
+		}
+		_game->getSavedGame()->deleteRetaliationMission(am, base);
+
 		if (!_destroyBase)
 		{
 			// reequip crafts (only those on the base) after a base defense mission
@@ -2023,34 +2031,6 @@ void DebriefingState::prepareDebriefing()
 					delete (*i);
 					base = 0; // To avoid similar (potential) problems as with the deleted craft
 					_game->getSavedGame()->getBases()->erase(i);
-					break;
-				}
-			}
-		}
-
-		if (_region)
-		{
-			AlienMission* am = _game->getSavedGame()->findAlienMission(_region->getRules()->getType(), OBJECTIVE_RETALIATION);
-			for (std::vector<Ufo*>::iterator i = _game->getSavedGame()->getUfos()->begin(); i != _game->getSavedGame()->getUfos()->end();)
-			{
-				if ((*i)->getMission() == am)
-				{
-					// Note: no need to check for mission interruption here, the mission is over and will be deleted in the next step
-					delete *i;
-					i = _game->getSavedGame()->getUfos()->erase(i);
-				}
-				else
-				{
-					++i;
-				}
-			}
-			for (std::vector<AlienMission*>::iterator i = _game->getSavedGame()->getAlienMissions().begin();
-				i != _game->getSavedGame()->getAlienMissions().end(); ++i)
-			{
-				if ((AlienMission*)(*i) == am)
-				{
-					delete (*i);
-					_game->getSavedGame()->getAlienMissions().erase(i);
 					break;
 				}
 			}

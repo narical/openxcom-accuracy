@@ -47,6 +47,7 @@
 #include "../Engine/Logger.h"
 #include "../Engine/Collections.h"
 #include "WeightedOptions.h"
+#include "AlienMission.h"
 
 namespace OpenXcom
 {
@@ -55,7 +56,8 @@ namespace OpenXcom
  * Initializes an empty base.
  * @param mod Pointer to mod.
  */
-Base::Base(const Mod *mod) : Target(), _mod(mod), _scientists(0), _engineers(0), _inBattlescape(false), _retaliationTarget(false), _fakeUnderwater(false)
+Base::Base(const Mod *mod) : Target(), _mod(mod), _scientists(0), _engineers(0), _inBattlescape(false),
+	_retaliationTarget(false), _retaliationMission(nullptr), _fakeUnderwater(false)
 {
 	_items = new ItemContainer();
 }
@@ -227,6 +229,18 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 	}
 
 	_retaliationTarget = node["retaliationTarget"].as<bool>(_retaliationTarget);
+	if (const YAML::Node& mission = node["retaliationMissionUniqueId"])
+	{
+		int missionId = mission.as<int>();
+		for (auto* i : save->getAlienMissions())
+		{
+			if (i->getId() == missionId)
+			{
+				_retaliationMission = i;
+				break;
+			}
+		}
+	}
 	_fakeUnderwater = node["fakeUnderwater"].as<bool>(_fakeUnderwater);
 
 	isOverlappingOrOverflowing(); // don't crash, just report in the log file...
@@ -354,6 +368,8 @@ YAML::Node Base::save() const
 	}
 	if (_retaliationTarget)
 		node["retaliationTarget"] = _retaliationTarget;
+	if (_retaliationMission)
+		node["retaliationMissionUniqueId"] = _retaliationMission->getId();
 	if (_fakeUnderwater)
 		node["fakeUnderwater"] = _fakeUnderwater;
 	return node;
@@ -1544,8 +1560,13 @@ int Base::getGravShields() const
 	return total;
 }
 
-void Base::setupDefenses()
+void Base::setupDefenses(AlienMission* am)
 {
+	if (am->getRules().getObjective() == OBJECTIVE_RETALIATION)
+	{
+		setRetaliationMission(am);
+	}
+
 	_defenses.clear();
 	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
 	{

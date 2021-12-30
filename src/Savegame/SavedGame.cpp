@@ -3098,6 +3098,38 @@ void SavedGame::clearLinksForAlienBase(AlienBase* alienBase, const Mod* mod)
 	}
 }
 
+/**
+ * Delete the given retaliation mission.
+ */
+void SavedGame::deleteRetaliationMission(AlienMission* am, Base* base)
+{
+	for (std::vector<Ufo*>::iterator i = _ufos.begin(); i != _ufos.end();)
+	{
+		if ((*i)->getMission() == am)
+		{
+			delete (*i);
+			i = _ufos.erase(i);
+		}
+		else
+		{
+			++i;
+		}
+	}
+	for (std::vector<AlienMission*>::iterator i = _activeMissions.begin(); i != _activeMissions.end(); ++i)
+	{
+		if ((*i) == am)
+		{
+			delete (*i);
+			_activeMissions.erase(i);
+			break;
+		}
+	}
+	if (base)
+	{
+		base->setRetaliationMission(nullptr);
+	}
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////

@@ -41,6 +41,7 @@ class ResearchProject;
 class Production;
 class Vehicle;
 class Ufo;
+class AlienMission;
 
 enum UfoDetection : int;
 enum BasePlacementErrors : int
@@ -98,6 +99,7 @@ private:
 	std::vector<Production *> _productions;
 	bool _inBattlescape;
 	bool _retaliationTarget;
+	AlienMission* _retaliationMission;
 	bool _fakeUnderwater;
 	std::vector<Vehicle*> _vehicles;
 	std::vector<Vehicle*> _vehiclesFromBase;
@@ -256,6 +258,10 @@ public:
 	void setRetaliationTarget(bool mark = true);
 	/// Gets the retaliation status of this base.
 	bool getRetaliationTarget() const;
+	/// Sets the corresponding alien retaliation mission.
+	void setRetaliationMission(AlienMission* retaliationMission) { _retaliationMission = retaliationMission; }
+	/// Gets the corresponding alien retaliation mission.
+	AlienMission* getRetaliationMission() const { return _retaliationMission; }
 	/// Mark/unmark this base as a fake underwater base.
 	void setFakeUnderwater(bool fakeUnderwater) { _fakeUnderwater = fakeUnderwater; }
 	/// Is this a fake underwater base?
@@ -265,7 +271,7 @@ public:
 	/// Gets how many Grav Shields the base has
 	int getGravShields() const;
 	/// Setup base defenses.
-	void setupDefenses();
+	void setupDefenses(AlienMission* am);
 	/// Get a list of Defensive Facilities
 	std::vector<BaseFacility*> *getDefenses();
 	/// Gets the base's vehicles.

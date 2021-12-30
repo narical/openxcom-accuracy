@@ -1018,7 +1018,7 @@ void GeoscapeState::time5Seconds()
 				{
 					mission->setWaveCountdown(30 * (RNG::generate(0, 400) + 48));
 					(*i)->setDestination(0);
-					base->setupDefenses();
+					base->setupDefenses(mission);
 					timerReset();
 					if (!base->getDefenses()->empty())
 					{
@@ -1786,6 +1786,17 @@ void GeoscapeState::time30Minutes()
 			{
 				newAlienBase->setDiscovered(true);
 				popup(new AlienBaseState(newAlienBase, this));
+			}
+		}
+
+		if (am->getRules().getObjective() == OBJECTIVE_RETALIATION && am->isOver())
+		{
+			for (auto* xcomBase : *_game->getSavedGame()->getBases())
+			{
+				if (xcomBase->getRetaliationMission() == am)
+				{
+					xcomBase->setRetaliationMission(nullptr);
+				}
 			}
 		}
 	}
