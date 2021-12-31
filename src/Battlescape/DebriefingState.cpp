@@ -21,6 +21,7 @@
 #include "TileEngine.h"
 #include "DebriefingState.h"
 #include "CannotReequipState.h"
+#include "../Geoscape/GeoscapeEventState.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -80,7 +81,7 @@ namespace OpenXcom
  * Initializes all the elements in the Debriefing screen.
  * @param game Pointer to the core game.
  */
-DebriefingState::DebriefingState() : _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0)
+DebriefingState::DebriefingState() : _eventToSpawn(nullptr), _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0)
 {
 	_missionStatistics = new MissionStatistics();
 
@@ -861,6 +862,14 @@ void DebriefingState::btnOkClick(Action *)
 	}
 	else
 	{
+		if (_eventToSpawn)
+		{
+			bool canSpawn = _game->getSavedGame()->canSpawnInstantEvent(_eventToSpawn);
+			if (canSpawn)
+			{
+				_game->pushState(new GeoscapeEventState(*_eventToSpawn));
+			}
+		}
 		if (!_deadSoldiersCommended.empty())
 		{
 			_game->pushState(new CommendationLateState(_deadSoldiersCommended));
@@ -2126,14 +2135,12 @@ void DebriefingState::prepareDebriefing()
 		}
 
 		// Generate a success event
-		auto eventRules = _game->getMod()->getEvent(ruleDeploy->chooseSuccessEvent());
-		_game->getSavedGame()->spawnEvent(eventRules);
+		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseSuccessEvent());
 	}
 	else if (!success && ruleDeploy)
 	{
 		// Generate a failure event
-		auto eventRules = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());
-		_game->getSavedGame()->spawnEvent(eventRules);
+		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());
 	}
 
 	// remember the base for later use (of course only if it's not lost already (in that case base=0))

@@ -36,6 +36,7 @@ class Base;
 class Region;
 class Country;
 class RuleItem;
+class RuleEvent;
 class BattleUnit;
 struct UnitStats;
 
@@ -61,6 +62,7 @@ class DebriefingState : public State
 private:
 	typedef std::pair<std::string, UnitStats> SoldierStatsEntry;
 
+	RuleEvent *_eventToSpawn;
 	Region *_region;
 	Country *_country;
 	Base *_base;

@@ -25,7 +25,6 @@ namespace OpenXcom
 class TextButton;
 class Window;
 class Text;
-class GeoscapeEvent;
 class RuleEvent;
 
 /**
@@ -46,7 +45,7 @@ private:
 	void eventLogic();
 public:
 	/// Creates the GeoscapeEventState.
-	GeoscapeEventState(GeoscapeEvent *geoEvent);
+	GeoscapeEventState(const RuleEvent& eventRule);
 	/// Cleans up the GeoscapeEventState.
 	~GeoscapeEventState();
 	/// Initializes the state.

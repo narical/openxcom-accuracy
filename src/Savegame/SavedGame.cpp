@@ -3153,6 +3153,34 @@ bool SavedGame::spawnEvent(const RuleEvent* eventRules)
 	return true;
 }
 
+/**
+ * Checks if an instant Geoscape event can be spawned.
+ */
+bool SavedGame::canSpawnInstantEvent(const RuleEvent* eventRules)
+{
+	if (!eventRules)
+	{
+		return false;
+	}
+
+	bool interrupted = false;
+	if (!eventRules->getInterruptResearch().empty())
+	{
+		if (isResearched(eventRules->getInterruptResearch(), false))
+		{
+			interrupted = true;
+		}
+	}
+
+	if (!interrupted)
+	{
+		addGeneratedEvent(eventRules);
+		return true;
+	}
+
+	return false;
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////
