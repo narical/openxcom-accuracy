@@ -364,7 +364,8 @@ private:
 	RuleItemFuseTrigger _fuseTriggerEvents;
 	bool _hiddenOnMinimap;
 	std::string _medikitActionName, _psiAttackName, _primeActionName, _unprimeActionName, _primeActionMessage, _unprimeActionMessage;
-	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher, _isExplodingInHands, _specialUseEmptyHand;
+	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher;
+	bool _isExplodingInHands, _specialUseEmptyHand, _specialUseEmptyHandShow;
 	std::string _defaultInventorySlotName;
 	const RuleInventory* _defaultInventorySlot;
 	int _defaultInvSlotX, _defaultInvSlotY;
@@ -766,6 +767,8 @@ public:
 	bool isExplodingInHands() const;
 	/// If this is used as a speacialWeapon, is it accessed by empty hand?
 	bool isSpecialUsingEmptyHand() const;
+	/// Display icon in an empty hand?
+	bool showSpecialInEmptyHand() const { return _specialUseEmptyHandShow; }
 	/// Gets the medikit use type.
 	BattleMediKitType getMediKitType() const;
 	/// Gets the medikit custom background.

@@ -1457,6 +1457,7 @@ items: #done
     recover: false
   - type: STR_LOBSTERMAN_MELEE_WEAPON
     specialUseEmptyHand: true
+    specialUseEmptyHandShow: true
     bigSprite: 70
     meleeSound: 42
     strengthApplied: true

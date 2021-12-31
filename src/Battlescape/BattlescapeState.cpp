@@ -1942,7 +1942,7 @@ void BattlescapeState::drawHandsItems()
 			for (auto& type : typesToCheck)
 			{
 				*emptyHandItemPtr = battleUnit->getSpecialWeapon(type);
-				if (*emptyHandItemPtr && (*emptyHandItemPtr)->getRules()->isSpecialUsingEmptyHand())
+				if (*emptyHandItemPtr && (*emptyHandItemPtr)->getRules()->showSpecialInEmptyHand() && (*emptyHandItemPtr)->getRules()->isSpecialUsingEmptyHand())
 				{
 					break;
 				}
