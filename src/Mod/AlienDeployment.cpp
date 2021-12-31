@@ -51,6 +51,7 @@ namespace YAML
 			node["alienRank"] = rhs.alienRank;
 			node["customUnitType"] = rhs.customUnitType;
 			node["lowQty"] = rhs.lowQty;
+			node["medQty"] = rhs.medQty;
 			node["highQty"] = rhs.highQty;
 			node["dQty"] = rhs.dQty;
 			node["extraQty"] = rhs.extraQty;
@@ -68,6 +69,7 @@ namespace YAML
 			rhs.alienRank = node["alienRank"].as<int>(rhs.alienRank);
 			rhs.customUnitType = node["customUnitType"].as<std::string>(rhs.customUnitType);
 			rhs.lowQty = node["lowQty"].as<int>(rhs.lowQty);
+			rhs.medQty = node["medQty"].as<int>(rhs.medQty);
 			rhs.highQty = node["highQty"].as<int>(rhs.highQty);
 			rhs.dQty = node["dQty"].as<int>(rhs.dQty);
 			rhs.extraQty = node["extraQty"].as<int>(0); // give this a default, as it's not 100% needed, unlike the others.

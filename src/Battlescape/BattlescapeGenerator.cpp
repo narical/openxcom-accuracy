@@ -1414,13 +1414,26 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 	{
 		int quantity;
 
-		if (_game->getSavedGame()->getDifficulty() < DIFF_VETERAN)
-			quantity = (*d).lowQty + RNG::generate(0, (*d).dQty); // beginner/experienced
-		else if (_game->getSavedGame()->getDifficulty() < DIFF_SUPERHUMAN)
-			quantity = (*d).lowQty+(((*d).highQty-(*d).lowQty)/2) + RNG::generate(0, (*d).dQty); // veteran/genius
-		else
-			quantity = (*d).highQty + RNG::generate(0, (*d).dQty); // super (and beyond?)
+		switch (_game->getSavedGame()->getDifficulty())
+		{
+		case DIFF_BEGINNER:
+			quantity = (*d).lowQty;
+			break;
+		case DIFF_EXPERIENCED:
+			quantity = (*d).medQty > 0 ? (*d).lowQty + (((*d).medQty - (*d).lowQty) / 2) : (*d).lowQty;
+			break;
+		case DIFF_VETERAN:
+			quantity = (*d).medQty > 0 ? (*d).medQty : (*d).lowQty + (((*d).highQty - (*d).lowQty) / 2);
+			break;
+		case DIFF_GENIUS:
+			quantity = (*d).medQty > 0 ? (*d).medQty + (((*d).highQty - (*d).medQty) / 2) : (*d).lowQty + (((*d).highQty - (*d).lowQty) / 2);
+			break;
+		case DIFF_SUPERHUMAN:
+		default:
+			quantity = (*d).highQty;
+		}
 
+		quantity += RNG::generate(0, (*d).dQty);
 		quantity += RNG::generate(0, (*d).extraQty);
 
 		for (int i = 0; i < quantity; ++i)

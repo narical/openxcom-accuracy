@@ -38,10 +38,10 @@ struct DeploymentData
 {
 	int alienRank;
 	std::string customUnitType;
-	int lowQty, highQty, dQty, extraQty;
+	int lowQty, medQty, highQty, dQty, extraQty;
 	int percentageOutsideUfo;
 	std::vector<ItemSet> itemSets, extraRandomItems;
-	DeploymentData() : alienRank(0), lowQty(0), highQty(0), dQty(0), extraQty(0), percentageOutsideUfo(0) { }
+	DeploymentData() : alienRank(0), lowQty(0), medQty(0), highQty(0), dQty(0), extraQty(0), percentageOutsideUfo(0) { }
 };
 struct BriefingData
 {
