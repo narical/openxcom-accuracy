@@ -285,6 +285,18 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	}
 	_missionCompleteText = node["missionCompleteText"].as<std::string>(_missionCompleteText);
 	_missionFailedText = node["missionFailedText"].as<std::string>(_missionFailedText);
+	if (node["successEvents"])
+	{
+		_successEvents.load(node["successEvents"]);
+	}
+	if (node["despawnEvents"])
+	{
+		_despawnEvents.load(node["despawnEvents"]);
+	}
+	if (node["failureEvents"])
+	{
+		_failureEvents.load(node["failureEvents"]);
+	}
 	_despawnPenalty = node["despawnPenalty"].as<int>(_despawnPenalty);
 	_abortPenalty = node["abortPenalty"].as<int>(_abortPenalty);
 	_points = node["points"].as<int>(_points);

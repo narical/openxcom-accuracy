@@ -2124,6 +2124,16 @@ void DebriefingState::prepareDebriefing()
 				}
 			}
 		}
+
+		// Generate a success event
+		auto eventRules = _game->getMod()->getEvent(ruleDeploy->chooseSuccessEvent());
+		_game->getSavedGame()->spawnEvent(eventRules);
+	}
+	else if (!success && ruleDeploy)
+	{
+		// Generate a failure event
+		auto eventRules = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());
+		_game->getSavedGame()->spawnEvent(eventRules);
 	}
 
 	// remember the base for later use (of course only if it's not lost already (in that case base=0))

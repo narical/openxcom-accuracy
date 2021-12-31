@@ -1746,6 +1746,12 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 			removeSite = noFollowers; // CHEEKY EXPLOIT
 		}
 	}
+	if (removeSite)
+	{
+		// Generate a despawn event
+		auto eventRules = _game->getMod()->getEvent(site->getDeployment()->chooseDespawnEvent());
+		_game->getSavedGame()->spawnEvent(eventRules);
+	}
 
 	int score = removeSite ? site->getDeployment()->getDespawnPenalty() : site->getDeployment()->getPoints();
 
@@ -2484,17 +2490,7 @@ void GeoscapeState::time1Day()
 				}
 				// 3l. handle spawned events
 				RuleEvent* spawnedEventRule = _game->getMod()->getEvent(myResearchRule->getSpawnedEvent());
-				if (spawnedEventRule)
-				{
-					GeoscapeEvent* newEvent = new GeoscapeEvent(*spawnedEventRule);
-					int minutes = (spawnedEventRule->getTimer() + (RNG::generate(0, spawnedEventRule->getTimerRandom()))) / 30 * 30;
-					if (minutes < 60) minutes = 60; // just in case
-					newEvent->setSpawnCountdown(minutes);
-					saveGame->getGeoscapeEvents().push_back(newEvent);
-
-					// remember that it has been generated
-					saveGame->addGeneratedEvent(spawnedEventRule);
-				}
+				saveGame->spawnEvent(spawnedEventRule);
 			}
 		}
 
@@ -3806,14 +3802,7 @@ void GeoscapeState::determineAlienMissions()
 			// 4. generate
 			for (auto eventRules : toBeGenerated)
 			{
-				GeoscapeEvent *newEvent = new GeoscapeEvent(*eventRules);
-				int minutes = (eventRules->getTimer() + (RNG::generate(0, eventRules->getTimerRandom()))) / 30 * 30;
-				if (minutes < 60) minutes = 60; // just in case
-				newEvent->setSpawnCountdown(minutes);
-				_game->getSavedGame()->getGeoscapeEvents().push_back(newEvent);
-
-				// remember that it has been generated
-				save->addGeneratedEvent(eventRules);
+				save->spawnEvent(eventRules);
 			}
 		}
 	}

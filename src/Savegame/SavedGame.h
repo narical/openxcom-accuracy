@@ -466,6 +466,8 @@ public:
 	void clearLinksForAlienBase(AlienBase* alienBase, const Mod* mod);
 	/// Delete the given retaliation mission.
 	void deleteRetaliationMission(AlienMission* am, Base* base);
+	/// Spawn a Geoscape event from the event rules.
+	bool spawnEvent(const RuleEvent* eventRules);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
 };

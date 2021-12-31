@@ -277,27 +277,12 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	_txtDesc->setText(ss5.str());
 
 	// Give modders some handles on political situation
-	auto spawnEvent = [](const RuleEvent* spawnedEventRule)
-	{
-		if (spawnedEventRule)
-		{
-			GeoscapeEvent* newEvent = new GeoscapeEvent(*spawnedEventRule);
-			int minutes = (spawnedEventRule->getTimer() + (RNG::generate(0, spawnedEventRule->getTimerRandom()))) / 30 * 30;
-			if (minutes < 60) minutes = 60; // just in case
-			newEvent->setSpawnCountdown(minutes);
-			_game->getSavedGame()->getGeoscapeEvents().push_back(newEvent);
-
-			// remember that it has been generated
-			_game->getSavedGame()->addGeneratedEvent(spawnedEventRule);
-		}
-	};
-
 	for (auto& traitorName : _pactList)
 	{
 		auto traitor = _game->getMod()->getCountry(traitorName, false);
 		if (traitor)
 		{
-			spawnEvent(traitor->getSignedPactEvent());
+			_game->getSavedGame()->spawnEvent(traitor->getSignedPactEvent());
 		}
 	}
 	for (auto& exTraitorName : _cancelPactList)
@@ -305,7 +290,7 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 		auto exTraitor = _game->getMod()->getCountry(exTraitorName, false);
 		if (exTraitor)
 		{
-			spawnEvent(exTraitor->getRejoinedXcomEvent());
+			_game->getSavedGame()->spawnEvent(exTraitor->getRejoinedXcomEvent());
 		}
 	}
 }

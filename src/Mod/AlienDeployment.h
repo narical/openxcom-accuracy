@@ -114,7 +114,7 @@ private:
 	BriefingData _briefingData;
 	std::string _markerName, _objectivePopup, _objectiveCompleteText, _objectiveFailedText;
 	std::string _missionCompleteText, _missionFailedText;
-	WeightedOptions _genMission;
+	WeightedOptions _genMission, _successEvents, _failureEvents, _despawnEvents;
 	int _markerIcon, _durationMin, _durationMax, _minDepth, _maxDepth, _genMissionFrequency, _genMissionLimit;
 	int _objectiveType, _objectivesRequired, _objectiveCompleteScore, _objectiveFailedScore, _despawnPenalty, _abortPenalty, _points, _turnLimit, _cheatTurn;
 	ChronoTrigger _chronoTrigger;
@@ -187,6 +187,12 @@ public:
 	std::string getLoseCutscene() const;
 	/// Gets the cutscene to play when this mission is aborted.
 	std::string getAbortCutscene() const;
+	/// Gets geoscape event rule name to spawn after success mission.
+	std::string chooseSuccessEvent() const { return _successEvents.choose(); };
+	/// Gets geoscape event rule name to despawn after success mission.
+	std::string chooseDespawnEvent() const { return _despawnEvents.choose(); };
+	/// Gets geoscape event rule name to spawn after failure mission.
+	std::string chooseFailureEvent() const { return _failureEvents.choose(); };
 	/// Gets the alert message for this mission type.
 	std::string getAlertMessage() const;
 	/// Gets the alert background for this mission type.
