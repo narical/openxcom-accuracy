@@ -265,7 +265,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 	if (allowReinforcements && !_battleGame->getBattleGame()->areAllEnemiesNeutralized())
 	{
 		bool showAlert = determineReinforcements();
-		if (showAlert)
+		if (showAlert && _battleGame->getTurn() > 0)
 		{
 			messageReinforcements = tr("STR_REINFORCEMENTS_ALERT");
 			_txtMessageReinforcements->setText(messageReinforcements);
