@@ -206,9 +206,15 @@ void ExplosionBState::init()
 		{
 			_parent->getSave()->getTileEngine()->explode(_attack, _center, _power, _damageType, _radius, range);
 
+			int powerForAnimation = _power;
+			if (itemRule && itemRule->getPowerForAnimation() > 0)
+			{
+				powerForAnimation = itemRule->getPowerForAnimation();
+			}
+
 			int frame = Mod::EXPLOSION_OFFSET;
 			int frameCount = -1;
-			int sound = _power <= 80 ? Mod::SMALL_EXPLOSION : Mod::LARGE_EXPLOSION;
+			int sound = powerForAnimation <= 80 ? Mod::SMALL_EXPLOSION : Mod::LARGE_EXPLOSION;
 
 			if (itemRule)
 			{
@@ -221,13 +227,13 @@ void ExplosionBState::init()
 				frame -= (frameCount > 0 ? frameCount : Explosion::EXPLODE_FRAMES);
 			}
 			int frameDelay = 0;
-			int counter = std::max(1, (_power/5) / 5);
+			int counter = std::max(1, (powerForAnimation / 5) / 5);
 			_parent->getMap()->setBlastFlash(true);
-			int lowerLimit = std::max(1, _power/5);
+			int lowerLimit = std::max(1, powerForAnimation / 5);
 			for (int i = 0; i < lowerLimit; i++)
 			{
-				int X = RNG::generate(-_power/2,_power/2);
-				int Y = RNG::generate(-_power/2,_power/2);
+				int X = RNG::generate(-powerForAnimation / 2, powerForAnimation / 2);
+				int Y = RNG::generate(-powerForAnimation / 2, powerForAnimation / 2);
 				Position p = _center;
 				p.x += X; p.y += Y;
 				Explosion *explosion = new Explosion(p, frame, frameDelay, true, false, frameCount);

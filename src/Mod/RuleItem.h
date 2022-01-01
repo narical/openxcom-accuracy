@@ -345,7 +345,7 @@ private:
 	int _psiAnimation, _psiAnimFrames;
 	std::vector<int> _psiMissSound;
 	int _psiMissAnimation, _psiMissAnimFrames;
-	int _power;
+	int _power, _powerForAnimation;
 	bool _hidePower;
 	float _powerRangeReduction;
 	float _powerRangeThreshold;
@@ -573,6 +573,8 @@ public:
 
 	/// Gets the item's power.
 	int getPower() const;
+	/// Gets the item's power used for AoE explosion animation.
+	int getPowerForAnimation() const { return _powerForAnimation; }
 	/// Should the item's power be displayed in Ufopedia or not?
 	bool getHidePower() const { return _hidePower; }
 	/// Ok, so this isn't a melee type weapon but we're using it for melee... how much damage should it do?

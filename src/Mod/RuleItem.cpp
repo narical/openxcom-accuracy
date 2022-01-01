@@ -149,7 +149,7 @@ RuleItem::RuleItem(const std::string &type) :
 	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
 	_meleeAnimation(0), _meleeAnimFrames(-1), _meleeMissAnimation(-1), _meleeMissAnimFrames(-1),
 	_psiAnimation(-1), _psiAnimFrames(-1), _psiMissAnimation(-1), _psiMissAnimFrames(-1),
-	_power(0), _hidePower(false), _powerRangeReduction(0), _powerRangeThreshold(0),
+	_power(0), _powerForAnimation(0), _hidePower(false), _powerRangeReduction(0), _powerRangeThreshold(0),
 	_damageTypeSet(false), _meleeTypeSet(false),
 	_accuracyUse(0), _accuracyMind(0), _accuracyPanic(20), _accuracyThrow(100), _accuracyCloseQuarters(-1),
 	_noLOSAccuracyPenalty(-1),
@@ -516,6 +516,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	}
 
 	_power = node["power"].as<int>(_power);
+	_powerForAnimation = node["powerForAnimation"].as<int>(_powerForAnimation);
 	_hidePower = node["hidePower"].as<bool>(_hidePower);
 	_medikitActionName = node["medikitActionName"].as<std::string>(_medikitActionName);
 	_psiAttackName = node["psiAttackName"].as<std::string>(_psiAttackName);
