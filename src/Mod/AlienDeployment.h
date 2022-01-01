@@ -93,7 +93,8 @@ private:
 	std::string _type;
 	std::string _customUfo;
 	std::string _enviroEffects, _startingCondition;
-	std::string _unlockedResearch, _missionBountyItem;
+	std::string _unlockedResearchOnSuccess, _unlockedResearchOnFailure, _unlockedResearchOnDespawn;
+	std::string _missionBountyItem;
 	int _missionBountyItemCount;
 	int _bughuntMinTurn;
 	std::vector<DeploymentData> _data;
@@ -142,7 +143,11 @@ public:
 	/// Gets the Alien Deployment's starting condition.
 	const std::string& getStartingCondition() const;
 	/// Gets the research topic to be unlocked after a successful mission.
-	std::string getUnlockedResearch() const;
+	const std::string& getUnlockedResearchOnSuccess() const { return _unlockedResearchOnSuccess; }
+	/// Gets the research topic to be unlocked after a failed mission.
+	const std::string& getUnlockedResearchOnFailure() const { return _unlockedResearchOnFailure; }
+	/// Gets the research topic to be unlocked after a despawned mission site.
+	const std::string& getUnlockedResearchOnDespawn() const { return _unlockedResearchOnDespawn; }
 	/// Gets the item to be recovered/given after a successful mission.
 	std::string getMissionBountyItem() const;
 	/// Gets the number of items to be recovered/given after a successful mission.

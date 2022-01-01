@@ -1748,6 +1748,10 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 	}
 	if (removeSite)
 	{
+		// Unlock research defined in alien deployment, if the mission site despawned
+		const RuleResearch* research = _game->getMod()->getResearch(site->getDeployment()->getUnlockedResearchOnDespawn());
+		_game->getSavedGame()->handleResearchUnlockedByMissions(research, _game->getMod());
+
 		// Generate a despawn event
 		auto eventRules = _game->getMod()->getEvent(site->getDeployment()->chooseDespawnEvent());
 		bool canSpawn = _game->getSavedGame()->canSpawnInstantEvent(eventRules);
@@ -2574,10 +2578,10 @@ void GeoscapeState::time1Day()
 	// check and interrupt alien missions if necessary (based on discovered research)
 	for (auto am : saveGame->getAlienMissions())
 	{
-		auto researchName = am->getRules().getInterruptResearch();
+		auto& researchName = am->getRules().getInterruptResearch();
 		if (!researchName.empty())
 		{
-			auto research = mod->getResearch(researchName, true);
+			auto* research = mod->getResearch(researchName, true);
 			if (saveGame->isResearched(research, false)) // ignore debug mode
 			{
 				am->setInterrupted(true);

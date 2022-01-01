@@ -470,6 +470,8 @@ public:
 	bool spawnEvent(const RuleEvent* eventRules);
 	/// Checks if an instant Geoscape event can be spawned.
 	bool canSpawnInstantEvent(const RuleEvent* eventRules);
+	/// Handles research unlocked by successful/failed missions and despawned mission sites.
+	bool handleResearchUnlockedByMissions(const RuleResearch* research, const Mod* mod);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
 };

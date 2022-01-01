@@ -223,7 +223,9 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_customUfo = node["customUfo"].as<std::string>(_customUfo);
 	_enviroEffects = node["enviroEffects"].as<std::string>(_enviroEffects);
 	_startingCondition = node["startingCondition"].as<std::string>(_startingCondition);
-	_unlockedResearch = node["unlockedResearch"].as<std::string>(_unlockedResearch);
+	_unlockedResearchOnSuccess = node["unlockedResearch"].as<std::string>(_unlockedResearchOnSuccess);
+	_unlockedResearchOnFailure = node["unlockedResearchOnFailure"].as<std::string>(_unlockedResearchOnFailure);
+	_unlockedResearchOnDespawn = node["unlockedResearchOnDespawn"].as<std::string>(_unlockedResearchOnDespawn);
 	_missionBountyItem = node["missionBountyItem"].as<std::string>(_missionBountyItem);
 	_missionBountyItemCount = node["missionBountyItemCount"].as<int>(_missionBountyItemCount);
 	_bughuntMinTurn = node["bughuntMinTurn"].as<int>(_bughuntMinTurn);
@@ -369,15 +371,6 @@ const std::string& AlienDeployment::getEnviroEffects() const
 const std::string& AlienDeployment::getStartingCondition() const
 {
 	return _startingCondition;
-}
-
-/**
-* Returns the research topic to be unlocked after a successful mission.
-* @return String ID for research topic.
-*/
-std::string AlienDeployment::getUnlockedResearch() const
-{
-	return _unlockedResearch;
 }
 
 /**

@@ -3181,6 +3181,61 @@ bool SavedGame::canSpawnInstantEvent(const RuleEvent* eventRules)
 	return false;
 }
 
+/**
+ * Handles research unlocked by successful/failed missions and despawned mission sites.
+ * 1. Adds the research topic to finished research list. Silently.
+ * 2. Adds also getOneFree bonus and possible lookup(s). Also silently.
+ * 3. Handles alien mission interruption.
+ */
+bool SavedGame::handleResearchUnlockedByMissions(const RuleResearch* research, const Mod* mod)
+{
+	if (!research)
+	{
+		return false;
+	}
+	if (_bases.empty())
+	{
+		return false; // all bases lost, game over
+	}
+	Base* base = _bases.front();
+
+	std::vector<const RuleResearch*> researchVec;
+	researchVec.push_back(research);
+	addFinishedResearch(research, mod, base, true);
+	if (!research->getLookup().empty())
+	{
+		researchVec.push_back(mod->getResearch(research->getLookup(), true));
+		addFinishedResearch(researchVec.back(), mod, base, true);
+	}
+
+	if (auto bonus = selectGetOneFree(research))
+	{
+		researchVec.push_back(bonus);
+		addFinishedResearch(bonus, mod, base, true);
+		if (!bonus->getLookup().empty())
+		{
+			researchVec.push_back(mod->getResearch(bonus->getLookup(), true));
+			addFinishedResearch(researchVec.back(), mod, base, true);
+		}
+	}
+
+	// check and interrupt alien missions if necessary (based on unlocked research)
+	for (auto* am : _activeMissions)
+	{
+		auto& interruptResearchName = am->getRules().getInterruptResearch();
+		if (!interruptResearchName.empty())
+		{
+			auto* interruptResearch = mod->getResearch(interruptResearchName, true);
+			if (std::find(researchVec.begin(), researchVec.end(), interruptResearch) != researchVec.end())
+			{
+				am->setInterrupted(true);
+			}
+		}
+	}
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////
