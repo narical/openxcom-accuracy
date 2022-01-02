@@ -400,6 +400,8 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	mod->loadSpriteOffset(_type, _specialIconSprite, node["specialIconSprite"], "SPICONS.DAT");
 
 	mod->loadSoundOffset(_type, _reloadSound, node["reloadSound"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _primeSound, node["primeSound"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _unprimeSound, node["unprimeSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _fireSound, node["fireSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _hitSound, node["hitSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _hitMissSound, node["hitMissSound"], "BATTLE.CAT");
@@ -1069,6 +1071,24 @@ int RuleItem::getRandomSound(const std::vector<int> &vector, int defaultValue) c
 int RuleItem::getReloadSound() const
 {
 	return getRandomSound(_reloadSound);
+}
+
+/**
+ * Gets the item's prime sound.
+ * @return The prime sound id.
+ */
+int RuleItem::getPrimeSound() const
+{
+	return getRandomSound(_primeSound);
+}
+
+/**
+ * Gets the item's unprime sound.
+ * @return The unprime sound id.
+ */
+int RuleItem::getUnprimeSound() const
+{
+	return getRandomSound(_unprimeSound);
 }
 
 /**

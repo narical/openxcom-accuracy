@@ -2047,6 +2047,10 @@ void StatsForNerdsState::initItemList()
 		addSection("{Sounds}", "", _white);
 		addVectorOfIntegers(ss, itemRule->getReloadSoundRaw(), "reloadSound");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", itemRule->getReloadSoundRaw());
+		addVectorOfIntegers(ss, itemRule->getPrimeSoundRaw(), "primeSound");
+		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", itemRule->getPrimeSoundRaw());
+		addVectorOfIntegers(ss, itemRule->getUnprimeSoundRaw(), "unprimeSound");
+		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", itemRule->getUnprimeSoundRaw());
 		addVectorOfIntegers(ss, itemRule->getFireSoundRaw(), "fireSound");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", itemRule->getFireSoundRaw());
 		addVectorOfIntegers(ss, itemRule->getHitSoundRaw(), "hitSound");

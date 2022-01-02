@@ -332,7 +332,7 @@ private:
 	int _floorSprite;
 	int _handSprite, _bulletSprite;
 	int _specialIconSprite;
-	std::vector<int> _reloadSound;
+	std::vector<int> _reloadSound, _primeSound, _unprimeSound;
 	std::vector<int> _fireSound, _hitSound;
 	int _hitAnimation, _hitAnimFrames;
 	std::vector<int> _hitMissSound;
@@ -515,6 +515,12 @@ public:
 	/// Gets the item's reload sound.
 	int getReloadSound() const;
 	const std::vector<int> &getReloadSoundRaw() const { return _reloadSound; }
+	/// Gets the item's prime sound.
+	int getPrimeSound() const;
+	const std::vector<int>& getPrimeSoundRaw() const { return _primeSound; }
+	/// Gets the item's unprime sound.
+	int getUnprimeSound() const;
+	const std::vector<int>& getUnprimeSoundRaw() const { return _unprimeSound; }
 	/// Gets the item's fire sound.
 	int getFireSound() const;
 	const std::vector<int> &getFireSoundRaw() const { return _fireSound; }
