@@ -937,7 +937,7 @@ SoundSet *Mod::getSoundSet(const std::string &name, bool error) const
  * @param sound ID of the sound.
  * @return Pointer to the sound.
  */
-Sound *Mod::getSound(const std::string &set, int sound, bool error) const
+Sound *Mod::getSound(const std::string &set, int sound) const
 {
 	if (Options::mute)
 	{
@@ -951,14 +951,14 @@ Sound *Mod::getSound(const std::string &set, int sound, bool error) const
 			Sound *s = ss->getSound(sound);
 			if (s == 0)
 			{
-				Log(LOG_VERBOSE) << "Sound " << sound << " in " << set << " not found";
+				Log(LOG_ERROR) << "Sound " << sound << " in " << set << " not found";
 				return _muteSound;
 			}
 			return s;
 		}
 		else
 		{
-			Log(LOG_VERBOSE) << "SoundSet " << set << " not found";
+			Log(LOG_ERROR) << "SoundSet " << set << " not found";
 			return _muteSound;
 		}
 	}
@@ -989,12 +989,12 @@ const std::vector<Uint16> *Mod::getVoxelData() const
  * @param sound ID of the sound.
  * @return Pointer to the sound.
  */
-Sound *Mod::getSoundByDepth(unsigned int depth, unsigned int sound, bool error) const
+Sound *Mod::getSoundByDepth(unsigned int depth, unsigned int sound) const
 {
 	if (depth == 0 || _disableUnderwaterSounds)
-		return getSound("BATTLE.CAT", sound, error);
+		return getSound("BATTLE.CAT", sound);
 	else
-		return getSound("BATTLE2.CAT", sound, error);
+		return getSound("BATTLE2.CAT", sound);
 }
 
 /**
