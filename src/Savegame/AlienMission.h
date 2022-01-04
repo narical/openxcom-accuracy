@@ -127,6 +127,8 @@ private:
 	std::pair<double, double> getWaypoint(const MissionWave &wave, const UfoTrajectory &trajectory, const size_t nextWaypoint, const Globe &globe, const RuleRegion &region, const Ufo &ufo);
 	/// Get a random landing point inside the given region zone.
 	std::pair<double, double> getLandPoint(const Globe &globe, const RuleRegion &region, size_t zone, const Ufo &ufo);
+	/// Get a random landing point inside the given region zone and area.
+	std::pair<double, double> getLandPointForMissionSite(const Globe& globe, const RuleRegion& region, size_t zone, int area, const Ufo& ufo);
 	/// Spawns a MissionSite at a specific location.
 	MissionSite *spawnMissionSite(SavedGame &game, const Mod &mod, const MissionArea &area, const Ufo *ufo = 0, AlienDeployment *missionOveride = 0);
 	/// Provides some error information for bad mission definitions

@@ -1108,11 +1108,7 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
 	{
 		if (wave.objectiveOnTheLandingSite)
 		{
-			// DISCLAIMER: we assume the entire area rectangle is usable for landing, i.e. we can land anywhere inside of it
-			// no checks for land texture
-			// no checks for fake underwater texture
-			// no checks for being inside of the region
-			return region.getRandomPoint(_rule.getSpawnZone(), _missionSiteZone);
+			return getLandPointForMissionSite(globe, region, _rule.getSpawnZone(), _missionSiteZone, ufo);
 		}
 		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZone);
 		return std::make_pair(area->lonMin, area->latMin);
@@ -1196,10 +1192,81 @@ std::pair<double, double> AlienMission::getLandPoint(const Globe &globe, const R
 
 		if (tries == 100)
 		{
-			Log(LOG_DEBUG) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " invalid zone: " << zone << " ufo forced to land on water!";
+			Log(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " invalid zone: " << zone << " ufo forced to land on water (or invalid texture)!";
 			if (wantsToLandOnFakeWater)
 			{
-				Log(LOG_DEBUG) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
+				Log(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
+			}
+		}
+	}
+	return pos;
+}
+
+/**
+ * Get a random point for the given region, zone and area.
+ * The point doesn't necessarily need to be inside the region boundaries.
+ * The point will be used to land a UFO, which immediately converts into a mission site, so it HAS to be on land (or fake water).
+ */
+std::pair<double, double> AlienMission::getLandPointForMissionSite(const Globe& globe, const RuleRegion& region, size_t zone, int area, const Ufo& ufo)
+{
+	// Full error report in case of corrupted saves and/or modding-related issues
+	// Note: checking only areas; zones were already checked earlier in getWaypoint()
+	if (region.getMissionZones().at(zone).areas.empty())
+	{
+		std::stringstream ss;
+		ss << "Error occurred while trying to determine land+site point for mission type: " << _rule.getType() << " in region: " << region.getType() << ", in zone: " << zone;
+		ss << ", zone has no valid areas.";
+		throw Exception(ss.str());
+	}
+	else if ((size_t)area >= region.getMissionZones().at(zone).areas.size())
+	{
+		std::stringstream ss;
+		ss << "Error occurred while trying to determine land+site point for mission type: " << _rule.getType() << " in region: " << region.getType() << ", in zone: " << zone;
+		ss << ", mission tried to find a land+site point in area " << area;
+		ss << ", but this zone only has areas valid up to " << region.getMissionZones().at(zone).areas.size() - 1 << ".";
+		throw Exception(ss.str());
+	}
+
+	std::pair<double, double> pos;
+	{
+		int tries = 0;
+		bool wantsToLandOnFakeWater = RNG::percent(ufo.getRules()->getFakeWaterLandingChance());
+		bool found = false;
+		while (!found)
+		{
+			pos = region.getRandomPoint(zone, area); // pass the area as a parameter too!
+			++tries;
+
+			if (tries == 100)
+			{
+				found = true; // forced decision
+			}
+			else if (globe.insideLand(pos.first, pos.second) /* && region.insideRegion(pos.first, pos.second) */) // doesn't need to be inside the region!
+			{
+				bool isFakeWater = globe.insideFakeUnderwaterTexture(pos.first, pos.second);
+				if (wantsToLandOnFakeWater)
+				{
+					if (isFakeWater)
+					{
+						found = true; // found landing point on fake water
+					}
+				}
+				else
+				{
+					if (!isFakeWater)
+					{
+						found = true; // found landing point on land
+					}
+				}
+			}
+		}
+
+		if (tries == 100)
+		{
+			Log(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " zone: " << zone << " area: " << area << " ufo forced to land on water (or invalid texture)!";
+			if (wantsToLandOnFakeWater)
+			{
+				Log(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
 			}
 		}
 	}
