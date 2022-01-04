@@ -3036,6 +3036,12 @@ void StatsForNerdsState::initCraftList()
 		addInteger(ss, craftRule->getMaxSkinIndex(), "maxSkinIndex");
 		addBoolean(ss, !craftRule->getSkinSpritesRaw().empty(), "skinSprites", false); // just say if there is any or not
 
+		addSection("{Sounds}", "", _white);
+		addVectorOfIntegers(ss, craftRule->getSelectSoundRaw(), "selectSound");
+		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", craftRule->getSelectSoundRaw());
+		addVectorOfIntegers(ss, craftRule->getTakeoffSoundRaw(), "takeoffSound");
+		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", craftRule->getTakeoffSoundRaw());
+
 		addSection("{Battlescape}", "", _white);
 		addBoolean(ss, craftRule->getBattlescapeTerrainData() != 0, "battlescapeTerrainData", false); // just say if there is any or not
 		addBoolean(ss, craftRule->isMapVisible(), "mapVisible", true);

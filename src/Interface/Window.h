@@ -50,6 +50,7 @@ private:
 	State *_state;
 	bool _contrast, _screen, _thinBorder;
 	Uint8 _innerColor;
+	bool _mute;
 public:
 	static Sound *soundPopup[3];
 	/// Creates a new window with the specified size and position.
@@ -78,6 +79,8 @@ public:
 	void setThinBorder();
 	/// Give this window a custom inner color.
 	void setInnerColor(Uint8 innerColor);
+	/// Mute the window.
+	void mute() { _mute = true; }
 };
 
 }

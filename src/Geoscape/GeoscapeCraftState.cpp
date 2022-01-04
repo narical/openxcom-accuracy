@@ -48,7 +48,7 @@ namespace OpenXcom
  * @param globe Pointer to the Geoscape globe.
  * @param waypoint Pointer to the last UFO position (if redirecting the craft).
  */
-GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *waypoint) : _craft(craft), _globe(globe), _waypoint(waypoint)
+GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *waypoint, bool useCustomSound) : _craft(craft), _globe(globe), _waypoint(waypoint)
 {
 	_screen = false;
 
@@ -58,6 +58,15 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 
 	const int offset_upper = -8;
 	const int offset_lower = 120;
+
+	if (useCustomSound)
+	{
+		int soundId = craft->getRules()->getSelectSound();
+		if (soundId != Mod::NO_SOUND)
+		{
+			_customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+		}
+	}
 
 	// Create objects
 	_window = new Window(this, 240, 192, 4, 4, POPUP_BOTH);

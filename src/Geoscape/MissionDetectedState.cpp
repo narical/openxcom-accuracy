@@ -44,6 +44,12 @@ MissionDetectedState::MissionDetectedState(MissionSite *mission, GeoscapeState *
 {
 	_screen = false;
 
+	int soundId = mission->getDeployment()->getAlertSound();
+	if (soundId != Mod::NO_SOUND)
+	{
+		_customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+	}
+
 	// Create objects
 	_window = new Window(this, 256, 200, 0, 0, POPUP_BOTH);
 	_btnIntercept = new TextButton(200, 16, 28, 130);
@@ -85,12 +91,6 @@ MissionDetectedState::MissionDetectedState(MissionSite *mission, GeoscapeState *
 	_txtCity->setBig();
 	_txtCity->setAlign(ALIGN_CENTER);
 	_txtCity->setText(tr(mission->getCity()));
-
-	if (mission->getDeployment()->getAlertSound() > -1)
-	{
-		_game->getMod()->getSound("GEO.CAT", mission->getDeployment()->getAlertSound())->play();
-		_soundPlayed = true;
-	}
 }
 
 /**

@@ -50,12 +50,17 @@ namespace OpenXcom
  */
 UfoDetectedState::UfoDetectedState(Ufo *ufo, GeoscapeState *state, bool detected, bool hyperwave) : _ufo(ufo), _state(state)
 {
-	bool firstTime = false;
 	// Generate UFO ID
 	if (_ufo->getId() == 0)
 	{
 		_ufo->setId(_game->getSavedGame()->getId("STR_UFO"));
-		firstTime = true;
+
+		int soundId = _ufo->getRules()->getAlertSound();
+		if (soundId != Mod::NO_SOUND)
+		{
+			_customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+		}
+
 	}
 	if (_ufo->getAltitude() == "STR_GROUND" && _ufo->getLandId() == 0)
 	{
@@ -206,12 +211,6 @@ UfoDetectedState::UfoDetectedState(Ufo *ufo, GeoscapeState *state, bool detected
 	ss.str("");
 	ss << Unicode::TOK_COLOR_FLIP << tr(_ufo->getMission()->getRegion());
 	_lstInfo2->addRow(2, tr("STR_ZONE").c_str(), ss.str().c_str());
-
-	if (firstTime && _ufo->getRules()->getAlertSound() > -1)
-	{
-		_game->getMod()->getSound("GEO.CAT", _ufo->getRules()->getAlertSound())->play();
-		_soundPlayed = true;
-	}
 }
 
 /**

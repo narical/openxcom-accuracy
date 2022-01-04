@@ -20,6 +20,7 @@
 #include "RuleCraft.h"
 #include "RuleTerrain.h"
 #include "../Engine/Exception.h"
+#include "../Engine/RNG.h"
 #include "../Engine/ScriptBind.h"
 #include "Mod.h"
 
@@ -179,6 +180,9 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 	_shieldRechargeAtBase = node["shieldRechargedAtBase"].as<int>(_shieldRechargeAtBase);
 	_mapVisible = node["mapVisible"].as<bool>(_mapVisible);
 	_forceShowInMonthlyCosts = node["forceShowInMonthlyCosts"].as<bool>(_forceShowInMonthlyCosts);
+
+	mod->loadSoundOffset(_type, _selectSound, node["selectSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _takeoffSound, node["takeoffSound"], "GEO.CAT");
 
 	_craftScripts.load(_type, node, parsers.craftScripts);
 	_scriptValues.load(node, parsers.getShared());
@@ -653,6 +657,39 @@ int RuleCraft::calculateRange(int type)
 	}
 
 	return range;
+}
+
+/**
+ * Gets a random sound id from a given sound vector.
+ * @param vector The source vector.
+ * @param defaultValue Default value (in case nothing is specified = vector is empty).
+ * @return The sound id.
+ */
+int RuleCraft::getRandomSound(const std::vector<int>& vector, int defaultValue) const
+{
+	if (!vector.empty())
+	{
+		return vector[RNG::generate(0, vector.size() - 1)];
+	}
+	return defaultValue;
+}
+
+/**
+ * Gets the sound played when the player directly selects a craft on the globe.
+ * @return The select sound id.
+ */
+int RuleCraft::getSelectSound() const
+{
+	return getRandomSound(_selectSound);
+}
+
+/**
+ * Gets the sound played when a craft takes off from a base.
+ * @return The takeoff sound id.
+ */
+int RuleCraft::getTakeoffSound() const
+{
+	return getRandomSound(_takeoffSound);
 }
 
 

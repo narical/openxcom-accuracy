@@ -204,6 +204,8 @@ public:
 	UfoDetection detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const;
 	/// Handles craft logic.
 	bool think();
+	/// Is the craft about to take off?
+	bool isTakingOff() const;
 	/// Does a craft full checkup.
 	void checkup();
 	/// Consumes the craft's fuel.

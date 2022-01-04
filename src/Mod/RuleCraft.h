@@ -176,9 +176,13 @@ private:
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
 	bool _mapVisible, _forceShowInMonthlyCosts;
+	std::vector<int> _selectSound, _takeoffSound;
 
 	ModScript::CraftScripts::Container _craftScripts;
 	ScriptValues<RuleCraft> _scriptValues;
+
+	/// Gets a random sound from a given vector.
+	int getRandomSound(const std::vector<int>& vector, int defaultValue = -1) const;
 
 public:
 	/// Creates a blank craft ruleset.
@@ -283,6 +287,13 @@ public:
 	bool forceShowInMonthlyCosts() const;
 	/// Calculate the theoretical range of the craft in nautical miles
 	int calculateRange(int type);
+
+	/// Gets the sound played when the player directly selects a craft on the globe.
+	int getSelectSound() const;
+	const std::vector<int>& getSelectSoundRaw() const { return _selectSound; }
+	/// Gets the sound played when a craft takes off from a base.
+	int getTakeoffSound() const;
+	const std::vector<int>& getTakeoffSoundRaw() const { return _takeoffSound; }
 
 	/// Gets script.
 	template<typename Script>

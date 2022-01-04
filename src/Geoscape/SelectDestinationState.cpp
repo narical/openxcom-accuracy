@@ -212,7 +212,7 @@ void SelectDestinationState::globeClick(Action *action)
 			w->setLatitude(lat);
 			v.push_back(w);
 		}
-		_game->pushState(new MultipleTargetsState(v, _crafts, 0));
+		_game->pushState(new MultipleTargetsState(v, _crafts, 0, false));
 	}
 }
 

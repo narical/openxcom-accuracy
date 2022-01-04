@@ -1042,6 +1042,14 @@ bool Craft::think()
 }
 
 /**
+ * Is the craft about to take off?
+ */
+bool Craft::isTakingOff() const
+{
+	return _takeoff == 60;
+}
+
+/**
  * Checks the condition of all the craft's systems
  * to define its new status (eg. when arriving at base).
  */

@@ -1143,7 +1143,7 @@ void GeoscapeState::time5Seconds()
 							w->setLatitude(u->getLatitude());
 							w->setId(u->getId());
 							(*j)->setDestination(0);
-							popup(new GeoscapeCraftState((*j), _globe, w));
+							popup(new GeoscapeCraftState((*j), _globe, w, false));
 						}
 					}
 					if (u->getStatus() == Ufo::LANDED && (*j)->isInDogfight())
@@ -1605,7 +1605,7 @@ void GeoscapeState::ufoHuntingAndEscorting()
 						(*ufo)->setId(_game->getSavedGame()->getId("STR_UFO"));
 					}
 					// inform the player
-					if ((*ufo)->getRules()->getHuntAlertSound() > -1)
+					if ((*ufo)->getRules()->getHuntAlertSound() != Mod::NO_SOUND)
 					{
 						_game->getMod()->getSound("GEO.CAT", (*ufo)->getRules()->getHuntAlertSound())->play();
 					}
@@ -2823,7 +2823,7 @@ void GeoscapeState::globeClick(Action *action)
 		{
 			// Pass empty vector
 			std::vector<Craft*> crafts;
-			_game->pushState(new MultipleTargetsState(v, crafts, this));
+			_game->pushState(new MultipleTargetsState(v, crafts, this, true));
 		}
 	}
 

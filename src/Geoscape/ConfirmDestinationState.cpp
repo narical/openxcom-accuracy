@@ -43,6 +43,7 @@
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/Soldier.h"
 #include "../Engine/Options.h"
+#include "../Engine/Sound.h"
 
 namespace OpenXcom
 {
@@ -301,6 +302,13 @@ void ConfirmDestinationState::btnOkClick(Action *)
 	else
 	{
 		_crafts.front()->setDestination(_target);
+		if (_crafts.front()->isTakingOff())
+		{
+			if (!_crafts.front()->getRules()->getTakeoffSoundRaw().empty())
+			{
+				_game->getMod()->getSound("GEO.CAT", _crafts.front()->getRules()->getTakeoffSound())->play();
+			}
+		}
 	}
 
 	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
