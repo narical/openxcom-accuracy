@@ -959,6 +959,15 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		node["autoSales"].push_back((*i)->getName());
 	}
+	// snapshot of the user options (just for debugging purposes)
+	{
+		YAML::Node tmpNode;
+		for (auto& info : Options::getOptionInfo())
+		{
+			info.save(tmpNode);
+		}
+		node["options"] = tmpNode;
+	}
 	if (_battleGame != 0)
 	{
 		node["battleGame"] = _battleGame->save();
