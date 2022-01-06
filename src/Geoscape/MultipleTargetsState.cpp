@@ -122,7 +122,7 @@ void MultipleTargetsState::popupTarget(Target *target)
 		Ufo* u = dynamic_cast<Ufo*>(target);
 		if (b != 0)
 		{
-			_game->pushState(new InterceptState(_state->getGlobe(), b));
+			_game->pushState(new InterceptState(_state->getGlobe(), _useCustomSound, b));
 		}
 		else if (c != 0)
 		{

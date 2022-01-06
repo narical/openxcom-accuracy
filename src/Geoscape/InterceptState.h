@@ -50,7 +50,7 @@ private:
 	std::vector<Craft*> _selCrafts;
 public:
 	/// Creates the Intercept state.
-	InterceptState(Globe *globe, Base *base = 0, Target *target = 0);
+	InterceptState(Globe *globe, bool useCustomSound, Base *base = 0, Target *target = 0);
 	/// Cleans up the Intercept state.
 	~InterceptState();
 	/// Handler for clicking the Cancel button.

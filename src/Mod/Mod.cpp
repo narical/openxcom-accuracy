@@ -2818,6 +2818,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if ((*i)["annoyedSound"])
 			loadSoundOffset(type, _annoyedSound[type], (*i)["annoyedSound"], "BATTLE.CAT");
 	}
+	loadSoundOffset("global", _selectBaseSound, doc["selectBaseSound"], "BATTLE.CAT");
+	loadSoundOffset("global", _startDogfightSound, doc["startDogfightSound"], "BATTLE.CAT");
 	_flagByKills = doc["flagByKills"].as<std::vector<int> >(_flagByKills);
 
 	_defeatScore = doc["defeatScore"].as<int>(_defeatScore);

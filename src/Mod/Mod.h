@@ -271,6 +271,7 @@ private:
 	bool _disableUnderwaterSounds;
 	bool _enableUnitResponseSounds;
 	std::map<std::string, std::vector<int> > _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
+	std::vector<int> _selectBaseSound, _startDogfightSound;
 	std::vector<int> _flagByKills;
 	int _pediaReplaceCraftFuelWithRangeType;
 	std::vector<StatAdjustment> _statAdjustment;
@@ -1030,6 +1031,8 @@ public:
 	const std::map<std::string, std::vector<int> > &getStartMovingSounds() const { return _startMovingSound; }
 	const std::map<std::string, std::vector<int> > &getSelectWeaponSounds() const { return _selectWeaponSound; }
 	const std::map<std::string, std::vector<int> > &getAnnoyedSounds() const { return _annoyedSound; }
+	const std::vector<int> &getSelectBaseSounds() const { return _selectBaseSound; }
+	const std::vector<int> &getStartDogfightSounds() const { return _startDogfightSound; }
 	const std::vector<int> &getFlagByKills() const;
 	StatAdjustment *getStatAdjustment(int difficulty);
 	int getDefeatScore() const;

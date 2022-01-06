@@ -147,7 +147,7 @@ TargetInfoState::~TargetInfoState()
  */
 void TargetInfoState::btnInterceptClick(Action *)
 {
-	_game->pushState(new InterceptState(_globe, 0, _target));
+	_game->pushState(new InterceptState(_globe, false, 0, _target));
 }
 
 /**

@@ -32,6 +32,7 @@
 #include "../Savegame/MissionSite.h"
 #include "../Savegame/AlienBase.h"
 #include "../Engine/Options.h"
+#include "../Engine/RNG.h"
 #include "Globe.h"
 #include "SelectDestinationState.h"
 #include "ConfirmDestinationState.h"
@@ -49,13 +50,23 @@ namespace OpenXcom
  * @param base Pointer to base to show contained crafts (NULL to show all crafts).
  * @param target Pointer to target to intercept (NULL to ask user for target).
  */
-InterceptState::InterceptState(Globe *globe, Base *base, Target *target) : _globe(globe), _base(base), _target(target)
+InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Target *target) : _globe(globe), _base(base), _target(target)
 {
 	const int WIDTH_CRAFT = 72;
 	const int WIDTH_STATUS = 94;
 	const int WIDTH_BASE = 74;
 	const int WIDTH_WEAPONS = 48;
 	_screen = false;
+
+	if (useCustomSound)
+	{
+		auto& sounds = _game->getMod()->getSelectBaseSounds();
+		int soundId = sounds.empty() ? Mod::NO_SOUND : sounds[RNG::generate(0, sounds.size() - 1)];
+		if (soundId != Mod::NO_SOUND)
+		{
+			_customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+		}
+	}
 
 	// Create objects
 	if (Options::oxceInterceptGuiMaintenanceTimeHidden > 0)

@@ -2853,7 +2853,7 @@ void GeoscapeState::btnInterceptClick(Action *)
 	{
 		return;
 	}
-	_game->pushState(new InterceptState(_globe));
+	_game->pushState(new InterceptState(_globe, false));
 }
 
 /**

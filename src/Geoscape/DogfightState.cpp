@@ -733,6 +733,17 @@ void DogfightState::think()
 			}
 		}
 		_delayedRecolorDone = true;
+
+		// Note: init() is never called for DogfightState, so we'll do it here instead
+		{
+			auto& sounds = _game->getMod()->getStartDogfightSounds();
+			int soundId = sounds.empty() ? Mod::NO_SOUND : sounds[RNG::generate(0, sounds.size() - 1)];
+			if (soundId != Mod::NO_SOUND)
+			{
+				auto* customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+				customSound->play();
+			}
+		}
 	}
 	if (!_endDogfight)
 	{
