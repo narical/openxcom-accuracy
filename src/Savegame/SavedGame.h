@@ -472,6 +472,8 @@ public:
 	bool canSpawnInstantEvent(const RuleEvent* eventRules);
 	/// Handles research unlocked by successful/failed missions and despawned mission sites.
 	bool handleResearchUnlockedByMissions(const RuleResearch* research, const Mod* mod);
+	/// Handles research side effects for primary research sources.
+	void handlePrimaryResearchSideEffects(const std::vector<const RuleResearch*> &topicsToCheck, const Mod* mod, Base* base);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
 };

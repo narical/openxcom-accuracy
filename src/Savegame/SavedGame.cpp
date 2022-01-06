@@ -3245,6 +3245,61 @@ bool SavedGame::handleResearchUnlockedByMissions(const RuleResearch* research, c
 	return true;
 }
 
+/**
+ * Handles research side effects for primary research sources.
+ */
+void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleResearch*> &topicsToCheck, const Mod* mod, Base* base)
+{
+	for (auto* myResearchRule : topicsToCheck)
+	{
+		// 3j. now iterate through all the bases and remove this project from their labs (unless it can still yield more stuff!)
+		for (Base* otherBase : _bases)
+		{
+			for (ResearchProject* otherProject : otherBase->getResearch())
+			{
+				if (myResearchRule == otherProject->getRules())
+				{
+					if (hasUndiscoveredGetOneFree(myResearchRule, true))
+					{
+						// This research topic still has some more undiscovered non-disabled and *AVAILABLE* "getOneFree" topics, keep it!
+					}
+					else if (hasUndiscoveredProtectedUnlock(myResearchRule, mod))
+					{
+						// This research topic still has one or more undiscovered non-disabled "protected unlocks", keep it!
+					}
+					else
+					{
+						// This topic can't give you anything else anymore, remove it!
+						otherBase->removeResearch(otherProject);
+						break;
+					}
+				}
+			}
+		}
+		// 3k. handle spawned items
+		RuleItem* spawnedItem = mod->getItem(myResearchRule->getSpawnedItem());
+		if (spawnedItem)
+		{
+			Transfer* t = new Transfer(1);
+			t->setItems(myResearchRule->getSpawnedItem(), std::max(1, myResearchRule->getSpawnedItemCount()));
+			base->getTransfers()->push_back(t);
+		}
+		for (auto& spawnedItemName2 : myResearchRule->getSpawnedItemList())
+		{
+			RuleItem* spawnedItem2 = mod->getItem(spawnedItemName2);
+			if (spawnedItem2)
+			{
+				Transfer* t = new Transfer(1);
+				t->setItems(spawnedItemName2);
+				base->getTransfers()->push_back(t);
+			}
+		}
+		// 3l. handle spawned events
+		RuleEvent* spawnedEventRule = mod->getEvent(myResearchRule->getSpawnedEvent());
+		spawnEvent(spawnedEventRule);
+	}
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////
