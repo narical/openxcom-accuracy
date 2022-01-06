@@ -485,8 +485,12 @@ void NewBattleState::initSave()
 		soldier->calcStatString(mod->getStatStrings(), psiStrengthEval);
 
 		base->getSoldiers()->push_back(soldier);
-		if (i < _craft->getRules()->getMaxUnits())
+
+		auto space = _craft->getSpaceAvailable();
+		if (_craft->validateAddingSoldier(space, soldier))
+		{
 			soldier->setCraft(_craft);
+		}
 	}
 
 	// Generate items
@@ -707,19 +711,43 @@ void NewBattleState::cbxMissionChange(Action *)
 void NewBattleState::cbxCraftChange(Action *)
 {
 	_craft->changeRules(_game->getMod()->getCraft(_crafts[_cbxCraft->getSelected()]));
-	int current = _craft->getNumSmallSoldiers();
-	int max = _craft->getRules()->getMaxUnits();
-	if (current > max)
+
+	int count = 0;
+	Craft* tmpCraft = new Craft(_craft->getRules(), _craft->getBase(), 0);
+
+	// temporarily re-assign all soldiers to a dummy craft
+	for (auto* soldier : *_craft->getBase()->getSoldiers())
 	{
-		for (std::vector<Soldier*>::reverse_iterator i = _craft->getBase()->getSoldiers()->rbegin(); i != _craft->getBase()->getSoldiers()->rend() && current > max; ++i)
+		if (soldier->getCraft() == _craft)
 		{
-			if ((*i)->getCraft() == _craft)
+			soldier->setCraft(tmpCraft);
+			count++;
+		}
+	}
+	// try assigning all soldiers back while validating constraints
+	for (auto* soldier : *_craft->getBase()->getSoldiers())
+	{
+		if (count <= 0)
+		{
+			break;
+		}
+		if (soldier->getCraft() == tmpCraft)
+		{
+			count--;
+			auto space = _craft->getSpaceAvailable();
+			if (_craft->validateAddingSoldier(space, soldier))
 			{
-				(*i)->setCraft(0);
-				current--;
+				soldier->setCraft(_craft);
+			}
+			else
+			{
+				soldier->setCraft(0);
 			}
 		}
 	}
+	delete tmpCraft;
+
+	// FIXME? HWPs can still violate the constraints (e.g. when switching from Avenger to Lightning)
 }
 
 /**
