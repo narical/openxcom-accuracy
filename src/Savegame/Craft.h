@@ -132,12 +132,8 @@ public:
 	void setLatitudeAuto(double lat);
 	/// Gets the craft's amount of weapons.
 	int getNumWeapons(bool onlyLoaded = false) const;
-	/// Gets the craft's amount of soldiers.
-	int getNumSoldiers() const;
 	/// Gets the craft's amount of equipment.
 	int getNumEquipment() const;
-	/// Gets the craft's amount of vehicles.
-	int getNumVehicles() const;
 	/// Gets the craft's weapons.
 	std::vector<CraftWeapon*> *getWeapons();
 	/// Gets the craft's items.
@@ -278,6 +274,28 @@ public:
 	void setSkinIndex(int skinIndex) { _skinIndex = skinIndex; }
 	/// Gets the craft's skin sprite ID.
 	int getSkinSprite() const;
+
+	/// Gets the craft's amount of vehicles and 2x2 soldiers.
+	int getNumVehiclesAndLargeSoldiers() const;
+
+	/// Gets the craft's amount of 1x1 soldiers.
+	int getNumSmallSoldiers() const;
+	/// Gets the craft's amount of 2x2 soldiers.
+	int getNumLargeSoldiers() const;
+	/// Gets the craft's amount of 1x1 vehicles.
+	int getNumSmallVehicles() const;
+	/// Gets the craft's amount of 2x2 vehicles.
+	int getNumLargeVehicles() const;
+	/// Gets the craft's amount of 1x1 units.
+	int getNumSmallUnits() const;
+	/// Gets the craft's amount of 2x2 units.
+	int getNumLargeUnits() const;
+	/// Gets the craft's total amount of soldiers.
+	int getNumTotalSoldiers() const;
+	/// Gets the craft's total amount of vehicles.
+	int getNumTotalVehicles() const;
+	/// Gets the craft's total amount of units.
+	int getNumTotalUnits() const;
 };
 
 }

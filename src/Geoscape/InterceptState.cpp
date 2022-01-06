@@ -289,18 +289,18 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 				ss << 0;
 			}
 			ss << "/";
-			if ((*j)->getNumSoldiers() > 0)
+			if ((*j)->getNumTotalSoldiers() > 0)
 			{
-				ss << Unicode::TOK_COLOR_FLIP << (*j)->getNumSoldiers() << Unicode::TOK_COLOR_FLIP;
+				ss << Unicode::TOK_COLOR_FLIP << (*j)->getNumTotalSoldiers() << Unicode::TOK_COLOR_FLIP;
 			}
 			else
 			{
 				ss << 0;
 			}
 			ss << "/";
-			if ((*j)->getNumVehicles() > 0)
+			if ((*j)->getNumTotalVehicles() > 0)
 			{
-				ss << Unicode::TOK_COLOR_FLIP << (*j)->getNumVehicles() << Unicode::TOK_COLOR_FLIP;
+				ss << Unicode::TOK_COLOR_FLIP << (*j)->getNumTotalVehicles() << Unicode::TOK_COLOR_FLIP;
 			}
 			else
 			{

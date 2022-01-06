@@ -841,7 +841,7 @@ void TransferItemsState::increaseByValue(int change)
 		{
 			errorMessage = tr("STR_NO_FREE_HANGARS_FOR_TRANSFER");
 		}
-		else if (craft->getNumSoldiers() > 0 && _pQty + craft->getNumSoldiers() > _baseTo->getAvailableQuarters() - _baseTo->getUsedQuarters())
+		else if (craft->getNumTotalSoldiers() > 0 && _pQty + craft->getNumTotalSoldiers() > _baseTo->getAvailableQuarters() - _baseTo->getUsedQuarters())
 		{
 			errorMessage = tr("STR_NO_FREE_ACCOMODATION_CREW");
 		}
@@ -885,7 +885,7 @@ void TransferItemsState::increaseByValue(int change)
 			break;
 		case TRANSFER_CRAFT:
 			_cQty++;
-			_pQty += craft->getNumSoldiers();
+			_pQty += craft->getNumTotalSoldiers();
 			_iQty += craft->getTotalItemStorageSize(_game->getMod());
 			getRow().amount++;
 			if (!Options::canTransferCraftsWhileAirborne || craft->getStatus() != "STR_OUT")
@@ -958,7 +958,7 @@ void TransferItemsState::decreaseByValue(int change)
 	case TRANSFER_CRAFT:
 		craft = (Craft*)getRow().rule;
 		_cQty--;
-		_pQty -= craft->getNumSoldiers();
+		_pQty -= craft->getNumTotalSoldiers();
 		_iQty -= craft->getTotalItemStorageSize(_game->getMod());
 		break;
 	case TRANSFER_ITEM:

@@ -125,8 +125,8 @@ void CraftsState::init()
 	{
 		std::ostringstream ss, ss2, ss3;
 		ss << (*i)->getNumWeapons() << "/" << (*i)->getRules()->getWeapons();
-		ss2 << (*i)->getNumSoldiers();
-		ss3 << (*i)->getNumVehicles();
+		ss2 << (*i)->getNumTotalSoldiers();
+		ss3 << (*i)->getNumTotalVehicles();
 		_lstCrafts->addRow(5, (*i)->getName(_game->getLanguage()).c_str(), tr((*i)->getStatus()).c_str(), ss.str().c_str(), ss2.str().c_str(), ss3.str().c_str());
 	}
 }

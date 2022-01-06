@@ -563,27 +563,6 @@ int Craft::getNumWeapons(bool onlyLoaded) const
 }
 
 /**
- * Returns the amount of soldiers from a list
- * that are currently attached to this craft.
- * @return Number of soldiers.
- */
-int Craft::getNumSoldiers() const
-{
-	if (_rules->getSoldiers() == 0)
-		return 0;
-
-	int total = 0;
-
-	for (Soldier *s : *_base->getSoldiers())
-	{
-		if (s->getCraft() == this && s->getArmor()->getSize() == 1)
-			++total;
-	}
-
-	return total;
-}
-
-/**
  * Returns the amount of equipment currently
  * equipped on this craft.
  * @return Number of items.
@@ -591,23 +570,6 @@ int Craft::getNumSoldiers() const
 int Craft::getNumEquipment() const
 {
 	return _items->getTotalQuantity();
-}
-
-/**
- * Returns the amount of vehicles currently
- * contained in this craft.
- * @return Number of vehicles.
- */
-int Craft::getNumVehicles() const
-{
-	int total = 0;
-
-	for (Soldier *s : *_base->getSoldiers())
-	{
-		if (s->getCraft() == this && s->getArmor()->getSize() == 2)
-			++total;
-	}
-	return _vehicles.size() + total;
 }
 
 /**
@@ -1811,6 +1773,151 @@ int Craft::getHunterKillerAttraction(int huntMode) const
 int Craft::getSkinSprite() const
 {
 	return getRules()->getSprite(_skinIndex);
+}
+
+/**
+ * Returns the amount of vehicles and 2x2 soldiers currently contained in this craft.
+ * @return Number of vehicles and 2x2 soldiers.
+ */
+int Craft::getNumVehiclesAndLargeSoldiers() const
+{
+	return getNumTotalVehicles() + getNumLargeSoldiers();
+}
+
+/**
+ * Returns the amount of 1x1 soldiers from a list that are currently attached to this craft.
+ * @return Number of 1x1 soldiers.
+ */
+int Craft::getNumSmallSoldiers() const
+{
+	if (_rules->getSoldiers() == 0)
+		return 0;
+
+	int total = 0;
+
+	for (Soldier* s : *_base->getSoldiers())
+	{
+		if (s->getCraft() == this && s->getArmor()->getSize() == 1)
+			++total;
+	}
+
+	return total;
+}
+
+/**
+ * Returns the amount of 2x2 soldiers from a list that are currently attached to this craft.
+ * @return Number of 2x2 soldiers.
+ */
+int Craft::getNumLargeSoldiers() const
+{
+	if (_rules->getSoldiers() == 0)
+		return 0;
+
+	int total = 0;
+
+	for (Soldier* s : *_base->getSoldiers())
+	{
+		if (s->getCraft() == this && s->getArmor()->getSize() == 2)
+			++total;
+	}
+
+	return total;
+}
+
+/**
+ * Returns the amount of 1x1 vehicles from a list that are currently attached to this craft.
+ * @return Number of 1x1 vehicles.
+ */
+int Craft::getNumSmallVehicles() const
+{
+	if (_rules->getSoldiers() == 0)
+		return 0;
+
+	int total = 0;
+
+	for (Vehicle* v : _vehicles)
+	{
+		if (v->getTotalSize() == 1)
+			++total;
+	}
+
+	return total;
+}
+
+/**
+ * Returns the amount of 2x2 vehicles from a list that are currently attached to this craft.
+ * @return Number of 2x2 vehicles.
+ */
+int Craft::getNumLargeVehicles() const
+{
+	if (_rules->getSoldiers() == 0)
+		return 0;
+
+	int total = 0;
+
+	for (Vehicle* v : _vehicles)
+	{
+		if (v->getTotalSize() > 1)
+			++total;
+	}
+
+	return total;
+}
+
+/**
+ * Returns the amount of 1x1 units from a list that are currently attached to this craft.
+ * @return Number of 1x1 units.
+ */
+int Craft::getNumSmallUnits() const
+{
+	return getNumSmallSoldiers() + getNumSmallVehicles();
+}
+
+/**
+ * Returns the amount of 2x2 units from a list that are currently attached to this craft.
+ * @return Number of 2x2 units.
+ */
+int Craft::getNumLargeUnits() const
+{
+	return getNumLargeSoldiers() + getNumLargeVehicles();
+}
+
+/**
+ * Returns the total amount of soldiers from a list that are currently attached to this craft.
+ * @return Number of soldiers.
+ */
+int Craft::getNumTotalSoldiers() const
+{
+	if (_rules->getSoldiers() == 0)
+		return 0;
+
+	int total = 0;
+
+	for (Soldier* s : *_base->getSoldiers())
+	{
+		if (s->getCraft() == this)
+			++total;
+	}
+
+	return total;
+}
+
+/**
+ * Returns the total amount of vehicles from a list that are currently attached to this craft.
+ * @return Number of vehicles.
+ */
+int Craft::getNumTotalVehicles() const
+{
+	return _vehicles.size();
+}
+
+/**
+ * Returns the total amount of units from a list that are currently attached to this craft.
+ * @return Number of units.
+ */
+int Craft::getNumTotalUnits() const
+{
+	return getNumTotalSoldiers() + getNumTotalVehicles();
 }
 
 

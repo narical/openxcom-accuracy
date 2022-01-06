@@ -522,7 +522,7 @@ void NewBattleState::initSave()
 void NewBattleState::btnOkClick(Action *)
 {
 	save();
-	if (_missionTypes[_cbxMission->getSelected()] != "STR_BASE_DEFENSE" && _craft->getNumSoldiers() == 0 && _craft->getNumVehicles() == 0)
+	if (_missionTypes[_cbxMission->getSelected()] != "STR_BASE_DEFENSE" && _craft->getNumTotalUnits() == 0)
 	{
 		return;
 	}
@@ -707,7 +707,7 @@ void NewBattleState::cbxMissionChange(Action *)
 void NewBattleState::cbxCraftChange(Action *)
 {
 	_craft->changeRules(_game->getMod()->getCraft(_crafts[_cbxCraft->getSelected()]));
-	int current = _craft->getNumSoldiers();
+	int current = _craft->getNumSmallSoldiers();
 	int max = _craft->getRules()->getSoldiers();
 	if (current > max)
 	{

@@ -449,7 +449,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 		{
 			auto space = c->getSpaceAvailable();
 			auto armorSize = s->getArmor()->getSize();
-			if (space >= s->getArmor()->getTotalSize() && (armorSize == 1 || (c->getNumVehicles() < c->getRules()->getVehicles())))
+			if (space >= s->getArmor()->getTotalSize() && (armorSize == 1 || (c->getNumVehiclesAndLargeSoldiers() < c->getRules()->getVehicles())))
 			{
 				s->setCraft(c);
 				_lstSoldiers->setCellText(row, 2, c->getName(_game->getLanguage()));

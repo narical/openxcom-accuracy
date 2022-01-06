@@ -345,7 +345,7 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 	{
 		errorMessage = tr("STR_NO_FREE_HANGARS_FOR_TRANSFER");
 	}
-	else if (_crafts.front()->getNumSoldiers() > targetBase->getAvailableQuarters() - targetBase->getUsedQuarters())
+	else if (_crafts.front()->getNumTotalSoldiers() > targetBase->getAvailableQuarters() - targetBase->getUsedQuarters())
 	{
 		errorMessage = tr("STR_NO_FREE_ACCOMODATION_CREW");
 	}

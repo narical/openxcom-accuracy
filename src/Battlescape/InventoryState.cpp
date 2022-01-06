@@ -872,7 +872,7 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 		Craft* craft = soldier->getCraft();
 		if (craft != 0 && next->getSize() > prev->getSize())
 		{
-			if (craft->getNumVehicles() >= craft->getRules()->getVehicles() || craft->getSpaceAvailable() < 3)
+			if (craft->getNumVehiclesAndLargeSoldiers() >= craft->getRules()->getVehicles() || craft->getSpaceAvailable() < 3)
 			{
 				// STR_NOT_ENOUGH_CRAFT_SPACE
 				return false;

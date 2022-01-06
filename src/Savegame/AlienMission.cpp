@@ -813,7 +813,7 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 				std::vector<Craft*> followers = ufo.getCraftFollowers();
 				for (std::vector<Craft*>::iterator c = followers.begin(); c != followers.end(); ++c)
 				{
-					if ((*c)->getNumSoldiers() != 0)
+					if ((*c)->getNumTotalUnits() > 0)
 					{
 						(*c)->setDestination(missionSite);
 					}

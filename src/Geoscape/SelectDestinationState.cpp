@@ -335,7 +335,7 @@ void SelectDestinationState::btnCancelClick(Action *)
 
 void SelectDestinationState::btnCydoniaClick(Action *)
 {
-	if (_crafts.front()->getNumSoldiers() > 0 || _crafts.front()->getNumVehicles() > 0)
+	if (_crafts.front()->getNumTotalUnits() > 0)
 	{
 		_game->pushState(new ConfirmCydoniaState(_crafts.front()));
 	}
