@@ -206,7 +206,7 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 	for (std::vector<std::string>::const_iterator i = crafts.begin(); i != crafts.end(); ++i)
 	{
 		RuleCraft *rule = _game->getMod()->getCraft(*i);
-		if (rule->getSoldiers() > 0 && rule->getAllowLanding())
+		if (rule->getMaxUnits() > 0 && rule->getAllowLanding())
 		{
 			_crafts.push_back(*i);
 		}
@@ -485,7 +485,7 @@ void NewBattleState::initSave()
 		soldier->calcStatString(mod->getStatStrings(), psiStrengthEval);
 
 		base->getSoldiers()->push_back(soldier);
-		if (i < _craft->getRules()->getSoldiers())
+		if (i < _craft->getRules()->getMaxUnits())
 			soldier->setCraft(_craft);
 	}
 
@@ -708,7 +708,7 @@ void NewBattleState::cbxCraftChange(Action *)
 {
 	_craft->changeRules(_game->getMod()->getCraft(_crafts[_cbxCraft->getSelected()]));
 	int current = _craft->getNumSmallSoldiers();
-	int max = _craft->getRules()->getSoldiers();
+	int max = _craft->getRules()->getMaxUnits();
 	if (current > max)
 	{
 		for (std::vector<Soldier*>::reverse_iterator i = _craft->getBase()->getSoldiers()->rbegin(); i != _craft->getBase()->getSoldiers()->rend() && current > max; ++i)

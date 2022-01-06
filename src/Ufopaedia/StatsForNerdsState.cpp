@@ -2872,9 +2872,9 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getSellCost(), "costSell", 0, true);
 	addInteger(ss, craftRule->getTransferTime(), "transferTime", 24);
 
-	addInteger(ss, craftRule->getSoldiers(), "soldiers");
+	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
 	addInteger(ss, craftRule->getPilots(), "pilots");
-	addInteger(ss, craftRule->getVehicles(), "vehicles");
+	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 	addInteger(ss, craftRule->getMaxItems(), "maxItems");
 	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace");
 

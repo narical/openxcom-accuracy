@@ -246,7 +246,7 @@ void CraftInfoState::init()
 	}
 	_txtShield->setText(thirdLine.str());
 
-	if (_craft->getRules()->getSoldiers() > 0)
+	if (_craft->getRules()->getMaxUnits() > 0)
 	{
 		_crew->clear();
 		_equip->clear();

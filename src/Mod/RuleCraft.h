@@ -215,12 +215,12 @@ public:
 	int getAcceleration() const;
 	/// Gets the craft's weapon capacity.
 	int getWeapons() const;
-	/// Gets the craft's soldier capacity.
-	int getSoldiers() const;
+	/// Gets the craft's maximum unit capacity (soldiers and vehicles, small and large).
+	int getMaxUnits() const;
 	/// Gets the craft's pilot capacity/requirement.
 	int getPilots() const;
-	/// Gets the craft's vehicle capacity.
-	int getVehicles() const;
+	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers).
+	int getMaxVehiclesAndLargeSoldiers() const;
 	/// Gets the craft's maximum supported number of small (size=1) soldiers.
 	int getMaxSmallSoldiers() const { return _maxSmallSoldiers; }
 	/// Gets the craft's maximum supported number of large (size=2) soldiers.

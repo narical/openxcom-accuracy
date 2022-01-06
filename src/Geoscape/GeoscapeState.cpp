@@ -1105,7 +1105,7 @@ void GeoscapeState::time5Seconds()
 					}
 				}
 				// if a transport craft has been shot down, kill all the soldiers on board.
-				if ((*j)->getRules()->getSoldiers() > 0)
+				if ((*j)->getRules()->getMaxUnits() > 0)
 				{
 					for (std::vector<Soldier*>::iterator k = (*i)->getSoldiers()->begin(); k != (*i)->getSoldiers()->end();)
 					{

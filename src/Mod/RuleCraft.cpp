@@ -295,11 +295,11 @@ int RuleCraft::getWeapons() const
 }
 
 /**
- * Gets the maximum number of soldiers that
+ * Gets the maximum number of units (soldiers and vehicles, small and large) that
  * the craft can carry.
- * @return The soldier capacity.
+ * @return The maximum unit capacity.
  */
-int RuleCraft::getSoldiers() const
+int RuleCraft::getMaxUnits() const
 {
 	return _soldiers;
 }
@@ -314,11 +314,11 @@ int RuleCraft::getPilots() const
 }
 
 /**
- * Gets the maximum number of vehicles that
+ * Gets the maximum number of vehicles (and 2x2 soldiers) that
  * the craft can carry.
- * @return The vehicle capacity.
+ * @return The maximum vehicle capacity (incl. 2x2 soldiers).
  */
-int RuleCraft::getVehicles() const
+int RuleCraft::getMaxVehiclesAndLargeSoldiers() const
 {
 	return _vehicles;
 }
@@ -754,8 +754,8 @@ void RuleCraft::ScriptRegister(ScriptParserBase* parser)
 	b.add<&getTypeScript>("getType");
 
 	b.add<&RuleCraft::getWeapons>("getWeaponsMax");
-	b.add<&RuleCraft::getSoldiers>("getSoldiersMax");
-	b.add<&RuleCraft::getVehicles>("getVehiclesMax");
+	b.add<&RuleCraft::getMaxUnits>("getSoldiersMax");
+	b.add<&RuleCraft::getMaxVehiclesAndLargeSoldiers>("getVehiclesMax");
 	b.add<&RuleCraft::getPilots>("getPilotsMax");
 
 	RuleCraftStats::addGetStatsScript<&RuleCraft::_stats>(b, "Stats.");
