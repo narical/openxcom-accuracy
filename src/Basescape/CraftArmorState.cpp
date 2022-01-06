@@ -564,6 +564,12 @@ void CraftArmorState::btnDeequipAllArmorClick(Action *action)
 		{
 			Armor *a = _game->getMod()->getArmor((*i)->getRules()->getArmor());
 
+			if ((*i)->getCraft() && !(*i)->getCraft()->validateArmorChange((*i)->getArmor()->getSize(), a->getSize()))
+			{
+				// silently ignore
+				row++;
+				continue;
+			}
 			if (a->getStoreItem() == nullptr || _base->getStorageItems()->getItem(a->getStoreItem()) > 0)
 			{
 				if ((*i)->getArmor()->getStoreItem())
@@ -598,6 +604,12 @@ void CraftArmorState::btnDeequipCraftArmorClick(Action *action)
 		{
 			Armor *a = _game->getMod()->getArmor(s->getRules()->getArmor());
 
+			if (s->getCraft() && !s->getCraft()->validateArmorChange(s->getArmor()->getSize(), a->getSize()))
+			{
+				// silently ignore
+				row++;
+				continue;
+			}
 			if (a->getStoreItem() == nullptr || _base->getStorageItems()->getItem(a->getStoreItem()) > 0)
 			{
 				if (s->getArmor()->getStoreItem())
