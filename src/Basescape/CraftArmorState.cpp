@@ -476,6 +476,15 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 			{
 				armorUnlocked = false;
 			}
+			if (armorUnlocked && a)
+			{
+				Craft* craft = s->getCraft();
+				if (craft && !craft->validateArmorChange(s->getArmor()->getSize(), a->getSize()))
+				{
+					armorUnlocked = false; // armor not valid due to craft constraints
+					_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_CRAFT_SPACE"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
+				}
+			}
 			if (armorUnlocked && a && a->getCanBeUsedBy(s->getRules()))
 			{
 				if (save->getMonthsPassed() != -1)
