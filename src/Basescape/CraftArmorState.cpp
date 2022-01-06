@@ -448,14 +448,13 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 				else if (s->hasFullHealth())
 				{
 					auto space = c->getSpaceAvailable();
-					auto armorSize = s->getArmor()->getSize();
-					if (space >= s->getArmor()->getTotalSize() && (armorSize == 1 || (c->getNumVehiclesAndLargeSoldiers() < c->getRules()->getVehicles())))
+					if (c->validateAddingSoldier(space, s))
 					{
 						s->setCraft(c);
 						_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 1, c->getName(_game->getLanguage()));
 						_lstSoldiers->setRowColor(_lstSoldiers->getSelectedRow(), _lstSoldiers->getSecondaryColor());
 					}
-					else if (armorSize == 2 && space > 0)
+					else if (space > 0)
 					{
 						_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_CRAFT_SPACE"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 					}

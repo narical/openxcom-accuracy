@@ -1920,6 +1920,135 @@ int Craft::getNumTotalUnits() const
 	return getNumTotalSoldiers() + getNumTotalVehicles();
 }
 
+/**
+ * Validates craft space and craft constraints on soldier armor change.
+ * @return True, if armor change is allowed.
+ */
+bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
+{
+	if (sizeFrom == sizeTo)
+	{
+		return true;
+	}
+	else
+	{
+		if (sizeFrom < sizeTo)
+		{
+			if (getSpaceAvailable() < 3)
+			{
+				return false;
+			}
+			if (_rules->getVehicles() > -1 && getNumVehiclesAndLargeSoldiers() >= _rules->getVehicles())
+			{
+				return false;
+			}
+			if (_rules->getMaxLargeSoldiers() > -1 && getNumLargeSoldiers() >= _rules->getMaxLargeSoldiers())
+			{
+				return false;
+			}
+			if (_rules->getMaxLargeUnits() > -1 && getNumLargeUnits() >= _rules->getMaxLargeUnits())
+			{
+				return false;
+			}
+		}
+		else if (sizeFrom > sizeTo)
+		{
+			if (_rules->getMaxSmallSoldiers() > -1 && getNumSmallSoldiers() >= _rules->getMaxSmallSoldiers())
+			{
+				return false;
+			}
+			if (_rules->getMaxSmallUnits() > -1 && getNumSmallUnits() >= _rules->getMaxSmallUnits())
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * Validates craft space and craft constraints on adding soldier to a craft.
+ * @return True, if adding a soldier is allowed.
+ */
+bool Craft::validateAddingSoldier(int space, const Soldier* s) const
+{
+	if (space < s->getArmor()->getTotalSize())
+	{
+		return false;
+	}
+	if (_rules->getMaxSoldiers() > -1 && getNumTotalSoldiers() >= _rules->getMaxSoldiers())
+	{
+		return false;
+	}
+	if (s->getArmor()->getSize() == 1)
+	{
+		if (_rules->getMaxSmallSoldiers() > -1 && getNumSmallSoldiers() >= _rules->getMaxSmallSoldiers())
+		{
+			return false;
+		}
+		if (_rules->getMaxSmallUnits() > -1 && getNumSmallUnits() >= _rules->getMaxSmallUnits())
+		{
+			return false;
+		}
+	}
+	else // armorSize > 1
+	{
+		if (_rules->getVehicles() > -1 && getNumVehiclesAndLargeSoldiers() >= _rules->getVehicles())
+		{
+			return false;
+		}
+		if (_rules->getMaxLargeSoldiers() > -1 && getNumLargeSoldiers() >= _rules->getMaxLargeSoldiers())
+		{
+			return false;
+		}
+		if (_rules->getMaxLargeUnits() > -1 && getNumLargeUnits() >= _rules->getMaxLargeUnits())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * Validates craft space and craft constraints on adding vehicles to a craft.
+ * @return Maximum allowed number of vehicles to add.
+ */
+int Craft::validateAddingVehicles(int totalSize) const
+{
+	int maximumAllowed = getSpaceAvailable() / totalSize;
+
+	if (_rules->getVehicles() > -1)
+	{
+		maximumAllowed = std::min(maximumAllowed, _rules->getVehicles() - getNumVehiclesAndLargeSoldiers());
+	}
+	if (_rules->getMaxVehicles() > -1)
+	{
+		maximumAllowed = std::min(maximumAllowed, _rules->getMaxVehicles() - getNumTotalVehicles());
+	}
+	if (totalSize == 1)
+	{
+		if (_rules->getMaxSmallVehicles() > -1)
+		{
+			maximumAllowed = std::min(maximumAllowed, _rules->getMaxSmallVehicles() - getNumSmallVehicles());
+		}
+		if (_rules->getMaxSmallUnits() > -1)
+		{
+			maximumAllowed = std::min(maximumAllowed, _rules->getMaxSmallUnits() - getNumSmallUnits());
+		}
+	}
+	else // armorSize > 1
+	{
+		if (_rules->getMaxLargeVehicles() > -1)
+		{
+			maximumAllowed = std::min(maximumAllowed, _rules->getMaxLargeVehicles() - getNumLargeVehicles());
+		}
+		if (_rules->getMaxLargeUnits() > -1)
+		{
+			maximumAllowed = std::min(maximumAllowed, _rules->getMaxLargeUnits() - getNumLargeUnits());
+		}
+	}
+	return maximumAllowed;
+}
 
 ////////////////////////////////////////////////////////////
 //					Script binding

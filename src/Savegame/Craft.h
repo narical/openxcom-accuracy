@@ -296,6 +296,13 @@ public:
 	int getNumTotalVehicles() const;
 	/// Gets the craft's total amount of units.
 	int getNumTotalUnits() const;
+
+	/// Validates craft space and craft constraints on soldier armor change.
+	bool validateArmorChange(int sizeFrom, int sizeTo) const;
+	/// Validates craft space and craft constraints on adding soldier to a craft.
+	bool validateAddingSoldier(int space, const Soldier* s) const;
+	/// Validates craft space and craft constraints on adding vehicles to a craft.
+	int validateAddingVehicles(int totalSize) const;
 };
 
 }

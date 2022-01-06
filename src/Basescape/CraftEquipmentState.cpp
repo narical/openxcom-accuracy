@@ -734,7 +734,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 	{
 		int size = item->getVehicleUnit()->getArmor()->getTotalSize();
 		// Check if there's enough room
-		int room = std::min(c->getRules()->getVehicles() - c->getNumVehiclesAndLargeSoldiers(), c->getSpaceAvailable() / size);
+		int room = c->validateAddingVehicles(size);
 		if (room > 0)
 		{
 			change = std::min(room, change);

@@ -160,7 +160,10 @@ private:
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
 	int _sprite, _marker;
 	std::vector<int> _skinSprites;
-	int _weapons, _soldiers, _pilots, _vehicles, _costBuy, _costRent, _costSell;
+	int _weapons, _soldiers, _pilots, _vehicles;
+	int _maxSmallSoldiers, _maxLargeSoldiers, _maxSmallVehicles, _maxLargeVehicles;
+	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles;
+	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
 	std::string _refuelItem;
 	std::string _weaponStrings[WeaponMax];
@@ -218,6 +221,22 @@ public:
 	int getPilots() const;
 	/// Gets the craft's vehicle capacity.
 	int getVehicles() const;
+	/// Gets the craft's maximum supported number of small (size=1) soldiers.
+	int getMaxSmallSoldiers() const { return _maxSmallSoldiers; }
+	/// Gets the craft's maximum supported number of large (size=2) soldiers.
+	int getMaxLargeSoldiers() const { return _maxLargeSoldiers; }
+	/// Gets the craft's maximum supported number of small (size=1) vehicles (HWPs/SWSs).
+	int getMaxSmallVehicles() const { return _maxSmallVehicles; }
+	/// Gets the craft's maximum supported number of large (size=2) vehicles (HWPs/SWSs).
+	int getMaxLargeVehicles() const { return _maxLargeVehicles; }
+	/// Gets the craft's maximum supported number of small (size=1) units (soldiers + vehicles).
+	int getMaxSmallUnits() const { return _maxSmallUnits; }
+	/// Gets the craft's maximum supported number of large (size=2) units (soldiers + vehicles).
+	int getMaxLargeUnits() const { return _maxLargeUnits; }
+	/// Gets the craft's maximum supported number of soldiers (small + large).
+	int getMaxSoldiers() const { return _maxSoldiers; }
+	/// Gets the craft's maximum supported number of vehicles (small + large).
+	int getMaxVehicles() const { return _maxVehicles; }
 	/// Gets the craft's cost.
 	int getBuyCost() const;
 	/// Gets the craft's rent for a month.

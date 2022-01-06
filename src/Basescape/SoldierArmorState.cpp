@@ -299,9 +299,9 @@ void SoldierArmorState::lstArmorClick(Action *)
 	Armor *prev = soldier->getArmor();
 	Armor *next = _game->getMod()->getArmor(_armors[_indices[_lstArmor->getSelectedRow()]].type);
 	Craft *craft = soldier->getCraft();
-	if (craft != 0 && next->getSize() > prev->getSize())
+	if (craft)
 	{
-		if (craft->getNumVehiclesAndLargeSoldiers() >= craft->getRules()->getVehicles() || craft->getSpaceAvailable() < 3)
+		if (!craft->validateArmorChange(prev->getSize(), next->getSize()))
 		{
 			_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_CRAFT_SPACE"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 			return;
