@@ -536,18 +536,23 @@ void BattlescapeGenerator::nextStage()
 		}
 	}
 
-	const std::vector<MapScript*> *script = _game->getMod()->getMapScript(_terrain->getScript());
-	if (_game->getMod()->getMapScript(ruleDeploy->getScript()))
+	auto& terrainMapScript = _terrain->getRandomMapScript();
+	const std::vector<MapScript*> *script = _game->getMod()->getMapScript(terrainMapScript);
+	_save->setLastUsedMapScript(terrainMapScript);
+
+	auto& deployMapScript = ruleDeploy->getRandomMapScript();
+	if (_game->getMod()->getMapScript(deployMapScript))
 	{
-		script = _game->getMod()->getMapScript(ruleDeploy->getScript());
+		script = _game->getMod()->getMapScript(deployMapScript);
+		_save->setLastUsedMapScript(deployMapScript);
 	}
-	else if (!ruleDeploy->getScript().empty())
+	else if (!deployMapScript.empty())
 	{
-		throw Exception("Map generator encountered an error: " + ruleDeploy->getScript() + " script not found.");
+		throw Exception("Map generator encountered an error: " + deployMapScript + " script not found.");
 	}
 	if (script == 0)
 	{
-		throw Exception("Map generator encountered an error: " + _terrain->getScript() + " script not found.");
+		throw Exception("Map generator encountered an error: " + terrainMapScript + " script not found.");
 	}
 
 	// cleanup before map old map is destroyed
@@ -757,18 +762,23 @@ void BattlescapeGenerator::run()
 		_worldShade = ruleDeploy->getMaxShade();
 	}
 
-	const std::vector<MapScript*> *script = _game->getMod()->getMapScript(_terrain->getScript());
-	if (_game->getMod()->getMapScript(ruleDeploy->getScript()))
+	auto& terrainMapScript = _terrain->getRandomMapScript();
+	const std::vector<MapScript*> *script = _game->getMod()->getMapScript(terrainMapScript);
+	_save->setLastUsedMapScript(terrainMapScript);
+
+	auto& deployMapScript = ruleDeploy->getRandomMapScript();
+	if (_game->getMod()->getMapScript(deployMapScript))
 	{
-		script = _game->getMod()->getMapScript(ruleDeploy->getScript());
+		script = _game->getMod()->getMapScript(deployMapScript);
+		_save->setLastUsedMapScript(deployMapScript);
 	}
-	else if (!ruleDeploy->getScript().empty())
+	else if (!deployMapScript.empty())
 	{
-		throw Exception("Map generator encountered an error: " + ruleDeploy->getScript() + " script not found.");
+		throw Exception("Map generator encountered an error: " + deployMapScript + " script not found.");
 	}
 	if (script == 0)
 	{
-		throw Exception("Map generator encountered an error: " + _terrain->getScript() + " script not found.");
+		throw Exception("Map generator encountered an error: " + terrainMapScript + " script not found.");
 	}
 
 	generateMap(script, ruleDeploy->getCustomUfoName());

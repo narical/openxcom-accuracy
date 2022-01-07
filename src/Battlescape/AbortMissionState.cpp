@@ -71,7 +71,12 @@ AbortMissionState::AbortMissionState(SavedBattleGame *battleGame, BattlescapeSta
 	if (deployment != 0)
 	{
 		exit = !deployment->getNextStage().empty() || deployment->getEscapeType() == ESCAPE_EXIT || deployment->getEscapeType() == ESCAPE_EITHER;
-		const std::vector<MapScript*> *scripts = _game->getMod()->getMapScript(deployment->getScript());
+		std::string lastUsedMapScript = _battleGame->getLastUsedMapScript();
+		if (lastUsedMapScript.empty())
+		{
+			lastUsedMapScript = deployment->getRandomMapScript(); // don't crash on old saves
+		}
+		const std::vector<MapScript*> *scripts = _game->getMod()->getMapScript(lastUsedMapScript);
 		if (scripts != 0)
 		{
 			craft = false;

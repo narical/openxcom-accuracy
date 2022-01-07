@@ -249,7 +249,8 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_winCutscene = node["winCutscene"].as<std::string>(_winCutscene);
 	_loseCutscene = node["loseCutscene"].as<std::string>(_loseCutscene);
 	_abortCutscene = node["abortCutscene"].as<std::string>(_abortCutscene);
-	_script = node["script"].as<std::string>(_script);
+	_mapScript = node["script"].as<std::string>(_mapScript);
+	_mapScripts = node["mapScripts"].as<std::vector<std::string> >(_mapScripts);
 	_alert = node["alert"].as<std::string>(_alert);
 	_alertBackground = node["alertBackground"].as<std::string>(_alertBackground);
 	_alertDescription = node["alertDescription"].as<std::string>(_alertDescription);
@@ -517,9 +518,14 @@ std::string AlienDeployment::getRace() const
  * Gets the script to use to generate a mission of this type.
  * @return The script to use to generate a mission of this type.
  */
-std::string AlienDeployment::getScript() const
+const std::string& AlienDeployment::getRandomMapScript() const
 {
-	return _script;
+	if (!_mapScripts.empty())
+	{
+		size_t pick = RNG::generate(0, _mapScripts.size() - 1);
+		return _mapScripts[pick];
+	}
+	return _mapScript;
 }
 
 /**

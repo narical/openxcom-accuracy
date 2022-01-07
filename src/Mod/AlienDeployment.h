@@ -105,7 +105,8 @@ private:
 	std::map<std::string, int> _civiliansByType;
 	std::vector<std::string> _terrains, _music;
 	int _shade, _minShade, _maxShade;
-	std::string _nextStage, _race, _script;
+	std::string _nextStage, _race, _mapScript;
+	std::vector<std::string> _mapScripts;
 	std::vector<std::string> _randomRaces;
 	bool _finalDestination, _isAlienBase, _isHidden;
 	int _fakeUnderwaterSpawnChance;
@@ -183,7 +184,7 @@ public:
 	/// Gets the race to use in the next stage.
 	std::string getRace() const;
 	/// Gets the script to use for this deployment.
-	std::string getScript() const;
+	const std::string& getRandomMapScript() const;
 	/// Checks if this is the destination for the final mission (mars stage 1, t'leth stage 1).
 	bool isFinalDestination() const;
 	/// Gets the cutscene to play when this mission is won.

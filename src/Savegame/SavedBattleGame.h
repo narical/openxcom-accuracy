@@ -71,6 +71,7 @@ private:
 	Pathfinding *_pathfinding;
 	TileEngine *_tileEngine;
 	std::string _missionType, _strTarget, _strCraftOrBase, _alienCustomDeploy, _alienCustomMission;
+	std::string _lastUsedMapScript;
 	std::string _reinforcementsDeployment, _reinforcementsRace;
 	int _reinforcementsItemLevel;
 	std::map<std::string, int> _reinforcementsMemory;
@@ -158,6 +159,10 @@ public:
 	const std::string &getAlienCustomDeploy() const;
 	/// Gets the custom mission definition.
 	const std::string &getAlienCustomMission() const;
+	/// Sets the last used map script.
+	void setLastUsedMapScript(const std::string& lastUsedMapScript) { _lastUsedMapScript = lastUsedMapScript; }
+	/// Gets the last used map script.
+	const std::string& getLastUsedMapScript() const { return _lastUsedMapScript; }
 
 	/// Sets the alien deployment to use for reinforcements.
 	void setReinforcementsDeployment(const std::string &reinforcementsDeployment) { _reinforcementsDeployment = reinforcementsDeployment; }
