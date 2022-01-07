@@ -3656,8 +3656,6 @@ void GeoscapeState::determineAlienMissions()
 				(month < 1 || eventScript->getMaxScore() >= currentScore) &&
 				(month < 1 || eventScript->getMinFunds() <= currentFunds) &&
 				(month < 1 || eventScript->getMaxFunds() >= currentFunds) &&
-				(eventScript->getMissionMinRuns() == 0  || eventScript->getMissionMinRuns() <= strategy.getMissionsRun(eventScript->getMissionVarName())) &&
-				(eventScript->getMissionMaxRuns() == -1 || eventScript->getMissionMaxRuns() >= strategy.getMissionsRun(eventScript->getMissionVarName())) &&
 				eventScript->getMinDifficulty() <= save->getDifficulty() &&
 				eventScript->getMaxDifficulty() >= save->getDifficulty())
 			{
@@ -3668,6 +3666,32 @@ void GeoscapeState::determineAlienMissions()
 					triggerHappy = (save->isResearched(trigger.first) == trigger.second);
 					if (!triggerHappy)
 						break;
+				}
+				if (triggerHappy)
+				{
+					// check counters
+					if (eventScript->getMissionMinRuns() > 0)
+					{
+						if (!eventScript->getMissionVarName().empty() && eventScript->getMissionMinRuns() > strategy.getMissionsRun(eventScript->getMissionVarName()))
+						{
+							triggerHappy = false;
+						}
+						if (!eventScript->getMissionMarkerName().empty() && eventScript->getMissionMinRuns() > save->getLastId(eventScript->getMissionMarkerName()))
+						{
+							triggerHappy = false;
+						}
+					}
+					if (triggerHappy && eventScript->getMissionMaxRuns() != -1)
+					{
+						if (!eventScript->getMissionVarName().empty() && eventScript->getMissionMaxRuns() < strategy.getMissionsRun(eventScript->getMissionVarName()))
+						{
+							triggerHappy = false;
+						}
+						if (!eventScript->getMissionMarkerName().empty() && eventScript->getMissionMaxRuns() < save->getLastId(eventScript->getMissionMarkerName()))
+						{
+							triggerHappy = false;
+						}
+					}
 				}
 				if (triggerHappy)
 				{

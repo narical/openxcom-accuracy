@@ -236,6 +236,8 @@ public:
 	void setTime(const GameTime& time);
 	/// Gets the current ID for an object.
 	int getId(const std::string &name);
+	/// Gets the last ID for an object.
+	int getLastId(const std::string& name);
 	/// Resets the list of object IDs.
 	const std::map<std::string, int> &getAllIds() const;
 	/// Resets the list of object IDs.

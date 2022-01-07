@@ -1234,6 +1234,24 @@ int SavedGame::getId(const std::string &name)
 }
 
 /**
+ * Returns the last used ID for the specified object.
+ * @param name Object name.
+ * @return Last used ID number.
+ */
+int SavedGame::getLastId(const std::string& name)
+{
+	std::map<std::string, int>::iterator i = _ids.find(name);
+	if (i != _ids.end())
+	{
+		return std::max(1, i->second - 1);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/**
 * Resets the list of unique object IDs.
 * @param ids New ID list.
 */
