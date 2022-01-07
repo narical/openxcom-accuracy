@@ -3546,6 +3546,32 @@ void GeoscapeState::determineAlienMissions()
 			}
 			if (triggerHappy)
 			{
+				// check counters
+				if (command->getMissionMinRuns() > 0)
+				{
+					if (!command->getMissionVarName().empty() && command->getMissionMinRuns() > strategy.getMissionsRun(command->getMissionVarName()))
+					{
+						triggerHappy = false;
+					}
+					if (!command->getMissionMarkerName().empty() && command->getMissionMinRuns() > save->getLastId(command->getMissionMarkerName()))
+					{
+						triggerHappy = false;
+					}
+				}
+				if (triggerHappy && command->getMissionMaxRuns() != -1)
+				{
+					if (!command->getMissionVarName().empty() && command->getMissionMaxRuns() < strategy.getMissionsRun(command->getMissionVarName()))
+					{
+						triggerHappy = false;
+					}
+					if (!command->getMissionMarkerName().empty() && command->getMissionMaxRuns() < save->getLastId(command->getMissionMarkerName()))
+					{
+						triggerHappy = false;
+					}
+				}
+			}
+			if (triggerHappy)
+			{
 				// item requirements
 				for (auto &triggerItem : command->getItemTriggers())
 				{

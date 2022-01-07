@@ -34,6 +34,8 @@ private:
 	int _firstMonth, _lastMonth, _label, _executionOdds, _targetBaseOdds, _minDifficulty, _maxRuns, _avoidRepeats, _delay, _randomDelay;
 	int _minScore, _maxScore;
 	int64_t _minFunds, _maxFunds;
+	std::string _missionVarName, _missionMarkerName;
+	int _missionMinRuns, _missionMaxRuns;
 	std::vector<int> _conditionals;
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights, _missionWeights, _raceWeights;
 	std::map<std::string, bool> _researchTriggers;
@@ -85,6 +87,14 @@ public:
 	int64_t getMinFunds() const { return _minFunds; }
 	/// Gets the maximum funds (from current month) for this command to run.
 	int64_t getMaxFunds() const { return _maxFunds; }
+	/// Gets the name of the mission script tracking variable.
+	const std::string& getMissionVarName() const { return _missionVarName; }
+	/// Gets the name of the mission marker tracking variable.
+	const std::string& getMissionMarkerName() const { return _missionMarkerName; }
+	/// Gets the minimum number of missions generated for this command to run.
+	int getMissionMinRuns() const { return _missionMinRuns; }
+	/// Gets the maximum number of missions generated for this command to run.
+	int getMissionMaxRuns() const { return _missionMaxRuns; }
 	/// Gets the list of conditions this command requires in order to run.
 	const std::vector<int> &getConditionals() const;
 	/// Does this command have raceWeights?

@@ -80,6 +80,10 @@ void RuleMissionScript::load(const YAML::Node& node)
 	_maxScore = node["maxScore"].as<int>(_maxScore);
 	_minFunds = node["minFunds"].as<int64_t>(_minFunds);
 	_maxFunds = node["maxFunds"].as<int64_t>(_maxFunds);
+	_missionVarName = node["missionVarName"].as<std::string>(_missionVarName);
+	_missionMarkerName = node["missionMarkerName"].as<std::string>(_missionMarkerName);
+	_missionMinRuns = node["missionMinRuns"].as<int>(_missionMinRuns);
+	_missionMaxRuns = node["missionMaxRuns"].as<int>(_missionMaxRuns);
 	_conditionals = node["conditionals"].as<std::vector<int> >(_conditionals);
 	if (const YAML::Node &weights = node["missionWeights"])
 	{
