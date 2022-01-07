@@ -348,6 +348,8 @@ public:
 	static int SMOKE_OFFSET;
 	static int UNDERWATER_SMOKE_OFFSET;
 
+	/// Empty surface.
+	constexpr static int NO_SURFACE = -1;
 	/// Empty sound.
 	constexpr static int NO_SOUND = -1;
 	/// Special value for defualt string diffrent to empty one.

@@ -1433,6 +1433,9 @@ void Mod::loadOffsetNode(const std::string &parent, int& offset, const YAML::Nod
 		throw LoadRuleException(parent, node, "unsupported yaml node");
 	}
 
+	static_assert(Mod::NO_SOUND == -1, "NO_SOUND need to equal -1");
+	static_assert(Mod::NO_SURFACE == -1, "NO_SURFACE need to equal -1");
+
 	if (offset < -1)
 	{
 		std::ostringstream err;
@@ -1493,9 +1496,9 @@ void Mod::loadSpriteOffset(const std::string &parent, std::vector<int>& sprites,
 		{
 			for (YAML::const_iterator i = node.begin(); i != node.end(); ++i)
 			{
-				sprites.push_back(-1);
+				sprites.push_back(Mod::NO_SURFACE);
 				loadOffsetNode(parent, sprites.back(), *i, maxShared, set, 1);
-				if (checkForSoftError(sprites.back() == -1, parent, *i, "incorrect value in sprite list"))
+				if (checkForSoftError(sprites.back() == Mod::NO_SURFACE, parent, *i, "incorrect value in sprite list"))
 				{
 					sprites.pop_back();
 				}
@@ -1503,7 +1506,7 @@ void Mod::loadSpriteOffset(const std::string &parent, std::vector<int>& sprites,
 		}
 		else
 		{
-			sprites.push_back(-1);
+			sprites.push_back(Mod::NO_SURFACE);
 			loadOffsetNode(parent, sprites.back(), node, maxShared, set, 1);
 		}
 	}
