@@ -1007,6 +1007,64 @@ const std::vector<std::vector<Uint8> > *Mod::getLUTs() const
 }
 
 
+/**
+ * Veryfy if value have defined surface in given set.
+ */
+void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const std::string &set) const
+{
+	if (Options::lazyLoadResources)
+	{
+		// we can't check if index is correct when set is loaded
+		return;
+	}
+
+	auto* s = getRule(set, "Sprite Set", _sets, true);
+
+	checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+}
+
+/**
+ * Veryfy if value have defined surface in given set.
+ */
+void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& sprites, const std::string &set) const
+{
+	if (Options::lazyLoadResources)
+	{
+		// we can't check if index is correct when set is loaded
+		return;
+	}
+
+	auto* s = getRule(set, "Sprite Set", _sets, true);
+
+	for (auto sprite : sprites)
+	{
+		checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+	}
+}
+
+/**
+ * Veryfy if value have defined sound in given set.
+ */
+void Mod::verifySoundOffset(const std::string &parent, const int& sound, const std::string &set) const
+{
+	auto* s = getSoundSet(set);
+
+	checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+}
+
+/**
+ * Veryfy if value have defined sound in given set.
+ */
+void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& sounds, const std::string &set) const
+{
+	auto* s = getSoundSet(set);
+
+	for (auto sound : sounds)
+	{
+		checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+	}
+}
+
 
 /**
  * Returns the current mod-based offset for resources.

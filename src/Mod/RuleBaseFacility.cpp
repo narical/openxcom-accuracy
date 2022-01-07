@@ -166,6 +166,11 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod, int listOrder)
  */
 void RuleBaseFacility::afterLoad(const Mod* mod)
 {
+	mod->verifySpriteOffset(_type, _spriteShape, "BASEBITS.PCK");
+	mod->verifySpriteOffset(_type, _spriteFacility, "BASEBITS.PCK");
+	mod->verifySoundOffset(_type, _fireSound, "GEO.CAT");
+	mod->verifySoundOffset(_type, _hitSound, "GEO.CAT");
+
 	mod->linkRule(_ammoItem, _ammoItemName);
 
 	if (!_destroyedFacilityName.empty())

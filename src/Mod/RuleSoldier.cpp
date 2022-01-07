@@ -196,6 +196,27 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
  */
 void RuleSoldier::afterLoad(const Mod* mod)
 {
+	mod->verifySoundOffset(_type, _deathSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _deathSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _panicSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _panicSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _berserkSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _berserkSoundFemale, "BATTLE.CAT");
+
+	mod->verifySoundOffset(_type, _selectUnitSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectUnitSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _startMovingSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _startMovingSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectWeaponSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectWeaponSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _annoyedSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _annoyedSoundFemale, "BATTLE.CAT");
+
+	mod->verifySpriteOffset(_type, _rankSprite, "BASEBITS.PCK");
+	mod->verifySpriteOffset(_type, _rankSpriteBattlescape, "SMOKE.PCK");
+	mod->verifySpriteOffset(_type, _rankSpriteTiny, "TinyRanks");
+	mod->verifySpriteOffset(_type, _skillIconSprite, "SPICONS.DAT");
+
 	if (!_specWeaponName.empty())
 	{
 		mod->linkRule(_specWeapon, _specWeaponName);

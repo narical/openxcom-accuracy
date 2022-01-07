@@ -251,6 +251,22 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
  */
 void Armor::afterLoad(const Mod* mod)
 {
+	mod->verifySoundOffset(_type, _moveSound, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _deathSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _deathSoundFemale, "BATTLE.CAT");
+
+	mod->verifySoundOffset(_type, _selectUnitSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectUnitSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _startMovingSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _startMovingSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectWeaponSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _selectWeaponSoundFemale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _annoyedSoundMale, "BATTLE.CAT");
+	mod->verifySoundOffset(_type, _annoyedSoundFemale, "BATTLE.CAT");
+
+	mod->verifySpriteOffset(_type, _customArmorPreviewIndex, "CustomArmorPreviews");
+
+
 	mod->linkRule(_corpseBattle, _corpseBattleNames);
 	mod->linkRule(_corpseGeo, _corpseGeoName);
 	mod->linkRule(_builtInWeapons, _builtInWeaponsNames);
