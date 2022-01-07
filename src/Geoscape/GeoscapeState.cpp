@@ -1752,6 +1752,11 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 		const RuleResearch* research = _game->getMod()->getResearch(site->getDeployment()->getUnlockedResearchOnDespawn());
 		_game->getSavedGame()->handleResearchUnlockedByMissions(research, _game->getMod());
 
+		// Increase counters
+		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterDespawn());
+		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterFailure()); // despawn is also a type of failure
+		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterAll());
+
 		// Generate a despawn event
 		auto eventRules = _game->getMod()->getEvent(site->getDeployment()->chooseDespawnEvent());
 		bool canSpawn = _game->getSavedGame()->canSpawnInstantEvent(eventRules);

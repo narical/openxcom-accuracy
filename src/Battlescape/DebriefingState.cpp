@@ -2099,6 +2099,10 @@ void DebriefingState::prepareDebriefing()
 			}
 		}
 
+		// Increase counters
+		save->increaseCustomCounter(ruleDeploy->getCounterSuccess());
+		save->increaseCustomCounter(ruleDeploy->getCounterAll());
+
 		// Generate a success event
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseSuccessEvent());
 	}
@@ -2107,6 +2111,10 @@ void DebriefingState::prepareDebriefing()
 		// Unlock research defined in alien deployment, if the mission was a failure
 		const RuleResearch* research = _game->getMod()->getResearch(ruleDeploy->getUnlockedResearchOnFailure());
 		save->handleResearchUnlockedByMissions(research, _game->getMod());
+
+		// Increase counters
+		save->increaseCustomCounter(ruleDeploy->getCounterFailure());
+		save->increaseCustomCounter(ruleDeploy->getCounterAll());
 
 		// Generate a failure event
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());

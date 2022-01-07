@@ -1252,6 +1252,26 @@ int SavedGame::getLastId(const std::string& name)
 }
 
 /**
+ * Increase a custom counter.
+ * @param name Counter name.
+ */
+void SavedGame::increaseCustomCounter(const std::string& name)
+{
+	if (!name.empty())
+	{
+		std::map<std::string, int>::iterator i = _ids.find(name);
+		if (i != _ids.end())
+		{
+			i->second++;
+		}
+		else
+		{
+			_ids[name] = 2; // not a typo
+		}
+	}
+}
+
+/**
 * Resets the list of unique object IDs.
 * @param ids New ID list.
 */
