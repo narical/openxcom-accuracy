@@ -3401,6 +3401,32 @@ void GeoscapeState::determineAlienMissions()
 				}
 				if (triggerHappy)
 				{
+					// check counters
+					if (arcScript->getMissionMinRuns() > 0)
+					{
+						if (!arcScript->getMissionVarName().empty() && arcScript->getMissionMinRuns() > strategy.getMissionsRun(arcScript->getMissionVarName()))
+						{
+							triggerHappy = false;
+						}
+						if (!arcScript->getMissionMarkerName().empty() && arcScript->getMissionMinRuns() > save->getLastId(arcScript->getMissionMarkerName()))
+						{
+							triggerHappy = false;
+						}
+					}
+					if (triggerHappy && arcScript->getMissionMaxRuns() != -1)
+					{
+						if (!arcScript->getMissionVarName().empty() && arcScript->getMissionMaxRuns() < strategy.getMissionsRun(arcScript->getMissionVarName()))
+						{
+							triggerHappy = false;
+						}
+						if (!arcScript->getMissionMarkerName().empty() && arcScript->getMissionMaxRuns() < save->getLastId(arcScript->getMissionMarkerName()))
+						{
+							triggerHappy = false;
+						}
+					}
+				}
+				if (triggerHappy)
+				{
 					// item requirements
 					for (auto &triggerItem : arcScript->getItemTriggers())
 					{
