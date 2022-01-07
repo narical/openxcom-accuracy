@@ -211,7 +211,7 @@ RuleItem::RuleItem(const std::string &type) :
 
 	_confAuto.shots = 3;
 
-	_customItemPreviewIndex.push_back(0);
+	_customItemPreviewIndex.push_back(Mod::NO_SURFACE);
 }
 
 /**

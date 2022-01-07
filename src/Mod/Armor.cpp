@@ -82,7 +82,7 @@ Armor::Armor(const std::string &type) :
 	_energyRecovery.setEnergyRecovery();
 	_stunRecovery.setStunRecovery();
 
-	_customArmorPreviewIndex.push_back(0);
+	_customArmorPreviewIndex.push_back(Mod::NO_SURFACE);
 }
 
 /**
