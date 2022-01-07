@@ -2014,6 +2014,11 @@ void Mod::loadAll()
 		}
 	}
 
+
+	loadExtraResources();
+
+
+	Log(LOG_INFO) << "After load.";
 	// cross link rule objects
 
 	afterLoadHelper("research", this, _research, &RuleResearch::afterLoad);
@@ -2149,7 +2154,6 @@ void Mod::loadAll()
 	Log(LOG_INFO) << "Loading ended.";
 
 	sortLists();
-	loadExtraResources();
 	modResources();
 }
 
