@@ -662,7 +662,7 @@ bool init()
 // called from the dos screen state (StartState)
 void refreshMods()
 {
-	if (reload)
+	if (Options::reload)
 	{
 		_masterMod = "";
 	}
