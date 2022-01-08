@@ -952,9 +952,13 @@ void DogfightState::update()
 			int escapeCounter = _ufo->getEscapeCountdown();
 			if (_ufoIsAttacking)
 			{
-				// TODO: rethink: unhardcode run away thresholds?
-				if (_ufo->getDamage() > _ufo->getCraftStats().damageMax / 3 && _ufo->getHuntBehavior() != 1)
+				if (_disableDisengage && _ufo->getSoftlockShotCounter() >= _ufo->getRules()->getSoftlockThreshold())
 				{
+					escapeCounter = 1; // game is in softlock, stop being a hunter-killer and disengage!
+				}
+				else if (_ufo->getDamage() > _ufo->getCraftStats().damageMax / 3 && _ufo->getHuntBehavior() != 1)
+				{
+					// TODO: rethink: unhardcode run away thresholds?
 					if (_craft->getDamage() > _craft->getDamageMax() / 2)
 					{
 						escapeCounter = 999; // it's gonna be tight, continue shooting...
@@ -1732,6 +1736,10 @@ void DogfightState::ufoFireWeapon()
 	p->setHorizontalPosition(HP_CENTER);
 	p->setPosition(_currentDist - (_ufo->getRules()->getRadius() / 2));
 	_projectiles.push_back(p);
+	if (_ufoIsAttacking && _disableDisengage)
+	{
+		_ufo->increaseSoftlockShotCounter();
+	}
 
 	if (_ufo->getRules()->getFireSound() == -1)
 	{

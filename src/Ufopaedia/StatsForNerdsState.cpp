@@ -3264,6 +3264,7 @@ void StatsForNerdsState::initUfoList()
 		addSingleString(ss, ufoRule->getType(), "type");
 
 		addSection("{Exotic}", "", _white);
+		addInteger(ss, ufoRule->getSoftlockThreshold(), "softlockThreshold", 100);
 		addInteger(ss, ufoRule->getMissilePower(), "missilePower");
 		addBoolean(ss, ufoRule->isUnmanned(), "unmanned");
 		addInteger(ss, ufoRule->getSplashdownSurvivalChance(), "splashdownSurvivalChance", 100);
