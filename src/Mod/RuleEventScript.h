@@ -37,7 +37,7 @@ private:
 	int _minScore, _maxScore;
 	int64_t _minFunds, _maxFunds;
 	std::string _missionVarName, _missionMarkerName;
-	int _missionMinRuns, _missionMaxRuns;
+	int _counterMin, _counterMax;
 	std::map<std::string, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
@@ -80,9 +80,9 @@ public:
 	/// Gets the name of the mission marker tracking variable.
 	const std::string& getMissionMarkerName() const { return _missionMarkerName; }
 	/// Gets the minimum number of missions generated for this command to run.
-	int getMissionMinRuns() const { return _missionMinRuns; }
+	int getCounterMin() const { return _counterMin; }
 	/// Gets the maximum number of missions generated for this command to run.
-	int getMissionMaxRuns() const { return _missionMaxRuns; }
+	int getCounterMax() const { return _counterMax; }
 	/// Gets the research triggers that may apply to this command.
 	const std::map<std::string, bool> &getResearchTriggers() const { return _researchTriggers; }
 	/// Gets the item triggers that may apply to this command.

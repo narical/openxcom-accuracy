@@ -30,7 +30,7 @@ namespace OpenXcom
 RuleEventScript::RuleEventScript(const std::string &type) :
 	_type(type), _firstMonth(0), _lastMonth(-1), _executionOdds(100), _minDifficulty(0), _maxDifficulty(4),
 	_minScore(INT_MIN), _maxScore(INT_MAX), _minFunds(INT64_MIN), _maxFunds(INT64_MAX),
-	_missionMinRuns(0), _missionMaxRuns(-1),
+	_counterMin(0), _counterMax(-1),
 	_affectsGameProgression(false)
 {
 }
@@ -82,8 +82,13 @@ void RuleEventScript::load(const YAML::Node &node)
 	_maxFunds = node["maxFunds"].as<int64_t>(_maxFunds);
 	_missionVarName = node["missionVarName"].as<std::string>(_missionVarName);
 	_missionMarkerName = node["missionMarkerName"].as<std::string>(_missionMarkerName);
-	_missionMinRuns = node["missionMinRuns"].as<int>(_missionMinRuns);
-	_missionMaxRuns = node["missionMaxRuns"].as<int>(_missionMaxRuns);
+	{
+		// deprecated, remove after July 2022
+		_counterMin = node["missionMinRuns"].as<int>(_counterMin);
+		_counterMax = node["missionMaxRuns"].as<int>(_counterMax);
+	}
+	_counterMin = node["counterMin"].as<int>(_counterMin);
+	_counterMax = node["counterMax"].as<int>(_counterMax);
 	_researchTriggers = node["researchTriggers"].as<std::map<std::string, bool> >(_researchTriggers);
 	_itemTriggers = node["itemTriggers"].as<std::map<std::string, bool> >(_itemTriggers);
 	_facilityTriggers = node["facilityTriggers"].as<std::map<std::string, bool> >(_facilityTriggers);

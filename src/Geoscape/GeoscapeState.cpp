@@ -3407,24 +3407,24 @@ void GeoscapeState::determineAlienMissions()
 				if (triggerHappy)
 				{
 					// check counters
-					if (arcScript->getMissionMinRuns() > 0)
+					if (arcScript->getCounterMin() > 0)
 					{
-						if (!arcScript->getMissionVarName().empty() && arcScript->getMissionMinRuns() > strategy.getMissionsRun(arcScript->getMissionVarName()))
+						if (!arcScript->getMissionVarName().empty() && arcScript->getCounterMin() > strategy.getMissionsRun(arcScript->getMissionVarName()))
 						{
 							triggerHappy = false;
 						}
-						if (!arcScript->getMissionMarkerName().empty() && arcScript->getMissionMinRuns() > save->getLastId(arcScript->getMissionMarkerName()))
+						if (!arcScript->getMissionMarkerName().empty() && arcScript->getCounterMin() > save->getLastId(arcScript->getMissionMarkerName()))
 						{
 							triggerHappy = false;
 						}
 					}
-					if (triggerHappy && arcScript->getMissionMaxRuns() != -1)
+					if (triggerHappy && arcScript->getCounterMax() != -1)
 					{
-						if (!arcScript->getMissionVarName().empty() && arcScript->getMissionMaxRuns() < strategy.getMissionsRun(arcScript->getMissionVarName()))
+						if (!arcScript->getMissionVarName().empty() && arcScript->getCounterMax() < strategy.getMissionsRun(arcScript->getMissionVarName()))
 						{
 							triggerHappy = false;
 						}
-						if (!arcScript->getMissionMarkerName().empty() && arcScript->getMissionMaxRuns() < save->getLastId(arcScript->getMissionMarkerName()))
+						if (!arcScript->getMissionMarkerName().empty() && arcScript->getCounterMax() < save->getLastId(arcScript->getMissionMarkerName()))
 						{
 							triggerHappy = false;
 						}
@@ -3578,24 +3578,24 @@ void GeoscapeState::determineAlienMissions()
 			if (triggerHappy)
 			{
 				// check counters
-				if (command->getMissionMinRuns() > 0)
+				if (command->getCounterMin() > 0)
 				{
-					if (!command->getMissionVarName().empty() && command->getMissionMinRuns() > strategy.getMissionsRun(command->getMissionVarName()))
+					if (!command->getMissionVarName().empty() && command->getCounterMin() > strategy.getMissionsRun(command->getMissionVarName()))
 					{
 						triggerHappy = false;
 					}
-					if (!command->getMissionMarkerName().empty() && command->getMissionMinRuns() > save->getLastId(command->getMissionMarkerName()))
+					if (!command->getMissionMarkerName().empty() && command->getCounterMin() > save->getLastId(command->getMissionMarkerName()))
 					{
 						triggerHappy = false;
 					}
 				}
-				if (triggerHappy && command->getMissionMaxRuns() != -1)
+				if (triggerHappy && command->getCounterMax() != -1)
 				{
-					if (!command->getMissionVarName().empty() && command->getMissionMaxRuns() < strategy.getMissionsRun(command->getMissionVarName()))
+					if (!command->getMissionVarName().empty() && command->getCounterMax() < strategy.getMissionsRun(command->getMissionVarName()))
 					{
 						triggerHappy = false;
 					}
-					if (!command->getMissionMarkerName().empty() && command->getMissionMaxRuns() < save->getLastId(command->getMissionMarkerName()))
+					if (!command->getMissionMarkerName().empty() && command->getCounterMax() < save->getLastId(command->getMissionMarkerName()))
 					{
 						triggerHappy = false;
 					}
@@ -3727,24 +3727,24 @@ void GeoscapeState::determineAlienMissions()
 				if (triggerHappy)
 				{
 					// check counters
-					if (eventScript->getMissionMinRuns() > 0)
+					if (eventScript->getCounterMin() > 0)
 					{
-						if (!eventScript->getMissionVarName().empty() && eventScript->getMissionMinRuns() > strategy.getMissionsRun(eventScript->getMissionVarName()))
+						if (!eventScript->getMissionVarName().empty() && eventScript->getCounterMin() > strategy.getMissionsRun(eventScript->getMissionVarName()))
 						{
 							triggerHappy = false;
 						}
-						if (!eventScript->getMissionMarkerName().empty() && eventScript->getMissionMinRuns() > save->getLastId(eventScript->getMissionMarkerName()))
+						if (!eventScript->getMissionMarkerName().empty() && eventScript->getCounterMin() > save->getLastId(eventScript->getMissionMarkerName()))
 						{
 							triggerHappy = false;
 						}
 					}
-					if (triggerHappy && eventScript->getMissionMaxRuns() != -1)
+					if (triggerHappy && eventScript->getCounterMax() != -1)
 					{
-						if (!eventScript->getMissionVarName().empty() && eventScript->getMissionMaxRuns() < strategy.getMissionsRun(eventScript->getMissionVarName()))
+						if (!eventScript->getMissionVarName().empty() && eventScript->getCounterMax() < strategy.getMissionsRun(eventScript->getMissionVarName()))
 						{
 							triggerHappy = false;
 						}
-						if (!eventScript->getMissionMarkerName().empty() && eventScript->getMissionMaxRuns() < save->getLastId(eventScript->getMissionMarkerName()))
+						if (!eventScript->getMissionMarkerName().empty() && eventScript->getCounterMax() < save->getLastId(eventScript->getMissionMarkerName()))
 						{
 							triggerHappy = false;
 						}

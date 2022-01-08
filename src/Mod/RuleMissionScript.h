@@ -35,7 +35,7 @@ private:
 	int _minScore, _maxScore;
 	int64_t _minFunds, _maxFunds;
 	std::string _missionVarName, _missionMarkerName;
-	int _missionMinRuns, _missionMaxRuns;
+	int _counterMin, _counterMax;
 	std::vector<int> _conditionals;
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights, _missionWeights, _raceWeights;
 	std::map<std::string, bool> _researchTriggers;
@@ -92,9 +92,9 @@ public:
 	/// Gets the name of the mission marker tracking variable.
 	const std::string& getMissionMarkerName() const { return _missionMarkerName; }
 	/// Gets the minimum number of missions generated for this command to run.
-	int getMissionMinRuns() const { return _missionMinRuns; }
+	int getCounterMin() const { return _counterMin; }
 	/// Gets the maximum number of missions generated for this command to run.
-	int getMissionMaxRuns() const { return _missionMaxRuns; }
+	int getCounterMax() const { return _counterMax; }
 	/// Gets the list of conditions this command requires in order to run.
 	const std::vector<int> &getConditionals() const;
 	/// Does this command have raceWeights?
