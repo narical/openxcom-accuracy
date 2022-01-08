@@ -82,7 +82,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_floatHeight = _armor->getFloatHeight() == -1 ? soldier->getRules()->getFloatHeight() : _armor->getFloatHeight();
 	_intelligence = 2;
 	_aggression = 1;
-	_specab = SPECAB_NONE;
+	_specab = (SpecialAbility)_armor->getSpecialAbility();
 	_movementType = _armor->getMovementType();
 	if (_movementType == MT_FLOAT)
 	{
@@ -220,6 +220,7 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_kneelHeight = _armor->getKneelHeight() == -1 ? soldier->getRules()->getKneelHeight() : _armor->getKneelHeight();
 	_floatHeight = _armor->getFloatHeight() == -1 ? soldier->getRules()->getFloatHeight() : _armor->getFloatHeight();
 
+	_specab = (SpecialAbility)_armor->getSpecialAbility();
 	_movementType = _armor->getMovementType();
 	if (_movementType == MT_FLOAT) {
 		if (depth > 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }

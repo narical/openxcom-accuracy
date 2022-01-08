@@ -75,6 +75,7 @@ private:
 	int _frontArmor, _sideArmor, _leftArmorDiff, _rearArmor, _underArmor, _drawingRoutine;
 	bool _drawBubbles;
 	MovementType _movementType;
+	SpecialAbility _specab;
 	bool _turnBeforeFirstStep;
 	int _turnCost;
 	int _moveSound;
@@ -166,6 +167,8 @@ public:
 	bool drawBubbles() const;
 	/// DO NOT USE THIS FUNCTION OUTSIDE THE BATTLEUNIT CONSTRUCTOR OR I WILL HUNT YOU DOWN.
 	MovementType getMovementType() const;
+	/// Gets the armor's special ability.
+	int getSpecialAbility() const;
 
 	/// Should turning before first step cost TU or not?
 	bool getTurnBeforeFirstStep() const { return _turnBeforeFirstStep; }
