@@ -25,12 +25,14 @@
 #include "../Engine/Options.h"
 #include "../Engine/Screen.h"
 #include "../Engine/SurfaceSet.h"
+#include "../Engine/Timer.h"
 #include "../Interface/Text.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleInventory.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/Armor.h"
 #include "../Savegame/BattleUnit.h"
+#include "../Savegame/SavedGame.h"
 #include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
@@ -44,10 +46,14 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-AlienInventory::AlienInventory(Game *game, int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _game(game), _selUnit(0), _dynamicOffset(0)
+AlienInventory::AlienInventory(Game *game, int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _game(game), _selUnit(0), _dynamicOffset(0), _animFrame(0)
 {
 	_grid = new Surface(width, height, 0, 0);
 	_items = new Surface(width, height, 0, 0);
+
+	_animTimer = new Timer(100);
+	_animTimer->onTimer((SurfaceHandler)&AlienInventory::animate);
+	_animTimer->start();
 }
 
 /**
@@ -57,6 +63,7 @@ AlienInventory::~AlienInventory()
 {
 	delete _grid;
 	delete _items;
+	delete _animTimer;
 }
 
 /**
@@ -148,6 +155,8 @@ void AlienInventory::drawGrid()
  */
 void AlienInventory::drawItems()
 {
+	const SavedBattleGame* save = _game->getSavedGame()->getSavedBattle();
+	ScriptWorkerBlit work;
 	_items->clear();
 	if (_selUnit != 0)
 	{
@@ -156,7 +165,11 @@ void AlienInventory::drawItems()
 		{
 			if ((*i)->getSlot()->getType() == INV_HAND)
 			{
-				Surface *frame = texture->getFrame((*i)->getRules()->getBigSprite());
+				const Surface* frame = (*i)->getBigSprite(texture, save, _animFrame);
+
+				if (!frame)
+					continue;
+
 				int x = (*i)->getSlot()->getX() + (*i)->getRules()->getHandSpriteOffX();
 				x += _game->getMod()->getAlienInventoryOffsetX();
 
@@ -165,7 +178,10 @@ void AlienInventory::drawItems()
 				else if ((*i)->getSlot()->isLeftHand())
 					x += _dynamicOffset;
 
-				frame->blitNShade(_items, x, (*i)->getSlot()->getY() + (*i)->getRules()->getHandSpriteOffY());
+				int y = (*i)->getSlot()->getY() + (*i)->getRules()->getHandSpriteOffY();
+
+				BattleItem::ScriptFill(&work, *i, save, BODYPART_ITEM_INVENTORY, _animFrame, 0);
+				work.executeBlit(frame, _items, x, y, 0);
 			}
 			else
 			{
@@ -250,6 +266,24 @@ void AlienInventory::mouseClick(Action *action, State *state)
 		}
 	}
 	InteractiveSurface::mouseClick(action, state);
+}
+
+/**
+ * Handles timers.
+ */
+void AlienInventory::think()
+{
+	_animTimer->think(0, this);
+}
+
+/**
+ * Animate surface.
+ */
+void AlienInventory::animate()
+{
+	_animFrame++;
+
+	drawItems();
 }
 
 }
