@@ -578,7 +578,17 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 		ufo->setLatitude(_base->getLatitude());
 	}
 	Waypoint *wp = new Waypoint();
-	pos = getWaypoint(wave, trajectory, 1, globe, regionRules, *ufo);
+	if (trajectory.getWaypointCount() > 1)
+	{
+		pos = getWaypoint(wave, trajectory, 1, globe, regionRules, *ufo);
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Missing second waypoint! Error occurred while trying to determine UFO waypoint for mission type: " << _rule.getType();
+		ss << " in region: " << regionRules.getType() << "; ufo type: " << ufo->getRules()->getType() << ", trajectory ID: " << trajectory.getID() << ".";
+		throw Exception(ss.str());
+	}
 	wp->setLongitude(pos.first);
 	wp->setLatitude(pos.second);
 	ufo->setDestination(wp);

@@ -99,8 +99,8 @@ void RuleRegion::load(const YAML::Node &node)
 				if (a.lonMin > a.lonMax)
 				{
 					Log(LOG_ERROR) << "Crossing the prime meridian in mission zones requires a different syntax, region: " << _type << ", zone: " << zn << ", area: " << an << ", lonMin: " << Rad2Deg(a.lonMin) << ", lonMax: " << Rad2Deg(a.lonMax);
-					Log(LOG_ERROR) << "  Wrong example: [350,   8, 20, 30]";
-					Log(LOG_ERROR) << "Correct example: [350, 368, 20, 30]";
+					Log(LOG_INFO) << "  Wrong example: [350,   8, 20, 30]";
+					Log(LOG_INFO) << "Correct example: [350, 368, 20, 30]";
 				}
 				++an;
 			}
