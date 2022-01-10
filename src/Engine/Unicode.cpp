@@ -494,7 +494,7 @@ std::string codePointSubstrUTF8(const std::string &str, std::size_t pos, std::si
 				byte_begin = byte_curr;
 
 #if 0
-				// potetial optimalization but it could propagate invalid bytes
+				// potential optimalization but it could propagate invalid bytes
 				if (count == std::string::npos)
 				{
 					found_end = true;
@@ -577,7 +577,7 @@ std::string codePointSubstrUTF8(const std::string &str, std::size_t pos, std::si
 		)
 	)
 	{
-		// early end, check if we have invaild utf8
+		// early end, check if we have invalid utf8
 		if (false == found_end)
 		{
 			throw Exception("Invalid utf8 string for substr");
@@ -769,7 +769,7 @@ std::string formatPercentage(int value)
 
 
 #ifdef OXCE_AUTO_TEST
-#define assert_throw(A) try { A; assert(false && "No throw from " #A ); } catch (...){ /*noting*/ }
+#define assert_throw(A) try { A; assert(false && "No throw from " #A ); } catch (...){ /*nothing*/ }
 
 static auto dummy = ([]
 {

@@ -352,7 +352,7 @@ public:
 	constexpr static int NO_SURFACE = -1;
 	/// Empty sound.
 	constexpr static int NO_SOUND = -1;
-	/// Special value for defualt string diffrent to empty one.
+	/// Special value for default string different to empty one.
 	static const std::string STR_NULL;
 
 	static int ITEM_DROP;
@@ -477,13 +477,13 @@ public:
 		return false;
 	}
 
-	/// Veryfy if value have defined surface in given set.
+	/// Verify if value have defined surface in given set.
 	void verifySpriteOffset(const std::string &parent, const int& sprite, const std::string &set) const;
-	/// Veryfy if value have defined surface in given set.
+	/// Verify if value have defined surface in given set.
 	void verifySpriteOffset(const std::string &parent, const std::vector<int>& sprites, const std::string &set) const;
-	/// Veryfy if value have defined sound in given set.
+	/// Verify if value have defined sound in given set.
 	void verifySoundOffset(const std::string &parent, const int& sound, const std::string &set) const;
-	/// Veryfy if value have defined sound in given set.
+	/// Verify if value have defined sound in given set.
 	void verifySoundOffset(const std::string &parent, const std::vector<int>& sounds, const std::string &set) const;
 
 

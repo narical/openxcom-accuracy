@@ -444,7 +444,7 @@ void ExplosionBState::explode()
 	_parent->checkForCasualties(_attack.damage_item ? _damageType : nullptr, _attack, false, terrainExplosion);
 	// revive units if damage could give hp or reduce stun
 	_parent->getSave()->reviveUnconsciousUnits(true);
-	// if any unit get infected trun it to zombie
+	// if any unit get infected turn it to zombie
 	_parent->convertInfected();
 
 	// if this explosion was caused by a unit shooting, now it's the time to put the gun down

@@ -157,14 +157,14 @@ int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
 constexpr size_t MaxDifficultyLevels = 5;
 
 
-/// Special value for defualt string diffrent to empty one.
+/// Special value for default string different to empty one.
 const std::string Mod::STR_NULL = { '\0' };
 /// Predefined name for first loaded mod that have all original data
 const std::string ModNameMaster = "master";
 /// Predefined name for current mod that is loading rulesets.
 const std::string ModNameCurrent = "current";
 
-/// Reduction of size allocated for transparcey LUTs.
+/// Reduction of size allocated for transparency LUTs.
 const size_t ModTransparceySizeReduction = 100;
 
 void Mod::resetGlobalStatics()
@@ -1008,7 +1008,7 @@ const std::vector<std::vector<Uint8> > *Mod::getLUTs() const
 
 
 /**
- * Veryfy if value have defined surface in given set.
+ * Verify if value have defined surface in given set.
  */
 void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const std::string &set) const
 {
@@ -1024,7 +1024,7 @@ void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const
 }
 
 /**
- * Veryfy if value have defined surface in given set.
+ * Verify if value have defined surface in given set.
  */
 void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& sprites, const std::string &set) const
 {
@@ -1043,7 +1043,7 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 }
 
 /**
- * Veryfy if value have defined sound in given set.
+ * Verify if value have defined sound in given set.
  */
 void Mod::verifySoundOffset(const std::string &parent, const int& sound, const std::string &set) const
 {
@@ -1053,7 +1053,7 @@ void Mod::verifySoundOffset(const std::string &parent, const int& sound, const s
 }
 
 /**
- * Veryfy if value have defined sound in given set.
+ * Verify if value have defined sound in given set.
  */
 void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& sounds, const std::string &set) const
 {
@@ -1439,7 +1439,7 @@ void loadHelper(const std::string &parent, std::vector<std::pair<K, V>>& v, cons
  * @param node Node with data
  * @param shared Max offset limit that is shared for every mod
  * @param multiplier Value used by `projectile` surface set to convert projectile offset to index offset in surface.
- * @param sizeScale Value used by transparency colors, reduce total number of avaialbe space for offset.
+ * @param sizeScale Value used by transparency colors, reduce total number of available space for offset.
  */
 void Mod::loadOffsetNode(const std::string &parent, int& offset, const YAML::Node &node, int shared, const std::string &set, size_t multiplier, size_t sizeScale) const
 {
@@ -2338,7 +2338,7 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 					color.g = (*j)[1].as<int>(0);
 					color.b = (*j)[2].as<int>(0);
 					color.unused = (*j)[3].as<int>(2);
-					// technically its breaking change as it always overwritte from offset `start + 0` but no two mods could work correctly before this change.
+					// technically it's a breaking change as it always overwrites from offset `start + 0` but no two mods could work correctly before this change.
 					_transparencies[start + curr++] = color;
 				}
 			}

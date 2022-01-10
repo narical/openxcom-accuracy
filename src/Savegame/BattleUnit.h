@@ -677,7 +677,7 @@ public:
 	int getKneelUpCost() const { return 8; }
 	/// Gets cost of kneel down.
 	int getKneelDownCost() const { return 4; }
-	/// Gets cost of curret transiton form kneeling to standing or reverse.
+	/// Gets cost of current transiton form kneeling to standing or reverse.
 	int getKneelChangeCost() const { return isKneeled() ? getKneelUpCost() : getKneelDownCost(); }
 
 	/// Create special weapon for unit.

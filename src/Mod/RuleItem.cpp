@@ -1733,7 +1733,7 @@ int RuleItem::getSpecialChance() const
  */
 void RuleItem::drawHandSprite(const SurfaceSet *texture, Surface *surface, const BattleItem *item, const SavedBattleGame *save, int animFrame) const
 {
-	//TODO: spit this function to one using only `this` and another using only `item`
+	//TODO: split this function to one using only `this` and another using only `item`
 	const Surface *frame = nullptr;
 	if (item)
 	{

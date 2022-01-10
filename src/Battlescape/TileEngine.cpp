@@ -1970,7 +1970,7 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		1,
 	};
 
-	// to avoid 0 that casue infinite loop we set minimal reaction handed by logic, should correacty handle units with 1 point in reaction and 1/1000 TU
+	// to avoid 0 that cause infinite loop we set minimal reaction handled by logic, should correctly handle units with 1 point in reaction and 1/1000 TU
 	if (reaction.reactionScore <= 0.001)
 	{
 		return reaction;
@@ -3711,7 +3711,7 @@ int TileEngine::calculateParabolaVoxel(Position origin, Position target, bool st
 
 			if (storeTrajectory && trajectory)
 			{
-				//remove end point of previus trajectory part, becasue next one will add this point again
+				//remove end point of previous trajectory part, because next one will add this point again
 				trajectory->pop_back();
 			}
 			result = calculateLineVoxel(lastPosition, nextPosition, storeTrajectory, storeTrajectory ? trajectory : nullptr, excludeUnit);
@@ -5225,7 +5225,7 @@ bool TileEngine::isPositionValidForUnit(Position &position, BattleUnit *unit, bo
  * For now we assume that Light and FOV is affected only in small area,
  * this mean we could glitch if multiple units are affected by script logic.
  * @param battleActionAttack Data of action that triggeted script hook.
- * @param pos Postion to update light and Fov, can be invaild if we do not update light
+ * @param pos Postion to update light and Fov, can be invalid if we do not update light
  */
 void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos)
 {

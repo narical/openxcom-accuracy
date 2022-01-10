@@ -286,7 +286,7 @@ public:
 	BattleActionType getReservedAction();
 	/// Tallies the living units, converting them if necessary.
 	bool isSurrendering(BattleUnit* bu);
-	/// Check count of units in diffrent state
+	/// Check count of units in different state
 	BattlescapeTally tallyUnits();
 	bool convertInfected();
 	/// Sets the kneel reservation setting.

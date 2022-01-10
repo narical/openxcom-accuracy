@@ -928,7 +928,7 @@ bool parseFullConditionImpl(ParserWriter& ph, ScriptRefData falsePos, const Scri
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	const auto truePos = ph.addLabel();
@@ -1012,7 +1012,7 @@ bool parseElse(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	auto& block = ph.clearScopeBlock();
@@ -1076,7 +1076,7 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	auto& loop = ph.pushScopeBlock(BlockLoop);
@@ -1161,7 +1161,7 @@ bool parseBreak(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	ph.pushProc(Proc_goto);
@@ -1199,7 +1199,7 @@ bool parseContinue(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	ph.pushProc(Proc_goto);
@@ -1235,7 +1235,7 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	auto block = ph.popScopeBlock();
@@ -1332,7 +1332,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 		return false;
 	}
 
-	// each operation can fail, we can't revent
+	// each operation can fail, we can't prevent
 	auto correct = true;
 
 	if (size == 2)
@@ -2844,7 +2844,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			auto ref = help.getReferece(temp);
 			if (!ref)
 			{
-				Log(LOG_ERROR) << "Unknow variable name '" << temp.toString() << "'";
+				Log(LOG_ERROR) << "Unknown variable name '" << temp.toString() << "'";
 				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
@@ -2861,7 +2861,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			op_curr = getProc(name, name_end);
 			if (!op_curr)
 			{
-				Log(LOG_ERROR) << "Unknow operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
+				Log(LOG_ERROR) << "Unknown operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
 				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
@@ -3243,7 +3243,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				}
 				else
 				{
-					Log(LOG_WARNING) << "Unknow script name '" + name  + "' for " + getDescriptionNode(deleteNode);
+					Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(deleteNode);
 				}
 			}
 			else
@@ -3278,7 +3278,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 					}
 					else
 					{
-						Log(LOG_WARNING) << "Unknow script name '" + name  + "' for " + getDescriptionNode(updateNode);
+						Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(updateNode);
 					}
 				}
 				else if (haveNode(overrideNode))
@@ -3293,7 +3293,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 					}
 					else
 					{
-						throw Exception("Unknow script name '" + name  + "' for " + getDescriptionNode(overrideNode));
+						throw Exception("Unknown script name '" + name  + "' for " + getDescriptionNode(overrideNode));
 					}
 				}
 				else

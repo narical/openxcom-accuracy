@@ -1161,7 +1161,7 @@ struct BindBase
 	struct SetAndGet{};
 	/// Tag type to choose allowed operations
 	struct OnlyGet{};
-	/// Tag type to skip adding defualt operations
+	/// Tag type to skip adding default operations
 	struct ExtensionBinding{ explicit ExtensionBinding() = default; };
 
 	ScriptParserBase* parser;
@@ -1260,7 +1260,7 @@ struct Bind : BindBase
 			const ScriptTypeData* conf = parser->getType(ScriptParserBase::getArgType<Parent>());
 			if (conf == nullptr)
 			{
-				throw Exception("Errow with adding script tag to unknow type");
+				throw Exception("Errow with adding script tag to unknown type");
 			}
 			parser->addType<Tag>(conf->name.toString() + ".Tag");
 			parser->addParser<helper::FuncGroup<helper::BindSet<Tag>>>("set", BindBase::functionInvisible);
