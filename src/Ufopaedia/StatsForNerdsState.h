@@ -137,6 +137,7 @@ private:
 	void addUnitStatFormatted(std::ostringstream &ss, const int &value, const std::string &label, bool &isFirst);
 	void addUnitStatBonus(std::ostringstream &ss, const UnitStats &value, const std::string &propertyName);
 	void addArmorDamageModifiers(std::ostringstream &ss, const std::vector<float> &vec, const std::string &propertyName);
+	void addSpecialAbility(std::ostringstream &ss, const SpecialAbility &value, const std::string &propertyName, const SpecialAbility &defaultvalue = SPECAB_NONE);
 	void addMovementType(std::ostringstream &ss, const MovementType &value, const std::string &propertyName, const MovementType &defaultvalue = MT_WALK);
 	void addForcedTorso(std::ostringstream &ss, const ForcedTorso &value, const std::string &propertyName, const ForcedTorso &defaultvalue = TORSO_USE_GENDER);
 	void addDrawingRoutine(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);

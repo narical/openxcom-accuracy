@@ -267,6 +267,11 @@ en-GB:
   monthlySalary: "Salary/month"
   monthlyMaintenance: "Maintenance/month"
 #
+  SPECAB_NONE: "None"
+  SPECAB_EXPLODEONDEATH: "Explode on death"
+  SPECAB_BURNFLOOR: "Burn floor"
+  SPECAB_BURN_AND_EXPLODE: "Burn floor and explode on death"
+#
   MT_WALK: "Walk"
   MT_FLY: "Fly"
   MT_SLIDE: "Slide"
@@ -302,6 +307,7 @@ en-GB:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Inverted Cyberdisc (propulsion animation on top)"
 #
   stats: "Stat modifiers"
+  specab: "Special ability"
   movementType: "Movement type"
   allowsRunning: "Allow running?"
   allowsStrafing: "Allow strafing?"
