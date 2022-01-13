@@ -313,12 +313,12 @@ inline ArgEnum ArgRegisteType()
  */
 enum RegEnum : Uint16
 {
-	RegInvaild = (Uint16)-1,
+	RegInvalid = (Uint16)-1,
 
 	RegStartPos = 0,
 };
 
-static_assert(ScriptMaxReg < RegInvaild, "RegInvaild could be interpreted as correct register");
+static_assert(ScriptMaxReg < RegInvalid, "RegInvalid could be interpreted as correct register");
 
 /**
  * Return value from script operation.
