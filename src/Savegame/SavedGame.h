@@ -113,8 +113,11 @@ struct PromotionInfo
 class SavedGame
 {
 public:
+	Country *debugCountry = nullptr;
 	Region *debugRegion = nullptr;
-	int debugZone = 0;
+	int debugType = 0;
+	size_t debugZone = 0;
+	size_t debugArea = 0;
 
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "GeoscapeGame";

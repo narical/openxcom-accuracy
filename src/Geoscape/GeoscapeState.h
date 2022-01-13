@@ -55,7 +55,7 @@ private:
 	Timer *_gameTimer, *_zoomInEffectTimer, *_zoomOutEffectTimer, *_dogfightStartTimer, *_dogfightTimer;
 	bool _pause, _zoomInEffectDone, _zoomOutEffectDone;
 	Text *_txtDebug;
-	ComboBox *_cbxRegion, *_cbxZone;
+	ComboBox *_cbxRegion, *_cbxZone, *_cbxArea, *_cbxCountry;
 	Text *_txtSlacking;
 	std::list<State*> _popups;
 	std::list<DogfightState*> _dogfights, _dogfightsToBeStarted;
@@ -68,6 +68,9 @@ private:
 
 	void cbxRegionChange(Action *action);
 	void cbxZoneChange(Action *action);
+	void cbxAreaChange(Action *action);
+	void updateZoneInfo();
+	void cbxCountryChange(Action *action);
 
 public:
 	/// Creates the Geoscape state.
