@@ -165,7 +165,7 @@ const std::string ModNameMaster = "master";
 const std::string ModNameCurrent = "current";
 
 /// Reduction of size allocated for transparency LUTs.
-const size_t ModTransparceySizeReduction = 100;
+const size_t ModTransparencySizeReduction = 100;
 
 void Mod::resetGlobalStatics()
 {
@@ -1629,7 +1629,7 @@ void Mod::loadTransparencyOffset(const std::string &parent, int& index, const YA
 {
 	if (node)
 	{
-		loadOffsetNode(parent, index, node, 0, "TransparencyLUTs", 1, ModTransparceySizeReduction);
+		loadOffsetNode(parent, index, node, 0, "TransparencyLUTs", 1, ModTransparencySizeReduction);
 	}
 }
 
@@ -2317,8 +2317,8 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 
 	if (const YAML::Node& luts = doc["transparencyLUTs"])
 	{
-		const size_t start = _modCurrent->offset / ModTransparceySizeReduction;
-		const size_t limit =  _modCurrent->size / ModTransparceySizeReduction;
+		const size_t start = _modCurrent->offset / ModTransparencySizeReduction;
+		const size_t limit =  _modCurrent->size / ModTransparencySizeReduction;
 		size_t curr = 0;
 
 		_transparencies.resize(start + limit);
