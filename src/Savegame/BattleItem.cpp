@@ -1329,7 +1329,7 @@ struct getAmmoForActionConstScript
 	}
 };
 
-struct getRuleInvenotrySlotScript
+struct getRuleInventorySlotScript
 {
 	static RetEnum func(const BattleItem *weapon, const RuleInventory *&inv)
 	{
@@ -1461,7 +1461,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.addFunc<getAmmoForSlotConstScript>("getAmmoForSlot");
 	bi.addFunc<getAmmoForActionScript>("getAmmoForAction");
 	bi.addFunc<getAmmoForActionConstScript>("getAmmoForAction");
-	bi.addFunc<getRuleInvenotrySlotScript>("getSlot");
+	bi.addFunc<getRuleInventorySlotScript>("getSlot");
 	bi.addPair<BattleUnit, &BattleItem::getPreviousOwner, &BattleItem::getPreviousOwner>("getPreviousOwner");
 	bi.addPair<BattleUnit, &BattleItem::getOwner, &BattleItem::getOwner>("getOwner");
 	bi.add<&BattleItem::getId>("getId");

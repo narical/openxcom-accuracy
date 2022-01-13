@@ -6009,7 +6009,7 @@ void getSoldierScript(const Mod* mod, const RuleSoldier* &soldier, const std::st
 		soldier = nullptr;
 	}
 }
-void getInvenotryScript(const Mod* mod, const RuleInventory* &inv, const std::string &name)
+void getInventoryScript(const Mod* mod, const RuleInventory* &inv, const std::string &name)
 {
 	if (mod)
 	{
@@ -6056,7 +6056,7 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 	mod.add<&getSkillScript>("getRuleSkill");
 	mod.add<&getRuleResearch>("getRuleResearch");
 	mod.add<&getSoldierScript>("getRuleSoldier");
-	mod.add<&getInvenotryScript>("getRuleInventory");
+	mod.add<&getInventoryScript>("getRuleInventory");
 	mod.add<&Mod::getInventoryRightHand>("getRuleInventoryRightHand");
 	mod.add<&Mod::getInventoryLeftHand>("getRuleInventoryLeftHand");
 	mod.add<&Mod::getInventoryBackpack>("getRuleInventoryBackpack");
