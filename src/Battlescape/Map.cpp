@@ -1402,11 +1402,29 @@ void Map::drawTerrain(Surface *surface)
 							tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frameNumber);
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
 						}
-						if (!_isAltPressed && _cursorType > 2 && _camera->getViewLevel() == itZ)
+						if (!_isAltPressed && _cursorType > CT_AIM && _camera->getViewLevel() == itZ)
 						{
-							int frame[6] = {0, 0, 0, 11, 13, 15};
-							tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frame[_cursorType] + (_animFrame / 4) % 2);
-							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
+							bool ignore = false;
+							if (_cursorType == CT_PSI || _cursorType == CT_WAYPOINT)
+							{
+								BattleAction* action = _save->getBattleGame()->getCurrentAction();
+								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
+								if (action->weapon->getRules()->isOutOfRange(distanceSq))
+								{
+									// weapon doesn't work at this distance, just draw a normal cursor with a red 0% hint text
+									ignore = true;
+									_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+									_txtAccuracy->setText("0%");
+									_txtAccuracy->draw();
+									_txtAccuracy->blitNShade(surface, screenPosition.x, screenPosition.y, 0);
+								}
+							}
+							if (!ignore)
+							{
+								int frame[6] = { 0, 0, 0, 11, 13, 15 };
+								tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frame[_cursorType] + (_animFrame / 4) % 2);
+								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
+							}
 						}
 					}
 
