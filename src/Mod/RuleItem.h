@@ -229,6 +229,7 @@ struct RuleItemAction
 	RuleItemUseCost flat;
 	bool arcing = false; // Only overrides arcing: false on a weapon for a specific action
 	std::string name;
+	std::string shortName;
 };
 
 /**

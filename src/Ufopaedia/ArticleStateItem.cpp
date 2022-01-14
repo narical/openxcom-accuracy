@@ -234,8 +234,9 @@ namespace OpenXcom
 				{
 					tu.erase(tu.end() - 1);
 				}
+				std::string label = config->shortName.empty() ? tr(name).arg(config->shots) : tr(config->shortName).arg(config->shots);
 				_lstInfo->addRow(3,
-					tr(name).arg(config->shots).c_str(),
+					label.c_str(),
 					Unicode::formatPercentage(config->accuracy).c_str(),
 					tu.c_str());
 				_lstInfo->setCellColor(row, 0, _listColor1);

@@ -1828,6 +1828,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getConfigAimed()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigAimed()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigAimed()->name, "name", "STR_AIMED_SHOT");
+		addSingleString(ss, itemRule->getConfigAimed()->shortName, "shortName");
 		addInteger(ss, itemRule->getConfigAimed()->ammoSlot, "ammoSlot");
 		addBoolean(ss, itemRule->getConfigAimed()->arcing, "arcing");
 		endHeading();
@@ -1839,6 +1840,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getConfigAuto()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigAuto()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigAuto()->name, "name", "STR_AUTO_SHOT");
+		addSingleString(ss, itemRule->getConfigAuto()->shortName, "shortName");
 		addInteger(ss, itemRule->getConfigAuto()->ammoSlot, "ammoSlot");
 		addBoolean(ss, itemRule->getConfigAuto()->arcing, "arcing");
 		endHeading();
@@ -1850,6 +1852,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getConfigSnap()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigSnap()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigSnap()->name, "name", "STR_SNAP_SHOT");
+		addSingleString(ss, itemRule->getConfigSnap()->shortName, "shortName");
 		addInteger(ss, itemRule->getConfigSnap()->ammoSlot, "ammoSlot");
 		addBoolean(ss, itemRule->getConfigSnap()->arcing, "arcing");
 		endHeading();
@@ -1861,6 +1864,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getConfigMelee()->spendPerShot, "spendPerShot", 1);
 		addBoolean(ss, itemRule->getConfigMelee()->followProjectiles, "followProjectiles", true);
 		addSingleString(ss, itemRule->getConfigMelee()->name, "name");
+		addSingleString(ss, itemRule->getConfigMelee()->shortName, "shortName");
 		int ammoSlotCurrent = itemRule->getConfigMelee()->ammoSlot;
 		int ammoSlotDefault = itemBattleType == BT_MELEE ? 0 : RuleItem::AmmoSlotSelfUse;
 		if (itemBattleType == BT_NONE)

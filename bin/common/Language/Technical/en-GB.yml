@@ -223,6 +223,7 @@ en-GB:
   spendPerShot: "Spend per shot:"
   followProjectiles: "Follow projectiles?"
   name: "Name"
+  shortName: "Short name"
   ammoSlot: "Ammo slot used"
   arcing: "Arcing?"
 #
