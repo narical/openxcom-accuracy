@@ -206,7 +206,7 @@ void ExtendedBattlescapeLinksState::btnKillAllClick(Action *)
 
 	if (!Options::debug)
 	{
-		_parent->btnShowLayersClickOrig();
+		_parent->btnShowLayersClickOrig(nullptr);
 		return;
 	}
 
