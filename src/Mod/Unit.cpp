@@ -168,9 +168,6 @@ void Unit::afterLoad(const Mod* mod)
 				"This unit has a corresponding item to recover, but still isn't recoverable. Reason: (" + s + "). Consider marking the unit with 'liveAlien: \"\"'.",
 				LOG_INFO
 			);
-
-			// FIXME: this is too restrictive; I will need to review all the cases and probably refactor civilianRecoveryType functionality a bit too
-			//mod->checkForSoftError(!Mod::isEmptyRuleName(_civilianRecoveryType), _type, "There is civilianRecoveryType but unit is not recoverable (" + s + ")");
 		}
 	}
 }
