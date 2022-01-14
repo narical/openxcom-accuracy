@@ -48,6 +48,11 @@ namespace RNG
 		uint64_t next();
 		/// Generates a random integer number, inclusive.
 		int generate(int min, int max);
+		///  Generates a percentage chance.
+		bool percent(int value)
+		{
+			return generate(0, 99) < value;
+		}
 		/// Get new random-sub-sequence, that depends on current seed but each time it creates a different sequence.
 		RandomState subSequence()
 		{

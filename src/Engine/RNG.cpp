@@ -178,7 +178,7 @@ int seedless(int min, int max)
  */
 bool percent(int value)
 {
-	return (generate(0, 99) < value);
+	return x.percent(value);
 }
 
 }
