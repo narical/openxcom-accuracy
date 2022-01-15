@@ -112,7 +112,8 @@ public:
 	/// Handler for clicking the Unload button.
 	void btnUnloadClick(Action *action);
 	/// Handler for clicking on the Ground -> button.
-	void btnGroundClick(Action *action);
+	void btnGroundClickForward(Action *action);
+	void btnGroundClickBackward(Action *action);
 	/// Handler for clicking the Rank button.
 	void btnRankClick(Action *action);
 	/// Handler for clicking the Links button.
