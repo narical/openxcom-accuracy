@@ -33,6 +33,7 @@
 #include "../Battlescape/AIModule.h"
 #include "../Battlescape/Inventory.h"
 #include "../Battlescape/TileEngine.h"
+#include "../Battlescape/ExplosionBState.h"
 #include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
 #include "../Mod/Unit.h"
@@ -1509,6 +1510,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		return 0;
 	}
 
+	RNG::RandomState rand = RNG::globalRandomState().subSequence();
 	damage = reduceByResistance(damage, type->ResistType);
 
 	if (!type->IgnoreDirection)
@@ -1575,7 +1577,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 				case SIDE_LEFT: 	bodypart = BODYPART_LEFTLEG; 	break;
 				case SIDE_RIGHT:	bodypart = BODYPART_RIGHTLEG; 	break;
 				default:
-					bodypart = (UnitBodyPart) RNG::generate(BODYPART_RIGHTLEG,BODYPART_LEFTLEG);
+					bodypart = (UnitBodyPart) rand.generate(BODYPART_RIGHTLEG,BODYPART_LEFTLEG);
 				}
 			}
 		}
@@ -1583,6 +1585,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 	const int orgDamage = damage;
 	const int overKillMinimum = type->IgnoreOverKill ? 0 : -UnitStats::OverkillMultipler * _stats.health;
+
 
 	{
 		ModScript::HitUnit::Output args { damage, bodypart, side, };
@@ -1613,6 +1616,23 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		bodypart = bodypartOverride;
 	}
 
+
+	const RuleItem *specialDamageTransform = attack.damage_item ? attack.damage_item->getRules() : nullptr;
+	int specialDamageTransformChance = 0;
+
+	if (specialDamageTransform
+		&& !specialDamageTransform->getZombieUnit(this).empty()
+		&& getArmor()->getZombiImmune() == false)
+	{
+		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getSpecialChance() : 0;
+	}
+	else
+	{
+		specialDamageTransform = nullptr;
+	}
+
+
+	// update state of unit stats
 	{
 		constexpr int toHealth = 0;
 		constexpr int toArmor = 1;
@@ -1626,16 +1646,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		ModScript::DamageUnit::Output args { };
 
-		const RuleItem *specialDamageTransform = attack.damage_item ? attack.damage_item->getRules() : nullptr;
-		if (specialDamageTransform && !specialDamageTransform->getZombieUnit(this).empty())
-		{
-			std::get<toTransform>(args.data) = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getSpecialChance() : 0;
-		}
-		else
-		{
-			specialDamageTransform = nullptr;
-		}
-
+		std::get<toTransform>(args.data) += specialDamageTransformChance;
 		std::get<toArmor>(args.data) += type->getArmorPreFinalDamage(damage);
 
 		if (type->ArmorEffectiveness > 0.0f)
@@ -1698,9 +1709,90 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		setValueMax(_currentArmor[side], - std::get<toArmor>(args.data), 0, _maxArmor[side]);
 
 
+		setFatalShotInfo(side, bodypart);
+
+
+		damage = std::get<toHealth>(args.data);
+		specialDamageTransformChance = std::get<toTransform>(args.data);
+	}
+
+	// special effects
+	{
+		constexpr int arg_specialDamageTransform = 0;
+		constexpr int arg_specialDamageTransformChance = 1;
+		constexpr int arg_selfDestruct = 2;
+		constexpr int arg_selfDestructChance = 3;
+		constexpr int arg_moraleLoss = 4;
+		constexpr int arg_fire = 5;
+
+		ModScript::DamageSpecialUnit::Output args { };
+
+		// chance to tranform
+		std::get<arg_specialDamageTransform>(args.data) = specialDamageTransform != nullptr;
+		std::get<arg_specialDamageTransformChance>(args.data) = specialDamageTransformChance;
+
+		// morale loss based on final damage to health
+		if (type->IgnoreNormalMoraleLose == false)
+		{
+			const int bravery = reduceByBravery(10);
+			const int modifier = getFaction() == FACTION_PLAYER ? save->getFactionMoraleModifier(true) : 100;
+
+			std::get<arg_moraleLoss>(args.data) = 100 * (damage * bravery / 10) / modifier;
+		}
+
+		// self destruction
+		std::get<arg_selfDestruct>(args.data) = (getSpecialAbility() == SPECAB_EXPLODEONDEATH || getSpecialAbility() == SPECAB_BURN_AND_EXPLODE);
+		if (std::get<arg_selfDestruct>(args.data) && !isOut() && isOutThresholdExceed())
+		{
+			if (type->IgnoreSelfDestruct == false)
+			{
+				std::get<arg_selfDestructChance>(args.data) = 100;
+			}
+		}
+
+		// normal fire
+		std::get<arg_fire>(args.data) = getFire();
+		if (damage >= type->FireThreshold)
+		{
+			float resistance = getArmor()->getDamageModifier(type->ResistType);
+			if (resistance > 0.0)
+			{
+				int burnTime = rand.generate(0, int(5.0f * resistance));
+				if (std::get<arg_fire>(args.data) < burnTime)
+				{
+					std::get<arg_fire>(args.data) = burnTime; // catch fire and burn
+				}
+			}
+		}
+		// fire extinguisher
+		if (std::get<arg_fire>(args.data) > 0)
+		{
+			if (attack.weapon_item && attack.weapon_item->getRules()->isFireExtinguisher())
+			{
+				// firearm, melee weapon, or even a grenade...
+				std::get<arg_fire>(args.data) = 0;
+			}
+			else if (attack.damage_item && attack.damage_item->getRules()->isFireExtinguisher())
+			{
+				// bullet/ammo
+				std::get<arg_fire>(args.data) = 0;
+			}
+		}
+
+
+		// script call
+
+		ModScript::DamageSpecialUnit::Worker work { this, attack.damage_item, attack.weapon_item, attack.attacker, save, attack.skill_rules, damage, orgDamage, bodypart, side, type->ResistType, attack.type, };
+
+		work.execute(this->getArmor()->getScript<ModScript::DamageSpecialUnit>(), args);
+
+
+		// update state
+		moraleChange(-std::get<arg_moraleLoss>(args.data));
+		setFire(std::get<arg_fire>(args.data));
+
 		// check if this unit turns others into zombies
-		if (specialDamageTransform && RNG::percent(std::get<toTransform>(args.data))
-			&& getArmor()->getZombiImmune() == false
+		if (rand.percent(std::get<arg_specialDamageTransformChance>(args.data)) && specialDamageTransform
 			&& !getSpawnUnit())
 		{
 			// converts the victim to a zombie on death
@@ -1709,9 +1801,16 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			setSpawnUnit(save->getMod()->getUnit(specialDamageTransform->getZombieUnit(this)));
 		}
 
-		setFatalShotInfo(side, bodypart);
-		return std::get<toHealth>(args.data);
+		if (rand.percent(std::get<arg_selfDestructChance>(args.data))
+			&& !hasAlreadyExploded())
+		{
+			setAlreadyExploded(true);
+			Position p = getPosition().toVoxel();
+			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_NONE, this, }, 0));
+		}
 	}
+
+	return damage;
 }
 
 /**
@@ -6167,8 +6266,29 @@ ModScript::DamageUnitParser::DamageUnitParser(ScriptGlobal* shared, const std::s
 	"to_wound",
 	"to_transform",
 	"to_mana",
+
 	"unit", "damaging_item", "weapon_item", "attacker",
 	"battle_game", "skill", "currPower", "orig_power", "part", "side", "damaging_type", "battle_action", }
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
+
+	battleActionImpl(b);
+
+	setEmptyReturn();
+}
+
+ModScript::DamageSpecialUnitParser::DamageSpecialUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"transform",
+	"transform_chance",
+	"self_destruct",
+	"self_destruct_chance",
+	"morale_loss",
+	"fire",
+
+	"unit", "damaging_item", "weapon_item", "attacker",
+	"battle_game", "skill", "health_damage", "orig_power", "part", "side", "damaging_type", "battle_action", }
 {
 	BindBase b { this };
 

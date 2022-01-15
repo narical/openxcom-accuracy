@@ -130,6 +130,10 @@ class ModScript
 	{
 		DamageUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
+	struct DamageSpecialUnitParser : ScriptParserEvents<ScriptOutputArgs<int, int&, int, int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, const RuleSkill*, int, int, int, int, int, int>
+	{
+		DamageSpecialUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
 	struct HealUnitParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&, int&, int&, int&, int&, int&, int&>, BattleUnit*, BattleItem*, SavedBattleGame*, BattleUnit*, int>
 	{
 		HealUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -296,6 +300,7 @@ public:
 	using TryMeleeAttackUnit = MACRO_NAMED_SCRIPT("tryMeleeAttackUnit", TryMeleeAttackUnitParser);
 	using HitUnit = MACRO_NAMED_SCRIPT("hitUnit", HitUnitParser);
 	using DamageUnit = MACRO_NAMED_SCRIPT("damageUnit", DamageUnitParser);
+	using DamageSpecialUnit = MACRO_NAMED_SCRIPT("damageSpecialUnit", DamageSpecialUnitParser);
 	using HealUnit = MACRO_NAMED_SCRIPT("healUnit", HealUnitParser);
 	using CreateUnit = MACRO_NAMED_SCRIPT("createUnit", CreateUnitParser);
 	using NewTurnUnit = MACRO_NAMED_SCRIPT("newTurnUnit", NewTurnUnitParser);
@@ -394,6 +399,7 @@ public:
 		TryMeleeAttackUnit,
 		HitUnit,
 		DamageUnit,
+		DamageSpecialUnit,
 		HealUnit,
 		CreateUnit,
 		NewTurnUnit,
