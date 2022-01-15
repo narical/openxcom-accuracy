@@ -1020,6 +1020,13 @@ void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const
 
 	auto* s = getRule(set, "Sprite Set", _sets, true);
 
+	if (s->getTotalFrames() == 0)
+	{
+		//HACK: some sprites should be shared betwean diffret sets but in some cases one set is not used, if there is no surfaces this mean this index is not used
+		// in some corner cases it will not work correcty, like if someone do not add any surface
+		return;
+	}
+
 	checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
 }
 
@@ -1035,6 +1042,13 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 	}
 
 	auto* s = getRule(set, "Sprite Set", _sets, true);
+
+	if (s->getTotalFrames() == 0)
+	{
+		//HACK: some sprites should be shared betwean diffret sets but in some cases one set is not used, if there is no surfaces this mean this index is not used
+		// in some corner cases it will not work correcty, like if someone do not add any surface
+		return;
+	}
 
 	for (auto sprite : sprites)
 	{
