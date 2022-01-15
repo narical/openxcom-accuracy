@@ -95,6 +95,7 @@ private:
 	std::string _enviroEffects, _startingCondition;
 	std::string _unlockedResearchOnSuccess, _unlockedResearchOnFailure, _unlockedResearchOnDespawn;
 	std::string _counterSuccess, _counterFailure, _counterDespawn, _counterAll;
+	std::string _decreaseCounterSuccess, _decreaseCounterFailure, _decreaseCounterDespawn, _decreaseCounterAll;
 	std::string _missionBountyItem;
 	int _missionBountyItemCount;
 	int _bughuntMinTurn;
@@ -158,6 +159,14 @@ public:
 	const std::string& getCounterDespawn() const { return _counterDespawn; }
 	/// Gets the name of a custom counter variable to increase on any mission result (success, failure and despawn).
 	const std::string& getCounterAll() const { return _counterAll; }
+	/// Gets the name of a custom counter variable to decrease on mission success.
+	const std::string& getDecreaseCounterSuccess() const { return _decreaseCounterSuccess; }
+	/// Gets the name of a custom counter variable to decrease on mission failure (incl. mission despawn).
+	const std::string& getDecreaseCounterFailure() const { return _decreaseCounterFailure; }
+	/// Gets the name of a custom counter variable to decrease on mission despawn.
+	const std::string& getDecreaseCounterDespawn() const { return _decreaseCounterDespawn; }
+	/// Gets the name of a custom counter variable to decrease on any mission result (success, failure and despawn).
+	const std::string& getDecreaseCounterAll() const { return _decreaseCounterAll; }
 	/// Gets the item to be recovered/given after a successful mission.
 	std::string getMissionBountyItem() const;
 	/// Gets the number of items to be recovered/given after a successful mission.

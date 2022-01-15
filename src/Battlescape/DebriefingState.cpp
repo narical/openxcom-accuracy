@@ -2102,6 +2102,9 @@ void DebriefingState::prepareDebriefing()
 		// Increase counters
 		save->increaseCustomCounter(ruleDeploy->getCounterSuccess());
 		save->increaseCustomCounter(ruleDeploy->getCounterAll());
+		// Decrease counters
+		save->decreaseCustomCounter(ruleDeploy->getDecreaseCounterSuccess());
+		save->decreaseCustomCounter(ruleDeploy->getDecreaseCounterAll());
 
 		// Generate a success event
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseSuccessEvent());
@@ -2115,6 +2118,9 @@ void DebriefingState::prepareDebriefing()
 		// Increase counters
 		save->increaseCustomCounter(ruleDeploy->getCounterFailure());
 		save->increaseCustomCounter(ruleDeploy->getCounterAll());
+		// Decrease counters
+		save->decreaseCustomCounter(ruleDeploy->getDecreaseCounterFailure());
+		save->decreaseCustomCounter(ruleDeploy->getDecreaseCounterAll());
 
 		// Generate a failure event
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());

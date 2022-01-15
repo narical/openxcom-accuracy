@@ -1782,6 +1782,10 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterDespawn());
 		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterFailure()); // despawn is also a type of failure
 		_game->getSavedGame()->increaseCustomCounter(site->getDeployment()->getCounterAll());
+		// Decrease counters
+		_game->getSavedGame()->decreaseCustomCounter(site->getDeployment()->getDecreaseCounterDespawn());
+		_game->getSavedGame()->decreaseCustomCounter(site->getDeployment()->getDecreaseCounterFailure()); // despawn is also a type of failure
+		_game->getSavedGame()->decreaseCustomCounter(site->getDeployment()->getDecreaseCounterAll());
 
 		// Generate a despawn event
 		auto eventRules = _game->getMod()->getEvent(site->getDeployment()->chooseDespawnEvent());

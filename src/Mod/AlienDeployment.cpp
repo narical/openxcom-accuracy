@@ -230,6 +230,10 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_counterFailure = node["counterFailure"].as<std::string>(_counterFailure);
 	_counterDespawn = node["counterDespawn"].as<std::string>(_counterDespawn);
 	_counterAll = node["counterAll"].as<std::string>(_counterAll);
+	_decreaseCounterSuccess = node["decreaseCounterSuccess"].as<std::string>(_decreaseCounterSuccess);
+	_decreaseCounterFailure = node["decreaseCounterFailure"].as<std::string>(_decreaseCounterFailure);
+	_decreaseCounterDespawn = node["decreaseCounterDespawn"].as<std::string>(_decreaseCounterDespawn);
+	_decreaseCounterAll = node["decreaseCounterAll"].as<std::string>(_decreaseCounterAll);
 	_missionBountyItem = node["missionBountyItem"].as<std::string>(_missionBountyItem);
 	_missionBountyItemCount = node["missionBountyItemCount"].as<int>(_missionBountyItemCount);
 	_bughuntMinTurn = node["bughuntMinTurn"].as<int>(_bughuntMinTurn);
