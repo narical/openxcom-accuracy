@@ -1618,14 +1618,14 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		ModScript::DamageUnit::Output args { };
 
-		const RuleItem *specialDamegeTransform = attack.damage_item ? attack.damage_item->getRules() : nullptr;
-		if (specialDamegeTransform && !specialDamegeTransform->getZombieUnit(this).empty())
+		const RuleItem *specialDamageTransform = attack.damage_item ? attack.damage_item->getRules() : nullptr;
+		if (specialDamageTransform && !specialDamageTransform->getZombieUnit(this).empty())
 		{
-			std::get<toTransform>(args.data) = getOriginalFaction() != FACTION_HOSTILE ? specialDamegeTransform->getSpecialChance() : 0;
+			std::get<toTransform>(args.data) = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getSpecialChance() : 0;
 		}
 		else
 		{
-			specialDamegeTransform = nullptr;
+			specialDamageTransform = nullptr;
 		}
 
 		std::get<toArmor>(args.data) += type->getArmorPreFinalDamage(damage);
@@ -1691,14 +1691,14 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 
 		// check if this unit turns others into zombies
-		if (specialDamegeTransform && RNG::percent(std::get<toTransform>(args.data))
+		if (specialDamageTransform && RNG::percent(std::get<toTransform>(args.data))
 			&& getArmor()->getZombiImmune() == false
 			&& !getSpawnUnit())
 		{
 			// converts the victim to a zombie on death
 			setRespawn(true);
 			setSpawnUnitFaction(FACTION_HOSTILE);
-			setSpawnUnit(save->getMod()->getUnit(specialDamegeTransform->getZombieUnit(this)));
+			setSpawnUnit(save->getMod()->getUnit(specialDamageTransform->getZombieUnit(this)));
 		}
 
 		setFatalShotInfo(side, bodypart);
