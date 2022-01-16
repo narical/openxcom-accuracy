@@ -4732,11 +4732,19 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 	}
 	if (originTile && neighbouringTile)
 	{
-		auto setTarget = [](Tile* tt, TilePart tp, BattleAction* aa) -> bool
+		auto setTarget = [](Tile* tt, TilePart tp, BattleAction* aa, int dir = -1) -> bool
 		{
 			MapData* obj = tt->getMapData(tp);
 			if (obj)
 			{
+				if (dir > -1 && tp == O_OBJECT)
+				{
+					auto bigWall = obj->getBigWall();
+					if (dir == 0 /*north*/ && bigWall != Pathfinding::BIGWALLNORTH && bigWall != Pathfinding::BIGWALLWESTANDNORTH) return false;
+					if (dir == 2 /*east */ && bigWall != Pathfinding::BIGWALLEAST  && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;
+					if (dir == 4 /*south*/ && bigWall != Pathfinding::BIGWALLSOUTH && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;
+					if (dir == 6 /*west */ && bigWall != Pathfinding::BIGWALLWEST  && bigWall != Pathfinding::BIGWALLWESTANDNORTH) return false;
+				}
 				if (tp != O_OBJECT && !obj->isDoor() && !obj->isUFODoor() && tt->getTUCost(tp, MT_WALK) < 255)
 				{
 					// it is possible to walk through this (rubble) wall... no need to attack it
@@ -4760,6 +4768,20 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 			}
 			return false;
 		};
+
+		if (setTarget(originTile, O_OBJECT, action, direction))
+		{
+			// All directions: target the object (marked as big wall) on the current tile
+			return true;
+		}
+		if (size > 1)
+		{
+			if (setTarget(originTile2, O_OBJECT, action, direction))
+			{
+				// All directions
+				return true;
+			}
+		}
 
 		if (direction == 0 && setTarget(originTile, O_NORTHWALL, action))
 		{
