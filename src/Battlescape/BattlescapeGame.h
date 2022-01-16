@@ -273,7 +273,7 @@ public:
 	/// Returns whether panic has been handled.
 	bool getPanicHandled() const { return _playerPanicHandled; }
 	/// Tries to find an item and pick it up if possible.
-	bool findItem(BattleAction *action, bool pickUpWeaponsMoreActively);
+	bool findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem);
 	/// Checks through all the items on the ground and picks one.
 	BattleItem *surveyItems(BattleAction *action, bool pickUpWeaponsMoreActively);
 	/// Evaluates if it's worthwhile to take this item.

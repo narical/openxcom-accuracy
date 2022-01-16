@@ -349,13 +349,14 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	BattleItem *weapon = unit->getMainHandWeapon();
 	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively();
 	bool weaponPickedUp = false;
+	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
 	{
 		if (unit->getOriginalFaction() != FACTION_PLAYER)
 		{
 			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
 			{
-				weaponPickedUp = findItem(&action, pickUpWeaponsMoreActively);
+				weaponPickedUp = findItem(&action, pickUpWeaponsMoreActively, walkToItem);
 			}
 		}
 	}
@@ -380,13 +381,19 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		ss << "Walking to " << action.target;
 		_parentState->debug(ss.str());
 
-		if (_save->getTile(action.target))
+		auto* targetTile = _save->getTile(action.target);
+		if (targetTile)
 		{
 			_save->getPathfinding()->calculate(action.actor, action.target);//, _save->getTile(action.target)->getUnit());
 		}
 		if (_save->getPathfinding()->getStartDirection() != -1)
 		{
 			statePushBack(new UnitWalkBState(this, action));
+		}
+		else if (walkToItem)
+		{
+			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
+			targetTile->setDangerous(true);
 		}
 	}
 
@@ -2379,7 +2386,7 @@ Mod *BattlescapeGame::getMod()
  * Tries to find an item and pick it up if possible.
  * @return True if an item was picked up, false otherwise.
  */
-bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActively)
+bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem)
 {
 	// terrorists don't have hands.
 	if (action->actor->getRankString() != "STR_LIVE_TERRORIST" || pickUpWeaponsMoreActively)
@@ -2414,6 +2421,7 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 				// if we're not standing on it, we should try to get to it.
 				action->target = targetItem->getTile()->getPosition();
 				action->type = BA_WALK;
+				walkToItem = true;
 				if (pickUpWeaponsMoreActively)
 				{
 					// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
@@ -2449,7 +2457,7 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 		{
 			if ((*i)->getTurnFlag() || pickUpWeaponsMoreActively)
 			{
-				if ((*i)->getSlot() && (*i)->getSlot()->getType() == INV_GROUND && (*i)->getTile())
+				if ((*i)->getSlot() && (*i)->getSlot()->getType() == INV_GROUND && (*i)->getTile() && !(*i)->getTile()->getDangerous())
 				{
 					droppedItems.push_back(*i);
 				}
@@ -2464,9 +2472,19 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 	// (are we still talking about items?)
 	for (std::vector<BattleItem*>::iterator i = droppedItems.begin(); i != droppedItems.end(); ++i)
 	{
+		if ((*i)->getTile()->getDangerous())
+		{
+			continue;
+		}
 		int currentWorth = (*i)->getRules()->getAttraction() / ((Position::distance2d(action->actor->getPosition(), (*i)->getTile()->getPosition()) * 2)+1);
 		if (currentWorth > maxWorth)
 		{
+			if ((*i)->getTile()->getTUCost(O_OBJECT, action->actor->getMovementType()) == 255)
+			{
+				// Note: full pathfinding check will be done later, this is just a small optimisation
+				(*i)->getTile()->setDangerous(true);
+				continue;
+			}
 			maxWorth = currentWorth;
 			targetItem = *i;
 		}
