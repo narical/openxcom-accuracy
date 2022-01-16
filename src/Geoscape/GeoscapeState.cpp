@@ -2180,6 +2180,10 @@ void GeoscapeState::time1Hour()
 		{
 			postpone = true;
 			(*i)->setDetected(true);
+			if ((*i)->getSecondsRemaining() < 3600)
+			{
+				(*i)->setSecondsRemaining(3600); // minimum 1 hour since detection
+			}
 			popup(new MissionDetectedState(*i, this));
 			break; // only one popup per hour!
 		}
