@@ -223,6 +223,7 @@ ko:
   spendPerShot: "사격 당 소모:"
   followProjectiles: "발사체 쫓기?"
   name: "이름"
+  shortName: ""
   ammoSlot: "사용하는 탄약 슬롯"
   arcing: "곡사?"
 #
@@ -267,6 +268,11 @@ ko:
   monthlySalary: "월급"
   monthlyMaintenance: "월유지비"
 #
+  SPECAB_NONE: "없음"
+  SPECAB_EXPLODEONDEATH: "죽을 때 폭발"
+  SPECAB_BURNFLOOR: "바닥을 태움"
+  SPECAB_BURN_AND_EXPLODE: "바닥을 태우고 죽을 때 폭발"
+#
   MT_WALK: "걷기"
   MT_FLY: "날아다니기"
   MT_SLIDE: "미끄러지기"
@@ -302,6 +308,7 @@ ko:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "반전된 사이버디스크(추진력 애니메이션이 위에 있음)"
 #
   stats: "능력치 수정값"
+  specab: "특별 능력"
   movementType: "이동 방식"
   allowsRunning: "달리기 허용?"
   allowsStrafing: "게걸음 허용?"

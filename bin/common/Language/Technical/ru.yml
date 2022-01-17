@@ -223,6 +223,7 @@ ru:
   spendPerShot: "Расход на выстрел:"
   followProjectiles: "Отслеж. полета снаряда?"
   name: "Наименование"
+  shortName: "Краткое наименование"
   ammoSlot: "Используемый приемник боеприпасов"
   arcing: "Навесная стрельба?"
 #
@@ -267,6 +268,11 @@ ru:
   monthlySalary: "Жалованье/месяц"
   monthlyMaintenance: "Обслуживание/месяц"
 #
+  SPECAB_NONE: "Нет"
+  SPECAB_EXPLODEONDEATH: "Умирая, взрывается"
+  SPECAB_BURNFLOOR: "Прожигает поверхность"
+  SPECAB_BURN_AND_EXPLODE: "Прожигает поверхность и взрывается, умирая"
+#
   MT_WALK: "Ходьба"
   MT_FLY: "Полет"
   MT_SLIDE: "Проскальзывание"
@@ -302,6 +308,7 @@ ru:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Инвертированный кибердиск (сначала анимация перемещения)"
 #
   stats: "Модификаторы показателей"
+  specab: "Особенность"
   movementType: "Способ перемещения"
   allowsRunning: "Позволяет бегать?"
   allowsStrafing: "Позволяет двиг. вбок?"
@@ -404,7 +411,7 @@ ru:
   maxLargeUnits: "Максимум тяжелых единиц"
   maxSoldiers: "Максимум бойцов"
   maxVehicles: "Максимум техники"
-  maxItems: "Макс. ед, оборудования"
+  maxItems: "Макс. ед. оборудования"
   maxStorageSpace: "Объем грузового отсека"
   maxAltitude: "Макс. высота возд. боя"
   weapons: "Точек подвески"
