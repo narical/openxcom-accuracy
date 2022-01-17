@@ -211,7 +211,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
  * @param ruleArmor Pointer to the new Armor ruleset.
  * @param depth The depth of the battlefield.
  */
-void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor *ruleArmor, int depth)
+void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor *ruleArmor, int depth, bool inBattlescape)
 {
 	_stats = *soldier->getCurrentStats();
 	_armor = ruleArmor;
@@ -247,8 +247,16 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 
 	_tu = _stats.tu;
 	_energy = _stats.stamina;
-	_health = std::max(1, _stats.health - soldier->getHealthMissing());
-	_mana = std::max(0, _stats.mana - soldier->getManaMissing());
+	if (inBattlescape)
+	{
+		_health = std::min(_health, (int)_stats.health);
+		_mana = std::min(_mana, (int)_stats.mana);
+	}
+	else
+	{
+		_health = std::max(1, _stats.health - soldier->getHealthMissing());
+		_mana = std::max(0, _stats.mana - soldier->getManaMissing());
+	}
 	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
 	_maxArmor[SIDE_LEFT] = _armor->getLeftSideArmor();
 	_maxArmor[SIDE_RIGHT] = _armor->getRightSideArmor();

@@ -526,7 +526,7 @@ void BattlescapeGenerator::nextStage()
 					// change soldier's armor (needed for inventory view!)
 					(*j)->getGeoscapeSoldier()->setArmor(transformedArmor);
 					// change battleunit's armor
-					(*j)->updateArmorFromSoldier(_game->getMod(), (*j)->getGeoscapeSoldier(), transformedArmor, _save->getDepth());
+					(*j)->updateArmorFromSoldier(_game->getMod(), (*j)->getGeoscapeSoldier(), transformedArmor, _save->getDepth(), true);
 					// remove old special built-in weapons and replace them with new fresh special built-in weapons
 					// TODO? if this was a limited-use weapon, it will have full ammo again!
 					(*j)->removeSpecialWeapons(_save);
