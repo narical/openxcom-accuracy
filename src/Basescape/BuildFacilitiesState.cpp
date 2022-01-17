@@ -99,9 +99,8 @@ BuildFacilitiesState::~BuildFacilitiesState()
 void BuildFacilitiesState::populateBuildList()
 {
 	_facilities.clear();
+	_disabledFacilities.clear();
 	_lstFacilities->clearList();
-
-	std::vector<RuleBaseFacility*> _disabledFacilities;
 
 	auto providedBaseFunc = _base->getProvidedBaseFunc({});
 	auto forbiddenBaseFunc = _base->getForbiddenBaseFunc({});
@@ -203,18 +202,19 @@ void BuildFacilitiesState::btnOkClick(Action *)
 void BuildFacilitiesState::lstFacilitiesClick(Action *action)
 {
 	auto index = _lstFacilities->getSelectedRow();
+	_lstScroll = _lstFacilities->getScroll();
+
+	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
+	{
+		std::string tmp = (index >= _facilities.size()) ? _disabledFacilities[index - _facilities.size()]->getType() : _facilities[index]->getType();
+		Ufopaedia::openArticle(_game, tmp);
+		return;
+	}
+
 	if (index >= _facilities.size())
 	{
 		return;
 	}
-
-	_lstScroll = _lstFacilities->getScroll();
-	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
-	{
-		Ufopaedia::openArticle(_game, _facilities[index]->getType());
-		return;
-	}
-
 	_game->pushState(new PlaceFacilityState(_base, _facilities[index]));
 }
 
