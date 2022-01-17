@@ -178,14 +178,21 @@ void ExplosionBState::init()
 		_radius = _power /10;
 		_areaOfEffect = true;
 	}
-	else if (_attack.attacker && (_attack.attacker->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _attack.attacker->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE))
+	else if (_attack.type == BA_SELF_DESTRUCT)
 	{
-		itemRule = _attack.attacker->getArmor()->getCorpseGeoscape(); //TODO: not getCorpseBattlescape ones?
-		_power = itemRule->getPowerBonus(_attack);
-		_damageType = itemRule->getDamageType();
-		_radius = itemRule->getExplosionRadius(_attack);
 		_areaOfEffect = true;
-		if (!RNG::percent(itemRule->getSpecialChance()))
+		if (_attack.attacker)
+		{
+			itemRule = _attack.attacker->getArmor()->getCorpseGeoscape(); //TODO: not getCorpseBattlescape ones?
+			_power = itemRule->getPowerBonus(_attack);
+			_damageType = itemRule->getDamageType();
+			_radius = itemRule->getExplosionRadius(_attack);
+			if (!RNG::percent(itemRule->getSpecialChance()))
+			{
+				_power = 0;
+			}
+		}
+		else
 		{
 			_power = 0;
 		}
@@ -360,6 +367,14 @@ void ExplosionBState::init()
 		}
 		// bullet hit sound
 		_parent->playSound(sound, _center.toTile());
+	}
+
+	if (_attack.type == BA_SELF_DESTRUCT)
+	{
+		if (_attack.attacker)
+		{
+			_attack.attacker->setAlreadyExploded(false);
+		}
 	}
 }
 

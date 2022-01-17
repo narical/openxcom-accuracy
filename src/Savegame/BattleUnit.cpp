@@ -1806,7 +1806,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		{
 			setAlreadyExploded(true);
 			Position p = getPosition().toVoxel();
-			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_NONE, this, }, 0));
+			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, }, 0));
 		}
 	}
 
