@@ -196,6 +196,9 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
  */
 void RuleSoldier::afterLoad(const Mod* mod)
 {
+	auto* armorRule = mod->getArmor(_armor, false);
+	mod->checkForSoftError(armorRule == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);
+
 	mod->verifySoundOffset(_type, _deathSoundMale, "BATTLE.CAT");
 	mod->verifySoundOffset(_type, _deathSoundFemale, "BATTLE.CAT");
 	mod->verifySoundOffset(_type, _panicSoundMale, "BATTLE.CAT");
