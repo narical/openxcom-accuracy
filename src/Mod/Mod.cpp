@@ -1022,8 +1022,10 @@ void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const
 
 	if (s->getTotalFrames() == 0)
 	{
-		//HACK: some sprites should be shared betwean diffret sets but in some cases one set is not used, if there is no surfaces this mean this index is not used
-		// in some corner cases it will not work correcty, like if someone do not add any surface
+		// HACK: some sprites should be shared between different sets (for example 'Projectiles' and 'UnderwaterProjectiles'),
+		// but in some cases one set is not used (for example if the weapon is 'underwaterOnly: true').
+		// If there are no surfaces at all, this means this index is not used.
+		// In some corner cases it will not work correcty, for example if someone does not add any surface to the set at all.
 		return;
 	}
 
@@ -1045,8 +1047,10 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 
 	if (s->getTotalFrames() == 0)
 	{
-		//HACK: some sprites should be shared betwean diffret sets but in some cases one set is not used, if there is no surfaces this mean this index is not used
-		// in some corner cases it will not work correcty, like if someone do not add any surface
+		// HACK: some sprites should be shared between different sets (for example 'Projectiles' and 'UnderwaterProjectiles'),
+		// but in some cases one set is not used (for example if the weapon is 'underwaterOnly: true').
+		// If there are no surfaces at all, this means this index is not used.
+		// In some corner cases it will not work correcty, for example if someone does not add any surface to the set at all.
 		return;
 	}
 

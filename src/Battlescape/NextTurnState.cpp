@@ -358,11 +358,6 @@ bool NextTurnState::applyEnvironmentalConditionToFaction(UnitFaction faction, En
 	// 2. no power range reduction (there is no projectile, range = 0)
 	// 3. no AOE damage from explosions (targets are damaged directly without affecting anyone/anything)
 	// 4. no terrain damage
-	// 5. no self-destruct
-	// 6. no vanilla target morale loss when hurt; vanilla morale loss for fatal wounds still applies though
-	//
-	// 7. no setting target on fire (...could be added if needed)
-	// 8. no fire extinguisher
 
 	bool showMessage = false;
 
