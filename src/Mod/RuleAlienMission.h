@@ -123,6 +123,8 @@ public:
 	~RuleAlienMission();
 	/// Gets the mission's type.
 	const std::string &getType() const { return _type; }
+	/// Does this mission have raceWeights?
+	bool hasRaceWeights() const;
 	/// Gets a race based on the game time and the racial distribution.
 	std::string generateRace(const size_t monthsPassed) const;
 	/// Loads alien mission data from YAML.

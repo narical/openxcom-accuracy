@@ -1702,7 +1702,14 @@ void GeoscapeState::baseHunting()
 								AlienMission *mission = new AlienMission(rule);
 								mission->setRegion(_game->getSavedGame()->locateRegion(*(*ab))->getRules()->getType(), *_game->getMod());
 								mission->setId(_game->getSavedGame()->getId("ALIEN_MISSIONS"));
-								mission->setRace((*ab)->getAlienRace());
+								if (!(*ab)->getDeployment()->isHuntMissionRaceFromAlienBase() && rule.hasRaceWeights())
+								{
+									mission->setRace(rule.generateRace(_game->getSavedGame()->getMonthsPassed()));
+								}
+								else
+								{
+									mission->setRace((*ab)->getAlienRace());
+								}
 								mission->setAlienBase((*ab));
 								int targetZone = -1;
 								if (mission->getRules().getObjective() == OBJECTIVE_SITE)
@@ -2262,7 +2269,14 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
 			}
 			mission->setRegion(targetRegion, _mod);
 			mission->setId(_save.getId("ALIEN_MISSIONS"));
-			mission->setRace(base->getAlienRace());
+			if (!base->getDeployment()->isGenMissionRaceFromAlienBase() && rule.hasRaceWeights())
+			{
+				mission->setRace(rule.generateRace(_save.getMonthsPassed()));
+			}
+			else
+			{
+				mission->setRace(base->getAlienRace());
+			}
 			mission->setAlienBase(base);
 			int targetZone = -1;
 			if (mission->getRules().getObjective() == OBJECTIVE_SITE)

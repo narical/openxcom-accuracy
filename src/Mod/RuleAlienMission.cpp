@@ -179,6 +179,14 @@ void RuleAlienMission::load(const YAML::Node &node)
 }
 
 /**
+ * @return if this mission uses a weighted distribution to pick a race.
+ */
+bool RuleAlienMission::hasRaceWeights() const
+{
+	return !_raceDistribution.empty();
+}
+
+/**
  * Chooses one of the available races for this mission.
  * The racial distribution may vary based on the current game date.
  * @param monthsPassed The number of months that have passed in the game world.

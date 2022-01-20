@@ -186,10 +186,11 @@ AlienDeployment::AlienDeployment(const std::string &type) :
 	_shade(-1), _minShade(-1), _maxShade(-1), _finalDestination(false), _isAlienBase(false), _isHidden(false), _fakeUnderwaterSpawnChance(0),
 	_alert("STR_ALIENS_TERRORISE"), _alertBackground("BACK03.SCR"), _alertDescription(""), _alertSound(-1),
 	_markerName("STR_TERROR_SITE"), _markerIcon(-1), _durationMin(0), _durationMax(0), _minDepth(0), _maxDepth(0),
-	_genMissionFrequency(0), _genMissionLimit(1000),
+	_genMissionFrequency(0), _genMissionLimit(1000), _genMissionRaceFromAlienBase(true),
 	_objectiveType(-1), _objectivesRequired(0), _objectiveCompleteScore(0), _objectiveFailedScore(0), _despawnPenalty(0), _abortPenalty(0), _points(0),
 	_turnLimit(0), _cheatTurn(20), _chronoTrigger(FORCE_LOSE), _keepCraftAfterFailedMission(false), _allowObjectiveRecovery(false), _escapeType(ESCAPE_NONE), _vipSurvivalPercentage(0),
-	_baseDetectionRange(0), _baseDetectionChance(100), _huntMissionMaxFrequency(60), _resetAlienBaseAgeAfterUpgrade(false), _resetAlienBaseAge(false)
+	_baseDetectionRange(0), _baseDetectionChance(100), _huntMissionMaxFrequency(60), _huntMissionRaceFromAlienBase(true),
+	_resetAlienBaseAgeAfterUpgrade(false), _resetAlienBaseAge(false)
 {
 }
 
@@ -327,11 +328,13 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	}
 	_genMissionFrequency = node["genMissionFreq"].as<int>(_genMissionFrequency);
 	_genMissionLimit = node["genMissionLimit"].as<int>(_genMissionLimit);
+	_genMissionRaceFromAlienBase = node["genMissionRaceFromAlienBase"].as<bool>(_genMissionRaceFromAlienBase);
 
 	_baseSelfDestructCode = node["baseSelfDestructCode"].as<std::string>(_baseSelfDestructCode);
 	_baseDetectionRange = node["baseDetectionRange"].as<int>(_baseDetectionRange);
 	_baseDetectionChance = node["baseDetectionChance"].as<int>(_baseDetectionChance);
 	_huntMissionMaxFrequency = node["huntMissionMaxFrequency"].as<int>(_huntMissionMaxFrequency);
+	_huntMissionRaceFromAlienBase = node["huntMissionRaceFromAlienBase"].as<bool>(_huntMissionRaceFromAlienBase);
 	if (const YAML::Node &weights = node["huntMissionWeights"])
 	{
 		for (YAML::const_iterator nn = weights.begin(); nn != weights.end(); ++nn)
@@ -803,6 +806,11 @@ int AlienDeployment::getGenMissionLimit() const
 	return _genMissionLimit;
 }
 
+bool AlienDeployment::isGenMissionRaceFromAlienBase() const
+{
+	return _genMissionRaceFromAlienBase;
+}
+
 bool AlienDeployment::keepCraftAfterFailedMission() const
 {
 	return _keepCraftAfterFailedMission;
@@ -866,6 +874,15 @@ int AlienDeployment::getBaseDetectionChance() const
 int AlienDeployment::getHuntMissionMaxFrequency() const
 {
 	return _huntMissionMaxFrequency;
+}
+
+/**
+ * Should the hunt missions inherit the race from the alien base, or take it from their own 'raceWeights'?
+ * @return True, if the race is taken from the alien base (vanilla behavior).
+ */
+bool AlienDeployment::isHuntMissionRaceFromAlienBase() const
+{
+	return _huntMissionRaceFromAlienBase;
 }
 
 /**
