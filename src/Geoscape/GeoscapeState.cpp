@@ -461,9 +461,9 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 		countryList.push_back("All countries");
 		for (auto c : *_game->getSavedGame()->getCountries())
 		{
-			countryList.push_back(c->getRules()->getType());
+			countryList.push_back(tr(c->getRules()->getType()));
 		}
-		_cbxCountry->setOptions(countryList, true);
+		_cbxCountry->setOptions(countryList, false);
 		_cbxCountry->setVisible(false);
 		_cbxCountry->onChange((ActionHandler)&GeoscapeState::cbxCountryChange);
 	}
