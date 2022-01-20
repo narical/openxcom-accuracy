@@ -514,7 +514,7 @@ void StatsForNerdsState::endHeading()
  * Adds a vector of generic types
  */
 template<typename T, typename Callback>
-void StatsForNerdsState::addVectorOfGeneric(std::ostringstream &ss, const std::vector<T> &vec, const std::string &propertyName, Callback&& callback)
+void StatsForNerdsState::addVectorOfGeneric(std::ostringstream &ss, const std::vector<T> &vec, const std::string &propertyName, Callback&& callback, bool translate)
 {
 	if (vec.empty() && !_showDefaults)
 	{
@@ -529,7 +529,14 @@ void StatsForNerdsState::addVectorOfGeneric(std::ostringstream &ss, const std::v
 		{
 			ss << ", ";
 		}
-		addTranslation(ss, callback(item));
+		if (translate)
+		{
+			addTranslation(ss, callback(item));
+		}
+		else
+		{
+			ss << callback(item);
+		}
 		i++;
 	}
 	ss << "}";
@@ -571,9 +578,9 @@ void StatsForNerdsState::addSingleString(std::ostringstream &ss, const std::stri
 /**
  * Adds a vector of strings to the table.
  */
-void StatsForNerdsState::addVectorOfStrings(std::ostringstream &ss, const std::vector<std::string> &vec, const std::string &propertyName)
+void StatsForNerdsState::addVectorOfStrings(std::ostringstream &ss, const std::vector<std::string> &vec, const std::string &propertyName, bool translate)
 {
-	addVectorOfGeneric(ss, vec, propertyName, [](const std::string& s) -> const std::string& { return s; });
+	addVectorOfGeneric(ss, vec, propertyName, [](const std::string& s) -> const std::string& { return s; }, translate);
 }
 
 /**
@@ -3007,7 +3014,7 @@ void StatsForNerdsState::initCraftList()
 			tmp.push_back(ss2.str());
 		}
 	}
-	addVectorOfStrings(ss, tmp, "weaponTypes");
+	addVectorOfStrings(ss, tmp, "weaponTypes", false);
 
 	addHeading("stats");
 	{

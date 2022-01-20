@@ -76,10 +76,10 @@ private:
 	void endHeading();
 
 	template<typename T, typename Callback>
-	void addVectorOfGeneric(std::ostringstream &ss, const std::vector<T> &vec, const std::string &propertyName, Callback&& func);
+	void addVectorOfGeneric(std::ostringstream &ss, const std::vector<T> &vec, const std::string &propertyName, Callback&& func, bool translate = true);
 
 	void addSingleString(std::ostringstream &ss, const std::string &id, const std::string &propertyName, const std::string &defaultId = "", bool translate = true);
-	void addVectorOfStrings(std::ostringstream &ss, const std::vector<std::string> &vec, const std::string &propertyName);
+	void addVectorOfStrings(std::ostringstream &ss, const std::vector<std::string> &vec, const std::string &propertyName, bool translate = true);
 
 	void addVectorOfResearch(std::ostringstream &ss, const std::vector<const RuleResearch *> &vec, const std::string &propertyName);
 
