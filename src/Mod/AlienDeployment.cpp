@@ -355,6 +355,7 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	}
 	_resetAlienBaseAgeAfterUpgrade = node["resetAlienBaseAgeAfterUpgrade"].as<bool>(_resetAlienBaseAgeAfterUpgrade);
 	_resetAlienBaseAge = node["resetAlienBaseAge"].as<bool>(_resetAlienBaseAge);
+	_upgradeRace = node["upgradeRace"].as<std::string>(_upgradeRace);
 }
 
 /**

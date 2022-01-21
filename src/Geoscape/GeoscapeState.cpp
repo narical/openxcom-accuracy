@@ -125,6 +125,7 @@
 #include "../Mod/RuleGlobe.h"
 #include "../Engine/Exception.h"
 #include "../Mod/AlienDeployment.h"
+#include "../Mod/AlienRace.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
 #include "../fmath.h"
@@ -3918,6 +3919,11 @@ void GeoscapeState::determineAlienMissions()
 					alienBase->setStartMonth(month);
 				}
 				alienBase->setDeployment(upgrade);
+				auto* upgradeRace = mod->getAlienRace(upgrade->getUpgradeRace(), false);
+				if (upgradeRace)
+				{
+					alienBase->setAlienRace(upgradeRace->getId());
+				}
 			}
 		}
 	}
