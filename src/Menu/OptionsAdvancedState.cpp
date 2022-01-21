@@ -267,7 +267,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		else if (i == &Options::changeValueByMouseWheel)
 		{
 			min = 0;
-			max = 50;
+			max = 100;
 		}
 		else if (i == &Options::FPS)
 		{
