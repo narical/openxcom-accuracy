@@ -132,10 +132,10 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 		RuleTerrain *rule = new RuleTerrain(terrain["name"].as<std::string>());
 		rule->load(terrain, mod);
 		_battlescapeTerrainData = rule;
-		if (const YAML::Node &craftInventoryTile = node["craftInventoryTile"])
-		{
-			_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
-		}
+	}
+	if (const YAML::Node& craftInventoryTile = node["craftInventoryTile"])
+	{
+		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
 	}
 	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
 	_deployment = node["deployment"].as< std::vector< std::vector<int> > >(_deployment);
