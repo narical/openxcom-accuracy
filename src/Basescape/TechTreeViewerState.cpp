@@ -23,6 +23,7 @@
 #include "../Mod/Mod.h"
 #include "../Mod/RuleArcScript.h"
 #include "../Mod/RuleBaseFacility.h"
+#include "../Mod/RuleCraft.h"
 #include "../Mod/RuleEventScript.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleItem.h"
@@ -47,7 +48,7 @@ namespace OpenXcom
 /**
  * Initializes all the elements on the UI.
  */
-TechTreeViewerState::TechTreeViewerState(const RuleResearch *r, const RuleManufacture *m, const RuleBaseFacility *f)
+TechTreeViewerState::TechTreeViewerState(const RuleResearch *r, const RuleManufacture *m, const RuleBaseFacility *f, const RuleCraft *c)
 {
 	if (r != 0)
 	{
@@ -63,6 +64,11 @@ TechTreeViewerState::TechTreeViewerState(const RuleResearch *r, const RuleManufa
 	{
 		_selectedTopic = f->getType();
 		_selectedFlag = TTV_FACILITIES;
+	}
+	else if (c != 0)
+	{
+		_selectedTopic = c->getType();
+		_selectedFlag = TTV_CRAFTS;
 	}
 
 	// Create objects
@@ -220,6 +226,17 @@ TechTreeViewerState::TechTreeViewerState(const RuleResearch *r, const RuleManufa
 		}
 	}
 
+	const std::vector<std::string> &allCrafts = _game->getMod()->getCraftsList();
+	RuleCraft *craftRule = 0;
+	for (std::vector<std::string>::const_iterator iter = allCrafts.begin(); iter != allCrafts.end(); ++iter)
+	{
+		craftRule = _game->getMod()->getCraft(*iter);
+		if (_game->getSavedGame()->isResearched(craftRule->getRequirements()))
+		{
+			_alreadyAvailableCrafts.insert(craftRule->getType());
+		}
+	}
+
 	_txtProgress->setAlign(ALIGN_RIGHT);
 	_txtProgress->setText(tr("STR_RESEARCH_PROGRESS").arg(discoveredSum * 100 / totalSum));
 }
@@ -298,6 +315,10 @@ void TechTreeViewerState::initLists()
 		{
 			ss << tr("STR_I_FLAG");
 		}
+		else if (_selectedFlag == TTV_CRAFTS)
+		{
+			ss << tr("STR_C_FLAG");
+		}
 		_txtSelectedTopic->setText(tr("STR_TOPIC").arg(ss.str()));
 		_txtCostIndicator->setText("");
 	}
@@ -368,6 +389,7 @@ void TechTreeViewerState::initLists()
 		std::vector<std::string> requiredByFacilities;
 		std::vector<std::string> requiredByItems;
 		std::vector<std::string> requiredByTransformations;
+		std::vector<std::string> requiredByCrafts;
 		std::vector<std::string> leadsTo;
 		const std::vector<const RuleResearch*> unlocks = rule->getUnlocked();
 		const std::vector<const RuleResearch*> disables = rule->getDisabled();
@@ -426,6 +448,18 @@ void TechTreeViewerState::initLists()
 				if (i == rule->getName())
 				{
 					requiredByTransformations.push_back(transf);
+				}
+			}
+		}
+
+		for (auto &c : _game->getMod()->getCraftsList())
+		{
+			RuleCraft *temp = _game->getMod()->getCraft(c);
+			for (auto &i : temp->getRequirements())
+			{
+				if (i == rule->getName())
+				{
+					requiredByCrafts.push_back(c);
 				}
 			}
 		}
@@ -759,7 +793,7 @@ void TechTreeViewerState::initLists()
 		}
 
 		// 6. required by
-		if (requiredByResearch.size() > 0 || requiredByManufacture.size() > 0 || requiredByFacilities.size() > 0 || requiredByItems.size() > 0)
+		if (requiredByResearch.size() > 0 || requiredByManufacture.size() > 0 || requiredByFacilities.size() > 0 || requiredByItems.size() > 0 || requiredByCrafts.size() > 0)
 		{
 			_lstRight->addRow(1, tr("STR_REQUIRED_BY").c_str());
 			_lstRight->setRowColor(row, _blue);
@@ -840,7 +874,26 @@ void TechTreeViewerState::initLists()
 			}
 		}
 
-		// 6e. required by transformations
+		// 6e. required by crafts
+		if (requiredByCrafts.size() > 0)
+		{
+			for (std::vector<std::string>::const_iterator i = requiredByCrafts.begin(); i != requiredByCrafts.end(); ++i)
+			{
+				std::string name = tr((*i));
+				name.insert(0, "  ");
+				name.append(tr("STR_C_FLAG"));
+				_lstRight->addRow(1, name.c_str());
+				if (!isDiscoveredCraft((*i)))
+				{
+					_lstRight->setRowColor(row, _pink);
+				}
+				_rightTopics.push_back((*i));
+				_rightFlags.push_back(TTV_CRAFTS);
+				++row;
+			}
+		}
+
+		// 6f. required by transformations
 		if (requiredByTransformations.size() > 0)
 		{
 			_lstRight->addRow(1, tr("STR_REQUIRED_BY_TRANSFORMATIONS").c_str());
@@ -1702,6 +1755,114 @@ void TechTreeViewerState::initLists()
 			++row;
 		}
 	}
+	else if (_selectedFlag == TTV_CRAFTS)
+	{
+		int row = 0;
+		RuleCraft *rule = _game->getMod()->getCraft(_selectedTopic);
+		if (rule == 0)
+			return;
+
+		// 1. requires
+		const std::vector<std::string> reqs = rule->getRequirements();
+		if (reqs.size() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_RESEARCH_REQUIRED").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+			for (std::vector<std::string>::const_iterator i = reqs.begin(); i != reqs.end(); ++i)
+			{
+				std::string name = tr((*i));
+				name.insert(0, "  ");
+				_lstLeft->addRow(1, name.c_str());
+				_lstLeft->setRowColor(row, getResearchColor((*i)));
+				_leftTopics.push_back((*i));
+				_leftFlags.push_back(TTV_RESEARCH);
+				++row;
+			}
+		}
+
+		// 2. services (from base facilities) required to buy
+		if (rule->getRequiresBuyBaseFunc().any())
+		{
+			const std::vector<std::string> servicesBuy = _game->getMod()->getBaseFunctionNames(rule->getRequiresBuyBaseFunc());
+			_lstLeft->addRow(1, tr("STR_SERVICES_REQUIRED_BUY").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+			for (auto& i : servicesBuy)
+			{
+				std::string name = tr(i);
+				name.insert(0, "  ");
+				_lstLeft->addRow(1, name.c_str());
+				_lstLeft->setRowColor(row, _gold);
+				_leftTopics.push_back("-");
+				_leftFlags.push_back(TTV_NONE);
+				++row;
+			}
+		}
+
+		// 3. produced by
+		std::vector<std::string> producedBy;
+		for (auto& j : _game->getMod()->getManufactureList())
+		{
+			RuleManufacture* temp = _game->getMod()->getManufacture(j);
+			if (temp->getProducedCraft() == rule)
+			{
+				producedBy.push_back(j);
+				break;
+			}
+		}
+		if (producedBy.size() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_PRODUCED_BY").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+			for (std::vector<std::string>::const_iterator i = producedBy.begin(); i != producedBy.end(); ++i)
+			{
+				std::string name = tr((*i));
+				name.insert(0, "  ");
+				name.append(tr("STR_M_FLAG"));
+				_lstLeft->addRow(1, name.c_str());
+				if (!isDiscoveredManufacture((*i)))
+				{
+					_lstLeft->setRowColor(row, _pink);
+				}
+				_leftTopics.push_back((*i));
+				_leftFlags.push_back(TTV_MANUFACTURING);
+				++row;
+			}
+		}
+
+		// empty line
+		_lstLeft->addRow(1, "");
+		_leftTopics.push_back("-");
+		_leftFlags.push_back(TTV_NONE);
+		++row;
+
+		// cost to buy
+		if (rule->getBuyCost() > 0)
+		{
+			_lstLeft->addRow(1, tr("STR_TTV_COST_PER_UNIT").c_str());
+			_lstLeft->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+
+			std::ostringstream txt;
+			txt << "  ";
+			txt << Unicode::formatFunding(rule->getBuyCost());
+			_lstLeft->addRow(1, txt.str().c_str());
+			_lstLeft->setRowColor(row, _white);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+		}
+	}
 }
 
 /**
@@ -1848,6 +2009,18 @@ bool TechTreeViewerState::isProtectedItem(const std::string &topic) const
 bool TechTreeViewerState::isProtectedAndDiscoveredItem(const std::string &topic) const
 {
 	if (_alreadyAvailableItems.find(topic) == _alreadyAvailableItems.end())
+	{
+		return false;
+	}
+	return true;
+}
+
+/**
+* Is given craft discovered/available?
+*/
+bool TechTreeViewerState::isDiscoveredCraft(const std::string &topic) const
+{
+	if (_alreadyAvailableCrafts.find(topic) == _alreadyAvailableCrafts.end())
 	{
 		return false;
 	}
