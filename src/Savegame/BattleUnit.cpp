@@ -6204,7 +6204,7 @@ void commonImpl(BindBase& b, Mod* mod)
 
 void battleActionImpl(BindBase& b)
 {
-	b.addCustomConst("battle_action_aimshoot", BA_AIMEDSHOT);
+	b.addCustomConst("battle_action_aimshoot", BA_AIMEDSHOT); //TODO: fix name, it require some new logic in script to allow old typo for backward compatiblity
 	b.addCustomConst("battle_action_autoshoot", BA_AUTOSHOT);
 	b.addCustomConst("battle_action_snapshot", BA_SNAPSHOT);
 	b.addCustomConst("battle_action_walk", BA_WALK);
