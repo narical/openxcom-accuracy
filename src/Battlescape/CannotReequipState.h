@@ -37,8 +37,8 @@ class Base;
 class CannotReequipState : public State
 {
 private:
-	Base *_base;
 	std::vector<ReequipStat> _missingItems;
+	Base *_base;
 
 	TextButton *_btnOk, *_btnManufacture, *_btnPurchase;
 	Window *_window;
