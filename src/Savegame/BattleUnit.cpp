@@ -1717,6 +1717,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 	}
 
 	// special effects
+	if (save->getBattleState())
 	{
 		constexpr int arg_specialDamageTransform = 0;
 		constexpr int arg_specialDamageTransformChance = 1;
