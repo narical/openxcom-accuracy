@@ -1536,7 +1536,7 @@ void Globe::drawDetail()
 					continue;
 
 				color = -1;
-				int zoneNumber = 0;
+				size_t zoneNumber = 0;
 				for (std::vector<MissionZone>::const_iterator j = (*i)->getRules()->getMissionZones().begin(); j != (*i)->getRules()->getMissionZones().end(); ++j)
 				{
 					++zoneNumber;
@@ -1544,7 +1544,7 @@ void Globe::drawDetail()
 						continue;
 
 					color += 2;
-					int areaNumber = 0;
+					size_t areaNumber = 0;
 					for (std::vector<MissionArea>::const_iterator k = (*j).areas.begin(); k != (*j).areas.end(); ++k)
 					{
 						++areaNumber;
