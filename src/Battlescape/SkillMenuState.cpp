@@ -203,8 +203,6 @@ void SkillMenuState::btnActionMenuItemClick(Action *action)
 
 	if (btnID != -1)
 	{
-		std::string actionResult = "STR_UNKNOWN"; // needs a non-empty default/fall-back !
-
 		TileEngine *tileEngine = _game->getSavedGame()->getSavedBattle()->getTileEngine();
 		const RuleSkill *selectedSkill = _actionMenu[btnID]->getSkill();
 		_action->skillRules = selectedSkill;
