@@ -1734,14 +1734,6 @@ void SavedBattleGame::initItem(BattleItem *item, BattleUnit *unit)
 /**
  * Create new item for unit.
  */
-BattleItem *SavedBattleGame::createItemForUnit(const std::string& type, BattleUnit *unit, bool fixedWeapon)
-{
-	return createItemForUnit(_rule->getItem(type, true), unit, fixedWeapon);
-}
-
-/**
- * Create new item for unit.
- */
 BattleItem *SavedBattleGame::createItemForUnit(const RuleItem *rule, BattleUnit *unit, bool fixedWeapon)
 {
 	if (_isPreview)

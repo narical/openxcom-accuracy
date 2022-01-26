@@ -402,8 +402,6 @@ public:
 	void initItem(BattleItem *item, BattleUnit *unit = nullptr);
 	/// Create new item for unit.
 	BattleItem *createItemForUnit(const RuleItem *rule, BattleUnit *unit, bool fixedWeapon = false);
-	/// Create new item for unit.
-	BattleItem *createItemForUnit(const std::string& type, BattleUnit *unit, bool fixedWeapon = false);
 	/// Create new special built-in item for unit.
 	BattleItem *createItemForUnitSpecialBuiltin(const RuleItem *rule, BattleUnit *unit);
 	/// Create new item for tile.
