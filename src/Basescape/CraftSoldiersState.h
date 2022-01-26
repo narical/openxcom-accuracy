@@ -41,6 +41,7 @@ class CraftSoldiersState : public State
 {
 private:
 	TextButton *_btnOk;
+	TextButton *_btnPreview;
 	Window *_window;
 	Text *_txtTitle, *_txtName, *_txtRank, *_txtCraft, *_txtAvailable, *_txtUsed;
 	ComboBox *_cbxSortBy;
@@ -63,6 +64,8 @@ public:
 	void cbxSortByChange(Action *action);
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Handler for clicking the Preview button.
+	void btnPreviewClick(Action *action);
 	/// Updates the soldiers list.
 	void init() override;
 	/// Handler for clicking the Soldiers reordering button.

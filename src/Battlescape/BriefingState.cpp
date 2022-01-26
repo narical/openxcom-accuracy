@@ -244,11 +244,18 @@ void BriefingState::btnOkClick(Action *)
 	BattlescapeState *bs = new BattlescapeState;
 	bs->getBattleGame()->spawnFromPrimedItems();
 	auto tally = bs->getBattleGame()->tallyUnits();
-	if (tally.liveAliens > 0)
+	bool isPreview = _game->getSavedGame()->getSavedBattle()->isPreview();
+	if (tally.liveAliens > 0 || isPreview)
 	{
 		_game->pushState(bs);
 		_game->getSavedGame()->getSavedBattle()->setBattleState(bs);
 		_game->pushState(new NextTurnState(_game->getSavedGame()->getSavedBattle(), bs));
+		if (isPreview)
+		{
+			// skip InventoryState
+			_game->getSavedGame()->getSavedBattle()->startFirstTurn();
+			return;
+		}
 		_game->pushState(new InventoryState(false, bs, 0));
 	}
 	else

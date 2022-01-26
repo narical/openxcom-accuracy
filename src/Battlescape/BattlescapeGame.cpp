@@ -180,6 +180,10 @@ BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parent
 	_playerPanicHandled(true), _AIActionCounter(0), _AISecondMove(false), _playedAggroSound(false),
 	_endTurnRequested(false), _endConfirmationHandled(false), _allEnemiesNeutralized(false)
 {
+	if (_save->isPreview())
+	{
+		_allEnemiesNeutralized = true; // just in case
+	}
 
 	_currentAction.actor = 0;
 	_currentAction.targeting = false;
@@ -2134,6 +2138,11 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		}
 	}
 
+	if (_save->isPreview() && faction != FACTION_PLAYER)
+	{
+		return;
+	}
+
 	// Create the unit
 	BattleUnit *newUnit = _save->createTempUnit(type, faction);
 
@@ -2147,14 +2156,17 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		if (getMod()->getItem(newUnit->getType()) && getMod()->getItem(newUnit->getType())->isFixed())
 		{
 			const RuleItem *newUnitWeapon = getMod()->getItem(newUnit->getType());
-			_save->createItemForUnit(newUnitWeapon, newUnit, true);
-			if (newUnitWeapon->getVehicleClipAmmo())
+			if (!_save->isPreview())
 			{
-				const RuleItem *ammo = newUnitWeapon->getVehicleClipAmmo();
-				BattleItem *ammoItem = _save->createItemForUnit(ammo, newUnit);
-				if (ammoItem)
+				_save->createItemForUnit(newUnitWeapon, newUnit, true);
+				if (newUnitWeapon->getVehicleClipAmmo())
 				{
-					ammoItem->setAmmoQuantity(newUnitWeapon->getVehicleClipSize());
+					const RuleItem *ammo = newUnitWeapon->getVehicleClipAmmo();
+					BattleItem *ammoItem = _save->createItemForUnit(ammo, newUnit);
+					if (ammoItem)
+					{
+						ammoItem->setAmmoQuantity(newUnitWeapon->getVehicleClipSize());
+					}
 				}
 			}
 			newUnit->setTurretType(newUnitWeapon->getTurretType());
@@ -2921,6 +2933,11 @@ bool BattlescapeGame::getKneelReserved() const
  */
 int BattlescapeGame::checkForProximityGrenades(BattleUnit *unit)
 {
+	if (_save->isPreview())
+	{
+		return 0;
+	}
+
 	// death trap?
 	Tile* deathTrapTile = nullptr;
 	for (int sx = 0; sx < unit->getArmor()->getSize(); sx++)
@@ -3127,6 +3144,10 @@ std::list<BattleState*> BattlescapeGame::getStates()
  */
 void BattlescapeGame::autoEndBattle()
 {
+	if (_save->isPreview())
+	{
+		return;
+	}
 	if (Options::battleAutoEnd)
 	{
 		if (_save->getVIPSurvivalPercentage() > 0 && _save->getVIPEscapeType() != ESCAPE_NONE)

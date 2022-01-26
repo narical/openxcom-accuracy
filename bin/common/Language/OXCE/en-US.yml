@@ -50,6 +50,8 @@ en-US:
   STR_NORMAL: "Normal"
   STR_BOLD: "Bold (+50%)"
   STR_VERY_BOLD: "Very bold (+100%)"
+#CraftSoldiersState.cpp
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
 #DismantleFacilityState.cpp
   STR_REFUND_VALUE: "Sales value> {ALT}{0}"
 #GlobalManufactureState.cpp

@@ -59,6 +59,12 @@ namespace OpenXcom
  */
 NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *state) : _battleGame(battleGame), _state(state), _timer(0), _currentTurn(0), _showBriefing(false)
 {
+	if (_battleGame->isPreview())
+	{
+		// skip everything, go straight to init()
+		return;
+	}
+
 	_currentTurn = _battleGame->getTurn() < 1 ? 1 : _battleGame->getTurn();
 
 	// Create objects
@@ -286,6 +292,34 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 NextTurnState::~NextTurnState()
 {
 	delete _timer;
+}
+
+void NextTurnState::init()
+{
+	State::init();
+
+	if (_battleGame->isPreview())
+	{
+		_battleGame->getBattleGame()->cleanupDeleted();
+		_game->popState();
+
+		if (_battleGame->getSide() == FACTION_HOSTILE)
+		{
+			// end preview
+			_state->finishBattle(false, 42);
+		}
+		else
+		{
+			// start preview
+			_state->btnCenterClick(0);
+
+			// Try to reactivate the touch buttons at the start of the player's turn
+			if (_battleGame->getSide() == FACTION_PLAYER)
+			{
+				_state->toggleTouchButtons(false, true);
+			}
+		}
+	}
 }
 
 /**

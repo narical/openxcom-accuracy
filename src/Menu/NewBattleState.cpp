@@ -199,6 +199,16 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 			}
 		}
 	}
+	// ignore, hardcoded
+	{
+		Collections::removeIf(
+			_missionTypes,
+			[](const std::string& p)
+			{
+				return p == "STR_CRAFT_DEPLOYMENT_PREVIEW";
+			}
+		);
+	}
 	_cbxMission->setOptions(_missionTypes, true);
 	_cbxMission->onChange((ActionHandler)&NewBattleState::cbxMissionChange);
 

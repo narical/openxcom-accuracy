@@ -20,6 +20,7 @@
 #include <vector>
 #include "BattleItem.h"
 #include "ItemContainer.h"
+#include "Craft.h"
 #include "SavedBattleGame.h"
 #include "SavedGame.h"
 #include "Tile.h"
@@ -57,7 +58,8 @@ namespace OpenXcom
 /**
  * Initializes a brand new battlescape saved game.
  */
-SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang) :
+SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
+	_isPreview(isPreview), _craftPos(), _craftZ(0), _craftForPreview(nullptr),
 	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0),
 	_reinforcementsItemLevel(0), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
@@ -860,6 +862,39 @@ int SavedBattleGame::getMapSizeXYZ() const
 }
 
 /**
+ * Pre-calculate all valid tiles for later use in map drawing.
+ */
+void SavedBattleGame::calculateCraftTiles()
+{
+	if (_craftForPreview && !_craftForPreview->getRules()->getDeployment().empty())
+	{
+		for (auto& vec : _craftForPreview->getRules()->getDeployment())
+		{
+			if (vec.size() >= 3)
+			{
+				Position tmp = Position(vec[0] + _craftPos.x * 10, vec[1] + _craftPos.y * 10, vec[2] + _craftZ);
+				_craftTiles.push_back(tmp);
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < getMapSizeXYZ(); ++i)
+		{
+			auto* tile = getTile(i);
+			if (tile &&
+				tile->getFloorSpecialTileType() == START_POINT &&
+				!tile->getMapData(O_OBJECT) &&
+				tile->getMapData(O_FLOOR) && // for clarity this is checked again, first time was in `getFloorSpecialTileType`
+				tile->getMapData(O_FLOOR)->getTUCost(MT_WALK) < 255)
+			{
+				_craftTiles.push_back(tile->getPosition());
+			}
+		}
+	}
+}
+
+/**
  * Converts a tile index to coordinates.
  * @param index The (unique) tile index.
  * @param x Pointer to the X coordinate.
@@ -1207,6 +1242,11 @@ void SavedBattleGame::startFirstTurn()
  */
 void SavedBattleGame::newTurnUpdateScripts()
 {
+	if (_isPreview)
+	{
+		return;
+	}
+
 	for (std::vector<BattleUnit*>::iterator i = _units.begin(); i != _units.end(); ++i)
 	{
 		if ((*i)->isIgnored())
@@ -1369,12 +1409,17 @@ void SavedBattleGame::nextAnimFrame()
  */
 void SavedBattleGame::setDebugMode()
 {
+	revealMap();
+
+	_debugMode = true;
+}
+
+void SavedBattleGame::revealMap()
+{
 	for (int i = 0; i < _mapsize_z * _mapsize_y * _mapsize_x; ++i)
 	{
 		_tiles[i].setDiscovered(true, O_FLOOR);
 	}
-
-	_debugMode = true;
 }
 
 /**
@@ -1619,6 +1664,11 @@ void SavedBattleGame::addFixedItems(BattleUnit *unit, const std::vector<const Ru
  */
 void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 {
+	if (_isPreview)
+	{
+		return;
+	}
+
 	unit->setSpecialWeapon(this, false);
 	Unit* rule = unit->getUnitRules();
 	const Armor* armor = unit->getArmor();
@@ -1673,6 +1723,11 @@ void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
  */
 void SavedBattleGame::initItem(BattleItem *item, BattleUnit *unit)
 {
+	if (_isPreview)
+	{
+		return;
+	}
+
 	ModScript::scriptCallback<ModScript::CreateItem>(item->getRules(), item, unit, this, this->getTurn());
 }
 
@@ -1689,6 +1744,11 @@ BattleItem *SavedBattleGame::createItemForUnit(const std::string& type, BattleUn
  */
 BattleItem *SavedBattleGame::createItemForUnit(const RuleItem *rule, BattleUnit *unit, bool fixedWeapon)
 {
+	if (_isPreview)
+	{
+		return nullptr;
+	}
+
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	if (!unit->addItem(item, _rule, false, fixedWeapon, fixedWeapon))
 	{
@@ -1708,6 +1768,11 @@ BattleItem *SavedBattleGame::createItemForUnit(const RuleItem *rule, BattleUnit 
  */
 BattleItem *SavedBattleGame::createItemForUnitSpecialBuiltin(const RuleItem *rule, BattleUnit *unit)
 {
+	if (_isPreview)
+	{
+		return nullptr;
+	}
+
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	item->setOwner(unit);
 	item->setSlot(nullptr);
@@ -1728,6 +1793,8 @@ BattleItem *SavedBattleGame::createItemForTile(const std::string& type, Tile *ti
  */
 BattleItem *SavedBattleGame::createItemForTile(const RuleItem *rule, Tile *tile)
 {
+	// Note: this is allowed also in preview mode; for items spawned from map blocks (and friendly units spawned from such items)
+
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	if (tile)
 	{

@@ -498,13 +498,20 @@ BattlescapeState::BattlescapeState() :
 	_btnShowLayers->onKeyboardPress((ActionHandler)&BattlescapeState::btnUfopaediaClick, Options::keyGeoUfopedia);
 
 	_btnHelp->onMouseClick((ActionHandler)&BattlescapeState::btnHelpClick);
-	_btnHelp->onKeyboardPress((ActionHandler)&BattlescapeState::btnHelpClick, Options::keyBattleOptions);
+	if (!_save->isPreview())
+	{
+		_btnHelp->onKeyboardPress((ActionHandler)&BattlescapeState::btnHelpClick, Options::keyBattleOptions);
+	}
 	_btnHelp->setTooltip("STR_OPTIONS");
 	_btnHelp->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
 	_btnHelp->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 
 	_btnEndTurn->onMouseClick((ActionHandler)&BattlescapeState::btnEndTurnClick);
 	_btnEndTurn->onKeyboardPress((ActionHandler)&BattlescapeState::btnEndTurnClick, Options::keyBattleEndTurn);
+	if (_save->isPreview())
+	{
+		_btnEndTurn->onKeyboardPress((ActionHandler)&BattlescapeState::btnEndTurnClick, Options::keyBattleOptions); // Esc
+	}
 	_btnEndTurn->setTooltip("STR_END_TURN");
 	_btnEndTurn->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipInEndTurn);
 	_btnEndTurn->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
@@ -812,7 +819,7 @@ void BattlescapeState::init()
 	_txtTooltip->setText("");
 	_btnReserveKneel->toggle(_save->getKneelReserved());
 	_battleGame->setKneelReserved(_save->getKneelReserved());
-	if (_autosave > 0)
+	if (_autosave > 0 && !_save->isPreview())
 	{
 		int currentTurn = _autosave;
 		_autosave = 0;
@@ -1205,6 +1212,10 @@ void BattlescapeState::btnKneelClick(Action *)
  */
 void BattlescapeState::btnInventoryClick(Action *)
 {
+	if (_save->isPreview())
+	{
+		return;
+	}
 #if 0
 	if (_save->getDebugMode())
 	{
@@ -1357,6 +1368,14 @@ void BattlescapeState::btnUfopaediaClick(Action *)
  */
 void BattlescapeState::btnHelpClick(Action *)
 {
+	if (_save->isPreview())
+	{
+		// Notes for future explorers:
+		// 1. saving makes no sense
+		// 2. loading could be enabled, but needs changes in the Game's _states management; make sure you know what you're doing!
+		return;
+	}
+
 	if (allowButtons(true))
 		_game->pushState(new PauseState(OPT_BATTLESCAPE));
 }
@@ -1384,6 +1403,11 @@ void BattlescapeState::btnEndTurnClick(Action *)
  */
 void BattlescapeState::btnAbortClick(Action *)
 {
+	if (_save->isPreview())
+	{
+		return;
+	}
+
 	if (allowButtons())
 		_game->pushState(new AbortMissionState(_save, this));
 }
@@ -2791,7 +2815,7 @@ inline void BattlescapeState::handle(Action *action)
 					}
 				}
 				// quick save and quick load
-				if (!_game->getSavedGame()->isIronman())
+				if (!_game->getSavedGame()->isIronman() && !_save->isPreview())
 				{
 					if (key == Options::keyQuickSave)
 					{
@@ -3152,6 +3176,8 @@ void BattlescapeState::popup(State *state)
  */
 void BattlescapeState::finishBattle(bool abort, int inExitArea)
 {
+	bool isPreview = _save->isPreview();
+
 	while (!_game->isState(this))
 	{
 		_game->popState();
@@ -3218,7 +3244,7 @@ void BattlescapeState::finishBattle(bool abort, int inExitArea)
 		nextStage = ruleDeploy->getNextStage();
 	}
 
-	if (!nextStage.empty() && inExitArea)
+	if (!nextStage.empty() && inExitArea && !isPreview)
 	{
 		// if there is a next mission stage + we have people in exit area OR we killed all aliens, load the next stage
 		_popups.clear();
@@ -3234,6 +3260,22 @@ void BattlescapeState::finishBattle(bool abort, int inExitArea)
 		_animTimer->stop();
 		_gameTimer->stop();
 		_game->popState();
+		if (isPreview)
+		{
+			// skip Debriefing
+			Options::baseXResolution = Options::baseXGeoscape;
+			Options::baseYResolution = Options::baseYGeoscape;
+			_game->getScreen()->resetDisplay(false);
+
+			// Restore the cursor in case something weird happened
+			_game->getCursor()->setVisible(true);
+
+			// delete SavedBattleGame 
+			_game->getSavedGame()->setBattleGame(0);
+
+			_game->getMod()->playMusic("GMGEO");
+			return;
+		}
 		_game->pushState(new DebriefingState);
 		std::string cutscene;
 		if (ruleDeploy)

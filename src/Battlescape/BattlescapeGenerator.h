@@ -188,6 +188,10 @@ public:
 	void setTerrain(RuleTerrain *terrain);
 	/// Runs the generator.
 	void run();
+	/// Gets craft position.
+	SDL_Rect getCraftPos() const { return _craftPos; }
+	/// Gets craft elevation.
+	int getCraftZ() const { return _craftZ; }
 	/// Sets up the next stage (for Cydonia/TFTD missions).
 	void nextStage();
 	/// Generates an inventory battlescape.

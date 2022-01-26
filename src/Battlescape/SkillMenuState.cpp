@@ -184,6 +184,13 @@ void SkillMenuState::btnActionMenuItemClick(Action *action)
 
 	int btnID = -1;
 
+	if (_game->getSavedGame()->getSavedBattle()->isPreview())
+	{
+		_action->result = "STR_UNABLE_TO_USE_ALIEN_ARTIFACT_UNTIL_RESEARCHED";
+		_game->popState();
+		return;
+	}
+
 	// got to find out which button was pressed
 	for (size_t i = 0; i < std::size(_actionMenu) && btnID == -1; ++i)
 	{

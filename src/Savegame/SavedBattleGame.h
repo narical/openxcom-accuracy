@@ -41,6 +41,7 @@ class BattleUnit;
 class Mod;
 class State;
 class ItemContainer;
+class Craft;
 class RuleItem;
 class HitLog;
 enum HitLogEntryType : int;
@@ -59,6 +60,11 @@ public:
 	static void ScriptRegister(ScriptParserBase* parser);
 
 private:
+	bool _isPreview;
+	SDL_Rect _craftPos;
+	int _craftZ;
+	Craft* _craftForPreview;
+	std::vector<Position> _craftTiles;
 	BattlescapeState *_battleState;
 	Mod *_rule;
 	int _mapsize_x, _mapsize_y, _mapsize_z;
@@ -118,7 +124,7 @@ private:
 	void newTurnUpdateScripts();
 public:
 	/// Creates a new battle save, based on the current generic save.
-	SavedBattleGame(Mod *rule, Language *lang);
+	SavedBattleGame(Mod *rule, Language *lang, bool isPreview = false);
 	/// Cleans up the saved game.
 	~SavedBattleGame();
 	/// Loads a saved battle game from YAML.
@@ -204,6 +210,19 @@ public:
 	int getMapSizeZ() const;
 	/// Gets terrain x*y*z
 	int getMapSizeXYZ() const;
+
+	/// Is this just a craft deployment preview?
+	bool isPreview() const { return _isPreview; }
+	/// Sets craft position.
+	void setCraftPos(SDL_Rect craftPos) { _craftPos = craftPos; }
+	/// Sets craft elevation.
+	void setCraftZ(int craftZ) { _craftZ = craftZ; }
+	/// Sets craft for preview.
+	void setCraftForPreview(Craft* craftForPreview) { _craftForPreview = craftForPreview; }
+	/// Pre-calculate all valid tiles for later use in map drawing.
+	void calculateCraftTiles();
+	/// Gets craft tiles.
+	const std::vector<Position>& getCraftTiles() const { return _craftTiles; }
 
 	/**
 	 * Converts coordinates into a unique index.
@@ -359,6 +378,7 @@ public:
 	void nextAnimFrame();
 	/// Sets debug mode.
 	void setDebugMode();
+	void revealMap();
 	/// Gets debug mode.
 	bool getDebugMode() const;
 	/// Sets bug hunt mode.

@@ -707,6 +707,8 @@ void BattlescapeGenerator::nextStage()
  */
 void BattlescapeGenerator::run()
 {
+	bool isPreview = _save->isPreview();
+
 	_save->setAlienCustom(_alienCustomDeploy ? _alienCustomDeploy->getType() : "", _alienCustomMission ? _alienCustomMission->getType() : "");
 
 	// Note: this considers also fake underwater UFO deployment (via _alienCustomMission)
@@ -781,7 +783,28 @@ void BattlescapeGenerator::run()
 		throw Exception("Map generator encountered an error: " + terrainMapScript + " script not found.");
 	}
 
+	if (isPreview)
+	{
+		// resize the map if needed
+		for (auto* dims : *_craftRules->getBattlescapeTerrainData()->getMapBlocks())
+		{
+			if (dims->getSizeX() > _mapsize_x)
+			{
+				_mapsize_x = dims->getSizeX();
+			}
+			if (dims->getSizeY() > _mapsize_y)
+			{
+				_mapsize_y = dims->getSizeY();
+			}
+		}
+	}
+
 	generateMap(script, ruleDeploy->getCustomUfoName());
+
+	if (isPreview)
+	{
+		_save->revealMap();
+	}
 
 	setupObjectives(ruleDeploy);
 
@@ -795,13 +818,13 @@ void BattlescapeGenerator::run()
 	{
 		enviro = _game->getMod()->getEnviroEffects(_terrain->getEnviroEffects());
 	}
-	deployXCOM(startingCondition, enviro);
+	deployXCOM(isPreview ? nullptr : startingCondition, isPreview ? nullptr : enviro);
 
 	int civilianSpawnNodeRank = ruleDeploy->getCivilianSpawnNodeRank();
 	bool markCiviliansAsVIP = ruleDeploy->getMarkCiviliansAsVIP();
 
 	// Special case: deploy civilians before aliens
-	if (civilianSpawnNodeRank > 0)
+	if (!isPreview && civilianSpawnNodeRank > 0)
 	{
 		deployCivilians(markCiviliansAsVIP, civilianSpawnNodeRank, ruleDeploy->getCivilians());
 		for (std::map<std::string, int>::const_iterator i = ruleDeploy->getCiviliansByType().begin(); i != ruleDeploy->getCiviliansByType().end(); ++i)
@@ -812,15 +835,18 @@ void BattlescapeGenerator::run()
 
 	size_t unitCount = _save->getUnits()->size();
 
-	deployAliens(_alienCustomDeploy ? _alienCustomDeploy : ruleDeploy);
+	if (!isPreview)
+	{
+		deployAliens(_alienCustomDeploy ? _alienCustomDeploy : ruleDeploy);
+	}
 
-	if (unitCount == _save->getUnits()->size())
+	if (!isPreview && unitCount == _save->getUnits()->size())
 	{
 		throw Exception("Map generator encountered an error: no alien units could be placed on the map.");
 	}
 
 	// Normal case: deploy civilians after aliens
-	if (civilianSpawnNodeRank == 0)
+	if (!isPreview && civilianSpawnNodeRank == 0)
 	{
 		deployCivilians(markCiviliansAsVIP, civilianSpawnNodeRank, ruleDeploy->getCivilians());
 		for (std::map<std::string, int>::const_iterator i = ruleDeploy->getCiviliansByType().begin(); i != ruleDeploy->getCiviliansByType().end(); ++i)
@@ -829,12 +855,12 @@ void BattlescapeGenerator::run()
 		}
 	}
 
-	if (_generateFuel)
+	if (!isPreview && _generateFuel)
 	{
 		fuelPowerSources();
 	}
 
-	if (_ufo && _ufo->getStatus() == Ufo::CRASHED)
+	if (!isPreview && _ufo && _ufo->getStatus() == Ufo::CRASHED)
 	{
 		explodePowerSources();
 	}
@@ -1045,6 +1071,12 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		}
 	}
 
+	if (_save->isPreview())
+	{
+		// alright, that's enough
+		return;
+	}
+
 	if (_craft != 0)
 	{
 		// add items that are in the craft
@@ -1238,13 +1270,16 @@ BattleUnit *BattlescapeGenerator::addXCOMVehicle(Vehicle *v)
 	BattleUnit *unit = addXCOMUnit(_save->createTempUnit(rule, FACTION_PLAYER, _unitSequence++));
 	if (unit)
 	{
-		_save->createItemForUnit(v->getRules(), unit, true);
-		if (v->getRules()->getVehicleClipAmmo())
+		if (!_save->isPreview())
 		{
-			BattleItem *ammoItem = _save->createItemForUnit(v->getRules()->getVehicleClipAmmo(), unit);
-			if (ammoItem)
+			_save->createItemForUnit(v->getRules(), unit, true);
+			if (v->getRules()->getVehicleClipAmmo())
 			{
-				ammoItem->setAmmoQuantity(v->getAmmo());
+				BattleItem *ammoItem = _save->createItemForUnit(v->getRules()->getVehicleClipAmmo(), unit);
+				if (ammoItem)
+				{
+					ammoItem->setAmmoQuantity(v->getAmmo());
+				}
 			}
 		}
 		unit->setTurretType(v->getRules()->getTurretType());

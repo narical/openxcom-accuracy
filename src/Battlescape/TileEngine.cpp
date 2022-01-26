@@ -1767,6 +1767,11 @@ void TileEngine::calculateFOV(Position position, int eventRadius, const bool upd
  */
 bool TileEngine::checkReactionFire(BattleUnit *unit, const BattleAction &originalAction)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
+
 	// reaction fire only triggered when the actioning unit is of the currently playing side, and is still on the map (alive)
 	if (unit->getFaction() != _save->getSide() || unit->getTile() == 0)
 	{
@@ -2174,6 +2179,11 @@ int TileEngine::hitTile(Tile* tile, int damage, const RuleDamageType* type)
  */
 bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, bool rangeAtack)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
+
 	auto unit = attack.attacker;
 	auto weapon = attack.weapon_item;
 
@@ -2345,6 +2355,10 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
  */
 bool TileEngine::hitUnit(BattleActionAttack attack, BattleUnit *target, const Position &relative, int damage, const RuleDamageType *type, bool rangeAtack)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
 	if (!target || target->getHealth() <= 0)
 	{
 		return false;
@@ -3917,6 +3931,11 @@ int TileEngine::psiAttackCalculate(BattleActionAttack::ReadOnly attack, const Ba
  */
 bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
+
 	if (!victim)
 		return false;
 
@@ -4099,6 +4118,11 @@ void TileEngine::medikitRemoveIfEmpty(BattleAction *action)
 
 bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMediKitAction originalMedikitAction, UnitBodyPart bodyPart)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
+
 	BattleActionAttack attack;
 	attack.type = action->type;
 	attack.attacker = action->actor;
@@ -4222,6 +4246,11 @@ bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMedi
  */
 bool TileEngine::skillUse(BattleAction *action, const RuleSkill *skill)
 {
+	if (_save->isPreview())
+	{
+		return false;
+	}
+
 	bool continueAction = true;
 	bool spendTu = false;
 	std::string message;

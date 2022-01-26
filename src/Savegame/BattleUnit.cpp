@@ -1501,6 +1501,10 @@ static inline void setValueMax(int& value, int diff, int min, int max)
  */
 int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type, SavedBattleGame *save, BattleActionAttack attack, UnitSide sideOverride, UnitBodyPart bodypartOverride)
 {
+	if (save->isPreview())
+	{
+		return 0;
+	}
 	UnitSide side = SIDE_FRONT;
 	UnitBodyPart bodypart = BODYPART_TORSO;
 
@@ -2148,6 +2152,15 @@ void BattleUnit::spendCost(const RuleItemUseCost& cost)
 void BattleUnit::clearTimeUnits()
 {
 	_tu = 0;
+}
+
+/**
+ * Reset time units and energy.
+ */
+void BattleUnit::resetTimeUnitsAndEnergy()
+{
+	_tu = _stats.tu;
+	_energy = _stats.stamina;
 }
 
 /**

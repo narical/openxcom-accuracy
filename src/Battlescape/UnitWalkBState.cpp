@@ -507,6 +507,11 @@ void UnitWalkBState::postPathProcedures()
 		_unit->clearTimeUnits();
 	}
 
+	if (_parent->getSave()->isPreview())
+	{
+		_unit->resetTimeUnitsAndEnergy();
+	}
+
 	_terrain->calculateLighting(LL_UNITS, _unit->getPosition());
 	_terrain->calculateFOV(_unit);
 	if (!_falling)

@@ -340,6 +340,8 @@ public:
 	void spendCost(const RuleItemUseCost& cost);
 	/// Clear time units.
 	void clearTimeUnits();
+	/// Reset time units and energy.
+	void resetTimeUnitsAndEnergy();
 	/// Add unit to visible units.
 	bool addToVisibleUnits(BattleUnit *unit);
 	/// Remove a unit from the list of visible units.

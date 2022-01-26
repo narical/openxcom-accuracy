@@ -39,6 +39,9 @@
 #include "../Mod/Armor.h"
 #include "../Mod/RuleInterface.h"
 #include "../Engine/Unicode.h"
+#include "../Battlescape/BattlescapeGenerator.h"
+#include "../Battlescape/BriefingState.h"
+#include "../Savegame/SavedBattleGame.h"
 
 namespace OpenXcom
 {
@@ -52,9 +55,12 @@ namespace OpenXcom
 CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 		:  _base(base), _craft(craft), _otherCraftColor(0), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
+	bool isNewBattle = _game->getSavedGame()->getMonthsPassed() == -1;
+
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
-	_btnOk = new TextButton(148, 16, 164, 176);
+	_btnOk = new TextButton(isNewBattle ? 148 : 30, 16, isNewBattle ? 164 : 274, 176);
+	_btnPreview = new TextButton(102, 16, 164, 176);
 	_txtTitle = new Text(300, 17, 16, 7);
 	_txtName = new Text(114, 9, 16, 32);
 	_txtRank = new Text(102, 9, 122, 32);
@@ -69,6 +75,7 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 
 	add(_window, "window", "craftSoldiers");
 	add(_btnOk, "button", "craftSoldiers");
+	add(_btnPreview, "button", "craftSoldiers");
 	add(_txtTitle, "text", "craftSoldiers");
 	add(_txtName, "text", "craftSoldiers");
 	add(_txtRank, "text", "craftSoldiers");
@@ -90,6 +97,10 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnDeassignAllSoldiersClick, Options::keyRemoveSoldiersFromAllCrafts);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnDeassignCraftSoldiersClick, Options::keyRemoveSoldiersFromCraft);
+
+	_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
+	_btnPreview->setVisible(!isNewBattle);
+	_btnPreview->onMouseClick((ActionHandler)&CraftSoldiersState::btnPreviewClick);
 
 	_txtTitle->setBig();
 	Craft *c = _base->getCrafts()->at(_craft);
@@ -243,6 +254,35 @@ void CraftSoldiersState::cbxSortByChange(Action *)
 void CraftSoldiersState::btnOkClick(Action *)
 {
 	_game->popState();
+}
+
+/**
+ * Shows the battlescape preview.
+ * @param action Pointer to an action.
+ */
+void CraftSoldiersState::btnPreviewClick(Action *)
+{
+	Craft* c = _base->getCrafts()->at(_craft);
+	if (c->getSpaceUsed() <= 0)
+	{
+		// at least one unit must be onboard
+		return;
+	}
+
+	SavedBattleGame* bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage(), true);
+	_game->getSavedGame()->setBattleGame(bgame);
+	BattlescapeGenerator bgen = BattlescapeGenerator(_game);
+	bgame->setMissionType("STR_CRAFT_DEPLOYMENT_PREVIEW");
+	bgen.setCraft(c);
+	bgen.run();
+
+	// needed for preview of craft deployment tiles
+	bgame->setCraftPos(bgen.getCraftPos());
+	bgame->setCraftZ(bgen.getCraftZ());
+	bgame->setCraftForPreview(c);
+	bgame->calculateCraftTiles();
+
+	_game->pushState(new BriefingState(c));
 }
 
 /**
