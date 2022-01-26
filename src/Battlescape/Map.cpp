@@ -1558,7 +1558,7 @@ void Map::drawTerrain(Surface *surface)
 	}
 
 	// Draw motion scanner arrows
-	if (_isAltPressed && _save->getSide() == FACTION_PLAYER)
+	if (_isAltPressed && _save->getSide() == FACTION_PLAYER && this->getCursorType() != CT_NONE)
 	{
 		for (auto myUnit : *_save->getUnits())
 		{
@@ -1579,10 +1579,11 @@ void Map::drawTerrain(Surface *surface)
 				{
 					offset.y -= 2;
 				}
-				if (this->getCursorType() != CT_NONE)
-				{
-					_arrow->blitNShade(surface, screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
-				}
+				_arrow->blitNShade(
+					surface,
+					screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+					screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+					0);
 			}
 		}
 	}
