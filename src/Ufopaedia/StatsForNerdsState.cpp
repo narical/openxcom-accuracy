@@ -3491,10 +3491,10 @@ void StatsForNerdsState::ScriptRegister(ScriptParserBase* parser)
 
 	Bind<StatsForNerdsState> b = { parser };
 
-	b.add<&StatsForNerdsState::addIntegerScript>("addIntRow", "add new row with first argunemt as name and second argumet as value");
-	b.add<&StatsForNerdsState::addTextScript>("addTextRow", "add new row with first argunemt as name and second argumet as text value to translate");
-	b.add<&StatsForNerdsState::addTextFormat1Script>("addTextFormatRow", "add new row with first argunemt as name and second argumet as text format with one argument");
-	b.add<&StatsForNerdsState::addTextFormat2Script>("addTextFormatRow", "add new row with first argunemt as name and second argumet as text format with two arguments");
+	b.add<&StatsForNerdsState::addIntegerScript>("addIntRow", "add new row with first argument as name and second argument as value");
+	b.add<&StatsForNerdsState::addTextScript>("addTextRow", "add new row with first argument as name and second argument as text value to translate");
+	b.add<&StatsForNerdsState::addTextFormat1Script>("addTextFormatRow", "add new row with first argument as name and second argument as text format with one argument");
+	b.add<&StatsForNerdsState::addTextFormat2Script>("addTextFormatRow", "add new row with first argument as name and second argument as text format with two arguments");
 
 	b.addDebugDisplay<&debugDisplayScript>();
 }
