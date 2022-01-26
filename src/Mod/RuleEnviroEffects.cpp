@@ -18,6 +18,7 @@
  */
 #include "RuleEnviroEffects.h"
 #include "../Engine/Collections.h"
+#include "../Mod/Armor.h"
 #include "../Mod/Mod.h"
 #include <algorithm>
 
@@ -145,7 +146,11 @@ Armor* RuleEnviroEffects::getArmorTransformation(const Armor* sourceArmor) const
 		std::map<const Armor*, Armor*>::const_iterator i = _armorTransformations.find(sourceArmor);
 		if (i != _armorTransformations.end())
 		{
-			return i->second;
+			// cannot transform to a different armor size, sorry
+			if (sourceArmor->getSize() == i->second->getSize())
+			{
+				return i->second;
+			}
 		}
 	}
 
