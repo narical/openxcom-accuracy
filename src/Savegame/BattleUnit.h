@@ -208,6 +208,8 @@ public:
 	BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, const RuleEnviroEffects* enviro, Armor *armor, StatAdjustment *adjustment, int depth);
 	/// Updates BattleUnit's armor and related attributes (after a change/transformation of armor).
 	void updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor *ruleArmor, int depth, bool inBattlescape);
+	/// Updates BattleUnit's armor and related attributes (after a change/transformation of armor).
+	void updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int depth);
 	/// Cleans up the BattleUnit.
 	~BattleUnit();
 	/// Loads the unit from YAML.

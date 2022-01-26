@@ -592,6 +592,63 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	prepareUnitResponseSounds(mod);
 }
 
+/**
+ * Updates BattleUnit's armor and related attributes (after a change/transformation of armor).
+ */
+void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int depth)
+{
+	if (_originalFaction != FACTION_PLAYER)
+	{
+		// armor updates for enemies and civilians is only allowed in the constructor (they don't travel between mission stages)
+		return;
+	}
+	if (newArmor)
+	{
+		_armor = newArmor;
+	}
+	_standHeight = _armor->getStandHeight() == -1 ? _unitRules->getStandHeight() : _armor->getStandHeight();
+	_kneelHeight = _armor->getKneelHeight() == -1 ? _unitRules->getKneelHeight() : _armor->getKneelHeight();
+	_floatHeight = _armor->getFloatHeight() == -1 ? _unitRules->getFloatHeight() : _armor->getFloatHeight();
+	_loftempsSet = _armor->getLoftempsSet();
+
+	_movementType = _armor->getMovementType();
+	if (_movementType == MT_FLOAT) {
+		if (depth > 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
+	} else if (_movementType == MT_SINK) {
+		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
+	}
+
+	_stats = *_unitRules->getStats();
+	_stats += *_armor->getStats();	// armors may modify effective stats
+	_stats = UnitStats::obeyFixedMinimum(_stats); // don't allow to go into minus!
+
+	_maxViewDistanceAtDark = _armor->getVisibilityAtDark() ? _armor->getVisibilityAtDark() : 9;
+	_maxViewDistanceAtDarkSquared = _maxViewDistanceAtDark * _maxViewDistanceAtDark;
+	_maxViewDistanceAtDay = _armor->getVisibilityAtDay() ? _armor->getVisibilityAtDay() : mod->getMaxViewDistance();
+
+	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
+	_maxArmor[SIDE_LEFT] = _armor->getLeftSideArmor();
+	_maxArmor[SIDE_RIGHT] = _armor->getRightSideArmor();
+	_maxArmor[SIDE_REAR] = _armor->getRearArmor();
+	_maxArmor[SIDE_UNDER] = _armor->getUnderArmor();
+
+	_tu = _stats.tu;
+	_energy = _stats.stamina;
+	_health = std::min(_health, (int)_stats.health);
+	_mana = std::min(_mana, (int)_stats.mana);
+
+	_currentArmor[SIDE_FRONT] = _maxArmor[SIDE_FRONT];
+	_currentArmor[SIDE_LEFT] = _maxArmor[SIDE_LEFT];
+	_currentArmor[SIDE_RIGHT] = _maxArmor[SIDE_RIGHT];
+	_currentArmor[SIDE_REAR] = _maxArmor[SIDE_REAR];
+	_currentArmor[SIDE_UNDER] = _maxArmor[SIDE_UNDER];
+
+	setRecolor(RNG::seedless(0, 127), RNG::seedless(0, 127), 0);
+
+	prepareUnitSounds();
+	prepareUnitResponseSounds(mod);
+}
+
 
 /**
  *

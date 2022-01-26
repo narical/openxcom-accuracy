@@ -533,6 +533,16 @@ void BattlescapeGenerator::nextStage()
 					(*j)->setSpecialWeapon(_save, false);
 				}
 			}
+			else if ((*j)->getOriginalFaction() == FACTION_PLAYER)
+			{
+				// HWPs
+				auto transformedArmor = enviro->getArmorTransformation((*j)->getArmor());
+				if (transformedArmor)
+				{
+					// change battleunit's armor
+					(*j)->updateArmorFromNonSoldier(_game->getMod(), transformedArmor, _save->getDepth());
+				}
+			}
 		}
 	}
 

@@ -1812,7 +1812,7 @@ BattleUnit *SavedBattleGame::createTempUnit(const Unit *rules, UnitFaction facti
 		const_cast<Unit*>(rules),
 		faction,
 		nextUnitId > 0 ? nextUnitId : getUnits()->back()->getId() + 1,
-		faction != FACTION_PLAYER ? getEnviroEffects() : nullptr,
+		getEnviroEffects(),
 		rules->getArmor(),
 		faction == FACTION_HOSTILE ? _rule->getStatAdjustment(getGeoscapeSave()->getDifficulty()) : nullptr,
 		getDepth());
