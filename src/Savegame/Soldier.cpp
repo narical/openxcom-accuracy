@@ -434,9 +434,15 @@ Craft *Soldier::getCraft() const
  * Assigns the soldier to a new craft.
  * @param craft Pointer to craft.
  */
-void Soldier::setCraft(Craft *craft)
+void Soldier::setCraft(Craft *craft, bool resetCustomDeployment)
 {
 	_craft = craft;
+
+	if (resetCustomDeployment && _craft)
+	{
+		// adding a soldier into a craft invalidates a custom craft deployment
+		_craft->resetCustomDeployment();
+	}
 }
 
 /**
@@ -754,8 +760,14 @@ Armor *Soldier::getArmor() const
  * Changes the unit's current armor.
  * @param armor Pointer to armor data.
  */
-void Soldier::setArmor(Armor *armor)
+void Soldier::setArmor(Armor *armor, bool resetCustomDeployment)
 {
+	if (resetCustomDeployment && _craft && _armor && armor && _armor->getSize() < armor->getSize())
+	{
+		// increasing the size of a soldier's armor invalidates a custom craft deployment
+		_craft->resetCustomDeployment();
+	}
+
 	_armor = armor;
 }
 

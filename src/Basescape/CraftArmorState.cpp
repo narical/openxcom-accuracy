@@ -450,7 +450,7 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 					auto space = c->getSpaceAvailable();
 					if (c->validateAddingSoldier(space, s))
 					{
-						s->setCraft(c);
+						s->setCraft(c, true);
 						_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 1, c->getName(_game->getLanguage()));
 						_lstSoldiers->setRowColor(_lstSoldiers->getSelectedRow(), _lstSoldiers->getSecondaryColor());
 					}
@@ -500,14 +500,14 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 							_base->getStorageItems()->removeItem(a->getStoreItem());
 						}
 
-						s->setArmor(a);
+						s->setArmor(a, true);
 						s->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 						_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 2, tr(a->getType()));
 					}
 				}
 				else
 				{
-					s->setArmor(a);
+					s->setArmor(a, true);
 					s->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 					_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 2, tr(a->getType()));
 				}
@@ -581,7 +581,7 @@ void CraftArmorState::btnDeequipAllArmorClick(Action *action)
 					_base->getStorageItems()->removeItem(a->getStoreItem());
 				}
 
-				(*i)->setArmor(a);
+				(*i)->setArmor(a, true);
 				(*i)->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 				_lstSoldiers->setCellText(row, 2, tr(a->getType()));
 			}
@@ -621,7 +621,7 @@ void CraftArmorState::btnDeequipCraftArmorClick(Action *action)
 					_base->getStorageItems()->removeItem(a->getStoreItem());
 				}
 
-				s->setArmor(a);
+				s->setArmor(a, true);
 				s->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 				_lstSoldiers->setCellText(row, 2, tr(a->getType()));
 			}

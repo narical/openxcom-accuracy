@@ -535,6 +535,11 @@ void NewBattleState::initSave()
  */
 void NewBattleState::btnOkClick(Action *)
 {
+	if (_craft)
+	{
+		// just in case somebody manually edited battle.cfg
+		_craft->resetCustomDeployment();
+	}
 	save();
 	if (_missionTypes[_cbxMission->getSelected()] != "STR_BASE_DEFENSE" && _craft->getNumTotalUnits() == 0)
 	{

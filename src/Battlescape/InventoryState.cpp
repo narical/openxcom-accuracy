@@ -891,7 +891,7 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 				_base->getStorageItems()->removeItem(next->getStoreItem());
 			}
 		}
-		soldier->setArmor(next);
+		soldier->setArmor(next, true);
 		armorChanged = true;
 	}
 

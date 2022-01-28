@@ -98,6 +98,8 @@ private:
 	BattleUnit *addXCOMVehicle(Vehicle *v);
 	/// Adds a soldier to the game.
 	BattleUnit *addXCOMUnit(BattleUnit *unit);
+	/// Tries to set a custom craft inventory tile.
+	void setCustomCraftInventoryTile();
 	/// Adds an alien to the game.
 	BattleUnit *addAlien(Unit *rules, int alienRank, bool outside);
 	/// Adds a civilian to the game.

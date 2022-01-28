@@ -758,6 +758,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 							_base->getStorageItems()->removeItem(_items[_sel]);
 						}
 						c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size));
+						c->resetCustomDeployment(); // adding a vehicle into a craft invalidates a custom craft deployment
 					}
 				}
 				else
@@ -776,6 +777,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 				for (int i = 0; i < change; ++i)
 				{
 					c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size));
+					c->resetCustomDeployment(); // adding a vehicle into a craft invalidates a custom craft deployment
 					if (_game->getSavedGame()->getMonthsPassed() != -1)
 					{
 						_base->getStorageItems()->removeItem(_items[_sel]);

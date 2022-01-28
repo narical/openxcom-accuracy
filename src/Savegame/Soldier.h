@@ -115,7 +115,7 @@ public:
 	/// Gets the soldier's craft.
 	Craft *getCraft() const;
 	/// Sets the soldier's craft.
-	void setCraft(Craft *craft);
+	void setCraft(Craft *craft, bool resetCustomDeployment = false);
 	/// Gets the soldier's craft string.
 	std::string getCraftString(Language *lang, const BaseSumDailyRecovery& recovery) const;
 	/// Gets a string version of the soldier's rank.
@@ -165,7 +165,7 @@ public:
 	/// Gets the soldier armor.
 	Armor *getArmor() const;
 	/// Sets the soldier armor.
-	void setArmor(Armor *armor);
+	void setArmor(Armor *armor, bool resetCustomDeployment = false);
 	/// Gets the armor layers (sprite names).
 	const std::vector<std::string> getArmorLayers(Armor *customArmor = nullptr) const;
 	/// Gets the soldier's original armor (before replacement).

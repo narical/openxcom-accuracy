@@ -70,6 +70,8 @@
 #include "../Mod/AlienDeployment.h"
 #include "../Mod/Armor.h"
 #include "../Mod/RuleUfo.h"
+#include "../Savegame/Base.h"
+#include "../Savegame/Craft.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"
@@ -1405,7 +1407,16 @@ void BattlescapeState::btnAbortClick(Action *)
 {
 	if (_save->isPreview())
 	{
-		return;
+		// Notes for future explorers:
+		// - there are craft, which can have multiple layouts (one is chosen randomly at the start of a battle)
+		// - these layouts are not forced to be compatible
+		// - thus custom craft deployment for one layout may not be compatible with another layout either
+		// - so instead of having multiple custom deployments per craft, I decided to not support it for such craft at all
+		// - if you want to add partial or full support for it... make sure you don't forget all the corner cases
+		if (_save->getCraftForPreview()->getRules()->getBattlescapeTerrainData()->getMapBlocks()->size() > 1)
+		{
+			return;
+		}
 	}
 
 	if (allowButtons())
@@ -3270,9 +3281,20 @@ void BattlescapeState::finishBattle(bool abort, int inExitArea)
 			// Restore the cursor in case something weird happened
 			_game->getCursor()->setVisible(true);
 
-			// delete SavedBattleGame 
+			// delete SavedBattleGame
 			_game->getSavedGame()->setBattleGame(0);
 
+			// unmark all craft and all bases (current craft would be enough, but better safe than sorry)
+			for (auto* base : *_game->getSavedGame()->getBases())
+			{
+				base->setInBattlescape(false);
+				for (auto* craft : *base->getCrafts())
+				{
+					craft->setInBattlescape(false);
+				}
+			}
+
+			// reset the music
 			_game->getMod()->playMusic("GMGEO");
 			return;
 		}

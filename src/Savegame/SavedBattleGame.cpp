@@ -1273,6 +1273,109 @@ void SavedBattleGame::newTurnUpdateScripts()
 }
 
 /**
+ * Tallies the units in the craft deployment preview.
+ */
+BattlescapeTally SavedBattleGame::tallyUnitsForPreview()
+{
+	BattlescapeTally tally = { };
+
+	bool custom = _isPreview && _craftForPreview && !_craftTiles.empty();
+	Position tmp;
+
+	for (auto* unit : _units)
+	{
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			if (unit->isSummonedPlayerUnit())
+			{
+				continue;
+			}
+			if (custom)
+			{
+				bool placementOk = true;
+				for (int x = 0; x < unit->getArmor()->getSize(); ++x)
+				{
+					for (int y = 0; y < unit->getArmor()->getSize(); ++y)
+					{
+						tmp = Position(x + unit->getPosition().x, y + unit->getPosition().y, unit->getPosition().z);
+						bool found = false;
+						for (auto& pos : _craftTiles)
+						{
+							if (pos == tmp)
+							{
+								found = true;
+								break;
+							}
+						}
+						if (!found)
+						{
+							placementOk = false;
+						}
+					}
+				}
+				if (placementOk)
+				{
+					tally.inEntrance++;
+				}
+				else
+				{
+					tally.inField++;
+				}
+			}
+			else
+			{
+				if (unit->isInExitArea(START_POINT))
+				{
+					tally.inEntrance++;
+				}
+				else
+				{
+					tally.inField++;
+				}
+			}
+		}
+	}
+
+	return tally;
+}
+
+/**
+ * Saves the custom craft deployment.
+ */
+void SavedBattleGame::saveCustomCraftDeployment()
+{
+	_craftForPreview->resetCustomDeployment();
+	auto& customSoldierDeployment = _craftForPreview->getCustomSoldierDeployment();
+	auto& customVehicleDeployment = _craftForPreview->getCustomVehicleDeployment();
+
+	Position tmp;
+	for (auto* unit : _units)
+	{
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			if (unit->isSummonedPlayerUnit())
+			{
+				continue;
+			}
+			tmp = Position(unit->getPosition().x - _craftPos.x * 10, unit->getPosition().y - _craftPos.y * 10, unit->getPosition().z - _craftZ);
+			if (unit->getGeoscapeSoldier())
+			{
+				customSoldierDeployment[unit->getGeoscapeSoldier()->getId()] = std::make_pair(tmp, unit->getDirection());
+			}
+			else
+			{
+				VehicleDeploymentData v;
+				v.type = unit->getType();
+				v.pos = tmp;
+				v.dir = unit->getDirection();
+				v.used = false; // irrelevant now, this will be used only in BattlescapeGenerator::addXCOMUnit()
+				customVehicleDeployment.push_back(v);
+			}
+		}
+	}
+}
+
+/**
  * Ends the current turn and progresses to the next one.
  */
 void SavedBattleGame::endTurn()

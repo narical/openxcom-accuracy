@@ -892,7 +892,10 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 	RuleInventory *ground = _inventorySlotGround;
 
 	if (_craft != 0)
+	{
 		_base = _craft->getBase();
+		_craft->resetTemporaryCustomVehicleDeploymentFlags();
+	}
 
 	// we will need this during debriefing to show a list of recovered items
 	// Note: saved info is required only because of base defense missions, other missions could work without a save too
@@ -1341,18 +1344,63 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 				}
 			}
 		}
-		else if (_craft && !_craftRules->getDeployment().empty())
+		else if (_craft && _craft->hasCustomDeployment())
 		{
-			if (_craftInventoryTile == 0)
+			setCustomCraftInventoryTile();
+
+			bool canPlace = false;
+			Position pos;
+			int dir = 0;
+			if (unit->getGeoscapeSoldier())
 			{
-				// Craft inventory tile position defined in the ruleset
-				const std::vector<int> coords = _craftRules->getCraftInventoryTile();
-				if (coords.size() >= 3)
+				auto& depl = _craft->getCustomSoldierDeployment().at(unit->getGeoscapeSoldier()->getId()); // crashes if not found
+				pos = depl.first + Position(_craftPos.x * 10, _craftPos.y * 10, _craftZ);
+				dir = depl.second;
+				canPlace = true;
+			}
+			else
+			{
+				auto& deplVec = _craft->getCustomVehicleDeployment();
+				for (auto& depl : deplVec)
 				{
-					Position craftInventoryTilePosition = Position(coords[0] + (_craftPos.x * 10), coords[1] + (_craftPos.y * 10), coords[2] + _craftZ);
-					canPlaceXCOMUnit(_save->getTile(craftInventoryTilePosition));
+					if (depl.type == unit->getType() && !depl.used)
+					{
+						pos = depl.pos + Position(_craftPos.x * 10, _craftPos.y * 10, _craftZ);
+						dir = depl.dir;
+						canPlace = true;
+						depl.used = true; // mark as used, i.e. don't try the same for the next vehicle unit
+						break;
+					}
 				}
 			}
+			if (!canPlace)
+			{
+				throw Exception("Unit generator encountered an error: custom craft deployment failed.");
+			}
+			else
+			{
+				for (int x = 0; x < unit->getArmor()->getSize(); ++x)
+				{
+					for (int y = 0; y < unit->getArmor()->getSize(); ++y)
+					{
+						canPlace = (canPlace && canPlaceXCOMUnit(_save->getTile(pos + Position(x, y, 0))));
+					}
+				}
+			}
+			if (canPlace)
+			{
+				if (_save->setUnitPosition(unit, pos))
+				{
+					_save->getUnits()->push_back(unit);
+					_save->initUnit(unit);
+					unit->setDirection(dir);
+					return unit;
+				}
+			}
+		}
+		else if (_craft && !_craftRules->getDeployment().empty())
+		{
+			setCustomCraftInventoryTile();
 
 			for (std::vector<std::vector<int> >::const_iterator i = _craftRules->getDeployment().begin(); i != _craftRules->getDeployment().end(); ++i)
 			{
@@ -1380,6 +1428,11 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 		}
 		else
 		{
+			if (_craft)
+			{
+				setCustomCraftInventoryTile();
+			}
+
 			for (int i = 0; i < _mapsize_x * _mapsize_y * _mapsize_z; ++i)
 			{
 				if (canPlaceXCOMUnit(_save->getTile(i)))
@@ -1396,6 +1449,23 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 	}
 	delete unit;
 	return 0;
+}
+
+/**
+ * Tries to set a custom craft inventory tile.
+ */
+void BattlescapeGenerator::setCustomCraftInventoryTile()
+{
+	if (_craftInventoryTile == 0)
+	{
+		// Craft inventory tile position defined in the ruleset
+		const std::vector<int> coords = _craftRules->getCraftInventoryTile();
+		if (coords.size() >= 3)
+		{
+			Position craftInventoryTilePosition = Position(coords[0] + (_craftPos.x * 10), coords[1] + (_craftPos.y * 10), coords[2] + _craftZ);
+			canPlaceXCOMUnit(_save->getTile(craftInventoryTilePosition));
+		}
+	}
 }
 
 /**

@@ -19,10 +19,12 @@
  */
 #include "MovingTarget.h"
 #include <utility>
+#include <map>
 #include <vector>
 #include <string>
 #include "../Mod/RuleCraft.h"
 #include "../Engine/Script.h"
+#include "../Battlescape/Position.h"
 
 namespace OpenXcom
 {
@@ -43,6 +45,17 @@ class ScriptParserBase;
 class ScriptGlobal;
 
 enum UfoDetection : int;
+
+typedef std::pair<Position, int> SoldierDeploymentData;
+
+struct VehicleDeploymentData
+{
+	std::string type;
+	Position pos;
+	int dir;
+	bool used;
+	VehicleDeploymentData() : pos(-1, -1, -1), dir(0), used(false) { }
+};
 
 /**
  * Represents a craft stored in a base.
@@ -73,6 +86,8 @@ private:
 	bool _isAutoPatrolling;
 	double _lonAuto, _latAuto;
 	std::vector<int> _pilots;
+	std::map<int, SoldierDeploymentData> _customSoldierDeployment;
+	std::vector<VehicleDeploymentData> _customVehicleDeployment;
 	int _skinIndex;
 	ScriptValues<Craft> _scriptValues;
 
@@ -274,6 +289,17 @@ public:
 	void setSkinIndex(int skinIndex) { _skinIndex = skinIndex; }
 	/// Gets the craft's skin sprite ID.
 	int getSkinSprite() const;
+
+	/// Gets the craft's custom deployment of soldiers.
+	std::map<int, SoldierDeploymentData>& getCustomSoldierDeployment() { return _customSoldierDeployment; };
+	/// Gets the craft's custom deployment of vehicles.
+	std::vector<VehicleDeploymentData>& getCustomVehicleDeployment() { return _customVehicleDeployment; };
+	/// Does this craft have a custom deployment set?
+	bool hasCustomDeployment() const;
+	/// Resets the craft's custom deployment.
+	void resetCustomDeployment();
+	/// Resets the craft's custom deployment of vehicles temp variables.
+	void resetTemporaryCustomVehicleDeploymentFlags();
 
 	/// Gets the craft's amount of vehicles and 2x2 soldiers.
 	int getNumVehiclesAndLargeSoldiers() const;

@@ -352,6 +352,12 @@ void CraftSoldiersState::init()
 	_base->prepareSoldierStatsWithBonuses(); // refresh stats for sorting
 	initList(0);
 
+	// update the label to indicate presence of a custom craft deployment
+	Craft* c = _base->getCrafts()->at(_craft);
+	if (c->hasCustomDeployment())
+		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW_CUSTOM"));
+	else
+		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
 }
 
 /**
@@ -490,9 +496,12 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 			auto space = c->getSpaceAvailable();
 			if (c->validateAddingSoldier(space, s))
 			{
-				s->setCraft(c);
+				s->setCraft(c, true);
 				_lstSoldiers->setCellText(row, 2, c->getName(_game->getLanguage()));
 				color = _lstSoldiers->getSecondaryColor();
+
+				// update the label to indicate absence of a custom craft deployment
+				_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
 			}
 			else if (space > 0)
 			{

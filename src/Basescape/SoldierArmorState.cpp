@@ -318,7 +318,7 @@ void SoldierArmorState::lstArmorClick(Action *)
 			_base->getStorageItems()->removeItem(next->getStoreItem());
 		}
 	}
-	soldier->setArmor(next);
+	soldier->setArmor(next, true);
 	_game->getSavedGame()->setLastSelectedArmor(next->getType());
 
 	_game->popState();

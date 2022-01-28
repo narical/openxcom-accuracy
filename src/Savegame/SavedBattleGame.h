@@ -45,6 +45,7 @@ class Craft;
 class RuleItem;
 class HitLog;
 enum HitLogEntryType : int;
+struct BattlescapeTally;
 
 /**
  * The battlescape data that gets written to disk when the game is saved.
@@ -219,6 +220,8 @@ public:
 	void setCraftZ(int craftZ) { _craftZ = craftZ; }
 	/// Sets craft for preview.
 	void setCraftForPreview(Craft* craftForPreview) { _craftForPreview = craftForPreview; }
+	/// Gets craft for preview.
+	const Craft* getCraftForPreview() const { return _craftForPreview; }
 	/// Pre-calculate all valid tiles for later use in map drawing.
 	void calculateCraftTiles();
 	/// Gets craft tiles.
@@ -370,6 +373,10 @@ public:
 	int getBughuntMinTurn() const;
 	/// Start first turn of battle.
 	void startFirstTurn();
+	/// Check count of units in different state for craft deployment preview.
+	BattlescapeTally tallyUnitsForPreview();
+	/// Saves the custom craft deployment.
+	void saveCustomCraftDeployment();
 	/// Ends the turn.
 	void endTurn();
 	/// Gets animation frame.
