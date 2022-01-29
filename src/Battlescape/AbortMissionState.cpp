@@ -140,7 +140,7 @@ AbortMissionState::AbortMissionState(SavedBattleGame *battleGame, BattlescapeSta
 		_txtInExit->setVisible(false);
 		_txtOutside->setVisible(false);
 	}
-	else if (!exit)
+	else if (!exit || _battleGame->isPreview())
 	{
 		_txtInEntrance->setY(26);
 		_txtOutside->setY(54);

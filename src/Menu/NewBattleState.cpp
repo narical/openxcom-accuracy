@@ -205,7 +205,7 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 			_missionTypes,
 			[](const std::string& p)
 			{
-				return p == "STR_CRAFT_DEPLOYMENT_PREVIEW";
+				return p == RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW;
 			}
 		);
 	}

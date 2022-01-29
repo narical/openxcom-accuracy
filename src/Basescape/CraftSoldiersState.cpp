@@ -272,7 +272,7 @@ void CraftSoldiersState::btnPreviewClick(Action *)
 	SavedBattleGame* bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage(), true);
 	_game->getSavedGame()->setBattleGame(bgame);
 	BattlescapeGenerator bgen = BattlescapeGenerator(_game);
-	bgame->setMissionType("STR_CRAFT_DEPLOYMENT_PREVIEW");
+	bgame->setMissionType(c->getRules()->getCustomPreviewType());
 	bgen.setCraft(c);
 	bgen.run();
 
@@ -352,10 +352,10 @@ void CraftSoldiersState::init()
 	_base->prepareSoldierStatsWithBonuses(); // refresh stats for sorting
 	initList(0);
 
-	// update the label to indicate presence of a custom craft deployment
+	// update the label to indicate presence of a saved craft deployment
 	Craft* c = _base->getCrafts()->at(_craft);
 	if (c->hasCustomDeployment())
-		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW_CUSTOM"));
+		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED"));
 	else
 		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
 }
@@ -500,7 +500,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 				_lstSoldiers->setCellText(row, 2, c->getName(_game->getLanguage()));
 				color = _lstSoldiers->getSecondaryColor();
 
-				// update the label to indicate absence of a custom craft deployment
+				// update the label to indicate absence of a saved craft deployment
 				_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
 			}
 			else if (space > 0)

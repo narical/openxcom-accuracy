@@ -149,6 +149,9 @@ public:
 	/// Maximum of different types in one weapon slot.
 	static const int WeaponTypeMax = 8;
 
+	/// Default craft preview ID.
+	static const std::string DEFAULT_CRAFT_DEPLOYMENT_PREVIEW;
+
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "RuleCraft";
 	/// Register all useful function used by script.
@@ -179,6 +182,8 @@ private:
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
 	bool _mapVisible, _forceShowInMonthlyCosts;
+	bool _useAllStartTiles;
+	std::string _customPreview;
 	std::vector<int> _selectSound, _takeoffSound;
 
 	ModScript::CraftScripts::Container _craftScripts;
@@ -304,6 +309,12 @@ public:
 	bool isMapVisible() const;
 	/// Gets whether or not the craft type should be displayed in Monthly Costs even if not present in the base.
 	bool forceShowInMonthlyCosts() const;
+	/// Can the player utilize all start tiles on a craft or only the ones specified in the '_deployment' list?
+	bool useAllStartTiles() const;
+	/// Gets the craft's custom preview type.
+	const std::string& getCustomPreviewType() const;
+	const std::string& getCustomPreviewTypeRaw() const;
+
 	/// Calculate the theoretical range of the craft in nautical miles
 	int calculateRange(int type);
 

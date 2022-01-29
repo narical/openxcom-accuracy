@@ -52,7 +52,7 @@ en-US:
   STR_VERY_BOLD: "Very bold (+100%)"
 #CraftSoldiersState.cpp
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
-  STR_CRAFT_DEPLOYMENT_PREVIEW_CUSTOM: "Preview *"
+  STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED: "Preview *"
   STR_CRAFT_DEPLOYMENT_PREVIEW_BRIEFING: "This feature allows you to preview and customize the deployment of your units at the beginning of a battle. You have unlimited movement. Press and hold 'Alt' to highlight valid unit positions. Click on the 'Abort Mission' icon to save a custom deployment. Click on the 'End Turn' icon to exit the preview.{NEWLINE}Note that adding any new soldiers or vehicles to the craft automatically invalidates the saved custom deployment. Presence of a custom deployment is indicated by an asterisk on the 'Preview' button."
 #DismantleFacilityState.cpp
   STR_REFUND_VALUE: "Sales value> {ALT}{0}"

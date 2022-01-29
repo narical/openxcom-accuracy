@@ -866,7 +866,7 @@ int SavedBattleGame::getMapSizeXYZ() const
  */
 void SavedBattleGame::calculateCraftTiles()
 {
-	if (_craftForPreview && !_craftForPreview->getRules()->getDeployment().empty())
+	if (_craftForPreview && !_craftForPreview->getRules()->getDeployment().empty() && !_craftForPreview->getRules()->useAllStartTiles())
 	{
 		for (auto& vec : _craftForPreview->getRules()->getDeployment())
 		{
