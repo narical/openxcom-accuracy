@@ -140,7 +140,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
 	}
 	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
-	_deployment = node["deployment"].as< std::vector< std::vector<int> > >(_deployment);
+	_deployment = node["deployment"].as< RuleCraftDeployment >(_deployment);
 	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
 	_allowLanding = node["allowLanding"].as<bool>(_allowLanding);
 	_spacecraft = node["spacecraft"].as<bool>(_spacecraft);
@@ -503,7 +503,7 @@ int RuleCraft::getListOrder() const
  * Gets the deployment layout for this craft.
  * @return The deployment layout.
  */
-const std::vector<std::vector<int> > &RuleCraft::getDeployment() const
+const RuleCraftDeployment &RuleCraft::getDeployment() const
 {
 	return _deployment;
 }

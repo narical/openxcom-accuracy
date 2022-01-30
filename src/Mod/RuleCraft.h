@@ -26,6 +26,8 @@
 namespace OpenXcom
 {
 
+typedef std::vector<std::vector<int> > RuleCraftDeployment;
+
 class RuleTerrain;
 class Mod;
 class ModScript;
@@ -177,7 +179,7 @@ private:
 	bool _keepCraftAfterFailedMission, _allowLanding, _spacecraft, _notifyWhenRefueled, _autoPatrol, _undetectable;
 	int _listOrder, _maxItems, _maxAltitude;
 	double _maxStorageSpace;
-	std::vector<std::vector <int> > _deployment;
+	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
@@ -283,7 +285,7 @@ public:
 	/// Gets the list weight for this craft.
 	int getListOrder() const;
 	/// Gets the deployment priority for the craft.
-	const std::vector<std::vector<int> > &getDeployment() const;
+	const RuleCraftDeployment &getDeployment() const;
 	/// Gets the craft inventory tile position.
 	const std::vector<int> &getCraftInventoryTile() const;
 	/// Gets the item limit for this craft.
