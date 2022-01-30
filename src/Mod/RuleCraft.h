@@ -153,6 +153,8 @@ public:
 
 	/// Default craft preview ID.
 	static const std::string DEFAULT_CRAFT_DEPLOYMENT_PREVIEW;
+	/// Dummy craft ID.
+	static const int DUMMY_CRAFT_ID = -42; // a negative integer
 
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "RuleCraft";

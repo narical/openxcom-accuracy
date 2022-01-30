@@ -184,6 +184,12 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 
 	_txtTitle->setText(tr(title));
 
+	if (battleSave->isPreview() && battleSave->getCraftForPreview()->getId() == RuleCraft::DUMMY_CRAFT_ID)
+	{
+		// we're using the same alienDeployment for the real craft preview and for the dummy craft preview,
+		// but we want to have different briefing texts
+		desc = desc + "_DUMMY";
+	}
 	_txtBriefing->setWordWrap(true);
 	_txtBriefing->setText(tr(desc));
 

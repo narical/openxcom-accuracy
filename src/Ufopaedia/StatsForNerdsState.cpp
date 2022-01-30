@@ -18,6 +18,8 @@
  */
 #include "StatsForNerdsState.h"
 #include "Ufopaedia.h"
+#include "../Battlescape/BattlescapeGenerator.h"
+#include "../Battlescape/BriefingState.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/Language.h"
@@ -43,7 +45,9 @@
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
 #include "../Mod/RuleUfo.h"
+#include "../Savegame/Base.h"
 #include "../Savegame/BattleUnit.h"
+#include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/SavedGame.h"
 #include "../fmath.h"
 #include <algorithm>
@@ -134,6 +138,7 @@ void StatsForNerdsState::buildUI(bool debug, bool ids, bool defaults)
 	_btnIncludeIds = new ToggleTextButton(70, 16, 86, 176);
 	_btnIncludeDefaults = new ToggleTextButton(70, 16, 164, 176);
 	_btnOk = new TextButton(70, 16, 242, 176);
+	_btnPreview = new TextButton(102, 16, 210, 7);
 
 	// Set palette
 	setInterface("statsForNerds");
@@ -152,6 +157,7 @@ void StatsForNerdsState::buildUI(bool debug, bool ids, bool defaults)
 	add(_btnIncludeIds, "button", "statsForNerds");
 	add(_btnIncludeDefaults, "button", "statsForNerds");
 	add(_btnOk, "button", "statsForNerds");
+	add(_btnPreview, "button", "statsForNerds");
 	add(_btnPrev, "button", "statsForNerds");
 	add(_btnNext, "button", "statsForNerds");
 	add(_cbxRelatedStuff, "comboBox", "statsForNerds");
@@ -189,6 +195,10 @@ void StatsForNerdsState::buildUI(bool debug, bool ids, bool defaults)
 	_btnOk->onKeyboardPress((ActionHandler)&StatsForNerdsState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&StatsForNerdsState::btnScrollUpClick, Options::keyGeoUp);
 	_btnOk->onKeyboardPress((ActionHandler)&StatsForNerdsState::btnScrollDownClick, Options::keyGeoDown);
+
+	_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
+	_btnPreview->onMouseClick((ActionHandler)&StatsForNerdsState::btnPreviewClick);
+	_btnPreview->setVisible(false);
 
 	_btnPrev->setText("<<");
 	_btnPrev->onMouseClick((ActionHandler)&StatsForNerdsState::btnPrevClick);
@@ -244,8 +254,45 @@ void StatsForNerdsState::init()
 	if (!Options::oxceDisableStatsForNerds)
 	{
 		initLists();
+
+		_btnPreview->setVisible(false);
+		if (_typeId == UFOPAEDIA_TYPE_CRAFT || _typeId == UFOPAEDIA_TYPE_TFTD_CRAFT)
+		{
+			if (!_game->getSavedGame())
+			{
+				// how did we even get here?
+				return;
+			}
+			if (_game->getSavedGame()->getSavedBattle())
+			{
+				// there is already a battle going on, don't start another one
+				return;
+			}
+			if (!_game->containsUfopaediaStartState())
+			{
+				// let's ignore any random M-click articles too
+				// and allow the preview only if the ufopedia was opened from the main geoscape menu
+				return;
+			}
+			RuleCraft* craftRule = _game->getMod()->getCraft(_topicId);
+			if (craftRule->getMaxUnits() > 0)
+			{
+				auto& data = _game->getSavedGame()->getCustomRuleCraftDeployments();
+				auto find = data.find(craftRule->getType());
+
+				// update the label to indicate presence of a saved deployment
+				if (find != data.end())
+					_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED"));
+				else
+					_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
+
+				_txtTitle->setAlign(ALIGN_LEFT);
+				_btnPreview->setVisible(true);
+			}
+		}
 	}
 }
+
 /**
  * Opens the details for the selected ammo item.
  * @param action Pointer to an action.
@@ -307,6 +354,94 @@ void StatsForNerdsState::btnOkClick(Action *)
 	}
 
 	_game->popState();
+}
+
+/**
+ * Shows the battlescape preview.
+ * @param action Pointer to an action.
+ */
+void StatsForNerdsState::btnPreviewClick(Action *)
+{
+	const Mod* mod = _game->getMod();
+	SavedGame* save = _game->getSavedGame();
+	Base* base = save->getPreviewBase();
+	if (!base)
+	{
+		// create a new base
+		// this base is temporary (i.e. not saved in the save file), but we also don't have to create a new one each time
+		base = new Base(mod);
+		save->setPreviewBase(base);
+		base->setName("Preview Base");
+
+		// create some 1x1 soldiers (as many as needed for the biggest craft type)
+		RuleSoldier* soldierRule = nullptr;
+		Armor* defaultArmor = nullptr;
+		for (auto& soldierType : mod->getSoldiersList())
+		{
+			soldierRule = mod->getSoldier(soldierType);
+			defaultArmor = mod->getArmor(soldierRule->getArmor());
+			if (defaultArmor->getSize() == 1)
+			{
+				break;
+			}
+		}
+		int biggest = 0;
+		for (auto& craftType : mod->getCraftsList())
+		{
+			auto* cRule = mod->getCraft(craftType);
+			if (cRule->getMaxUnits() > biggest)
+			{
+				biggest = cRule->getMaxUnits();
+			}
+		}
+		for (int i = 0; i < biggest; ++i)
+		{
+			// we use NEGATIVE soldier IDs to make sure there is not even a theoretical chance of modifying real geoscape soldiers during the preview
+			int newId = -(i + 1);
+			Soldier* soldier = new Soldier(soldierRule, defaultArmor, newId);
+			base->getSoldiers()->push_back(soldier);
+			soldier->setName("Position" + std::to_string(newId));
+		}
+	}
+	// now clean up from the previous preview
+	{
+		for (auto* soldier : *base->getSoldiers())
+		{
+			soldier->setCraft(nullptr);
+		}
+		for (auto* craft : *base->getCrafts())
+		{
+			delete craft;
+		}
+		base->getCrafts()->clear();
+	}
+	// and finally create the craft we need
+	RuleCraft* craftRule = mod->getCraft(_topicId);
+	Craft* c = new Craft(craftRule, base, RuleCraft::DUMMY_CRAFT_ID); // a negative integer
+	base->getCrafts()->push_back(c);
+	c->setName(tr(craftRule->getType()));
+	int max = craftRule->getMaxUnits();
+	for (auto* soldier : *base->getSoldiers())
+	{
+		soldier->setCraft(c);
+		max--;
+		if (max <= 0) break;
+	}
+
+	SavedBattleGame* bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage(), true);
+	_game->getSavedGame()->setBattleGame(bgame);
+	BattlescapeGenerator bgen = BattlescapeGenerator(_game);
+	bgame->setMissionType(c->getRules()->getCustomPreviewType());
+	bgen.setCraft(c);
+	bgen.run();
+
+	// needed for preview of craft deployment tiles
+	bgame->setCraftPos(bgen.getCraftPos());
+	bgame->setCraftZ(bgen.getCraftZ());
+	bgame->setCraftForPreview(c);
+	bgame->calculateCraftTiles();
+
+	_game->pushState(new BriefingState(c));
 }
 
 /**

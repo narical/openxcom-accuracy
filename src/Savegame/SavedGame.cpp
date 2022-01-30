@@ -51,6 +51,7 @@
 #include "../Mod/RuleResearch.h"
 #include "../Mod/RuleManufacture.h"
 #include "../Mod/RuleBaseFacility.h"
+#include "../Mod/RuleCraft.h"
 #include "../Mod/RuleSoldierTransformation.h"
 #include "Production.h"
 #include "MissionSite.h"
@@ -144,7 +145,7 @@ bool haveReserchVector(const std::vector<const RuleResearch*> &vec,  const std::
  * Initializes a brand new saved game according to the specified difficulty.
  */
 SavedGame::SavedGame() : _difficulty(DIFF_BEGINNER), _end(END_NONE), _ironman(false), _globeLon(0.0),
-						 _globeLat(0.0), _globeZoom(0), _battleGame(0), _debug(false),
+						 _globeLat(0.0), _globeZoom(0), _battleGame(0), _previewBase(nullptr), _debug(false),
 						 _warned(false), _monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
 {
 	_time = new GameTime(6, 1, 1, 1999, 12, 0, 0);
@@ -180,6 +181,7 @@ SavedGame::~SavedGame()
 	{
 		delete *i;
 	}
+	delete _previewBase;
 	for (std::vector<Ufo*>::iterator i = _ufos.begin(); i != _ufos.end(); ++i)
 	{
 		delete *i;
@@ -603,6 +605,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	_manufactureRuleStatus = doc["manufactureRuleStatus"].as< std::map<std::string, int> >(_manufactureRuleStatus);
 	_researchRuleStatus = doc["researchRuleStatus"].as< std::map<std::string, int> >(_researchRuleStatus);
 	_hiddenPurchaseItemsMap = doc["hiddenPurchaseItems"].as< std::map<std::string, bool> >(_hiddenPurchaseItemsMap);
+	_customRuleCraftDeployments = doc["customRuleCraftDeployments"].as< std::map<std::string, RuleCraftDeployment > >(_customRuleCraftDeployments);
 
 	for (YAML::const_iterator i = doc["bases"].begin(); i != doc["bases"].end(); ++i)
 	{
@@ -901,6 +904,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["manufactureRuleStatus"] = _manufactureRuleStatus;
 	node["researchRuleStatus"] = _researchRuleStatus;
 	node["hiddenPurchaseItems"] = _hiddenPurchaseItemsMap;
+	node["customRuleCraftDeployments"] = _customRuleCraftDeployments;
 	node["alienStrategy"] = _alienStrategy->save();
 	for (std::vector<Soldier*>::const_iterator i = _deadSoldiers.begin(); i != _deadSoldiers.end(); ++i)
 	{

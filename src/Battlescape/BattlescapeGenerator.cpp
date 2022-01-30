@@ -1398,11 +1398,12 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 				}
 			}
 		}
-		else if (_craft && !_craftRules->getDeployment().empty())
+		else if (_craft && _save->hasCustomDeployment(_craftRules))
 		{
 			setCustomCraftInventoryTile();
 
-			for (RuleCraftDeployment::const_iterator i = _craftRules->getDeployment().begin(); i != _craftRules->getDeployment().end(); ++i)
+			auto& deploy = _save->getCustomDeployment(_craftRules);
+			for (RuleCraftDeployment::const_iterator i = deploy.begin(); i != deploy.end(); ++i)
 			{
 				Position pos = Position((*i)[0] + (_craftPos.x * 10), (*i)[1] + (_craftPos.y * 10), (*i)[2] + _craftZ);
 				int dir = (*i)[3];

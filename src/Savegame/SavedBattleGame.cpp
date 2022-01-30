@@ -20,6 +20,7 @@
 #include <vector>
 #include "BattleItem.h"
 #include "ItemContainer.h"
+#include "Base.h"
 #include "Craft.h"
 #include "SavedBattleGame.h"
 #include "SavedGame.h"
@@ -1373,6 +1374,100 @@ void SavedBattleGame::saveCustomCraftDeployment()
 			}
 		}
 	}
+}
+
+/**
+ * Saves the custom RuleCraft deployment. Invalidates corresponding custom craft deployments.
+ */
+void SavedBattleGame::saveDummyCraftDeployment()
+{
+	auto* save = getGeoscapeSave();
+
+	// don't forget to invalidate custom deployments of all real craft of this type
+	for (auto* base : *save->getBases())
+	{
+		for (auto* craft : *base->getCrafts())
+		{
+			if (craft->getRules() == _craftForPreview->getRules())
+			{
+				craft->resetCustomDeployment();
+			}
+		}
+	}
+
+	auto& data = save->getCustomRuleCraftDeployments();
+
+	if (isCtrlPressed(true))
+	{
+		// delete
+		data.erase(_craftForPreview->getRules()->getType());
+	}
+	else
+	{
+		// save
+		RuleCraftDeployment customDeployment;
+		Position tmp;
+		for (auto* unit : _units)
+		{
+			if (unit->getOriginalFaction() == FACTION_PLAYER)
+			{
+				if (unit->isSummonedPlayerUnit())
+				{
+					continue;
+				}
+				tmp = Position(unit->getPosition().x - _craftPos.x * 10, unit->getPosition().y - _craftPos.y * 10, unit->getPosition().z - _craftZ);
+				if (unit->getGeoscapeSoldier())
+				{
+					customDeployment.push_back({ tmp.x, tmp.y, tmp.z, unit->getDirection() });
+				}
+			}
+		}
+		data[_craftForPreview->getRules()->getType()] = customDeployment;
+	}
+}
+
+/**
+ * Does the given craft type have a custom deployment?
+ */
+bool SavedBattleGame::hasCustomDeployment(const RuleCraft* rule) const
+{
+	// first check the fallback
+	if (!rule->getDeployment().empty())
+	{
+		return true;
+	}
+	// then the override
+	auto* save = getGeoscapeSave();
+	auto& data = save->getCustomRuleCraftDeployments();
+	if (!data.empty())
+	{
+		auto find = data.find(rule->getType());
+		if (find != data.end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Gets a custom deployment for the given craft type.
+ */
+const RuleCraftDeployment& SavedBattleGame::getCustomDeployment(const RuleCraft* rule) const
+{
+	// first try the override
+	auto* save = getGeoscapeSave();
+	auto& data = save->getCustomRuleCraftDeployments();
+	if (!data.empty())
+	{
+		auto find = data.find(rule->getType());
+		if (find != data.end())
+		{
+			return find->second;
+		}
+	}
+	// this is the fallback
+	return rule->getDeployment();
 }
 
 /**

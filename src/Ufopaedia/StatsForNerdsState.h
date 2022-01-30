@@ -53,6 +53,7 @@ private:
 	TextList *_lstRawData;
 	ToggleTextButton *_btnIncludeDebug, *_btnIncludeIds, *_btnIncludeDefaults;
 	TextButton *_btnOk;
+	TextButton *_btnPreview;
 
 	Uint8 _purple, _pink, _blue, _white, _gold;
 
@@ -183,6 +184,8 @@ public:
 	void btnRefreshClick(Action *action);
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Handler for clicking the [Preview] button.
+	void btnPreviewClick(Action *action);
 	/// Handler for clicking the [Previous] button.
 	void btnPrevClick(Action *action);
 	/// Handler for clicking the [Next] button.

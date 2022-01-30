@@ -22,6 +22,7 @@
 #include <yaml-cpp/yaml.h>
 #include "Tile.h"
 #include "../Mod/AlienDeployment.h"
+#include "../Mod/RuleCraft.h"
 
 namespace OpenXcom
 {
@@ -377,6 +378,12 @@ public:
 	BattlescapeTally tallyUnitsForPreview();
 	/// Saves the custom craft deployment.
 	void saveCustomCraftDeployment();
+	/// Saves the custom RuleCraft deployment. Invalidates corresponding custom craft deployments.
+	void saveDummyCraftDeployment();
+	/// Does the given craft type have a custom deployment?
+	bool hasCustomDeployment(const RuleCraft* rule) const;
+	/// Gets a custom deployment for the given craft type.
+	const RuleCraftDeployment& getCustomDeployment(const RuleCraft* rule) const;
 	/// Ends the turn.
 	void endTurn();
 	/// Gets animation frame.

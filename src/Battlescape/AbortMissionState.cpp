@@ -31,6 +31,8 @@
 #include "../Engine/Options.h"
 #include "../Mod/AlienDeployment.h"
 #include "../Mod/MapScript.h"
+#include "../Mod/RuleCraft.h"
+#include "../Savegame/Craft.h"
 #include "../Savegame/Tile.h"
 
 namespace OpenXcom
@@ -192,7 +194,16 @@ void AbortMissionState::btnOkClick(Action *)
 {
 	if (_battleGame->isPreview())
 	{
-		_battleGame->saveCustomCraftDeployment();
+		if (_battleGame->getCraftForPreview()->getId() == RuleCraft::DUMMY_CRAFT_ID)
+		{
+			// dummy craft, generic deployment schema
+			_battleGame->saveDummyCraftDeployment();
+		}
+		else
+		{
+			// real craft, real unit deployment
+			_battleGame->saveCustomCraftDeployment();
+		}
 
 		_game->popState();
 		return;

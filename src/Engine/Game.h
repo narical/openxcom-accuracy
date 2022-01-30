@@ -97,6 +97,8 @@ public:
 	void setMouseActive(bool active);
 	/// Returns whether current state is the param state
 	bool isState(State *state) const;
+	/// Returns whether a UfopaediaStartState is in the background.
+	bool containsUfopaediaStartState() const;
 	/// Returns whether the game is shutting down.
 	bool isQuitting() const;
 	/// Loads the default and current language.

@@ -2725,6 +2725,30 @@ inline void BattlescapeState::handle(Action *action)
 						_game->pushState(new InfoboxState(ss.str()));
 					}
 				}
+				// "ctrl-w" - warp unit
+				else if ((_save->getDebugMode() || _save->isPreview()) && key == SDLK_w && ctrlPressed)
+				{
+					BattleUnit *unit = _save->getSelectedUnit();
+					if (unit)
+					{
+						Position newPos;
+						_map->getSelectorPosition(&newPos);
+						if (_save->getBattleGame()->getTileEngine()->isPositionValidForUnit(newPos, unit))
+						{
+							debug("Beam me up Scotty");
+							_save->getPathfinding()->removePreview();
+
+							unit->setTile(_save->getTile(newPos), _save);
+							unit->setPosition(newPos);
+
+							//free refresh as bonus
+							unit->updateUnitStats(true, false);
+							_save->getTileEngine()->calculateLighting(LL_UNITS);
+							_save->getBattleGame()->handleState();
+							updateSoldierInfo(true);
+						}
+					}
+				}
 				if (Options::debug)
 				{
 					// "ctrl-d" - enable debug mode
@@ -2789,30 +2813,6 @@ inline void BattlescapeState::handle(Action *action)
 						}
 						_save->getBattleGame()->checkForCasualties(nullptr, BattleActionAttack{}, true, false);
 						_save->getBattleGame()->handleState();
-					}
-					// "ctrl-w" - warp unit
-					else if (_save->getDebugMode() && key == SDLK_w && ctrlPressed)
-					{
-						BattleUnit *unit = _save->getSelectedUnit();
-						if (unit)
-						{
-							Position newPos;
-							_map->getSelectorPosition(&newPos);
-							if (_save->getBattleGame()->getTileEngine()->isPositionValidForUnit(newPos, unit))
-							{
-								debug("Beam me up Scotty");
-								_save->getPathfinding()->removePreview();
-
-								unit->setTile(_save->getTile(newPos), _save);
-								unit->setPosition(newPos);
-
-								//free refresh as bonus
-								unit->updateUnitStats(true, false);
-								_save->getTileEngine()->calculateLighting(LL_UNITS);
-								_save->getBattleGame()->handleState();
-								updateSoldierInfo(true);
-							}
-						}
 					}
 					// f11 - voxel map dump
 					else if (key == SDLK_F11)
