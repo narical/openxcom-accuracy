@@ -511,7 +511,7 @@ void BattlescapeGame::endTurn()
 		bool exploded = false;
 
 		// check for hot grenades on the ground
-		if (_save->getSide() != FACTION_NEUTRAL)
+		if (_save->getSide() != FACTION_NEUTRAL && !_save->isPreview())
 		{
 			for (BattleItem *item : *_save->getItems())
 			{

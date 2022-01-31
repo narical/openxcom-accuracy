@@ -184,18 +184,30 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 
 	_txtTitle->setText(tr(title));
 
-	if (battleSave->isPreview() && battleSave->getCraftForPreview()->getId() == RuleCraft::DUMMY_CRAFT_ID)
+	bool isPreview = battleSave->isPreview();
+	if (isPreview)
 	{
-		// we're using the same alienDeployment for the real craft preview and for the dummy craft preview,
-		// but we want to have different briefing texts
-		desc = desc + "_DUMMY";
+		if (battleSave->getCraftForPreview())
+		{
+			if (battleSave->getCraftForPreview()->getId() == RuleCraft::DUMMY_CRAFT_ID)
+			{
+				// we're using the same alienDeployment for the real craft preview and for the dummy craft preview,
+				// but we want to have different briefing texts
+				desc = desc + "_DUMMY";
+			}
+		}
+		else
+		{
+			// base preview
+			desc = desc + "_PREVIEW";
+		}
 	}
 	_txtBriefing->setWordWrap(true);
 	_txtBriefing->setText(tr(desc));
 
 	if (_infoOnly) return;
 
-	if (base && mission == "STR_BASE_DEFENSE")
+	if (!isPreview && base && mission == "STR_BASE_DEFENSE")
 	{
 		// And make sure the base is unmarked.
 		base->setRetaliationTarget(false);

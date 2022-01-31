@@ -1407,6 +1407,11 @@ void BattlescapeState::btnAbortClick(Action *)
 {
 	if (_save->isPreview())
 	{
+		if (!_save->getCraftForPreview())
+		{
+			// base preview
+			return;
+		}
 		// Notes for future explorers:
 		// - there are craft, which can have multiple layouts (one is chosen randomly at the start of a battle)
 		// - these layouts are not forced to be compatible

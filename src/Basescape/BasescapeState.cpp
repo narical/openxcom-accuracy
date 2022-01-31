@@ -54,6 +54,11 @@
 #include "../Mod/RuleInterface.h"
 #include "PlaceFacilityState.h"
 #include "../Ufopaedia/Ufopaedia.h"
+#include "../Battlescape/BattlescapeGenerator.h"
+#include "../Battlescape/BriefingState.h"
+#include "../Savegame/SavedBattleGame.h"
+#include "../Geoscape/Globe.h"
+#include "../Mod/RuleGlobe.h"
 
 namespace OpenXcom
 {
@@ -383,6 +388,27 @@ void BasescapeState::viewLeftClick(Action *)
 		}
 		else
 		{
+			if (fac->getRules()->isLift())
+			{
+				// Note: vehicles will not be deployed in the base preview
+				if (_base->getAvailableSoldiers(true, true) > 0/* || !_base->getVehicles()->empty()*/)
+				{
+					int texture, shade;
+					_globe->getPolygonTextureAndShade(_base->getLongitude(), _base->getLatitude(), &texture, &shade);
+					auto* globeTexture = _game->getMod()->getGlobe()->getTexture(texture);
+
+					SavedBattleGame* bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage(), true);
+					_game->getSavedGame()->setBattleGame(bgame);
+					BattlescapeGenerator bgen = BattlescapeGenerator(_game);
+					bgame->setMissionType("STR_BASE_DEFENSE");
+					bgen.setBase(_base);
+					bgen.setWorldTexture(globeTexture, globeTexture);
+					bgen.run();
+
+					_game->pushState(new BriefingState(0, _base));
+				}
+				return;
+			}
 			// Is facility in use?
 			if (fac->inUse())
 			{

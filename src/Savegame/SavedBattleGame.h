@@ -213,7 +213,7 @@ public:
 	/// Gets terrain x*y*z
 	int getMapSizeXYZ() const;
 
-	/// Is this just a craft deployment preview?
+	/// Is this just a craft or base deployment preview?
 	bool isPreview() const { return _isPreview; }
 	/// Sets craft position.
 	void setCraftPos(SDL_Rect craftPos) { _craftPos = craftPos; }

@@ -2877,6 +2877,11 @@ bool TileEngine::detonate(Tile* tile, int explosive)
  */
 Tile *TileEngine::checkForTerrainExplosions()
 {
+	if (_save->isPreview())
+	{
+		return 0;
+	}
+
 	for (int i = 0; i < _save->getMapSizeXYZ(); ++i)
 	{
 		if (_save->getTile(i)->getExplosive())

@@ -793,7 +793,7 @@ void BattlescapeGenerator::run()
 		throw Exception("Map generator encountered an error: " + terrainMapScript + " script not found.");
 	}
 
-	if (isPreview)
+	if (isPreview && _craftRules)
 	{
 		// resize the map if needed
 		for (auto* dims : *_craftRules->getBattlescapeTerrainData()->getMapBlocks())
@@ -887,6 +887,8 @@ void BattlescapeGenerator::run()
  */
 void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondition, const RuleEnviroEffects* enviro)
 {
+	bool isPreview = _save->isPreview();
+
 	_save->applyEnviroEffects(enviro);
 
 	RuleInventory *ground = _inventorySlotGround;
@@ -900,7 +902,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 	// we will need this during debriefing to show a list of recovered items
 	// Note: saved info is required only because of base defense missions, other missions could work without a save too
 	// IMPORTANT: the number of vehicles and their ammo has been messed up by Base::setupDefenses() already :( and will need to be handled separately later
-	if (_base != 0)
+	if (!isPreview && _base != 0)
 	{
 		ItemContainer *rememberMe = _save->getBaseStorageItems();
 		for (std::map<std::string, int>::iterator i = _base->getStorageItems()->getContents()->begin(); i != _base->getStorageItems()->getContents()->end(); ++i)
@@ -1084,7 +1086,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		}
 	}
 
-	if (_save->isPreview())
+	if (isPreview)
 	{
 		// alright, that's enough
 		return;
@@ -1309,6 +1311,16 @@ BattleUnit *BattlescapeGenerator::addXCOMVehicle(Vehicle *v)
  */
 BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 {
+	if (_save->isPreview() && !_save->getCraftForPreview())
+	{
+		// base preview, one standard unit is enough
+		if (_save->getUnits()->size() > 0 && !_save->getUnits()->back()->isSummonedPlayerUnit())
+		{
+			delete unit;
+			return nullptr;
+		}
+	}
+
 	if (_baseInventory)
 	{
 		if (unit->hasInventory())
