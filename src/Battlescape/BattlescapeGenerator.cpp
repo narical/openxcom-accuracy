@@ -990,7 +990,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 					{
 						std::string replacedArmorType = startingCondition->getArmorReplacement((*i)->getRules()->getType(), (*i)->getArmor()->getType());
 						replacedArmor = _game->getMod()->getArmor(replacedArmorType, true);
-						if (replacedArmor->getSize() > (*i)->getArmor()->getSize())
+						if (replacedArmor && replacedArmor->getSize() > (*i)->getArmor()->getSize())
 						{
 							// cannot switch into a bigger armor size!
 							replacedArmor = nullptr;
