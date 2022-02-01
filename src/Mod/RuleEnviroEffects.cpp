@@ -146,8 +146,8 @@ Armor* RuleEnviroEffects::getArmorTransformation(const Armor* sourceArmor) const
 		std::map<const Armor*, Armor*>::const_iterator i = _armorTransformations.find(sourceArmor);
 		if (i != _armorTransformations.end())
 		{
-			// cannot transform to a different armor size, sorry
-			if (sourceArmor->getSize() == i->second->getSize())
+			// cannot switch into a bigger armor size!
+			if (sourceArmor->getSize() >= i->second->getSize())
 			{
 				return i->second;
 			}
