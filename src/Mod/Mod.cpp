@@ -4483,7 +4483,7 @@ Soldier *Mod::genSoldier(SavedGame *save, std::string type) const
 	for (int tries = 0; tries < 10 && duplicate; ++tries)
 	{
 		delete soldier;
-		soldier = new Soldier(getSoldier(type, true), getArmor(getSoldier(type, true)->getArmor(), true), newId);
+		soldier = new Soldier(getSoldier(type, true), getArmor(getSoldier(type, true)->getDefaultArmor(), true), newId);
 		duplicate = false;
 		for (std::vector<Base*>::iterator i = save->getBases()->begin(); i != save->getBases()->end() && !duplicate; ++i)
 		{

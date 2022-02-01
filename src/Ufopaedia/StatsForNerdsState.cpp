@@ -379,7 +379,7 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 		for (auto& soldierType : mod->getSoldiersList())
 		{
 			soldierRule = mod->getSoldier(soldierType);
-			defaultArmor = mod->getArmor(soldierRule->getArmor());
+			defaultArmor = mod->getArmor(soldierRule->getDefaultArmor());
 			if (defaultArmor->getSize() == 1)
 			{
 				break;

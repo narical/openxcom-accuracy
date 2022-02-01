@@ -484,7 +484,7 @@ void SoldierInfoState::init()
 
 	std::string wsArmor;
 	std::string armorType = _soldier->getArmor()->getType();
-	if (armorType == _soldier->getRules()->getArmor())
+	if (armorType == _soldier->getRules()->getDefaultArmor())
 	{
 		wsArmor= tr("STR_ARMOR_").arg(tr(armorType));
 	}

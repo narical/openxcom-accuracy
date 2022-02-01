@@ -141,7 +141,7 @@ public:
 	/// Gets the elevation of the soldier when it's flying.
 	int getFloatHeight() const;
 	/// Gets the default-equipped armor.
-	std::string getArmor() const;
+	std::string getDefaultArmor() const;
 	/// Gets the armor for avatar display.
 	std::string getArmorForAvatar() const;
 	/// Gets the X offset used for avatar.
