@@ -562,7 +562,7 @@ void CraftArmorState::btnDeequipAllArmorClick(Action *action)
 	{
 		if (!((*i)->getCraft() && (*i)->getCraft()->getStatus() == "STR_OUT"))
 		{
-			Armor *a = _game->getMod()->getArmor((*i)->getRules()->getDefaultArmor());
+			Armor *a = (*i)->getRules()->getDefaultArmor();
 
 			if ((*i)->getCraft() && !(*i)->getCraft()->validateArmorChange((*i)->getArmor()->getSize(), a->getSize()))
 			{
@@ -602,7 +602,7 @@ void CraftArmorState::btnDeequipCraftArmorClick(Action *action)
 	{
 		if (s->getCraft() == c || s->getCraft() == 0)
 		{
-			Armor *a = _game->getMod()->getArmor(s->getRules()->getDefaultArmor());
+			Armor *a = s->getRules()->getDefaultArmor();
 
 			if (s->getCraft() && !s->getCraft()->validateArmorChange(s->getArmor()->getSize(), a->getSize()))
 			{

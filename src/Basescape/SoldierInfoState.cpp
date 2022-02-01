@@ -483,14 +483,13 @@ void SoldierInfoState::init()
 	_barStrength->setValue2(std::min(withArmor.strength, initial->strength));
 
 	std::string wsArmor;
-	std::string armorType = _soldier->getArmor()->getType();
-	if (armorType == _soldier->getRules()->getDefaultArmor())
+	if (_soldier->getArmor() == _soldier->getRules()->getDefaultArmor())
 	{
-		wsArmor= tr("STR_ARMOR_").arg(tr(armorType));
+		wsArmor= tr("STR_ARMOR_").arg(tr(_soldier->getArmor()->getType()));
 	}
 	else
 	{
-		wsArmor = tr(armorType);
+		wsArmor = tr(_soldier->getArmor()->getType());
 	}
 
 	_btnArmor->setText(wsArmor);

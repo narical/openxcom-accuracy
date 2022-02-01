@@ -23,6 +23,7 @@
 #include "Mod.h"
 #include "ModScript.h"
 #include "RuleItem.h"
+#include "Armor.h"
 #include "SoldierNamePool.h"
 #include "StatString.h"
 #include "../Engine/Collections.h"
@@ -38,7 +39,7 @@ namespace OpenXcom
  * type of soldier.
  * @param type String defining the type.
  */
-RuleSoldier::RuleSoldier(const std::string &type) : _type(type), _listOrder(0), _specWeapon(nullptr), _costBuy(0), _costSalary(0),
+RuleSoldier::RuleSoldier(const std::string &type) : _type(type), _listOrder(0), _armor(nullptr), _specWeapon(nullptr), _costBuy(0), _costSalary(0),
 	_costSalarySquaddie(0), _costSalarySergeant(0), _costSalaryCaptain(0), _costSalaryColonel(0), _costSalaryCommander(0),
 	_standHeight(0), _kneelHeight(0), _floatHeight(0), _femaleFrequency(50), _value(20), _transferTime(0), _moraleLossWhenKilled(100),
 	_avatarOffsetX(67), _avatarOffsetY(48), _flagOffset(0),
@@ -95,7 +96,7 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 		_trainingStatCaps.merge(node["statCaps"].as<UnitStats>(_trainingStatCaps));
 	}
 	_dogfightExperience.merge(node["dogfightExperience"].as<UnitStats>(_dogfightExperience));
-	_armor = node["armor"].as<std::string>(_armor);
+	mod->loadName(_type, _armorName, node["armor"]);
 	_specWeaponName = node["specialWeapon"].as<std::string>(_specWeaponName);
 	_armorForAvatar = node["armorForAvatar"].as<std::string>(_armorForAvatar);
 	_avatarOffsetX = node["avatarOffsetX"].as<int>(_avatarOffsetX);
@@ -196,8 +197,8 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
  */
 void RuleSoldier::afterLoad(const Mod* mod)
 {
-	auto* armorRule = mod->getArmor(_armor, false);
-	mod->checkForSoftError(armorRule == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);
+	mod->linkRule(_armor, _armorName);
+	mod->checkForSoftError(_armor == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);
 
 	mod->verifySoundOffset(_type, _deathSoundMale, "BATTLE.CAT");
 	mod->verifySoundOffset(_type, _deathSoundFemale, "BATTLE.CAT");
@@ -412,9 +413,9 @@ int RuleSoldier::getFloatHeight() const
  * Gets the default armor name.
  * @return The armor name.
  */
-const std::string& RuleSoldier::getDefaultArmor() const
+Armor* RuleSoldier::getDefaultArmor() const
 {
-	return _armor;
+	return const_cast<Armor*>(_armor); //TODO: fix this function usage to remove const cast
 }
 
 /**

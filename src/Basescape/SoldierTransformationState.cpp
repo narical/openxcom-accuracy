@@ -475,7 +475,7 @@ void SoldierTransformationState::performTransformation()
 		}
 		destinationSoldier = new Soldier(
 			newSoldierType,
-			_game->getMod()->getArmor(newSoldierType->getDefaultArmor()),
+			newSoldierType->getDefaultArmor(),
 			newId);
 
 		// copy stuff that is not influenced by transformation ruleset

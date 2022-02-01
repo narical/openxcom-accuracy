@@ -3009,7 +3009,7 @@ std::vector<Soldier*>::iterator SavedGame::killSoldier(const Mod* mod, Soldier *
 	if (mod)
 	{
 		// OXCE: soldiers are buried in their default armor (...nicer stats in the Memorial GUI; no free armor if resurrected)
-		soldier->setArmor(mod->getArmor(soldier->getRules()->getDefaultArmor()));
+		soldier->setArmor(soldier->getRules()->getDefaultArmor());
 		soldier->setReplacedArmor(0);
 		soldier->setTransformedArmor(0);
 	}

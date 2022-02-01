@@ -171,7 +171,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	}
 	if (armor == 0)
 	{
-		armor = mod->getArmor(mod->getSoldier(mod->getSoldiersList().front())->getDefaultArmor());
+		armor = mod->getSoldier(mod->getSoldiersList().front())->getDefaultArmor();
 	}
 	_armor = armor;
 	if (node["replacedArmor"])
@@ -1678,7 +1678,7 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 		if (Mod::isEmptyRuleName(transformationRule->getProducedSoldierArmor()))
 		{
 			// default armor of the soldier's type
-			_armor = mod->getArmor(_rules->getDefaultArmor());
+			_armor = _rules->getDefaultArmor();
 		}
 		else
 		{
