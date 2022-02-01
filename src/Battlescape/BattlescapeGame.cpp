@@ -898,7 +898,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 						deathStat->setUnitStats(murderer);
 						deathStat->faction = murderer->getOriginalFaction();
 					}
-					_parentState->getGame()->getSavedGame()->killSoldier(nullptr, victim->getGeoscapeSoldier(), deathStat);
+					_parentState->getGame()->getSavedGame()->killSoldier(false, victim->getGeoscapeSoldier(), deathStat);
 				}
 			}
 			else if ((*j)->getStunlevel() >= (*j)->getHealth() && (*j)->getStatus() != STATUS_UNCONSCIOUS)

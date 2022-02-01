@@ -1497,7 +1497,7 @@ void DebriefingState::prepareDebriefing()
 					soldier->setTransformedArmor(0);
 
 					(*j)->getStatistics()->KIA = true;
-					save->killSoldier(_game->getMod(), soldier); // in case we missed the soldier death on battlescape
+					save->killSoldier(true, soldier); // in case we missed the soldier death on battlescape
 				}
 				else
 				{ // non soldier player = tank
@@ -1584,7 +1584,7 @@ void DebriefingState::prepareDebriefing()
 						soldier->setTransformedArmor(0);
 
 						(*j)->getStatistics()->MIA = true;
-						save->killSoldier(_game->getMod(), soldier);
+						save->killSoldier(true, soldier);
 					}
 				}
 			}

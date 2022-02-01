@@ -3004,9 +3004,9 @@ bool SavedGame::isUfoOnIgnoreList(int ufoId)
  * @param soldier Pointer to dead soldier.
  * @param cause Pointer to cause of death, NULL if missing in action.
  */
-std::vector<Soldier*>::iterator SavedGame::killSoldier(const Mod* mod, Soldier *soldier, BattleUnitKills *cause)
+std::vector<Soldier*>::iterator SavedGame::killSoldier(bool resetArmor, Soldier *soldier, BattleUnitKills *cause)
 {
-	if (mod)
+	if (resetArmor)
 	{
 		// OXCE: soldiers are buried in their default armor (...nicer stats in the Memorial GUI; no free armor if resurrected)
 		soldier->setArmor(soldier->getRules()->getDefaultArmor());
