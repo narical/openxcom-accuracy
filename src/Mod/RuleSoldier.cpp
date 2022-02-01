@@ -412,7 +412,7 @@ int RuleSoldier::getFloatHeight() const
  * Gets the default armor name.
  * @return The armor name.
  */
-std::string RuleSoldier::getDefaultArmor() const
+const std::string& RuleSoldier::getDefaultArmor() const
 {
 	return _armor;
 }
@@ -421,7 +421,7 @@ std::string RuleSoldier::getDefaultArmor() const
 * Gets the armor for avatar.
 * @return The armor name.
 */
-std::string RuleSoldier::getArmorForAvatar() const
+const std::string& RuleSoldier::getArmorForAvatar() const
 {
 	return _armorForAvatar;
 }
