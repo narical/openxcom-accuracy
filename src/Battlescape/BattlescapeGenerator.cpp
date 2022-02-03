@@ -1667,7 +1667,15 @@ BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outs
 			node = _save->getSpawnNode(Node::nodeRank[alienRank][i], unit);
 	}
 
-	int difficulty = _game->getSavedGame()->getDifficultyCoefficient();
+	int aliensFacingCraftOdds = 20 * _game->getSavedGame()->getDifficultyCoefficient();
+	{
+		int diff = _game->getSavedGame()->getDifficulty();
+		auto& custom = _game->getMod()->getAliensFacingCraftOdds();
+		if (custom.size() > diff)
+		{
+			aliensFacingCraftOdds = custom[diff];
+		}
+	}
 
 	if (node && _save->setUnitPosition(unit, node->getPosition()))
 	{
@@ -1675,7 +1683,7 @@ BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outs
 		unit->setRankInt(alienRank);
 		int dir = _save->getTileEngine()->faceWindow(node->getPosition());
 		Position craft = _game->getSavedGame()->getSavedBattle()->getUnits()->at(0)->getPosition();
-		if (Position::distance2d(node->getPosition(), craft) <= 20 && RNG::percent(20 * difficulty))
+		if (Position::distance2d(node->getPosition(), craft) <= 20 && RNG::percent(aliensFacingCraftOdds))
 			dir = unit->directionTo(craft);
 		if (dir != -1)
 			unit->setDirection(dir);
@@ -1694,7 +1702,7 @@ BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outs
 			unit->setRankInt(alienRank);
 			int dir = _save->getTileEngine()->faceWindow(unit->getPosition());
 			Position craft = _game->getSavedGame()->getSavedBattle()->getUnits()->at(0)->getPosition();
-			if (Position::distance2d(unit->getPosition(), craft) <= 20 && RNG::percent(20 * difficulty))
+			if (Position::distance2d(unit->getPosition(), craft) <= 20 && RNG::percent(aliensFacingCraftOdds))
 				dir = unit->directionTo(craft);
 			if (dir != -1)
 				unit->setDirection(dir);

@@ -2909,6 +2909,16 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_defeatFunds = doc["defeatFunds"].as<int>(_defeatFunds);
 	_difficultyDemigod = doc["difficultyDemigod"].as<bool>(_difficultyDemigod);
 
+	if (const YAML::Node& difficultyCoefficientOverrides = doc["difficultyCoefficientOverrides"])
+	{
+		_monthlyRatingThresholds = difficultyCoefficientOverrides["monthlyRatingThresholds"].as< std::vector<int> >(_monthlyRatingThresholds);
+		_ufoFiringRateCoefficients = difficultyCoefficientOverrides["ufoFiringRateCoefficients"].as< std::vector<int> >(_ufoFiringRateCoefficients);
+		_ufoEscapeCountdownCoefficients = difficultyCoefficientOverrides["ufoEscapeCountdownCoefficients"].as< std::vector<int> >(_ufoEscapeCountdownCoefficients);
+		_retaliationTriggerOdds = difficultyCoefficientOverrides["retaliationTriggerOdds"].as< std::vector<int> >(_retaliationTriggerOdds);
+		_retaliationBaseRegionOdds = difficultyCoefficientOverrides["retaliationBaseRegionOdds"].as< std::vector<int> >(_retaliationBaseRegionOdds);
+		_aliensFacingCraftOdds = difficultyCoefficientOverrides["aliensFacingCraftOdds"].as< std::vector<int> >(_aliensFacingCraftOdds);
+	}
+
 	if (doc["difficultyCoefficient"])
 	{
 		size_t num = 0;

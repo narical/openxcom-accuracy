@@ -142,6 +142,18 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 
 	// Calculate rating
 	int difficulty_threshold = _game->getMod()->getDefeatScore() + 100 * _game->getSavedGame()->getDifficultyCoefficient();
+	{
+		int diff = _game->getSavedGame()->getDifficulty();
+		auto& custom = _game->getMod()->getMonthlyRatingThresholds();
+		if (custom.size() > diff)
+		{
+			// only negative values are allowed!
+			if (custom[diff] < 0)
+			{
+				difficulty_threshold = custom[diff];
+			}
+		}
+	}
 	std::string rating = tr("STR_RATING_TERRIBLE");
 	if (_ratingTotal > difficulty_threshold - 300)
 	{

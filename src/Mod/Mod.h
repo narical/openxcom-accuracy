@@ -276,6 +276,14 @@ private:
 	int _pediaReplaceCraftFuelWithRangeType;
 	std::vector<StatAdjustment> _statAdjustment;
 
+	// overrides for DIFFICULTY_COEFFICIENT[]
+	std::vector<int> _monthlyRatingThresholds;
+	std::vector<int> _ufoFiringRateCoefficients;
+	std::vector<int> _ufoEscapeCountdownCoefficients;
+	std::vector<int> _retaliationTriggerOdds;
+	std::vector<int> _retaliationBaseRegionOdds;
+	std::vector<int> _aliensFacingCraftOdds;
+
 	std::map<std::string, int> _ufopaediaSections;
 	std::vector<std::string> _countriesIndex, _extraGlobeLabelsIndex, _regionsIndex, _facilitiesIndex, _craftsIndex, _craftWeaponsIndex, _itemCategoriesIndex, _itemsIndex, _invsIndex, _ufosIndex;
 	std::vector<std::string> _aliensIndex, _enviroEffectsIndex, _startingConditionsIndex, _deploymentsIndex, _armorsIndex, _ufopaediaIndex, _ufopaediaCatIndex, _researchIndex, _manufactureIndex;
@@ -1050,6 +1058,13 @@ public:
 	int getDefeatScore() const;
 	int getDefeatFunds() const;
 	bool isDemigod() const;
+	const std::vector<int>& getMonthlyRatingThresholds() { return _monthlyRatingThresholds; }
+	const std::vector<int>& getUfoFiringRateCoefficients() { return _ufoFiringRateCoefficients; }
+	const std::vector<int>& getUfoEscapeCountdownCoefficients() { return _ufoEscapeCountdownCoefficients; }
+	const std::vector<int>& getRetaliationTriggerOdds() { return _retaliationTriggerOdds; }
+	const std::vector<int>& getRetaliationBaseRegionOdds() { return _retaliationBaseRegionOdds; }
+	const std::vector<int>& getAliensFacingCraftOdds() { return _aliensFacingCraftOdds; }
+
 };
 
 }

@@ -3385,9 +3385,27 @@ void StatsForNerdsState::initUfoList()
 	addHeading("_calculatedValues", "STR_FOR_DIFFICULTY", true);
 	{
 		int escapeCountdown = ufoRule->getBreakOffTime() - 30 * _game->getSavedGame()->getDifficultyCoefficient();
-		addIntegerSeconds(ss, escapeCountdown, "_escapeCountdown", 0, escapeCountdown + ufoRule->getBreakOffTime());
+		int escapeCountdownMax = escapeCountdown + ufoRule->getBreakOffTime();
+		{
+			int diff = _game->getSavedGame()->getDifficulty();
+			auto& custom = _game->getMod()->getUfoEscapeCountdownCoefficients();
+			if (custom.size() > diff)
+			{
+				escapeCountdown = ufoRule->getBreakOffTime() * custom[diff] / 100;
+				escapeCountdownMax = ufoRule->getBreakOffTime() * 2 * custom[diff] / 100;
+			}
+		}
+		addIntegerSeconds(ss, std::max(1, escapeCountdown), "_escapeCountdown", 0, std::max(1, escapeCountdownMax));
 
 		int fireCountdown = std::max(1, (ufoRule->getWeaponReload() - 2 * _game->getSavedGame()->getDifficultyCoefficient()));
+		{
+			int diff = _game->getSavedGame()->getDifficulty();
+			auto& custom = _game->getMod()->getUfoFiringRateCoefficients();
+			if (custom.size() > diff)
+			{
+				fireCountdown = std::max(1, ufoRule->getWeaponReload() * custom[diff] / 100);
+			}
+		}
 		addIntegerSeconds(ss, fireCountdown, "_fireRate", 0, fireCountdown * 2);
 
 		// not considering race bonus

@@ -630,6 +630,15 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	{
 		_ufo->setFireCountdown(0);
 		int escapeCountdown = _ufo->getRules()->getBreakOffTime() + RNG::generate(0, _ufo->getRules()->getBreakOffTime()) - 30 * _game->getSavedGame()->getDifficultyCoefficient();
+		{
+			int diff = _game->getSavedGame()->getDifficulty();
+			auto& custom = _game->getMod()->getUfoEscapeCountdownCoefficients();
+			if (custom.size() > diff)
+			{
+				escapeCountdown = _ufo->getRules()->getBreakOffTime() + RNG::generate(0, _ufo->getRules()->getBreakOffTime());
+				escapeCountdown = escapeCountdown * custom[diff] / 100;
+			}
+		}
 		_ufo->setEscapeCountdown(std::max(1, escapeCountdown));
 	}
 
@@ -1474,6 +1483,14 @@ void DogfightState::update()
 				if (retaliationOdds == -1)
 				{
 					retaliationOdds = 100 - (4 * (24 - _game->getSavedGame()->getDifficultyCoefficient()) - race->getRetaliationAggression());
+					{
+						int diff = _game->getSavedGame()->getDifficulty();
+						auto& custom = _game->getMod()->getRetaliationTriggerOdds();
+						if (custom.size() > diff)
+						{
+							retaliationOdds = custom[diff] + race->getRetaliationAggression();
+						}
+					}
 				}
 				// Have mercy on beginners
 				if (_game->getSavedGame()->getMonthsPassed() < Mod::DIFFICULTY_BASED_RETAL_DELAY[_game->getSavedGame()->getDifficulty()])
@@ -1485,7 +1502,16 @@ void DogfightState::update()
 				{
 					// Spawn retaliation mission.
 					std::string targetRegion;
-					if (RNG::percent(50 - 6 * _game->getSavedGame()->getDifficultyCoefficient()))
+					int retaliationUfoMissionRegionOdds = 50 - 6 * _game->getSavedGame()->getDifficultyCoefficient();
+					{
+						int diff = _game->getSavedGame()->getDifficulty();
+						auto& custom = _game->getMod()->getRetaliationBaseRegionOdds();
+						if (custom.size() > diff)
+						{
+							retaliationUfoMissionRegionOdds = 100 - custom[diff];
+						}
+					}
+					if (RNG::percent(retaliationUfoMissionRegionOdds))
 					{
 						// Attack on UFO's mission region
 						targetRegion = _ufo->getMission()->getRegion();
@@ -1725,6 +1751,14 @@ void DogfightState::fireWeapon(int i)
 void DogfightState::ufoFireWeapon()
 {
 	int fireCountdown = std::max(1, (_ufo->getRules()->getWeaponReload() - 2 * _game->getSavedGame()->getDifficultyCoefficient()));
+	{
+		int diff = _game->getSavedGame()->getDifficulty();
+		auto& custom = _game->getMod()->getUfoFiringRateCoefficients();
+		if (custom.size() > diff)
+		{
+			fireCountdown = std::max(1, _ufo->getRules()->getWeaponReload() * custom[diff] / 100);
+		}
+	}
 	_ufo->setFireCountdown(RNG::generate(0, fireCountdown) + fireCountdown);
 
 	setStatus("STR_UFO_RETURN_FIRE");
