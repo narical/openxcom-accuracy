@@ -759,6 +759,10 @@ public:
 	void setSummonedPlayerUnit(bool summonedPlayerUnit);
 	/// Was this unit summoned by an item?
 	bool isSummonedPlayerUnit() const;
+	/// Should this unit (player, alien or civilian) be ignored for various things related to soldier diaries and commendations?
+	bool isCosmetic() const;
+	/// Should this AI unit (alien or civilian) be ignored by other AI units?
+	bool isIgnoredByAI() const;
 	/// Marks this unit as resummoned fake civilian and therefore won't count for civilian scoring in the Debriefing.
 	void markAsResummonedFakeCivilian() { _resummonedFakeCivilian = true; _status = STATUS_IGNORE_ME; }
 	/// Is this unit a resummoned fake civilian?

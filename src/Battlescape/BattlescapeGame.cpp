@@ -777,10 +777,13 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 				{
 					if ((*i)->getId() == murderer->getMindControllerId() && (*i)->getGeoscapeSoldier())
 					{
-						(*i)->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
-						if (victim->getFaction() == FACTION_HOSTILE)
+						if (!victim->isCosmetic())
 						{
-							(*i)->getStatistics()->slaveKills++;
+							(*i)->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+							if (victim->getFaction() == FACTION_HOSTILE)
+							{
+								(*i)->getStatistics()->slaveKills++;
+							}
 						}
 						victim->setMurdererId((*i)->getId());
 						break;
@@ -789,7 +792,10 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 			}
 			else if (!murderer->getStatistics()->duplicateEntry(killStat.status, victim->getId()))
 			{
-				murderer->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				if (!victim->isCosmetic())
+				{
+					murderer->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				}
 				victim->setMurdererId(murderer->getId());
 			}
 		}

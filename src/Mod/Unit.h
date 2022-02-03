@@ -438,6 +438,7 @@ private:
 	bool _waitIfOutsideWeaponRange;
 	int _pickUpWeaponsMoreActively;
 	bool _vip;
+	bool _cosmetic, _ignoredByAI;
 	bool _canPanic;
 	bool _canBeMindControlled;
 	int _berserkChance;
@@ -535,6 +536,10 @@ public:
 	bool getShowFullNameInAlienInventory(Mod *mod) const;
 	/// Is this a VIP unit?
 	bool isVIP() const { return _vip; }
+	/// Is this only a cosmetic unit?
+	bool isCosmetic() const { return _cosmetic; }
+	/// Should this unit be ignored by the AI?
+	bool isIgnoredByAI() const { return _ignoredByAI; }
 	/// Checks if this unit can panic.
 	bool canPanic() const { return _canPanic; }
 	/// Checks if this unit can be mind controlled.

@@ -5257,6 +5257,22 @@ bool BattleUnit::isSummonedPlayerUnit() const
 }
 
 /**
+ * Should this unit (player, alien or civilian) be ignored for various things related to soldier diaries and commendations?
+ */
+bool BattleUnit::isCosmetic() const
+{
+	return _unitRules && _unitRules->isCosmetic();
+}
+
+/**
+ * Should this AI unit (alien or civilian) be ignored by other AI units?
+ */
+bool BattleUnit::isIgnoredByAI() const
+{
+	return _unitRules && _unitRules->isIgnoredByAI();
+}
+
+/**
  * Disable showing indicators for this unit.
  */
 void BattleUnit::disableIndicators()

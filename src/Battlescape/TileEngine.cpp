@@ -1839,8 +1839,8 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 				(*i)->getReactionScore() >= threshold &&
 				// not a friend
 				(*i)->getFaction() != _save->getSide() &&
-				// not a civilian, or a civilian shooting at bad guys
-				((*i)->getFaction() != FACTION_NEUTRAL || unit->getFaction() == FACTION_HOSTILE) &&
+				// not a civilian, or a civilian shooting at bad non-ignored guys
+				((*i)->getFaction() != FACTION_NEUTRAL || (unit->getFaction() == FACTION_HOSTILE && !unit->isIgnoredByAI())) &&
 				// closer than 20 tiles
 				Position::distance2dSq(unit->getPosition(), (*i)->getPosition()) <= getMaxViewDistanceSq())
 			{
@@ -4003,7 +4003,10 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 			if (!attack.attacker->getStatistics()->duplicateEntry(STATUS_PANICKING, victim->getId()))
 			{
 				killStat.status = STATUS_PANICKING;
-				attack.attacker->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				if (!victim->isCosmetic())
+				{
+					attack.attacker->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				}
 			}
 		}
 		else if (attack.type == BA_MINDCONTROL)
@@ -4012,7 +4015,10 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 			if (!attack.attacker->getStatistics()->duplicateEntry(STATUS_TURNING, victim->getId()))
 			{
 				killStat.status = STATUS_TURNING;
-				attack.attacker->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				if (!victim->isCosmetic())
+				{
+					attack.attacker->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+				}
 			}
 			victim->setMindControllerId(attack.attacker->getId());
 			victim->convertToFaction(attack.attacker->getFaction());

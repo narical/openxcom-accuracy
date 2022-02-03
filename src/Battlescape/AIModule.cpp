@@ -2670,8 +2670,10 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 	// 1. are dead/unconscious
 	// 2. are dangerous (they have been grenaded)
 	// 3. are on our side
+	// 4. are hostile/neutral units marked as ignored by the AI
 	if (target->isOut() ||
 		(assessDanger && target->getTile()->getDangerous()) ||
+		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()) ||
 		target->getFaction() == _unit->getFaction())
 	{
 		return false;
