@@ -701,6 +701,7 @@ void DebriefingState::init()
 					soldierAlienStuns++;
 				}
 			}
+			(*j)->getGeoscapeSoldier()->addStunCount(soldierAlienStuns);
 
 			if (aliensKilled != 0 && aliensKilled == soldierAlienKills && _missionStatistics->success == true && aliensStunned == soldierAlienStuns)
 			{

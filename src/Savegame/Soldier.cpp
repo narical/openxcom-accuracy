@@ -52,7 +52,7 @@ namespace OpenXcom
 Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 	_id(id), _nationality(0),
 	_improvement(0), _psiStrImprovement(0), _rules(rules), _rank(RANK_ROOKIE), _craft(0),
-	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0),
+	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
 	_corpseRecovered(false)
@@ -161,6 +161,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	_lookVariant = node["lookVariant"].as<int>(_lookVariant);
 	_missions = node["missions"].as<int>(_missions);
 	_kills = node["kills"].as<int>(_kills);
+	_stuns = node["stuns"].as<int>(_stuns);
 	_manaMissing = node["manaMissing"].as<int>(_manaMissing);
 	_healthMissing = node["healthMissing"].as<int>(_healthMissing);
 	_recovery = node["recovery"].as<float>(_recovery);
@@ -266,6 +267,7 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 	node["lookVariant"] = _lookVariant;
 	node["missions"] = _missions;
 	node["kills"] = _kills;
+	node["stuns"] = _stuns;
 	if (_manaMissing > 0)
 		node["manaMissing"] = _manaMissing;
 	if (_healthMissing > 0)
@@ -626,6 +628,15 @@ int Soldier::getKills() const
 }
 
 /**
+ * Returns the soldier's amount of stuns.
+ * @return Stuns.
+ */
+int Soldier::getStuns() const
+{
+	return _stuns;
+}
+
+/**
  * Returns the soldier's gender.
  * @return Gender.
  */
@@ -712,6 +723,14 @@ void Soldier::addMissionCount()
 void Soldier::addKillCount(int count)
 {
 	_kills += count;
+}
+
+/**
+ * Add a stun to the counter.
+ */
+void Soldier::addStunCount(int count)
+{
+	_stuns += count;
 }
 
 /**

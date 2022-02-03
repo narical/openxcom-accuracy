@@ -89,6 +89,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 	_txtRank = new Text(130, 9, 0, 48);
 	_txtMissions = new Text(100, 9, 130, 48);
 	_txtKills = new Text(100, 9, 200, 48);
+	_txtStuns = new Text(60, 9, 260, 48);
 	_txtCraft = new Text(130, 9, 0, 56);
 	_txtRecovery = new Text(180, 9, 130, 56);
 	_txtPsionic = new Text(150, 9, 0, 66);
@@ -181,6 +182,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 	add(_txtRank, "text1", "soldierInfo");
 	add(_txtMissions, "text1", "soldierInfo");
 	add(_txtKills, "text1", "soldierInfo");
+	add(_txtStuns, "text1", "soldierInfo");
 	add(_txtCraft, "text1", "soldierInfo");
 	add(_txtRecovery, "text1", "soldierInfo");
 	add(_txtPsionic, "text2", "soldierInfo");
@@ -501,6 +503,9 @@ void SoldierInfoState::init()
 	_txtMissions->setText(tr("STR_MISSIONS").arg(_soldier->getMissions()));
 
 	_txtKills->setText(tr("STR_KILLS").arg(_soldier->getKills()));
+
+	_txtStuns->setText(tr("STR_STUNS").arg(_soldier->getStuns()));
+	_txtStuns->setVisible(!Options::soldierDiaries);
 
 	std::string craft;
 	if (_soldier->getCraft() == 0)
