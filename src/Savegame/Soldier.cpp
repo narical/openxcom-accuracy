@@ -793,20 +793,14 @@ void Soldier::setArmor(Armor *armor, bool resetCustomDeployment)
 /**
  * Returns a list of armor layers (sprite names).
  */
-const std::vector<std::string> Soldier::getArmorLayers(Armor *customArmor) const
+const std::vector<std::string>& Soldier::getArmorLayers(Armor *customArmor) const
 {
-	std::vector<std::string> ret;
 	std::stringstream ss;
 
 	const Armor *armor = customArmor ? customArmor : _armor;
 
 	const std::string gender = _gender == GENDER_MALE ? "M" : "F";
-	auto defaultPrefix = armor->getLayersDefaultPrefix();
-	auto specificPrefix = armor->getLayersSpecificPrefix();
-	auto layoutDefinition = armor->getLayersDefinition();
-	std::vector<std::string> relevantLayer;
-	int layerIndex = 0;
-	bool isDefined = false;
+	const auto& layoutDefinition = armor->getLayersDefinition();
 
 	// find relevant layer
 	for (int i = 0; i <= RuleSoldier::LookVariantBits; ++i)
@@ -814,48 +808,25 @@ const std::vector<std::string> Soldier::getArmorLayers(Armor *customArmor) const
 		ss.str("");
 		ss << gender;
 		ss << (int)_look + (_lookVariant & (RuleSoldier::LookVariantMask >> i)) * 4;
-		isDefined = (layoutDefinition.find(ss.str()) != layoutDefinition.end());
-		if (isDefined)
+		auto it = layoutDefinition.find(ss.str());
+		if (it != layoutDefinition.end())
 		{
-			relevantLayer = layoutDefinition[ss.str()];
-			break;
+			return it->second;
 		}
 	}
-	if (!isDefined)
+
 	{
 		// try also gender + hardcoded look 0
 		ss.str("");
 		ss << gender << "0";
-		isDefined = (layoutDefinition.find(ss.str()) != layoutDefinition.end());
-		if (isDefined)
+		auto it = layoutDefinition.find(ss.str());
+		if (it != layoutDefinition.end())
 		{
-			relevantLayer = layoutDefinition[ss.str()];
+			return it->second;
 		}
-	}
-	if (!isDefined)
-	{
-		throw Exception("Layered armor sprite definition (" + armor->getType() + ") not found!");
-	}
-	for (auto layerItem : relevantLayer)
-	{
-		if (!layerItem.empty())
-		{
-			ss.str("");
-			if (specificPrefix.find(layerIndex) != specificPrefix.end())
-			{
-				ss << specificPrefix[layerIndex];
-			}
-			else
-			{
-				ss << defaultPrefix;
-			}
-			ss << "__" << layerIndex << "__" << layerItem;
-			ret.push_back(ss.str());
-		}
-		layerIndex++;
 	}
 
-	return ret;
+	throw Exception("Layered armor sprite definition (" + armor->getType() + ") not found!");
 }
 
 /**

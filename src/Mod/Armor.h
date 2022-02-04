@@ -154,6 +154,8 @@ public:
 	/// Gets the research required to be able to equip this armor.
 	const RuleResearch* getRequiredResearch() const;
 
+	/// Armor have layered armor definition. Check by Prefix.
+	bool hasLayersDefinition() const { return !_layersDefaultPrefix.empty(); }
 	/// Gets the default prefix for layered armor sprite names.
 	const std::string &getLayersDefaultPrefix() const { return _layersDefaultPrefix; }
 	/// Gets the overrides for layered armor sprite name prefix, per layer.
