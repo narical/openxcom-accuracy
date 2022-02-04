@@ -2075,17 +2075,14 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			customBg->blitNShade(_rank, 0, 0);
 
 			// show avatar
-			auto defaultPrefix = soldier->getArmor()->getLayersDefaultPrefix();
-			Armor *customArmor = nullptr;
+			Armor *customArmor = soldier->getArmor();
 			if (!soldier->getRules()->getArmorForAvatar().empty())
 			{
 				customArmor = _game->getMod()->getArmor(soldier->getRules()->getArmorForAvatar());
-				defaultPrefix = customArmor->getLayersDefaultPrefix();
 			}
-			if (!defaultPrefix.empty())
+			if (customArmor->hasLayersDefinition())
 			{
-				auto layers = soldier->getArmorLayers(customArmor);
-				for (auto layer : layers)
+				for (auto layer : soldier->getArmorLayers(customArmor))
 				{
 					auto surf = _game->getMod()->getSurface(layer, true);
 

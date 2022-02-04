@@ -87,7 +87,7 @@ namespace OpenXcom
 			// blit on the background, so that text and button are always visible
 			customArmorSprite->blitNShade(_bg, 0, 0);
 		}
-		else if (!armor->getLayersDefaultPrefix().empty())
+		else if (armor->hasLayersDefinition())
 		{
 			// dummy default soldier (M0)
 			Soldier *s = new Soldier(_game->getMod()->getSoldier(_game->getMod()->getSoldiersList().front(), true), armor, 0);
@@ -95,8 +95,7 @@ namespace OpenXcom
 			s->setLook(LOOK_BLONDE);
 			s->setLookVariant(0);
 
-			auto layers = s->getArmorLayers();
-			for (auto layer : layers)
+			for (auto layer : s->getArmorLayers())
 			{
 				auto surf = _game->getMod()->getSurface(layer, true);
 				surf->blitNShade(_image, 0, 0);

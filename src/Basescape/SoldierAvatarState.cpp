@@ -131,11 +131,9 @@ void SoldierAvatarState::initPreview(Soldier *s)
 		return;
 	}
 
-	auto defaultPrefix = s->getArmor()->getLayersDefaultPrefix();
-	if (!defaultPrefix.empty())
+	if (s->getArmor()->hasLayersDefinition())
 	{
-		auto layers = s->getArmorLayers();
-		for (auto layer : layers)
+		for (auto layer : s->getArmorLayers())
 		{
 			auto surf = _game->getMod()->getSurface(layer, true);
 			surf->blitNShade(_soldierSurface, 0, 0);

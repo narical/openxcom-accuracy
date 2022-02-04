@@ -448,11 +448,9 @@ void InventoryState::init()
 			frame->blitNShade(_btnRank, 0, 0);
 		}
 
-		auto defaultPrefix = s->getArmor()->getLayersDefaultPrefix();
-		if (!defaultPrefix.empty())
+		if (s->getArmor()->hasLayersDefinition())
 		{
-			auto layers = s->getArmorLayers();
-			for (auto layer : layers)
+			for (auto layer : s->getArmorLayers())
 			{
 				_game->getMod()->getSurface(layer, true)->blitNShade(_soldier, 0, 0);
 			}
