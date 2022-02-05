@@ -223,6 +223,7 @@ cs:
   spendPerShot: ""
   followProjectiles: ""
   name: "Název"
+  shortName: ""
   ammoSlot: ""
   arcing: "Oblouková?"
 #
@@ -267,6 +268,11 @@ cs:
   monthlySalary: "Měsíční mzda"
   monthlyMaintenance: "Měsíční údržba"
 #
+  SPECAB_NONE: "Žádný"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Chodí"
   MT_FLY: "Létá"
   MT_SLIDE: "Klouže"
@@ -302,6 +308,7 @@ cs:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: ""
 #
   stats: "Modifikátory statistik"
+  specab: ""
   movementType: "Typ pohybu"
   allowsRunning: "Umožňuje běh?"
   allowsStrafing: "Umožňuje úkrok?"

@@ -40,6 +40,7 @@ pl:
   STR_NORMAL: "Normalna"
   STR_BOLD: "Śmiała (+50%)"
   STR_VERY_BOLD: "Bardzo śmiała (+100%)"
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "Podgląd"
   STR_REFUND_VALUE: "Wartość sprzedaży> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "PRZEGLĄD PRODUKCJI"
   STR_RESEARCH_OVERVIEW: "PRZEGLĄD BADAŃ"

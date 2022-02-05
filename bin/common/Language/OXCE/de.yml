@@ -34,6 +34,7 @@ de:
   STR_NORMAL: "Normal"
   STR_BOLD: "Mutig (+50%)"
   STR_VERY_BOLD: "Sehr mutig (+100%)"
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
   STR_REFUND_VALUE: "Verkaufswert> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "Produktionsübersicht"
   STR_RESEARCH_OVERVIEW: "FORSCHUNGSÜBERSICHT"

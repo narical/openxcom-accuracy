@@ -223,6 +223,7 @@ ja:
   spendPerShot: "消費量/発:"
   followProjectiles: "カメラが弾丸を追う"
   name: "名"
+  shortName: ""
   ammoSlot: "弾薬スロット使用済"
   arcing: "アーク放電を使用するか"
 #
@@ -267,6 +268,11 @@ ja:
   monthlySalary: "給料／月"
   monthlyMaintenance: "維持費／月"
 #
+  SPECAB_NONE: "なし"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "歩行"
   MT_FLY: "飛行"
   MT_SLIDE: "並行移動"
@@ -302,6 +308,7 @@ ja:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "サイバーディスクの反転（推進機関を上面に）"
 #
   stats: "ステータス修正"
+  specab: ""
   movementType: "移動方法"
   allowsRunning: "走行を許可"
   allowsStrafing: "水平移動を許可"

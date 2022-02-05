@@ -223,6 +223,7 @@ it:
   spendPerShot: ""
   followProjectiles: "Segui i proiettili?"
   name: "Nome"
+  shortName: ""
   ammoSlot: "Slot munizione usato"
   arcing: "Archi?"
 #
@@ -267,6 +268,11 @@ it:
   monthlySalary: "Salario/mese"
   monthlyMaintenance: "Mantenimento/mese"
 #
+  SPECAB_NONE: "Nessuno"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Camminare"
   MT_FLY: "Volare"
   MT_SLIDE: "Scivolare"
@@ -302,6 +308,7 @@ it:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Cyberdisco Inverso (animazione propulsione sopra)"
 #
   stats: "Modificatori stat"
+  specab: ""
   movementType: "Tipo movimento"
   allowsRunning: "Permetti corsa?"
   allowsStrafing: "Permetti strafe?"

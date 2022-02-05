@@ -223,6 +223,7 @@ pl:
   spendPerShot: "Zużycie na strzał:"
   followProjectiles: "Śledzić pociski?"
   name: "Nazwa"
+  shortName: ""
   ammoSlot: "Użyte miejsce na amunicję"
   arcing: "Trajektoria artyleryjska?"
 #
@@ -267,6 +268,11 @@ pl:
   monthlySalary: "Wypłata/miesiąc"
   monthlyMaintenance: "Utrzymanie/miesiąc"
 #
+  SPECAB_NONE: "Brak"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Chodzenie"
   MT_FLY: "Latanie"
   MT_SLIDE: "Ślizganie"
@@ -302,6 +308,7 @@ pl:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Odwrócony cyberdysk (animacja napędu na górze)"
 #
   stats: "Modyfikatory statystyk"
+  specab: ""
   movementType: "Typ ruchu"
   allowsRunning: "Pozwala biegać?"
   allowsStrafing: "Pozwala chodzić na boki?"

@@ -40,6 +40,7 @@ ja:
   STR_NORMAL: "通常"
   STR_BOLD: "大胆 (+50%)"
   STR_VERY_BOLD: "勇猛 (+100%)"
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "プレビュー"
   STR_REFUND_VALUE: "売却価格> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "製造一覧"
   STR_RESEARCH_OVERVIEW: "研究状態"

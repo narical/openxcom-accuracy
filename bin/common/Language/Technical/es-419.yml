@@ -223,6 +223,7 @@ es-419:
   spendPerShot: ""
   followProjectiles: ""
   name: ""
+  shortName: ""
   ammoSlot: ""
   arcing: ""
 #
@@ -267,6 +268,11 @@ es-419:
   monthlySalary: ""
   monthlyMaintenance: ""
 #
+  SPECAB_NONE: "Nada"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: ""
   MT_FLY: ""
   MT_SLIDE: ""
@@ -302,6 +308,7 @@ es-419:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: ""
 #
   stats: ""
+  specab: ""
   movementType: ""
   allowsRunning: ""
   allowsStrafing: ""

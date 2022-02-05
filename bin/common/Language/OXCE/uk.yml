@@ -40,6 +40,7 @@ uk:
   STR_NORMAL: "Нормальний"
   STR_BOLD: "Відважний (+50%)"
   STR_VERY_BOLD: "Дуже відважний (+100%)"
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "Попередній перегляд"
   STR_REFUND_VALUE: "Вартість продажу> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "ОГЛЯД ВИРОБНИЦТВА"
   STR_RESEARCH_OVERVIEW: "ОГЛЯД ДОСЛІДЖЕНЬ"

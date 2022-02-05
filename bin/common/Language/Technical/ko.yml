@@ -223,7 +223,7 @@ ko:
   spendPerShot: "사격 당 소모:"
   followProjectiles: "발사체 쫓기?"
   name: "이름"
-  shortName: ""
+  shortName: "약칭"
   ammoSlot: "사용하는 탄약 슬롯"
   arcing: "곡사?"
 #
@@ -252,7 +252,7 @@ ko:
   stunRecovery: "기절 회복량"
   energyRecovery: "기력 회복량"
   manaRecovery: "마나 회복량"
-  moraleRecovery: "사기 회복략"
+  moraleRecovery: "사기 회복량"
   painKillerRecovery: "진통제 강도"
 #
   requires: "필요한 연구"

@@ -223,6 +223,7 @@ hu:
   spendPerShot: ""
   followProjectiles: ""
   name: "Név"
+  shortName: ""
   ammoSlot: "Lőszertárhely"
   arcing: "Ívelt?"
 #
@@ -267,6 +268,11 @@ hu:
   monthlySalary: "Fizetés/hónap"
   monthlyMaintenance: "Karbantartás/hónap"
 #
+  SPECAB_NONE: "Semmi"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Séta"
   MT_FLY: "Repülés"
   MT_SLIDE: "Csúszás"
@@ -302,6 +308,7 @@ hu:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Fordított Kiberkorong (hajtásanimáció a tetején)"
 #
   stats: "Értékmódosítók"
+  specab: ""
   movementType: "Mozgástípus"
   allowsRunning: "Futás engedélyezve?"
   allowsStrafing: "Oldalazás engedélyezve?"

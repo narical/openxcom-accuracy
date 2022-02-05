@@ -223,6 +223,7 @@ fi:
   spendPerShot: ""
   followProjectiles: "Seuraa ammuksia?"
   name: "Nimi"
+  shortName: ""
   ammoSlot: "Käytetty ammuspaikka"
   arcing: "Kaareva?"
 #
@@ -267,6 +268,11 @@ fi:
   monthlySalary: "Kuukausipalkka"
   monthlyMaintenance: "Ylläpitokustannukset / kuukausi"
 #
+  SPECAB_NONE: "Ei mitään"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Kävely"
   MT_FLY: "Lento"
   MT_SLIDE: "Liukuminen"
@@ -302,6 +308,7 @@ fi:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Käänteinen kyberlautanen (työntöanimaatio ylhäällä)"
 #
   stats: "Ominaisuuskertoimet"
+  specab: ""
   movementType: "Liikkumistapa"
   allowsRunning: "Salli juoksu?"
   allowsStrafing: "Salli sivuttaisastunta?"

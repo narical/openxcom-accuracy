@@ -223,6 +223,7 @@ uk:
   spendPerShot: "Витрати на постріл:"
   followProjectiles: "Слідувати за снарядами?"
   name: "Ім'я"
+  shortName: ""
   ammoSlot: "Використовується слот для боєприпасів"
   arcing: "Освітлювач?"
 #
@@ -267,6 +268,11 @@ uk:
   monthlySalary: "Зарплата/місяць"
   monthlyMaintenance: "Технічне обслуговування/місяць"
 #
+  SPECAB_NONE: "Жоден"
+  SPECAB_EXPLODEONDEATH: ""
+  SPECAB_BURNFLOOR: ""
+  SPECAB_BURN_AND_EXPLODE: ""
+#
   MT_WALK: "Прогулянка"
   MT_FLY: "Політ"
   MT_SLIDE: "Ковзання"
@@ -302,6 +308,7 @@ uk:
   DRAWING_ROUTINE_INVERTED_CYBERDISC: "Перевернутий кібердиск (анімація руху зверху)"
 #
   stats: "Модифікатори статистики"
+  specab: ""
   movementType: "Тип руху"
   allowsRunning: "Дозволити біг?"
   allowsStrafing: "Дозволити обстріл?"

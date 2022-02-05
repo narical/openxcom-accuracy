@@ -40,6 +40,7 @@ ko:
   STR_NORMAL: "정상"
   STR_BOLD: "완고한(+50%)"
   STR_VERY_BOLD: "무모한(+100%)"
+  STR_CRAFT_DEPLOYMENT_PREVIEW: "미리보기"
   STR_REFUND_VALUE: "판매가>{ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "제작 개요"
   STR_RESEARCH_OVERVIEW: "연구 개요"
