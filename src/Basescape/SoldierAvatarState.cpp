@@ -133,7 +133,7 @@ void SoldierAvatarState::initPreview(Soldier *s)
 
 	if (s->getArmor()->hasLayersDefinition())
 	{
-		for (auto layer : s->getArmorLayers())
+		for (const auto& layer : s->getArmorLayers())
 		{
 			auto surf = _game->getMod()->getSurface(layer, true);
 			surf->blitNShade(_soldierSurface, 0, 0);

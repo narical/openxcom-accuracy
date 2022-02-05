@@ -95,7 +95,7 @@ namespace OpenXcom
 			s->setLook(LOOK_BLONDE);
 			s->setLookVariant(0);
 
-			for (auto layer : s->getArmorLayers())
+			for (const auto& layer : s->getArmorLayers())
 			{
 				auto surf = _game->getMod()->getSurface(layer, true);
 				surf->blitNShade(_image, 0, 0);

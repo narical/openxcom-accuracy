@@ -2082,7 +2082,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			}
 			if (customArmor->hasLayersDefinition())
 			{
-				for (auto layer : soldier->getArmorLayers(customArmor))
+				for (const auto& layer : soldier->getArmorLayers(customArmor))
 				{
 					auto surf = _game->getMod()->getSurface(layer, true);
 
