@@ -450,7 +450,7 @@ void InventoryState::init()
 
 		if (s->getArmor()->hasLayersDefinition())
 		{
-			for (auto layer : s->getArmorLayers())
+			for (const auto& layer : s->getArmorLayers())
 			{
 				_game->getMod()->getSurface(layer, true)->blitNShade(_soldier, 0, 0);
 			}
