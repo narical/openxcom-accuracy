@@ -432,13 +432,13 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 	_game->getSavedGame()->setBattleGame(bgame);
 	BattlescapeGenerator bgen = BattlescapeGenerator(_game);
 	bgame->setMissionType(c->getRules()->getCustomPreviewType());
+	bgame->setCraftForPreview(c);
 	bgen.setCraft(c);
 	bgen.run();
 
 	// needed for preview of craft deployment tiles
 	bgame->setCraftPos(bgen.getCraftPos());
 	bgame->setCraftZ(bgen.getCraftZ());
-	bgame->setCraftForPreview(c);
 	bgame->calculateCraftTiles();
 
 	_game->pushState(new BriefingState(c));
