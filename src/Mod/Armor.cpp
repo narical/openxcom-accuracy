@@ -342,13 +342,6 @@ void Armor::afterLoad(const Mod* mod)
 
 					//override element in vector
 					layerItem = ss.str();
-
-					//check if surface is valid
-					if (Options::lazyLoadResources == false)
-					{
-						//TODO: remove `const_cast`
-						mod->checkForSoftError(const_cast<Mod*>(mod)->getSurface(layerItem, false) == nullptr, _type, "Missing surface definition for '" + layerItem + "'", LOG_ERROR);
-					}
 				}
 				layerIndex++;
 			}
