@@ -147,9 +147,11 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	Soldier *s = unit->getGeoscapeSoldier();
 	if (s)
 	{
-		if (s->getArmor()->hasLayersDefinition())
+		auto defaultPrefix = s->getArmor()->getLayersDefaultPrefix();
+		if (!defaultPrefix.empty())
 		{
-			for (auto layer : s->getArmorLayers())
+			auto layers = s->getArmorLayers();
+			for (auto layer : layers)
 			{
 				auto surf = _game->getMod()->getSurface(layer, true);
 				surf->blitNShade(_soldier->getSurface(), 0, 0);

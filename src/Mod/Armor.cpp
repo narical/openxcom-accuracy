@@ -317,40 +317,6 @@ void Armor::afterLoad(const Mod* mod)
 		throw Exception("Geo corpse item cannot be empty.");
 	}
 
-	// calcualte final surfaces used by layers
-	if (!_layersDefaultPrefix.empty())
-	{
-		std::stringstream ss;
-		for (auto& version : _layersDefinition)
-		{
-			int layerIndex = 0;
-			for (auto& layerItem : version.second)
-			{
-				if (!layerItem.empty())
-				{
-					ss.str("");
-					auto pre = _layersSpecificPrefix.find(layerIndex);
-					if (pre != _layersSpecificPrefix.end())
-					{
-						ss << pre->second;
-					}
-					else
-					{
-						ss << _layersDefaultPrefix;
-					}
-					ss << "__" << layerIndex << "__" << layerItem;
-
-					//override element in vector
-					layerItem = ss.str();
-				}
-				layerIndex++;
-			}
-			//clean unused layers
-			Collections::removeIf(version.second, [](const std::string& s) { return s.empty(); });
-			version.second.shrink_to_fit();
-		}
-	}
-
 	Collections::sortVector(_units);
 }
 
