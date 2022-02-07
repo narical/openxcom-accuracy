@@ -201,13 +201,11 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 	}
 	// ignore, hardcoded
 	{
-		Collections::removeIf(
-			_missionTypes,
-			[](const std::string& p)
-			{
-				return p == RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW;
-			}
-		);
+		auto itr = std::find(_missionTypes.begin(), _missionTypes.end(), RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW);
+		if (itr != _missionTypes.end())
+		{
+			_missionTypes.erase(itr);
+		}
 	}
 	_cbxMission->setOptions(_missionTypes, true);
 	_cbxMission->onChange((ActionHandler)&NewBattleState::cbxMissionChange);
