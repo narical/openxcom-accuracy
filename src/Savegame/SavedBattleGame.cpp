@@ -887,7 +887,7 @@ void SavedBattleGame::calculateCraftTiles()
 				tile->getFloorSpecialTileType() == START_POINT &&
 				!tile->getMapData(O_OBJECT) &&
 				tile->getMapData(O_FLOOR) && // for clarity this is checked again, first time was in `getFloorSpecialTileType`
-				tile->getMapData(O_FLOOR)->getTUCost(MT_WALK) < 255)
+				tile->getMapData(O_FLOOR)->getTUCost(MT_WALK) != Pathfinding::INVALID_MOVE_COST)
 			{
 				_craftTiles.push_back(tile->getPosition());
 			}
@@ -2556,7 +2556,7 @@ bool SavedBattleGame::setUnitPosition(BattleUnit *bu, Position position, bool te
 			Tile *t = getTile(position + Position(x,y,0) + zOffset);
 			if (t == 0 ||
 				(t->getUnit() != 0 && t->getUnit() != bu) ||
-				t->getTUCost(O_OBJECT, bu->getMovementType()) == 255 ||
+				t->getTUCost(O_OBJECT, bu->getMovementType()) == Pathfinding::INVALID_MOVE_COST ||
 				(t->hasNoFloor(this) && bu->getMovementType() != MT_FLY) ||
 				(t->getMapData(O_OBJECT) && t->getMapData(O_OBJECT)->getBigWall() && t->getMapData(O_OBJECT)->getBigWall() <= 3))
 			{

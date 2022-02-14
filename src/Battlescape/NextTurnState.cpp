@@ -47,6 +47,7 @@
 #include "BriefingState.h"
 #include "Map.h"
 #include "TileEngine.h"
+#include "Pathfinding.h"
 
 namespace OpenXcom
 {
@@ -1029,7 +1030,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 					if (unit->getMovementType() != MT_FLY)
 					{
 						Tile* t = _battleGame->getTile(finalPos);
-						if (t == 0 || t->getTUCost(O_FLOOR, unit->getMovementType()) == 255)
+						if (t == 0 || t->getTUCost(O_FLOOR, unit->getMovementType()) == Pathfinding::INVALID_MOVE_COST)
 						{
 							// non-flying units cannot spawn on e.g. a water tile (e.g. in the POLAR terrain)
 							continue;

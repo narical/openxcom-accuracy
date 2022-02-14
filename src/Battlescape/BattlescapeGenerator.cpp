@@ -62,6 +62,7 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "../Mod/Texture.h"
 #include "BattlescapeState.h"
+#include "Pathfinding.h"
 
 namespace OpenXcom
 {
@@ -1501,7 +1502,7 @@ bool BattlescapeGenerator::canPlaceXCOMUnit(Tile *tile)
 		tile->getFloorSpecialTileType() == START_POINT &&
 		!tile->getMapData(O_OBJECT) &&
 		tile->getMapData(O_FLOOR) && // for clarity this is checked again, first time was in `getFloorSpecialTileType`
-		tile->getMapData(O_FLOOR)->getTUCost(MT_WALK) < 255)
+		tile->getMapData(O_FLOOR)->getTUCost(MT_WALK) != Pathfinding::INVALID_MOVE_COST)
 	{
 		if (_craftInventoryTile == 0)
 			_craftInventoryTile = tile;

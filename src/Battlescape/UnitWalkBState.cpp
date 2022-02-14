@@ -274,12 +274,19 @@ void UnitWalkBState::think()
 
 			Position destination;
 			int tu = _pf->getTUCost(_unit->getPosition(), dir, &destination, _unit, 0, false); // gets tu cost, but also gets the destination position.
+			if (tu == Pathfinding::INVALID_MOVE_COST)
+			{
+				_pf->abortPath();
+				_parent->popState();
+				return;
+			}
+
 			if (_unit->getFaction() != FACTION_PLAYER &&
 				_unit->getSpecialAbility() < SPECAB_BURNFLOOR &&
 				_parent->getSave()->getTile(destination) &&
 				_parent->getSave()->getTile(destination)->getFire() > 0)
 			{
-				tu -= 32; // we artificially inflate the TU cost by 32 points in getTUCost under these conditions, so we have to deflate it here.
+				tu -= Pathfinding::FIRE_PREVIEW_MOVE_COST; // we artificially inflate the TU cost by 32 points in getTUCost under these conditions, so we have to deflate it here.
 			}
 			if (_falling)
 			{
@@ -297,7 +304,7 @@ void UnitWalkBState::think()
 			}
 			if (tu > _unit->getTimeUnits())
 			{
-				if (_parent->getPanicHandled() && tu < 255)
+				if (_parent->getPanicHandled())
 				{
 					_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
 				}

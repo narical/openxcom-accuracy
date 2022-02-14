@@ -68,6 +68,14 @@ public:
 	bool isOnStairs(Position startPosition, Position endPosition) const;
 	/// Determines whether or not movement between start tile and end tile is possible in the direction.
 	bool isBlockedDirection(Tile *startTile, const int direction, BattleUnit *missileTarget);
+
+	/// Default move cost for tile that have floor with 0 cost.
+	static constexpr int DEFAULT_MOVE_COST = 4;
+	/// Fake cost representing invalid move.
+	static constexpr int INVALID_MOVE_COST = 255;
+	/// Fire penalty used in path search.
+	static constexpr int FIRE_PREVIEW_MOVE_COST = 32;
+
 	static const int DIR_UP = 8;
 	static const int DIR_DOWN = 9;
 	enum bigWallTypes{ BLOCK = 1, BIGWALLNESW, BIGWALLNWSE, BIGWALLWEST, BIGWALLNORTH, BIGWALLEAST, BIGWALLSOUTH, BIGWALLEASTANDSOUTH, BIGWALLWESTANDNORTH};
@@ -75,6 +83,7 @@ public:
 	static int red;
 	static int green;
 	static int yellow;
+
 	/// Creates a new Pathfinding class.
 	Pathfinding(SavedBattleGame *save);
 	/// Cleans up the Pathfinding.
