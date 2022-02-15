@@ -544,7 +544,7 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 	if (bam == BAM_MISSILE)
 		return 0;
 	else
-		return std::min(totalCost, +INVALID_MOVE_COST);
+		return std::min(totalCost, +INVALID_MOVE_COST - 1);
 }
 
 /**
