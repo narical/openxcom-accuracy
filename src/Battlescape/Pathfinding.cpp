@@ -441,6 +441,12 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 		if (direction == 6 || direction == 5 || direction == 7)
 			wallcost += startTile[i]->getTUCost(O_WESTWALL, _movementType);
 
+		// for backward compatiblity (100 + 100 + 100 > 255) or for (255 + 10 > 255)
+		if (wallcost >= INVALID_MOVE_COST)
+		{
+			return INVALID_MOVE_COST;
+		}
+
 		// if we don't want to fall down and there is no floor, we can't know the TUs so it's default to 4
 		if (direction < DIR_UP && !fellDown && destinationTile[i]->hasNoFloor(0))
 		{
@@ -454,6 +460,11 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 			if (!fellDown && !triedStairs && destinationTile[i]->getMapData(O_OBJECT))
 			{
 				cost += destinationTile[i]->getTUCost(O_OBJECT, _movementType);
+			}
+			if (cost == 0)
+			{
+				// some mods have broken tiles with 0 move cost, as it could be problematic for enginge we override it to default cost.
+				cost = DEFAULT_MOVE_COST;
 			}
 			// climbing up a level costs one extra
 			if (upperLevel)
