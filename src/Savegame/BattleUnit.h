@@ -635,6 +635,8 @@ public:
 	Position lastCover;
 	/// get the vector of units we've seen this turn.
 	std::vector<BattleUnit *> &getUnitsSpottedThisTurn();
+	/// get the vector of units we've seen this turn.
+	const std::vector<BattleUnit *> &getUnitsSpottedThisTurn() const;
 	/// set the rank integer
 	void setRankInt(int rank);
 	/// get the rank integer

@@ -4516,6 +4516,15 @@ std::vector<BattleUnit *> &BattleUnit::getUnitsSpottedThisTurn()
 }
 
 /**
+ * Get the list of units spotted this turn.
+ * @return List of units.
+ */
+const std::vector<BattleUnit *> &BattleUnit::getUnitsSpottedThisTurn() const
+{
+	return _unitsSpottedThisTurn;
+}
+
+/**
  * Change the numeric version of the unit's rank.
  * @param rank unit rank, 0 = lowest
  */
