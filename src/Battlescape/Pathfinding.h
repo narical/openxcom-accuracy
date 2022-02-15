@@ -53,7 +53,7 @@ private:
 	/// Gets the node at certain position.
 	PathfindingNode *getNode(Position pos);
 	/// Determines whether a tile blocks a certain movementType.
-	bool isBlocked(Tile *tile, const int part, BattleUnit *missileTarget, int bigWallExclusion = -1) const;
+	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;
 	/// Tries to find a straight line path between two positions.
 	bool bresenhamPath(Position origin, Position target, BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Tries to find a path between two positions.
@@ -67,7 +67,7 @@ public:
 	/// Determines whether the unit is going up a stairs.
 	bool isOnStairs(Position startPosition, Position endPosition) const;
 	/// Determines whether or not movement between start tile and end tile is possible in the direction.
-	bool isBlockedDirection(Tile *startTile, const int direction, BattleUnit *missileTarget);
+	bool isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, const BattleUnit *missileTarget) const;
 
 	/// Default move cost for tile that have floor with 0 cost.
 	static constexpr int DEFAULT_MOVE_COST = 4;
@@ -125,13 +125,13 @@ public:
 	/// Dequeues a direction.
 	int dequeuePath();
 	/// Gets the TU cost to move from 1 tile to the other.
-	int getTUCost(Position startPosition, int direction, Position *endPosition, BattleUnit *unit, BattleUnit *target, bool missile);
+	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *target, bool missile) const;
 	/// Aborts the current path.
 	void abortPath();
 	/// Gets the strafe move setting.
 	bool getStrafeMove() const;
 	/// Checks, for the up/down button, if the movement is valid.
-	bool validateUpDown(BattleUnit *bu, const Position& startPosition, const int direction, bool missile = false) const;
+	bool validateUpDown(const BattleUnit *bu, const Position& startPosition, const int direction, bool missile = false) const;
 	/// Previews the path.
 	bool previewPath(bool bRemove = false);
 	/// Removes the path preview.

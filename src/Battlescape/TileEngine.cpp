@@ -5215,10 +5215,10 @@ bool TileEngine::isPositionValidForUnit(Position &position, BattleUnit *unit, bo
 		// Extra test for large units
 		if (passedCheck && unitSize > 1)
 		{
-			_save->getPathfinding()->setUnit(unit);
+			_save->getPathfinding()->setUnit(unit); //TODO: remove as was required by `isBlockedDirection`
 			for (int dir = 2; dir <= 4; ++dir)
 			{
-				if (_save->getPathfinding()->isBlockedDirection(_save->getTile(*i), dir, 0))
+				if (_save->getPathfinding()->isBlockedDirection(unit, _save->getTile(*i), dir, 0))
 				{
 					passedCheck = false;
 				}

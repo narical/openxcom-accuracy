@@ -273,7 +273,8 @@ void UnitWalkBState::think()
 			}
 
 			Position destination;
-			int tu = _pf->getTUCost(_unit->getPosition(), dir, &destination, _unit, 0, false); // gets tu cost, but also gets the destination position.
+			_pf->setUnit(_unit); //TODO: remove as was done by `getTUCost`
+			int tu = _pf->getTUCost(_unit->getPosition(), dir, &destination, _unit, 0, _action.getMoveType()); // gets tu cost, but also gets the destination position.
 			if (tu == Pathfinding::INVALID_MOVE_COST)
 			{
 				_pf->abortPath();
