@@ -397,7 +397,7 @@ void AIModule::think(BattleAction *action)
 		// ignore new targets.
 		action->desperate = true;
 		// if armor allow runing then run way from there.
-		action->run = _unit->getArmor()->allowsRunning(false);
+		action->run = _escapeAction.run;
 		// spin 180 at the end of your route.
 		_unit->setHiding(true);
 		break;
@@ -901,6 +901,7 @@ void AIModule::setupEscape()
 	int bestTileScore = -100000;
 	int score = -100000;
 	Position bestTile(0, 0, 0);
+	bool run = false;
 
 	Tile *tile = 0;
 
@@ -917,6 +918,7 @@ void AIModule::setupEscape()
 	while (tries < 150 && !coverFound)
 	{
 		_escapeAction.target = _unit->getPosition(); // start looking in a direction away from the enemy
+		_escapeAction.run = _unit->getArmor()->allowsRunning(false) && (tries & 1); //half trys
 
 		if (!_save->getTile(_escapeAction.target))
 		{
@@ -1035,11 +1037,12 @@ void AIModule::setupEscape()
 		if (tile && score > bestTileScore)
 		{
 			// calculate TUs to tile; we could be getting this from findReachable() somehow but that would break something for sure...
-			_save->getPathfinding()->calculate(_unit, _escapeAction.target, BAM_NORMAL);
+			_save->getPathfinding()->calculate(_unit, _escapeAction.target, _escapeAction.getMoveType());
 			if (_escapeAction.target == _unit->getPosition() || _save->getPathfinding()->getStartDirection() != -1)
 			{
 				bestTileScore = score;
 				bestTile = _escapeAction.target;
+				run = _escapeAction.run;
 				_escapeTUs = _save->getPathfinding()->getTotalTUCost();
 				if (_escapeAction.target == _unit->getPosition())
 				{
@@ -1057,6 +1060,7 @@ void AIModule::setupEscape()
 		}
 	}
 	_escapeAction.target = bestTile;
+	_escapeAction.run = run;
 	if (_traceAI)
 	{
 		_save->getTile(_escapeAction.target)->setMarkerColor(13);
