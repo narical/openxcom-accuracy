@@ -75,6 +75,8 @@ public:
 
 	/// Default move cost for tile that have floor with 0 cost.
 	static constexpr int DEFAULT_MOVE_COST = 4;
+	/// How much time units one move can have.
+	static constexpr int MAX_MOVE_COST = 100;
 	/// Fake cost representing invalid move.
 	static constexpr int INVALID_MOVE_COST = 255;
 	/// Fire penalty used in path search.

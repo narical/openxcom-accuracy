@@ -501,6 +501,9 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 			}
 		}
 
+		// cap move cost to given limit
+		cost = std::min(cost, +MAX_MOVE_COST);
+
 		totalCost += cost;
 	}
 
