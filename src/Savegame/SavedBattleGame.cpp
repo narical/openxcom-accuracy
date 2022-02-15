@@ -1717,6 +1717,18 @@ bool SavedBattleGame::isCtrlPressed(bool considerTouchButtons) const
 }
 
 /**
+ * Is SHIFT pressed?
+ */
+bool SavedBattleGame::isShiftPressed(bool considerTouchButtons) const
+{
+	if (_battleState)
+	{
+		return _battleState->getGame()->isShiftPressed(considerTouchButtons);
+	}
+	return false;
+}
+
+/**
  * Resets all the units to their current standing tile(s).
  */
 void SavedBattleGame::resetUnitTiles()

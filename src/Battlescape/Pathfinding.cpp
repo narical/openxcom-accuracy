@@ -979,9 +979,9 @@ bool Pathfinding::previewPath(bool bRemove)
 		_save->getBattleGame()->setTUReserved(BA_AUTOSHOT);
 	}
 
-	_modifierUsed = _save->isCtrlPressed(true);
-	bool running = Options::strafe && _modifierUsed && _unit->getArmor()->allowsRunning(_unit->getArmor()->getSize() == 1) && _path.size() > 1;
-	bool strafing = Options::strafe && _modifierUsed && _unit->getArmor()->allowsStrafing(_unit->getArmor()->getSize() == 1) && _path.size() == 1;
+	_modifierUsed = Options::strafe && _save->isCtrlPressed(true);
+	bool running = _modifierUsed && _unit->getArmor()->allowsRunning(_unit->getArmor()->getSize() == 1) && _path.size() > 1;
+	bool strafing = _modifierUsed && _unit->getArmor()->allowsStrafing(_unit->getArmor()->getSize() == 1) && _path.size() == 1;
 	for (std::vector<int>::reverse_iterator i = _path.rbegin(); i != _path.rend(); ++i)
 	{
 		int dir = *i;
