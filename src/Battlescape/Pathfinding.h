@@ -30,6 +30,7 @@ class Tile;
 class BattleUnit;
 struct BattleActionCost;
 
+enum BattleActionMove : char;
 /**
  * A utility class that calculates the shortest path between two points on the battlescape map.
  */
@@ -55,9 +56,9 @@ private:
 	/// Determines whether a tile blocks a certain movementType.
 	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;
 	/// Tries to find a straight line path between two positions.
-	bool bresenhamPath(Position origin, Position target, BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
+	bool bresenhamPath(Position origin, Position target, BattleActionMove bam, BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Tries to find a path between two positions.
-	bool aStarPath(Position origin, Position target, BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
+	bool aStarPath(Position origin, Position target, BattleActionMove bam, BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Determines whether a unit can fall down from this tile.
 	bool canFallDown(Tile *destinationTile) const;
 	/// Determines whether a unit can fall down from this tile.
@@ -89,7 +90,7 @@ public:
 	/// Cleans up the Pathfinding.
 	~Pathfinding();
 	/// Calculates the shortest path.
-	void calculate(BattleUnit *unit, Position endPosition, BattleUnit *missileTarget = 0, int maxTUCost = 1000);
+	void calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, BattleUnit *missileTarget = 0, int maxTUCost = 1000);
 
 	/**
 	 * Converts direction to a vector. Direction starts north = 0 and goes clockwise.
@@ -125,7 +126,7 @@ public:
 	/// Dequeues a direction.
 	int dequeuePath();
 	/// Gets the TU cost to move from 1 tile to the other.
-	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *target, bool missile) const;
+	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *target, BattleActionMove bam) const;
 	/// Aborts the current path.
 	void abortPath();
 	/// Gets the strafe move setting.

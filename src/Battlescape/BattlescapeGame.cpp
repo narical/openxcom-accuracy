@@ -388,7 +388,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		auto* targetTile = _save->getTile(action.target);
 		if (targetTile)
 		{
-			_save->getPathfinding()->calculate(action.actor, action.target);//, _save->getTile(action.target)->getUnit());
+			_save->getPathfinding()->calculate(action.actor, action.target, BAM_NORMAL);
 		}
 		if (_save->getPathfinding()->getStartDirection() != -1)
 		{
@@ -1551,7 +1551,7 @@ bool BattlescapeGame::handlePanickingUnit(BattleUnit *unit)
 			}
 			if (_save->getTile(ba.target)) // sanity check the tile.
 			{
-				_save->getPathfinding()->calculate(ba.actor, ba.target);
+				_save->getPathfinding()->calculate(ba.actor, ba.target, ba.getMoveType());
 				if (_save->getPathfinding()->getStartDirection() != -1) // sanity check the path.
 				{
 					statePushBack(new UnitWalkBState(this, ba));
@@ -1879,7 +1879,7 @@ void BattlescapeGame::primaryAction(Position pos)
 				_save->getPathfinding()->removePreview();
 			}
 			_currentAction.target = pos;
-			_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target);
+			_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, BAM_NORMAL); // precalucalte move
 
 			_currentAction.strafe = false;
 			_currentAction.run = false;
@@ -1894,6 +1894,13 @@ void BattlescapeGame::primaryAction(Position pos)
 					_currentAction.strafe = _save->getSelectedUnit()->getArmor()->allowsStrafing(_save->getSelectedUnit()->getArmor()->getSize() == 1);
 				}
 			}
+
+			//recalucate path after setting new move types
+			if (BAM_NORMAL != _currentAction.getMoveType())
+			{
+				_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, _currentAction.getMoveType());
+			}
+
 			// if running or shifting, ignore spotted enemies (i.e. don't stop)
 			_currentAction.ignoreSpottedEnemies = (_currentAction.run && Mod::EXTENDED_RUNNING_COST) || isShiftPressed;
 
@@ -2018,7 +2025,7 @@ void BattlescapeGame::moveUpDown(BattleUnit *unit, int dir)
 	{
 		kneel(_save->getSelectedUnit());
 	}
-	_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target);
+	_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, _currentAction.getMoveType());
 	statePushBack(new UnitWalkBState(this, _currentAction));
 }
 

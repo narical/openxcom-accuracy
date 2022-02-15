@@ -648,7 +648,7 @@ void AIModule::setupPatrol()
 
 		if (_toNode != 0)
 		{
-			_save->getPathfinding()->calculate(_unit, _toNode->getPosition());
+			_save->getPathfinding()->calculate(_unit, _toNode->getPosition(), BAM_NORMAL);
 			if (_save->getPathfinding()->getStartDirection() == -1)
 			{
 				_toNode = 0;
@@ -715,7 +715,7 @@ void AIModule::setupAmbush()
 			Position target;
 			if (!_save->getTileEngine()->canTargetUnit(&origin, tile, &target, _aggroTarget, false, _unit) && !getSpottingUnits(pos))
 			{
-				_save->getPathfinding()->calculate(_unit, pos);
+				_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
 				int ambushTUs = _save->getPathfinding()->getTotalTUCost();
 				// make sure we can move here
 				if (_save->getPathfinding()->getStartDirection() != -1)
@@ -724,7 +724,7 @@ void AIModule::setupAmbush()
 					score -= ambushTUs;
 
 					// make sure our enemy can reach here too.
-					_save->getPathfinding()->calculate(_aggroTarget, pos);
+					_save->getPathfinding()->calculate(_aggroTarget, pos, BAM_NORMAL);
 
 					if (_save->getPathfinding()->getStartDirection() != -1)
 					{
@@ -763,7 +763,7 @@ void AIModule::setupAmbush()
 			// hypothetically walk the target through the path.
 			while (tries > 0)
 			{
-				_save->getPathfinding()->getTUCost(currentPos, path.back(), &nextPos, _aggroTarget, 0, false);
+				_save->getPathfinding()->getTUCost(currentPos, path.back(), &nextPos, _aggroTarget, 0, BAM_NORMAL);
 				path.pop_back();
 				currentPos = nextPos;
 				Tile *tile = _save->getTile(currentPos);
@@ -1035,7 +1035,7 @@ void AIModule::setupEscape()
 		if (tile && score > bestTileScore)
 		{
 			// calculate TUs to tile; we could be getting this from findReachable() somehow but that would break something for sure...
-			_save->getPathfinding()->calculate(_unit, _escapeAction.target);
+			_save->getPathfinding()->calculate(_unit, _escapeAction.target, BAM_NORMAL);
 			if (_escapeAction.target == _unit->getPosition() || _save->getPathfinding()->getStartDirection() != -1)
 			{
 				bestTileScore = score;
@@ -1315,7 +1315,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
 
 					if (valid && fitHere && !_save->getTile(checkPath)->getDangerous())
 					{
-						_save->getPathfinding()->calculate(_unit, checkPath, 0, maxTUs);
+						_save->getPathfinding()->calculate(_unit, checkPath, BAM_NORMAL, 0, maxTUs);
 
 						//for 100% dodge diff and on 4th difficulty it will allow aliens to move 10 squares around to made attack from behind.
 						int distanceCurrent = _save->getPathfinding()->getPath().size() - dodgeChanceDiff * _save->getTileEngine()->getArcDirection(dir - 4, dirTarget);
@@ -1366,7 +1366,7 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 
 					if (valid && fitHere)
 					{
-						_save->getPathfinding()->calculate(_unit, checkPath, 0, 100000); // disregard unit's TUs.
+						_save->getPathfinding()->calculate(_unit, checkPath, BAM_NORMAL, 0, 100000); // disregard unit's TUs.
 						if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getPath().size() < distance)
 						{
 							_attackAction.target = checkPath;
@@ -1840,7 +1840,7 @@ bool AIModule::findFirePoint()
 
 		if (_save->getTileEngine()->canTargetUnit(&origin, _aggroTarget->getTile(), &target, _unit, false))
 		{
-			_save->getPathfinding()->calculate(_unit, pos);
+			_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
 			// can move here
 			if (_save->getPathfinding()->getStartDirection() != -1)
 			{
@@ -2121,7 +2121,7 @@ void AIModule::wayPointAction()
 	{
 		if (!validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE))
 			continue;
-		_save->getPathfinding()->calculate(_unit, (*i)->getPosition(), *i, -1);
+		_save->getPathfinding()->calculate(_unit, (*i)->getPosition(), BAM_MISSILE, *i, -1);
 		auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
 		if (_save->getPathfinding()->getStartDirection() != -1 &&
 			explosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({ BA_LAUNCH, _unit, _attackAction.weapon, ammo }), _attackAction.diff))
@@ -2154,7 +2154,7 @@ void AIModule::wayPointAction()
 		Position CurrentPosition = _unit->getPosition();
 		Position DirectionVector;
 
-		_save->getPathfinding()->calculate(_unit, _aggroTarget->getPosition(), _aggroTarget, -1);
+		_save->getPathfinding()->calculate(_unit, _aggroTarget->getPosition(), BAM_MISSILE, _aggroTarget, -1);
 		PathDirection = _save->getPathfinding()->dequeuePath();
 		while (PathDirection != -1 && (int)_attackAction.waypoints.size() < maxWaypoints)
 		{
