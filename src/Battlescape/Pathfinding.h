@@ -48,11 +48,14 @@ private:
 	BattleUnit *_unit;
 	bool _pathPreviewed;
 	bool _strafeMove;
-	int _totalTUCost;
 	bool _modifierUsed;
-	MovementType _movementType;
+	int _totalTUCost;
+
 	/// Gets the node at certain position.
 	PathfindingNode *getNode(Position pos);
+
+	/// Gets movement type of unit or movment of missile.
+	MovementType getMovementType(const BattleUnit *unit, const BattleUnit *missileTarget) const;
 	/// Determines whether a tile blocks a certain movementType.
 	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;
 	/// Tries to find a straight line path between two positions.
@@ -126,7 +129,7 @@ public:
 	/// Dequeues a direction.
 	int dequeuePath();
 	/// Gets the TU cost to move from 1 tile to the other.
-	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *target, BattleActionMove bam) const;
+	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
 	/// Aborts the current path.
 	void abortPath();
 	/// Gets the strafe move setting.
