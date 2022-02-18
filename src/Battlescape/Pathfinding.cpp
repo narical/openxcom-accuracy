@@ -377,8 +377,8 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 
 	// pre-calculate fire penalty (to make it consistent for 2x2 units)
 	auto firePenaltyCost = 0;
-	if (_unit->getFaction() != FACTION_PLAYER &&
-		_unit->getSpecialAbility() < SPECAB_BURNFLOOR)
+	if (unit->getFaction() != FACTION_PLAYER &&
+		unit->getSpecialAbility() < SPECAB_BURNFLOOR)
 	{
 		for (int i = 0; i < numberOfParts; ++i)
 		{
@@ -495,7 +495,7 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 		// Maybe if flying then it makes no difference?
 		if (_strafeMove && bam == BAM_STRAFE)
 		{
-			if (_unit->getDirection() != direction)
+			if (unit->getDirection() != direction)
 			{
 				cost += 1;
 			}
