@@ -1351,6 +1351,10 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 	int targetsize = target->getArmor()->getSize();
 	bool returnValue = false;
 	unsigned int distance = 1000;
+
+	// if unit have lot of energy it should run to target.
+	auto moveType = _unit->getArmor()->allowsRunning(false) && _unit->getEnergy() > _unit->getBaseStats()->stamina * 0.4f ? BAM_RUN : BAM_NORMAL;
+
 	for (int z = -1; z <= 1; ++z)
 	{
 		for (int x = -size; x <= targetsize; ++x)
@@ -1368,7 +1372,7 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 
 					if (valid && fitHere)
 					{
-						_save->getPathfinding()->calculate(_unit, checkPath, BAM_NORMAL, 0, 100000); // disregard unit's TUs.
+						_save->getPathfinding()->calculate(_unit, checkPath, moveType, 0, 100000); // disregard unit's TUs.
 						if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getPath().size() < distance)
 						{
 							_attackAction.target = checkPath;
