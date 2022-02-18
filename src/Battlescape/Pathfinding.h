@@ -31,6 +31,8 @@ class BattleUnit;
 struct BattleActionCost;
 
 enum BattleActionMove : char;
+
+
 /**
  * A utility class that calculates the shortest path between two points on the battlescape map.
  */
@@ -49,7 +51,7 @@ private:
 	bool _pathPreviewed;
 	bool _strafeMove;
 	bool _modifierUsed;
-	int _totalTUCost;
+	PathfindingCost _totalTUCost;
 
 	/// Gets the node at certain position.
 	PathfindingNode *getNode(Position pos);
@@ -131,7 +133,7 @@ public:
 	/// Dequeues a direction.
 	int dequeuePath();
 	/// Gets the TU cost to move from 1 tile to the other.
-	int getTUCost(Position startPosition, int direction, Position *endPosition, const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
+	PathfindingStep getTUCost(Position startPosition, int direction, const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
 	/// Aborts the current path.
 	void abortPath();
 	/// Gets the strafe move setting.
@@ -147,7 +149,7 @@ public:
 	/// Gets all reachable tiles, based on cost.
 	std::vector<int> findReachable(BattleUnit *unit, const BattleActionCost &cost);
 	/// Gets _totalTUCost; finds out whether we can hike somewhere in this turn or not.
-	int getTotalTUCost() const { return _totalTUCost; }
+	int getTotalTUCost() const { return _totalTUCost.time; }
 	/// Gets the path preview setting.
 	bool isPathPreviewed() const;
 	/// Gets the modifier setting.

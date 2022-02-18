@@ -758,14 +758,12 @@ void AIModule::setupAmbush()
 				Position(8,8, _unit->getHeight() + _unit->getFloatHeight() - _save->getTile(_ambushAction.target)->getTerrainLevel() - 4);
 			Position currentPos = _aggroTarget->getPosition();
 			_save->getPathfinding()->setUnit(_aggroTarget);
-			Position nextPos;
 			size_t tries = path.size();
 			// hypothetically walk the target through the path.
 			while (tries > 0)
 			{
-				_save->getPathfinding()->getTUCost(currentPos, path.back(), &nextPos, _aggroTarget, 0, BAM_NORMAL);
+				currentPos = _save->getPathfinding()->getTUCost(currentPos, path.back(), _aggroTarget, 0, BAM_NORMAL).pos;
 				path.pop_back();
-				currentPos = nextPos;
 				Tile *tile = _save->getTile(currentPos);
 				Position target;
 				// do a virtual fire calculation

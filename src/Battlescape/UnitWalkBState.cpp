@@ -272,9 +272,13 @@ void UnitWalkBState::think()
 				_unit->setFaceDirection(_unit->getDirection());
 			}
 
-			Position destination;
 			_pf->setUnit(_unit); //TODO: remove as was done by `getTUCost`
-			int tu = _pf->getTUCost(_unit->getPosition(), dir, &destination, _unit, 0, _action.getMoveType()); // gets tu cost, but also gets the destination position.
+			auto r = _pf->getTUCost(_unit->getPosition(), dir, _unit, 0, _action.getMoveType());
+
+			auto tu = r.cost.time;
+			int energy = r.cost.energy;
+			auto destination = r.pos;
+
 			if (tu == Pathfinding::INVALID_MOVE_COST)
 			{
 				_pf->abortPath();
@@ -282,27 +286,6 @@ void UnitWalkBState::think()
 				return;
 			}
 
-			if (_unit->getFaction() != FACTION_PLAYER &&
-				_unit->getSpecialAbility() < SPECAB_BURNFLOOR &&
-				_parent->getSave()->getTile(destination) &&
-				_parent->getSave()->getTile(destination)->getFire() > 0)
-			{
-				tu -= Pathfinding::FIRE_PREVIEW_MOVE_COST; // we artificially inflate the TU cost by 32 points in getTUCost under these conditions, so we have to deflate it here.
-			}
-			if (_falling)
-			{
-				tu = 0;
-			}
-			int energy = tu / 2;
-			if (dir >= Pathfinding::DIR_UP)
-			{
-				energy = 0;
-			}
-			else if (_action.run)
-			{
-				tu *= 0.75;
-				energy *= 1.5;
-			}
 			if (tu > _unit->getTimeUnits())
 			{
 				if (_parent->getPanicHandled())

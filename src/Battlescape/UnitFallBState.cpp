@@ -204,7 +204,9 @@ void UnitFallBState::think()
 					bool alreadyTaken = t && std::find(escapeTiles.begin(), escapeTiles.end(), t) != escapeTiles.end();
 					bool alreadyOccupied = t && t->getUnit() && (t->getUnit() != unitBelow);
 					_parent->getSave()->getPathfinding()->setUnit(*ub); //TODO: remove as was done by `getTUCost`
-					bool movementBlocked = _parent->getSave()->getPathfinding()->getTUCost(originalPosition, dir, &endPosition, *ub, 0, BAM_NORMAL) == Pathfinding::INVALID_MOVE_COST;
+					auto r = _parent->getSave()->getPathfinding()->getTUCost(originalPosition, dir, *ub, 0, BAM_NORMAL);
+					bool movementBlocked = r.cost.time == Pathfinding::INVALID_MOVE_COST;
+					endPosition = r.pos;
 					bool hasFloor = t && !t->hasNoFloor(_parent->getSave());
 					bool unitCanFly = unitBelow->getMovementType() == MT_FLY;
 
