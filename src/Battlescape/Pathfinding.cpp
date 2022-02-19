@@ -555,7 +555,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 
 	if (direction >= Pathfinding::DIR_UP)
 	{
-		timeCost = 0;
+		energyCost = 0;
 	}
 	else if (bam == BAM_RUN)
 	{
