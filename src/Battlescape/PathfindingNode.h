@@ -34,6 +34,12 @@ struct PathfindingCost
 	Sint16 time = 0;
 	Sint16 energy = 0;
 
+	/// Default constructir.
+	PathfindingCost() = default;
+
+	/// Cosntructor from ints.
+	PathfindingCost(int t, int e) : time(t), energy(e) {}
+
 	PathfindingCost operator+(PathfindingCost c) const
 	{
 		return {
@@ -68,9 +74,9 @@ struct PathfindingStep
 	/// Real cost of moving one step.
 	PathfindingCost cost;
 	/// Pathfinding penalty for given step.
-	PathfindingCost penalty;
+	PathfindingCost penalty = { };
 	/// Final position of one step.
-	Position pos;
+	Position pos = { };
 };
 
 /**

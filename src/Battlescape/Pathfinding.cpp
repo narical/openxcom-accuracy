@@ -280,7 +280,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		Tile* dt = _save->getTile(pos + offsets[i]);
 		if (!st || !dt)
 		{
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		}
 		startTile[i] = st;
 		destinationTile[i] = dt;
@@ -296,9 +296,9 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			// check if we can go this way
 			if (isBlockedDirection(unit, startTile[i], direction, missileTarget))
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 			if (startTile[i]->getTerrainLevel() - destinationTile[i]->getTerrainLevel() > 8)
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 		}
 
 		// if we are on a stairs try to go up a level
@@ -316,7 +316,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			auto overlaping = destinationTile[i]->getOverlappingUnit(_save, TUO_IGNORE_SMALL);
 			if (overlaping && overlaping != unit)
 			{
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 			}
 		}
 
@@ -340,7 +340,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	{
 		if (direction != DIR_DOWN)
 		{
-			return {{INVALID_MOVE_COST}}; //cannot walk on air
+			return {{INVALID_MOVE_COST, 0}}; //cannot walk on air
 		}
 	}
 
@@ -361,7 +361,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		// check if the destination tile can be walked over
 		if (isBlocked(unit, destinationTile[i], O_FLOOR, missileTarget) || isBlocked(unit, destinationTile[i], O_OBJECT, missileTarget))
 		{
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		}
 	}
 
@@ -372,7 +372,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		if ((t->isDoor(O_NORTHWALL)) ||
 			(t->isDoor(O_WESTWALL)))
 		{
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		}
 	}
 
@@ -401,9 +401,9 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			// check if we can go this way
 			if (isBlockedDirection(unit, startTile[i], direction, missileTarget))
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 			if (startTile[i]->getTerrainLevel() - destinationTile[i]->getTerrainLevel() > 8)
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 		}
 		else if (direction >= DIR_UP && !fellDown)
 		{
@@ -414,7 +414,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 			else
 			{
-				return {{INVALID_MOVE_COST}};
+				return {{INVALID_MOVE_COST, 0}};
 			}
 		}
 		if (upperLevel)
@@ -425,9 +425,9 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			{
 				// check if we can go this way
 				if (isBlockedDirection(unit, startTile[i], direction, missileTarget))
-					return {{INVALID_MOVE_COST}};
+					return {{INVALID_MOVE_COST, 0}};
 				if (startTile[i]->getTerrainLevel() - destinationTile[i]->getTerrainLevel() > 8)
-					return {{INVALID_MOVE_COST}};
+					return {{INVALID_MOVE_COST, 0}};
 			}
 		}
 
@@ -446,7 +446,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		// for backward compatiblity (100 + 100 + 100 > 255) or for (255 + 10 > 255)
 		if (wallcost >= INVALID_MOVE_COST)
 		{
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		}
 
 		// if we don't want to fall down and there is no floor, we can't know the TUs so it's default to 4
@@ -528,16 +528,16 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		Tile *finalTile = _save->getTile(pos);
 		int tmpDirection = 7;
 		if (isBlockedDirection(unit, originTile, tmpDirection, missileTarget))
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		if (!fellDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		originTile = _save->getTile(pos + Position(1,0,0));
 		finalTile = _save->getTile(pos + Position(0,1,0));
 		tmpDirection = 5;
 		if (isBlockedDirection(unit, originTile, tmpDirection, missileTarget))
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 		if (!fellDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
-			return {{INVALID_MOVE_COST}};
+			return {{INVALID_MOVE_COST, 0}};
 	}
 
 
@@ -563,7 +563,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		energyCost *= 1.5;
 	}
 
-	return { { timeCost, energyCost }, { firePenaltyCost }, pos };
+	return { { timeCost, energyCost }, { firePenaltyCost, 0 }, pos };
 }
 
 /**
