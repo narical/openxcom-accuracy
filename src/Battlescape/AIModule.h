@@ -57,9 +57,9 @@ private:
 
 	BattleAction _escapeAction, _ambushAction, _attackAction, _patrolAction, _psiAction;
 
-	bool selectPointNearTargetLeeroy(BattleUnit *target);
-	int selectNearestTargetLeeroy();
-	void meleeActionLeeroy();
+	bool selectPointNearTargetLeeroy(BattleUnit *target, bool canRun);
+	int selectNearestTargetLeeroy(bool canRun);
+	void meleeActionLeeroy(bool canRun);
 	void dont_think(BattleAction *action);
 public:
 	/// Creates a new AIModule linked to the game and a certain unit.

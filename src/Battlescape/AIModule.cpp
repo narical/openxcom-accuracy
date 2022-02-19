@@ -158,10 +158,12 @@ void AIModule::dont_think(BattleAction *action)
 			action->weapon = 0;
 		}
 	}
-	int visibleEnemiesToAttack = selectNearestTargetLeeroy();
+
+	auto canRun = _melee && _unit->getArmor()->allowsRunning(false) && _unit->getEnergy() > _unit->getBaseStats()->stamina * 0.4f;
+	int visibleEnemiesToAttack = selectNearestTargetLeeroy(canRun);
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "LEEROY: visibleEnemiesToAttack: " << visibleEnemiesToAttack << " _melee: " << _melee;
+		Log(LOG_INFO) << "LEEROY: visibleEnemiesToAttack: " << visibleEnemiesToAttack << " _melee: " << _melee << (canRun ? " run" : "");
 	}
 	if ((visibleEnemiesToAttack > 0) && _melee)
 	{
@@ -169,8 +171,9 @@ void AIModule::dont_think(BattleAction *action)
 		{
 			Log(LOG_INFO) << "LEEROY: LEEROYIN' at someone!";
 		}
-		meleeActionLeeroy();
+		meleeActionLeeroy(canRun);
 		action->type = _attackAction.type;
+		action->run = _attackAction.run;
 		action->target = _attackAction.target;
 		// if this is a firepoint action, set our facing.
 		action->finalFacing = _attackAction.finalFacing;
@@ -201,6 +204,7 @@ void AIModule::think(BattleAction *action)
 	action->weapon = _unit->getMainHandWeapon(false);
 	_attackAction.diff = _save->getBattleState()->getGame()->getSavedGame()->getDifficultyCoefficient();
 	_attackAction.actor = _unit;
+	_attackAction.run = false;
 	_attackAction.weapon = action->weapon;
 	_attackAction.number = action->number;
 	_escapeAction.number = action->number;
@@ -1202,7 +1206,7 @@ int AIModule::selectNearestTarget()
  * Note: Differs from selectNearestTarget() in calling selectPointNearTargetLeeroy().
  * @return viable targets.
  */
-int AIModule::selectNearestTargetLeeroy()
+int AIModule::selectNearestTargetLeeroy(bool canRun)
 {
 	int tally = 0;
 	_closestDist = 100;
@@ -1217,7 +1221,7 @@ int AIModule::selectNearestTargetLeeroy()
 			if (dist < _closestDist)
 			{
 				bool valid = false;
-				if (selectPointNearTargetLeeroy(*i))
+				if (selectPointNearTargetLeeroy(*i, canRun))
 				{
 					int dir = _save->getTileEngine()->getDirectionTo(_attackAction.target, (*i)->getPosition());
 					valid = _save->getTileEngine()->validMeleeRange(_attackAction.target, dir, _unit, *i, 0);
@@ -1345,7 +1349,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
  * @param target Pointer to a target.
  * @return True if a point was found.
  */
-bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
+bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target, bool canRun)
 {
 	int size = _unit->getArmor()->getSize();
 	int targetsize = target->getArmor()->getSize();
@@ -1368,7 +1372,7 @@ bool AIModule::selectPointNearTargetLeeroy(BattleUnit *target)
 
 					if (valid && fitHere)
 					{
-						_save->getPathfinding()->calculate(_unit, checkPath, BAM_NORMAL, 0, 100000); // disregard unit's TUs.
+						_save->getPathfinding()->calculate(_unit, checkPath, canRun ? BAM_RUN : BAM_NORMAL, 0, 100000); // disregard unit's TUs.
 						if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getPath().size() < distance)
 						{
 							_attackAction.target = checkPath;
@@ -2064,7 +2068,7 @@ void AIModule::meleeAction()
  * Melee targetting: we can see an enemy, we can move to it so we're charging blindly toward an enemy.
  * Note: Differs from meleeAction() in calling selectPointNearTargetLeeroy() and ignoring some more checks.
  */
-void AIModule::meleeActionLeeroy()
+void AIModule::meleeActionLeeroy(bool canRun)
 {
 	if (_aggroTarget != 0 && !_aggroTarget->isOut())
 	{
@@ -2084,10 +2088,11 @@ void AIModule::meleeActionLeeroy()
 		//pick closest living unit
 		if ((newDistance < distance || newDistance == 1) && !(*i)->isOut())
 		{
-			if (newDistance == 1 || selectPointNearTargetLeeroy(*i))
+			if (newDistance == 1 || selectPointNearTargetLeeroy(*i, canRun))
 			{
 				_aggroTarget = (*i);
 				_attackAction.type = BA_WALK;
+				_attackAction.run = canRun;
 				_unit->setCharging(_aggroTarget);
 				distance = newDistance;
 			}
