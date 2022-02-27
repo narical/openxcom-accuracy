@@ -258,6 +258,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	int maskOfPartsHoleUp = 0x0;
 	int maskOfPartsGoingDown = 0x0;
 	int maskOfPartsFalling = 0x0;
+	int maskOfPartsFlying = 0x0;
 	int maskOfPartsGround = 0x0;
 	int maskArmor = size ? 0xF : 0x1;
 
@@ -330,6 +331,10 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			maskOfPartsFalling |= maskCurrentPart;
 		}
+		if (movementType == MT_FLY && (canFallDown(startTile[i]) || canFallDown(destinationTile[i])))
+		{
+			maskOfPartsFlying |= maskCurrentPart;
+		}
 		if (direction != DIR_DOWN && !canFallDown(destinationTile[i]))
 		{
 			maskOfPartsGround |= maskCurrentPart;
@@ -339,6 +344,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	bool triedStairs = (maskOfPartsGoingUp != 0 && ((maskOfPartsGoingUp | maskOfPartsHoleUp) == maskArmor));
 	bool triedStairsDown = (maskOfPartsGround == 0 && ((maskOfPartsGoingDown | maskOfPartsFalling) == maskArmor));
 	bool fallingDown = (maskOfPartsFalling == maskArmor);
+	bool flying =  (maskOfPartsFlying == maskArmor);
 
 	if (movementType != MT_FLY && fallingDown)
 	{
@@ -516,10 +522,6 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	{
 		pos.z--;
 	}
-	else if (direction == DIR_DOWN && fallingDown)
-	{
-		totalCost = 0;
-	}
 
 	// for bigger sized units, check the path between parts in an X shape at the end position
 	if (size)
@@ -544,27 +546,33 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 
 	if (bam == BAM_MISSILE)
 	{
-		totalCost = 0;
-	}
-	else
-	{
-		totalCost = std::min(totalCost, INVALID_MOVE_COST - 1);
+		return { { }, { }, pos };
 	}
 
 	auto timeCost = totalCost;
-	auto energyCost = totalCost / 2;
+	auto energyCost = totalCost;
 
-	if (direction >= Pathfinding::DIR_UP)
+	if (direction == DIR_DOWN && fallingDown)
+	{
+		timeCost = 0;
+		energyCost = 0;
+	}
+	else if (direction >= Pathfinding::DIR_UP)
 	{
 		energyCost = 0;
 	}
 	else if (bam == BAM_RUN)
 	{
 		timeCost *= 0.75;
-		energyCost *= 1.5;
+		energyCost *= 0.75;
+	}
+	else if (bam == BAM_NORMAL || bam == BAM_STRAFE)
+	{
+		timeCost *= 1.00;
+		energyCost *= 0.50;
 	}
 
-	return { { timeCost, energyCost }, { firePenaltyCost, 0 }, pos };
+	return { { std::min(timeCost, INVALID_MOVE_COST - 1), energyCost }, { firePenaltyCost, 0 }, pos };
 }
 
 /**
