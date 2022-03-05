@@ -81,6 +81,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_standHeight = _armor->getStandHeight() == -1 ? soldier->getRules()->getStandHeight() : _armor->getStandHeight();
 	_kneelHeight = _armor->getKneelHeight() == -1 ? soldier->getRules()->getKneelHeight() : _armor->getKneelHeight();
 	_floatHeight = _armor->getFloatHeight() == -1 ? soldier->getRules()->getFloatHeight() : _armor->getFloatHeight();
+
 	_intelligence = 2;
 	_aggression = 1;
 	_specab = (SpecialAbility)_armor->getSpecialAbility();
@@ -107,6 +108,9 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 			_movementType = MT_WALK;
 		}
 	}
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
+
 	// armor and soldier bonuses may modify effective stats
 	{
 		soldier->prepareStatsWithBonuses(mod); // refresh all bonuses
@@ -228,6 +232,8 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	} else if (_movementType == MT_SINK) {
 		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
 	}
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	// armor and soldier bonuses may modify effective stats
 	{
@@ -508,6 +514,8 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 			_movementType = MT_WALK;
 		}
 	}
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	_stats += *_armor->getStats();	// armors may modify effective stats
 	_stats = UnitStats::obeyFixedMinimum(_stats); // don't allow to go into minus!
@@ -617,6 +625,8 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	} else if (_movementType == MT_SINK) {
 		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
 	}
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	_stats = *_unitRules->getStats();
 	_stats += *_armor->getStats();	// armors may modify effective stats
@@ -748,6 +758,13 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_resummonedFakeCivilian = node["resummonedFakeCivilian"].as<bool>(_resummonedFakeCivilian);
 	_pickUpWeaponsMoreActively = node["pickUpWeaponsMoreActively"].as<bool>(_pickUpWeaponsMoreActively);
 	_disableIndicators = node["disableIndicators"].as<bool>(_disableIndicators);
+	if (const YAML::Node& p = node["moveCost"])
+	{
+		if (const YAML::Node& base = p["basePercent"])
+		{
+			std::tie(_moveTimeCostPercent, _moveEnergyCostPercent) = base.as<std::pair<int, int>>();
+		}
+	}
 	_vip = node["vip"].as<bool>(_vip);
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
 
@@ -845,6 +862,18 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["pickUpWeaponsMoreActively"] = _pickUpWeaponsMoreActively;
 	if (_disableIndicators)
 		node["disableIndicators"] = _disableIndicators;
+	{
+		YAML::Node p;
+		if (_moveTimeCostPercent != _armor->getMoveTimeCostPercent() || _moveEnergyCostPercent != _armor->getMoveEnergyCostPercent())
+		{
+			p["basePercent"] = std::pair<int, int>(_moveTimeCostPercent, _moveEnergyCostPercent);
+		}
+		if (!p.IsNull())
+		{
+			p.SetStyle(YAML::EmitterStyle::Flow);
+			node["moveCost"] = p;
+		}
+	}
 	if (_vip)
 		node["vip"] = _vip;
 	if (!_meleeAttackedBy.empty())
@@ -6090,6 +6119,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	UnitStats::addSetStatsWithCurrScript<&BattleUnit::_stats, &BattleUnit::_tu, &BattleUnit::_energy, &BattleUnit::_health, &BattleUnit::_mana>(bu, "Stats.");
 
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
+
+	bu.addField<&BattleUnit::_moveTimeCostPercent>("MoveCost.getBaseTimePercent", "MoveCost.setBaseTimePercent");
+	bu.addField<&BattleUnit::_moveEnergyCostPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
 
 	bu.add<&getVisibleUnitsCountScript>("getVisibleUnitsCount");
 	bu.add<&getFactionScript>("getFaction", "get current faction of unit");

@@ -25,6 +25,7 @@
 #include "../Mod/Armor.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Engine/Options.h"
+#include "../fmath.h"
 #include "BattlescapeGame.h"
 #include "TileEngine.h"
 
@@ -549,30 +550,49 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		return { { }, { }, pos };
 	}
 
-	auto timeCost = totalCost;
-	auto energyCost = totalCost;
-
 	if (direction == DIR_DOWN && fallingDown)
 	{
-		timeCost = 0;
-		energyCost = 0;
+		return { { }, { firePenaltyCost, 0 }, pos };
 	}
-	else if (direction >= Pathfinding::DIR_UP)
+
+	const auto costDiv = 100 * 100;
+	auto timeCost =  totalCost * unit->getMoveTimeCostPercent();
+	auto energyCost = totalCost * unit->getMoveEnergyCostPercent();
+
+	if (direction >= Pathfinding::DIR_UP)
 	{
-		energyCost = 0;
+		if (flying)
+		{
+			//unit fly up
+			timeCost *= 100;
+			energyCost *= 0;
+		}
+		else
+		{
+			//unit use GravLift
+			timeCost *= 100;
+			energyCost *= 0;
+		}
 	}
 	else if (bam == BAM_RUN)
 	{
-		timeCost *= 0.75;
-		energyCost *= 0.75;
+		timeCost *= 75;
+		energyCost *= 75;
 	}
 	else if (bam == BAM_NORMAL || bam == BAM_STRAFE)
 	{
-		timeCost *= 1.00;
-		energyCost *= 0.50;
+		timeCost *= 100;
+		energyCost *= 50;
+	}
+	else
+	{
+		assert(false && "Unreachable code in pathfinding cost");
 	}
 
-	return { { std::min(timeCost, INVALID_MOVE_COST - 1), energyCost }, { firePenaltyCost, 0 }, pos };
+	timeCost = (timeCost + costDiv / 2) / costDiv;
+	energyCost = (energyCost + costDiv / 2) / costDiv;
+
+	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
 }
 
 /**

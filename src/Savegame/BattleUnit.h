@@ -163,6 +163,8 @@ private:
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;
 	MovementType _movementType;
+	int _moveTimeCostPercent = 0;
+	int _moveEnergyCostPercent = 0;
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	bool _capturable;
 	bool _vip;
@@ -779,6 +781,11 @@ public:
 	bool indicatorsAreEnabled() const { return !_disableIndicators; }
 	/// Disable showing indicators for this unit.
 	void disableIndicators();
+
+	/// Multiplier of move TU cost.
+	int getMoveTimeCostPercent() const { return _moveTimeCostPercent; }
+	/// Multiplier of move Energy cost.
+	int getMoveEnergyCostPercent() const { return _moveEnergyCostPercent; }
 };
 
 } //namespace OpenXcom
