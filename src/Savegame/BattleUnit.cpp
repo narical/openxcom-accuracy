@@ -797,8 +797,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["morale"] = _morale;
 	node["kneeled"] = _kneeled;
 	node["floating"] = _floating;
-	for (int i=0; i < SIDE_MAX; i++) node["armor"].push_back(_currentArmor[i]);
-	for (int i=0; i < BODYPART_MAX; i++) node["fatalWounds"].push_back(_fatalWounds[i]);
+	node["armor"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < SIDE_MAX; i++) node["armor"].push_back(_currentArmor[i]);
+	node["fatalWounds"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < BODYPART_MAX; i++) node["fatalWounds"].push_back(_fatalWounds[i]);
 	node["fire"] = _fire;
 	node["expBravery"] = _exp.bravery;
 	node["expReactions"] = _exp.reactions;
@@ -850,6 +850,7 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	for (size_t i = 0; i < _recolor.size(); ++i)
 	{
 		YAML::Node p;
+		p.SetStyle(YAML::EmitterStyle::Flow);
 		p.push_back((int)_recolor[i].first);
 		p.push_back((int)_recolor[i].second);
 		node["recolor"].push_back(p);

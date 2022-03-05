@@ -85,6 +85,7 @@ struct BattleUnitKills
 	YAML::Node save() const
 	{
 		YAML::Node node;
+		node.SetStyle(YAML::EmitterStyle::Flow);
 		if (!name.empty())
 			node["name"] = name;
 		if (!type.empty())

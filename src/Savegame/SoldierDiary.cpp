@@ -130,7 +130,7 @@ YAML::Node SoldierDiary::save() const
 			node["commendations"].push_back((*i)->save());
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 			node["killList"].push_back((*i)->save());
-	if (!_missionIdList.empty()) node["missionIdList"] = _missionIdList;
+	if (!_missionIdList.empty()) { YAML::Node t; t = _missionIdList; t.SetStyle(YAML::EmitterStyle::Flow); node["missionIdList"] = t; }
 	if (_daysWoundedTotal) node["daysWoundedTotal"] = _daysWoundedTotal;
 	if (_totalShotByFriendlyCounter) node["totalShotByFriendlyCounter"] = _totalShotByFriendlyCounter;
 	if (_totalShotFriendlyCounter) node["totalShotFriendlyCounter"] = _totalShotFriendlyCounter;
@@ -1281,6 +1281,7 @@ void SoldierCommendations::load(const YAML::Node &node)
 YAML::Node SoldierCommendations::save() const
 {
 	YAML::Node node;
+	node.SetStyle(YAML::EmitterStyle::Flow);
 	node["commendationName"] = _type;
 	if (_noun != "noNoun") node["noun"] = _noun;
 	node["decorationLevel"] = _decorationLevel;

@@ -161,6 +161,7 @@ YAML::Node BattleItem::save(const ScriptGlobal *shared) const
 	{
 		node["ammoItem"] = _ammoItem[0]->getId();
 	}
+	node["ammoItemSlots"].SetStyle(YAML::EmitterStyle::Flow);
 	Collections::untilLastIf(
 		_ammoItem,
 		[](BattleItem *i)
