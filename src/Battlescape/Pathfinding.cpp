@@ -590,7 +590,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	}
 
 	timeCost = (timeCost + costDiv / 2) / costDiv;
-	energyCost = (energyCost + costDiv / 2) / costDiv;
+	energyCost = energyCost / costDiv;
 
 	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
 }
