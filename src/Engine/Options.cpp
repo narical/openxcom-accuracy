@@ -232,6 +232,7 @@ void create()
 #else
 	_info.push_back(OptionInfo("oxceFatFingerLinks", &oxceFatFingerLinks, false));
 #endif
+	_info.push_back(OptionInfo("oxceThrottleMouseMoveEvent", &oxceThrottleMouseMoveEvent, 0));
 	_info.push_back(OptionInfo("oxceHighlightNewTopicsHidden", &oxceHighlightNewTopicsHidden, true));
 	_info.push_back(OptionInfo("oxceInterceptGuiMaintenanceTimeHidden", &oxceInterceptGuiMaintenanceTimeHidden, 2));
 	_info.push_back(OptionInfo("oxceEnableUnitResponseSounds", &oxceEnableUnitResponseSounds, true));

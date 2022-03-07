@@ -145,6 +145,10 @@ void Game::run()
 	static const ApplicationState stateRun[4] = { SLOWED, PAUSED, PAUSED, PAUSED };
 	// this will avoid processing SDL's resize event on startup, workaround for the heap allocation error it causes.
 	bool startupEvent = Options::allowResize;
+	Uint32 lastMouseMoveEvent = 0;
+	Sint16 xrel = 0;
+	Sint16 yrel = 0;
+
 	while (!_quit)
 	{
 		// Clean up states
@@ -241,6 +245,24 @@ void Game::run()
 					}
 					break;
 				case SDL_MOUSEMOTION:
+					if (Options::oxceThrottleMouseMoveEvent > 0)
+					{
+						Uint32 last = SDL_GetTicks();
+						if (0 == lastMouseMoveEvent)
+						{
+							lastMouseMoveEvent = last;
+						}
+						if (last - lastMouseMoveEvent < (Uint32)Options::oxceThrottleMouseMoveEvent)
+						{
+							xrel += _event.motion.xrel;
+							yrel += _event.motion.yrel;
+							continue;
+						}
+						lastMouseMoveEvent = 0;
+						_event.motion.xrel += std::exchange(xrel, 0);
+						_event.motion.yrel += std::exchange(yrel, 0);
+					}
+					FALLTHROUGH;
 				case SDL_MOUSEBUTTONDOWN:
 				case SDL_MOUSEBUTTONUP:
 					// Skip mouse events if they're disabled
