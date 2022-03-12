@@ -894,7 +894,7 @@ void Map::drawTerrain(Surface *surface)
 					if (isUnitMovingNearby)
 					{
 						// special handling for a moving unit in background of tile.
-						Position backPos[] =
+						constexpr static Position backPos[] =
 						{
 							Position(0, -1, 0),
 							Position(-1, -1, 0),
@@ -1089,7 +1089,7 @@ void Map::drawTerrain(Surface *surface)
 					if (isUnitMovingNearby)
 					{
 						// special handling for a moving unit in foreground of tile.
-						Position frontPos[] =
+						constexpr static Position frontPos[] =
 						{
 							Position(-1, +1, 0),
 							Position(0, +1, 0),
