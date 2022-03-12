@@ -80,6 +80,17 @@
            /  \
            \  /
          4  \/  2
+
+  Big units parts
+
+            /\
+           /0 \
+          /\  /\
+         /2 \/1 \
+         \  /\  /
+          \/3 \/
+           \  /
+            \/
  */
 
 namespace OpenXcom
