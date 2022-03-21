@@ -44,7 +44,7 @@ int Pathfinding::green = 4;
  * Sets up a Pathfinding.
  * @param save pointer to SavedBattleGame object.
  */
-Pathfinding::Pathfinding(SavedBattleGame *save) : _save(save), _unit(0), _pathPreviewed(false), _strafeMove(false), _modifierUsed(false)
+Pathfinding::Pathfinding(SavedBattleGame *save) : _save(save), _unit(0), _pathPreviewed(false), _strafeMove(false)
 {
 	_size = _save->getMapSizeXYZ();
 	// Initialize one node per tile
@@ -992,6 +992,37 @@ bool Pathfinding::previewPath(bool bRemove)
 
 	_pathPreviewed = !bRemove;
 
+	if (bRemove)
+	{
+		// use old values, player could unpress buttons.
+	}
+	else
+	{
+		_ctrlUsed = Options::strafe && _save->isCtrlPressed(true);
+	}
+
+	refreshPath();
+
+	return true;
+}
+
+/**
+ * Unmarks the tiles used for the path preview.
+ * @return True, if the previewed path was removed.
+ */
+bool Pathfinding::removePreview()
+{
+	if (!_pathPreviewed)
+		return false;
+	previewPath(true);
+	return true;
+}
+
+/**
+ * Refresh the path preview.
+ */
+void Pathfinding::refreshPath()
+{
 	Position pos = _unit->getPosition();
 
 	auto movementType = getMovementType(_unit, nullptr); //preview always for unit not missiles
@@ -1026,9 +1057,8 @@ bool Pathfinding::previewPath(bool bRemove)
 		_save->getBattleGame()->setTUReserved(BA_AUTOSHOT);
 	}
 
-	_modifierUsed = Options::strafe && _save->isCtrlPressed(true);
-	bool running = _modifierUsed && _unit->getArmor()->allowsRunning(_unit->getArmor()->getSize() == 1) && _path.size() > 1;
-	bool strafing = _modifierUsed && _unit->getArmor()->allowsStrafing(_unit->getArmor()->getSize() == 1) && _path.size() == 1;
+	const bool running = _ctrlUsed && _unit->getArmor()->allowsRunning(_unit->getArmor()->getSize() == 1) && _path.size() > 1;
+	const bool strafing = _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->getArmor()->getSize() == 1) && _path.size() == 1;
 	for (std::vector<int>::reverse_iterator i = _path.rbegin(); i != _path.rend(); ++i)
 	{
 		int dir = *i;
@@ -1044,7 +1074,7 @@ bool Pathfinding::previewPath(bool bRemove)
 			{
 				Tile *tile = _save->getTile(pos + Position(x,y,0));
 				Tile *tileAbove = _save->getTile(pos + Position(x,y,1));
-				if (!bRemove)
+				if (_pathPreviewed)
 				{
 					if (i == _path.rend() - 1)
 					{
@@ -1071,7 +1101,7 @@ bool Pathfinding::previewPath(bool bRemove)
 					tile->setTUMarker(-1);
 					tile->setEnergyMarker(-1);
 				}
-				tile->setMarkerColor(bRemove?0:((tus>=0 && energy>=0)?(reserve?Pathfinding::green : Pathfinding::yellow) : Pathfinding::red));
+				tile->setMarkerColor(!_pathPreviewed ? 0 : ((tus>=0 && energy>=0)?(reserve?Pathfinding::green : Pathfinding::yellow) : Pathfinding::red));
 			}
 		}
 	}
@@ -1079,19 +1109,6 @@ bool Pathfinding::previewPath(bool bRemove)
 	{
 		_save->getBattleGame()->setTUReserved(BA_NONE);
 	}
-	return true;
-}
-
-/**
- * Unmarks the tiles used for the path preview.
- * @return True, if the previewed path was removed.
- */
-bool Pathfinding::removePreview()
-{
-	if (!_pathPreviewed)
-		return false;
-	previewPath(true);
-	return true;
 }
 
 /**
@@ -1313,15 +1330,6 @@ bool Pathfinding::isPathPreviewed() const
 void Pathfinding::setUnit(BattleUnit* unit)
 {
 	_unit = unit;
-}
-
-/**
- * Checks whether a modifier key was used to enable strafing or running.
- * @return True, if a modifier was used.
- */
-bool Pathfinding::isModifierUsed() const
-{
-	return _modifierUsed;
 }
 
 /**

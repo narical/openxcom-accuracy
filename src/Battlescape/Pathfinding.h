@@ -50,7 +50,7 @@ private:
 	BattleUnit *_unit;
 	bool _pathPreviewed;
 	bool _strafeMove;
-	bool _modifierUsed;
+	bool _ctrlUsed = false;
 	PathfindingCost _totalTUCost;
 
 	/// Gets the node at certain position.
@@ -140,10 +140,14 @@ public:
 	bool getStrafeMove() const;
 	/// Checks, for the up/down button, if the movement is valid.
 	bool validateUpDown(const BattleUnit *bu, const Position& startPosition, const int direction, bool missile = false) const;
+
 	/// Previews the path.
 	bool previewPath(bool bRemove = false);
 	/// Removes the path preview.
 	bool removePreview();
+	/// Refresh the path preview.
+	void refreshPath();
+
 	/// Sets _unit in order to abuse low-level pathfinding functions from outside the class.
 	void setUnit(BattleUnit *unit);
 	/// Gets all reachable tiles, based on cost.
@@ -153,7 +157,7 @@ public:
 	/// Gets the path preview setting.
 	bool isPathPreviewed() const;
 	/// Gets the modifier setting.
-	bool isModifierUsed() const;
+	bool isModifierCtrlUsed() const { return _ctrlUsed; }
 	/// Gets a reference to the path.
 	const std::vector<int> &getPath() const;
 	/// Makes a copy to the path.

@@ -1873,8 +1873,9 @@ void BattlescapeGame::primaryAction(Position pos)
 		{
 			bool isCtrlPressed = Options::strafe && _save->isCtrlPressed(true);
 			bool isShiftPressed = _save->isShiftPressed(true);
-			if (bPreviewed &&
-				(_currentAction.target != pos || (_save->getPathfinding()->isModifierUsed() != isCtrlPressed)))
+			if (bPreviewed && (
+				_currentAction.target != pos ||
+				_save->getPathfinding()->isModifierCtrlUsed() != isCtrlPressed))
 			{
 				_save->getPathfinding()->removePreview();
 			}
