@@ -1717,6 +1717,18 @@ bool SavedBattleGame::isCtrlPressed(bool considerTouchButtons) const
 }
 
 /**
+ * Is ALT pressed?
+ */
+bool SavedBattleGame::isAltPressed(bool considerTouchButtons) const
+{
+	if (_battleState)
+	{
+		return _battleState->getGame()->isAltPressed(considerTouchButtons);
+	}
+	return false;
+}
+
+/**
  * Is SHIFT pressed?
  */
 bool SavedBattleGame::isShiftPressed(bool considerTouchButtons) const

@@ -474,6 +474,8 @@ public:
 
 	/// Is CTRL pressed?
 	bool isCtrlPressed(bool considerTouchButtons = false) const;
+	/// Is ALT pressed?
+	bool isAltPressed(bool considerTouchButtons = false) const;
 	/// Is SHIFT pressed?
 	bool isShiftPressed(bool considerTouchButtons = false) const;
 
