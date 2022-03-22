@@ -3389,7 +3389,7 @@ void StatsForNerdsState::initUfoList()
 		{
 			int diff = _game->getSavedGame()->getDifficulty();
 			auto& custom = _game->getMod()->getUfoEscapeCountdownCoefficients();
-			if (custom.size() > diff)
+			if (custom.size() > (size_t)diff)
 			{
 				escapeCountdown = ufoRule->getBreakOffTime() * custom[diff] / 100;
 				escapeCountdownMax = ufoRule->getBreakOffTime() * 2 * custom[diff] / 100;
@@ -3401,7 +3401,7 @@ void StatsForNerdsState::initUfoList()
 		{
 			int diff = _game->getSavedGame()->getDifficulty();
 			auto& custom = _game->getMod()->getUfoFiringRateCoefficients();
-			if (custom.size() > diff)
+			if (custom.size() > (size_t)diff)
 			{
 				fireCountdown = std::max(1, ufoRule->getWeaponReload() * custom[diff] / 100);
 			}

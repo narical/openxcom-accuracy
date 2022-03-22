@@ -145,7 +145,7 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	{
 		int diff = _game->getSavedGame()->getDifficulty();
 		auto& custom = _game->getMod()->getMonthlyRatingThresholds();
-		if (custom.size() > diff)
+		if (custom.size() > (size_t)diff)
 		{
 			// only negative values are allowed!
 			if (custom[diff] < 0)
