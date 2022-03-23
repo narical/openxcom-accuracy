@@ -1178,6 +1178,10 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.add<&getTypeScript>("getType");
 
 	ar.add<&Armor::getDrawingRoutine>("getDrawingRoutine");
+	ar.add<&Armor::drawBubbles>("getDrawBubbles");
+	ar.add<&Armor::getDeathFrames>("getDeathFrames");
+	ar.add<&Armor::getConstantAnimation>("getConstantAnimation");
+
 	ar.add<&Armor::getVisibilityAtDark>("getVisibilityAtDark");
 	ar.add<&Armor::getVisibilityAtDay>("getVisibilityAtDay");
 	ar.add<&Armor::getPersonalLight>("getPersonalLight");
@@ -1186,6 +1190,7 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	UnitStats::addGetStatsScript<&Armor::_stats>(ar, "Stats.");
 
 	ar.add<&getArmorValueScript>("getArmor");
+
 
 	ar.addField<&Armor::_moveTimeCostPercent>("MoveCost.getBaseTimePercent");
 	ar.addField<&Armor::_moveEnergyCostPercent>("MoveCost.getBaseEnergyPercent");
