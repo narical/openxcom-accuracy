@@ -1872,10 +1872,12 @@ void BattlescapeGame::primaryAction(Position pos)
 		else if (playableUnitSelected())
 		{
 			bool isCtrlPressed = Options::strafe && _save->isCtrlPressed(true);
+			bool isAltPressed = Options::strafe && _save->isAltPressed(true);
 			bool isShiftPressed = _save->isShiftPressed(true);
 			if (bPreviewed && (
 				_currentAction.target != pos ||
-				_save->getPathfinding()->isModifierCtrlUsed() != isCtrlPressed))
+				_save->getPathfinding()->isModifierCtrlUsed() != isCtrlPressed ||
+				_save->getPathfinding()->isModifierAltUsed() != isAltPressed))
 			{
 				_save->getPathfinding()->removePreview();
 			}
@@ -1884,6 +1886,8 @@ void BattlescapeGame::primaryAction(Position pos)
 
 			_currentAction.strafe = false;
 			_currentAction.run = false;
+			_currentAction.sneak = false;
+
 			if (isCtrlPressed)
 			{
 				if (_save->getPathfinding()->getPath().size() > 1)
@@ -1894,6 +1898,10 @@ void BattlescapeGame::primaryAction(Position pos)
 				{
 					_currentAction.strafe = _save->getSelectedUnit()->getArmor()->allowsStrafing(_save->getSelectedUnit()->getArmor()->getSize() == 1);
 				}
+			}
+			else if (isAltPressed)
+			{
+				_currentAction.sneak = _save->getSelectedUnit()->getArmor()->allowsSneaking(_save->getSelectedUnit()->getArmor()->getSize() == 1);
 			}
 
 			//recalucate path after setting new move types

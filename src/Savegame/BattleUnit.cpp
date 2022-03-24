@@ -6263,6 +6263,7 @@ void moveTypesImpl(BindBase& b)
 	b.addCustomConst("move_normal", BAM_NORMAL);
 	b.addCustomConst("move_run", BAM_RUN);
 	b.addCustomConst("move_strafe", BAM_STRAFE);
+	b.addCustomConst("move_sneak", BAM_SNEAK);
 }
 
 void medikitBattleActionImpl(BindBase& b)

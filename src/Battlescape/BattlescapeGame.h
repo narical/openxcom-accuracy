@@ -40,7 +40,7 @@ class InfoboxOKState;
 class SoldierDiary;
 class RuleSkill;
 
-enum BattleActionMove : char { BAM_NORMAL = 0, BAM_RUN = 1, BAM_STRAFE = 2, BAM_MISSILE = 3 };
+enum BattleActionMove : char { BAM_NORMAL = 0, BAM_RUN = 1, BAM_STRAFE = 2, BAM_SNEAK = 3, BAM_MISSILE = 4 };
 
 struct BattleActionCost : RuleItemUseCost
 {
@@ -77,6 +77,7 @@ struct BattleAction : BattleActionCost
 	std::string result;
 	bool strafe = false;
 	bool run = false;
+	bool sneak = false;
 	bool ignoreSpottedEnemies = false;
 	bool kneel = false;
 	int diff;
@@ -96,7 +97,7 @@ struct BattleAction : BattleActionCost
 	/// Get move type
 	BattleActionMove getMoveType() const
 	{
-		return strafe ? BAM_STRAFE : run ? BAM_RUN : BAM_NORMAL;
+		return strafe ? BAM_STRAFE : run ? BAM_RUN : sneak ? BAM_SNEAK : BAM_NORMAL;
 	}
 };
 

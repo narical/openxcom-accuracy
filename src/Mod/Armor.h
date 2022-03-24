@@ -105,7 +105,7 @@ private:
 
 	ScriptValues<Armor> _scriptValues;
 	std::vector<int> _customArmorPreviewIndex;
-	Sint8 _allowsRunning, _allowsStrafing, _allowsKneeling, _allowsMoving;
+	Sint8 _allowsRunning, _allowsStrafing, _allowsSneaking, _allowsKneeling, _allowsMoving;
 	bool _isPilotArmor;
 	bool _allowTwoMainWeapons;
 	bool _instantWoundRecovery;
@@ -332,6 +332,8 @@ public:
 	bool allowsRunning(bool def = true) const;
 	/// Can you strafe while wearing this armor?
 	bool allowsStrafing(bool def = true) const;
+	/// Can you sneak while wearing this armor?
+	bool allowsSneaking(bool def = true) const;
 	/// Can you kneel while wearing this armor?
 	bool allowsKneeling(bool def = true) const;
 	/// Can you move while wearing this armor?

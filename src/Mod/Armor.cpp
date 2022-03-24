@@ -70,7 +70,7 @@ Armor::Armor(const std::string &type) :
 	_fearImmune(defTriBool), _bleedImmune(defTriBool), _painImmune(defTriBool), _zombiImmune(defTriBool),
 	_ignoresMeleeThreat(defTriBool), _createsMeleeThreat(defTriBool),
 	_overKill(0.5f), _meleeDodgeBackPenalty(0),
-	_allowsRunning(defTriBool), _allowsStrafing(defTriBool), _allowsKneeling(defTriBool), _allowsMoving(1),
+	_allowsRunning(defTriBool), _allowsStrafing(defTriBool), _allowsSneaking(defTriBool), _allowsKneeling(defTriBool), _allowsMoving(1),
 	_isPilotArmor(false), _allowTwoMainWeapons(false), _instantWoundRecovery(false),
 	_standHeight(-1), _kneelHeight(-1), _floatHeight(-1)
 {
@@ -245,6 +245,7 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	mod->loadSpriteOffset(_type, _customArmorPreviewIndex, node["customArmorPreviewIndex"], "CustomArmorPreviews");
 	loadTriBoolHelper(_allowsRunning, node["allowsRunning"]);
 	loadTriBoolHelper(_allowsStrafing, node["allowsStrafing"]);
+	loadTriBoolHelper(_allowsSneaking, node["allowsSneaking"]);
 	loadTriBoolHelper(_allowsKneeling, node["allowsKneeling"]);
 	_allowsMoving = node["allowsMoving"].as<bool>(_allowsMoving);
 	_isPilotArmor = node["isPilotArmor"].as<bool>(_isPilotArmor);
@@ -1055,6 +1056,15 @@ bool Armor::allowsRunning(bool def) const
 bool Armor::allowsStrafing(bool def) const
 {
 	return useTriBoolHelper(_allowsStrafing, def);
+}
+
+/**
+ * Can you sneaking while wearing this armor?
+ * @return True if you are allowed to sneak.
+ */
+bool Armor::allowsSneaking(bool def) const
+{
+	return useTriBoolHelper(_allowsSneaking, def);
 }
 
 /**
