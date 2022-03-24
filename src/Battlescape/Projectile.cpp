@@ -456,6 +456,11 @@ bool Projectile::move()
 			_position--;
 			return false;
 		}
+		else if (_position > 1)
+		{
+			// calc avg of two voxel steps
+			_distance += 0.5f * Position::distance(_trajectory[_position], _trajectory[_position - 2]);
+		}
 		else if (_position > 0)
 		{
 			_distance += Position::distance(_trajectory[_position], _trajectory[_position - 1]);
