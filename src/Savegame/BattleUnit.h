@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_set>
 #include "../Battlescape/Position.h"
+#include "../Mod/Armor.h"
 #include "../Mod/RuleItem.h"
 #include "Soldier.h"
 #include "BattleItem.h"
@@ -163,8 +164,9 @@ private:
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;
 	MovementType _movementType;
-	int _moveTimeCostPercent = 0;
-	int _moveEnergyCostPercent = 0;
+	ArmorMoveCost _moveCostBase = { 0, 0 };
+	ArmorMoveCost _moveCostBaseFly = { 0, 0 };
+	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	bool _capturable;
 	bool _vip;
@@ -782,10 +784,12 @@ public:
 	/// Disable showing indicators for this unit.
 	void disableIndicators();
 
-	/// Multiplier of move TU cost.
-	int getMoveTimeCostPercent() const { return _moveTimeCostPercent; }
-	/// Multiplier of move Energy cost.
-	int getMoveEnergyCostPercent() const { return _moveEnergyCostPercent; }
+	/// Multiplier of move cost.
+	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }
+	/// Multiplier of fly move cost.
+	ArmorMoveCost getMoveCostBaseFly() const { return _moveCostBaseFly; }
+	/// Multiplier of normal move cost.
+	ArmorMoveCost getMoveCostBaseNormal() const { return _moveCostBaseNormal; }
 };
 
 } //namespace OpenXcom
