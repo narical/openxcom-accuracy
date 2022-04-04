@@ -108,9 +108,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 			_movementType = MT_WALK;
 		}
 	}
-	_moveCostBase = _armor->getMoveCostBase();
-	_moveCostBaseFly = _armor->getMoveCostBaseFly();
-	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	// armor and soldier bonuses may modify effective stats
 	{
@@ -233,9 +232,8 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	} else if (_movementType == MT_SINK) {
 		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
 	}
-	_moveCostBase = _armor->getMoveCostBase();
-	_moveCostBaseFly = _armor->getMoveCostBaseFly();
-	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	// armor and soldier bonuses may modify effective stats
 	{
@@ -516,9 +514,8 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 			_movementType = MT_WALK;
 		}
 	}
-	_moveCostBase = _armor->getMoveCostBase();
-	_moveCostBaseFly = _armor->getMoveCostBaseFly();
-	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	_stats += *_armor->getStats();	// armors may modify effective stats
 	_stats = UnitStats::obeyFixedMinimum(_stats); // don't allow to go into minus!
@@ -628,9 +625,8 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	} else if (_movementType == MT_SINK) {
 		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
 	}
-	_moveCostBase = _armor->getMoveCostBase();
-	_moveCostBaseFly = _armor->getMoveCostBaseFly();
-	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
+	_moveTimeCostPercent = _armor->getMoveTimeCostPercent();
+	_moveEnergyCostPercent = _armor->getMoveEnergyCostPercent();
 
 	_stats = *_unitRules->getStats();
 	_stats += *_armor->getStats();	// armors may modify effective stats
@@ -764,9 +760,10 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_disableIndicators = node["disableIndicators"].as<bool>(_disableIndicators);
 	if (const YAML::Node& p = node["moveCost"])
 	{
-		_moveCostBase.load(p["basePercent"]);
-		_moveCostBaseFly.load(p["baseFlyPercent"]);
-		_moveCostBaseNormal.load(p["baseNormalPercent"]);
+		if (const YAML::Node& base = p["basePercent"])
+		{
+			std::tie(_moveTimeCostPercent, _moveEnergyCostPercent) = base.as<std::pair<int, int>>();
+		}
 	}
 	_vip = node["vip"].as<bool>(_vip);
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
@@ -868,17 +865,9 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["disableIndicators"] = _disableIndicators;
 	{
 		YAML::Node p;
-		if (_moveCostBase != _armor->getMoveCostBase())
+		if (_moveTimeCostPercent != _armor->getMoveTimeCostPercent() || _moveEnergyCostPercent != _armor->getMoveEnergyCostPercent())
 		{
-			_moveCostBase.save(p, "basePercent");
-		}
-		if (_moveCostBaseFly != _armor->getMoveCostBaseFly())
-		{
-			_moveCostBaseFly.save(p, "baseFlyPercent");
-		}
-		if (_moveCostBaseNormal != _armor->getMoveCostBaseNormal())
-		{
-			_moveCostBaseNormal.save(p, "baseNormalPercent");
+			p["basePercent"] = std::pair<int, int>(_moveTimeCostPercent, _moveEnergyCostPercent);
 		}
 		if (!p.IsNull())
 		{
@@ -6132,12 +6121,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
 
-	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::TimePercent>("MoveCost.getBaseTimePercent", "MoveCost.setBaseTimePercent");
-	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
-	bu.addField<&BattleUnit::_moveCostBaseFly, &ArmorMoveCost::TimePercent>("MoveCost.getBaseFlyTimePercent", "MoveCost.setBaseFlyTimePercent");
-	bu.addField<&BattleUnit::_moveCostBaseFly, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseFlyEnergyPercent", "MoveCost.setBaseFlyEnergyPercent");
-	bu.addField<&BattleUnit::_moveCostBaseNormal, &ArmorMoveCost::TimePercent>("MoveCost.getBaseNormalTimePercent", "MoveCost.setBaseNormalTimePercent");
-	bu.addField<&BattleUnit::_moveCostBaseNormal, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseNormalEnergyPercent", "MoveCost.setBaseNormalEnergyPercent");
+	bu.addField<&BattleUnit::_moveTimeCostPercent>("MoveCost.getBaseTimePercent", "MoveCost.setBaseTimePercent");
+	bu.addField<&BattleUnit::_moveEnergyCostPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
 
 	bu.add<&getVisibleUnitsCountScript>("getVisibleUnitsCount");
 	bu.add<&getFactionScript>("getFaction", "get current faction of unit");

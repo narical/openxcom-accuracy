@@ -253,9 +253,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	pos += startPosition;
 
 	const auto movementType = getMovementType(unit, missileTarget, bam);
-	const Armor* armor =  unit->getArmor();
-	const int size = armor->getSize() - 1;
-	const int numberOfParts = armor->getTotalSize();
+	const int size = unit->getArmor()->getSize() - 1;
+	const int numberOfParts = unit->getArmor()->getTotalSize();
 	int maskOfPartsGoingUp = 0x0;
 	int maskOfPartsHoleUp = 0x0;
 	int maskOfPartsGoingDown = 0x0;
@@ -556,84 +555,47 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		return { { }, { firePenaltyCost, 0 }, pos };
 	}
 
-	const auto costDiv = 100 * 100 * 100;
-	ArmorMoveCost cost = { totalCost, totalCost };
-
-	cost *= unit->getMoveCostBase();
-
-	if (flying)
-	{
-		cost *= unit->getMoveCostBaseFly();
-	}
-	else
-	{
-		cost *= unit->getMoveCostBaseNormal();
-	}
+	const auto costDiv = 100 * 100;
+	auto timeCost =  totalCost * unit->getMoveTimeCostPercent();
+	auto energyCost = totalCost * unit->getMoveEnergyCostPercent();
 
 	if (direction >= Pathfinding::DIR_UP)
 	{
 		if (flying)
 		{
-			if (direction == Pathfinding::DIR_UP)
-			{
-				cost *= armor->getMoveCostFlyUp();
-			}
-			else
-			{
-				cost *= armor->getMoveCostFlyDown();
-			}
+			//unit fly up
+			timeCost *= 100;
+			energyCost *= 0;
 		}
 		else
 		{
 			//unit use GravLift
-			cost *= armor->getMoveCostGravLift();
-		}
-	}
-	else if (bam == BAM_NORMAL)
-	{
-		if (flying)
-		{
-			cost *= armor->getMoveCostFlyWalk();
-		}
-		else
-		{
-			cost *= armor->getMoveCostWalk();
+			timeCost *= 100;
+			energyCost *= 0;
 		}
 	}
 	else if (bam == BAM_RUN)
 	{
-		if (flying)
-		{
-			cost *= armor->getMoveCostFlyRun();
-		}
-		else
-		{
-			cost *= armor->getMoveCostRun();
-		}
-	}
-	else if (bam == BAM_STRAFE)
-	{
-		if (flying)
-		{
-			cost *= armor->getMoveCostFlyStrife();
-		}
-		else
-		{
-			cost *= armor->getMoveCostStrife();
-		}
+		timeCost *= 75;
+		energyCost *= 75;
 	}
 	else if (bam == BAM_SNEAK)
 	{
-		//no flight
-		cost *= armor->getMoveCostSneak();
+		timeCost *= 100;
+		energyCost *= 50;
+	}
+	else if (bam == BAM_NORMAL || bam == BAM_STRAFE)
+	{
+		timeCost *= 100;
+		energyCost *= 50;
 	}
 	else
 	{
 		assert(false && "Unreachable code in pathfinding cost");
 	}
 
-	const auto timeCost = (cost.TimePercent + (costDiv / 2)) / costDiv;
-	const auto energyCost = cost.EnergyPercent / costDiv;
+	timeCost = (timeCost + costDiv / 2) / costDiv;
+	energyCost = energyCost / costDiv;
 
 	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
 }

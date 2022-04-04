@@ -37,7 +37,6 @@ class ToggleTextButton;
 class TextButton;
 class ScriptParserBase;
 struct ArticleCommonState;
-struct ArmorMoveCost;
 template<typename T, typename I> class ScriptValues;
 
 /**
@@ -132,7 +131,6 @@ private:
 	void addItemTargets(std::ostringstream& ss, const RuleItem* value, const std::string& propertyName, const int& defaultvalue);
 	void addExperienceTrainingMode(std::ostringstream &ss, const ExperienceTrainingMode &value, const std::string &propertyName, const ExperienceTrainingMode &defaultvalue = ETM_DEFAULT);
 	void addRuleStatBonus(std::ostringstream &ss, const RuleStatBonus &value, const std::string &propertyName);
-	void addRuleArmorMoveCost(std::ostringstream &ss, const ArmorMoveCost &value, const std::string &propertyName, const ArmorMoveCost &defaultvalue = ArmorMoveCost());
 	void addSpriteResourcePath(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const int &resourceId);
 	void addSoundVectorResourcePaths(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const std::vector<int> &resourceIds);
 	void initItemList();

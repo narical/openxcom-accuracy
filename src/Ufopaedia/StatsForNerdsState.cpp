@@ -1631,35 +1631,6 @@ void StatsForNerdsState::addRuleStatBonus(std::ostringstream &ss, const RuleStat
 }
 
 /**
- * Adds a ArmorMoveCost info to the table.
- */
-void StatsForNerdsState::addRuleArmorMoveCost(std::ostringstream &ss, const ArmorMoveCost &value, const std::string &propertyName, const ArmorMoveCost &defaultvalue)
-{
-	if (value == defaultvalue && !_showDefaults)
-	{
-		return;
-	}
-	resetStream(ss);
-
-	ss << tr("STR_COST_TIME") << ": ";
-	addBoolOrInteger(ss, value.TimePercent, false);
-	ss << "%";
-
-	ss << ", ";
-
-	ss << tr("STR_COST_ENERGY") << ": ";
-	addBoolOrInteger(ss, value.EnergyPercent, false);
-	ss << "%";
-
-	_lstRawData->addRow(2, trp(propertyName).c_str(), ss.str().c_str());
-	++_counter;
-	if (value != defaultvalue)
-	{
-		_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
-	}
-}
-
-/**
  * Adds a sprite resource path to the table.
  */
 void StatsForNerdsState::addSpriteResourcePath(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const int &resourceId)
@@ -2683,29 +2654,6 @@ void StatsForNerdsState::initArmorList()
 		addRuleStatBonus(ss, *armorRule->getHealthRecoveryRaw(), "health");
 		addRuleStatBonus(ss, *armorRule->getStunRegenerationRaw(), "stun");
 		addRuleStatBonus(ss, *armorRule->getManaRecoveryRaw(), "mana");
-		endHeading();
-	}
-
-	addHeading("moveCost");
-	{
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostRun(), "runPercent", { 75, 75 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostStrife(), "strifePercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostSneak(), "sneakPercent", { 100, 50 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyWalk(), "flyWalkPercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyRun(), "flyRunPercent", { 75, 75 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyStrife(), "flyStrifePercent", { 100, 50 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
-
 		endHeading();
 	}
 
