@@ -85,29 +85,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_intelligence = 2;
 	_aggression = 1;
 	_specab = (SpecialAbility)_armor->getSpecialAbility();
-	_movementType = _armor->getMovementType();
-	if (_movementType == MT_FLOAT)
-	{
-		if (depth > 0)
-		{
-			_movementType = MT_FLY;
-		}
-		else
-		{
-			_movementType = MT_WALK;
-		}
-	}
-	else if (_movementType == MT_SINK)
-	{
-		if (depth == 0)
-		{
-			_movementType = MT_FLY;
-		}
-		else
-		{
-			_movementType = MT_WALK;
-		}
-	}
+	_movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -227,12 +205,7 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_floatHeight = _armor->getFloatHeight() == -1 ? soldier->getRules()->getFloatHeight() : _armor->getFloatHeight();
 
 	_specab = (SpecialAbility)_armor->getSpecialAbility();
-	_movementType = _armor->getMovementType();
-	if (_movementType == MT_FLOAT) {
-		if (depth > 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
-	} else if (_movementType == MT_SINK) {
-		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
-	}
+	_movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -493,29 +466,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 		_vip = true;
 	}
 
-	_movementType = _armor->getMovementType();
-	if (_movementType == MT_FLOAT)
-	{
-		if (depth > 0)
-		{
-			_movementType = MT_FLY;
-		}
-		else
-		{
-			_movementType = MT_WALK;
-		}
-	}
-	else if (_movementType == MT_SINK)
-	{
-		if (depth == 0)
-		{
-			_movementType = MT_FLY;
-		}
-		else
-		{
-			_movementType = MT_WALK;
-		}
-	}
+	_movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -622,12 +573,7 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	_floatHeight = _armor->getFloatHeight() == -1 ? _unitRules->getFloatHeight() : _armor->getFloatHeight();
 	_loftempsSet = _armor->getLoftempsSet();
 
-	_movementType = _armor->getMovementType();
-	if (_movementType == MT_FLOAT) {
-		if (depth > 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
-	} else if (_movementType == MT_SINK) {
-		if (depth == 0) { _movementType = MT_FLY; } else { _movementType = MT_WALK; }
-	}
+	_movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();

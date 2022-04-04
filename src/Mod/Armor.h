@@ -226,6 +226,8 @@ public:
 	bool drawBubbles() const;
 	/// DO NOT USE THIS FUNCTION OUTSIDE THE BATTLEUNIT CONSTRUCTOR OR I WILL HUNT YOU DOWN.
 	MovementType getMovementType() const;
+	/// Get MovementType based on deapth of battle.
+	MovementType getMovementTypeByDepth(int depth) const;
 	/// Gets the armor's special ability.
 	int getSpecialAbility() const;
 

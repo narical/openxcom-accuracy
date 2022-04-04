@@ -567,6 +567,39 @@ MovementType Armor::getMovementType() const
 }
 
 /**
+ * Get MovementType based on deapth of battle.
+ */
+MovementType Armor::getMovementTypeByDepth(int depth) const
+{
+	if (_movementType == MT_FLOAT)
+	{
+		if (depth > 0)
+		{
+			return MT_FLY;
+		}
+		else
+		{
+			return MT_WALK;
+		}
+	}
+	else if (_movementType == MT_SINK)
+	{
+		if (depth == 0)
+		{
+			return MT_FLY;
+		}
+		else
+		{
+			return MT_WALK;
+		}
+	}
+	else
+	{
+		return _movementType;
+	}
+}
+
+/**
  * Gets the armor's special ability.
  * @return The armor's specab.
  */
