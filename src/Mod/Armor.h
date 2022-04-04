@@ -38,6 +38,45 @@ class RuleResearch;
 class RuleSoldier;
 
 /**
+ * Move cost multipler.
+ */
+struct ArmorMoveCost
+{
+	int TimePercent;
+	int EnergyPercent;
+
+	ArmorMoveCost& operator*=(ArmorMoveCost c)
+	{
+		TimePercent *= c.TimePercent;
+		EnergyPercent *= c.EnergyPercent;
+		return *this;
+	}
+
+	bool operator==(ArmorMoveCost c) const
+	{
+		return TimePercent == c.TimePercent && EnergyPercent == c.EnergyPercent;
+	}
+
+	bool operator!=(ArmorMoveCost c) const
+	{
+		return !(*this == c);
+	}
+
+	void load(const YAML::Node& node)
+	{
+		if (node)
+		{
+			std::tie(TimePercent, EnergyPercent) = node.as<std::pair<int, int>>();
+		}
+	}
+	void save(YAML::Node& node, const char* name) const
+	{
+		node[name] = std::make_pair(TimePercent, EnergyPercent);
+	}
+};
+
+
+/**
  * Represents a specific type of armor.
  * Not only soldier armor, but also alien armor - some alien races wear
  * Soldier Armor, Leader Armor or Commander Armor depending on their rank.
@@ -76,16 +115,32 @@ private:
 	bool _drawBubbles;
 	MovementType _movementType;
 	SpecialAbility _specab;
+
 	bool _turnBeforeFirstStep;
 	int _turnCost;
-	int _moveTimeCostPercent = 100;
-	int _moveEnergyCostPercent = 100;
+
+	ArmorMoveCost _moveCostBase = { 100, 100 };
+	ArmorMoveCost _moveCostBaseFly = { 100, 100 };
+	ArmorMoveCost _moveCostBaseNormal = { 100, 100 };
+
+	ArmorMoveCost _moveCostWalk = { 100, 50 };
+	ArmorMoveCost _moveCostRun = { 75, 75 };
+	ArmorMoveCost _moveCostStrafe = { 100, 50 };
+	ArmorMoveCost _moveCostSneak = { 100, 50 };
+	ArmorMoveCost _moveCostFlyWalk = { 100, 50 };
+	ArmorMoveCost _moveCostFlyRun = { 75, 75 };
+	ArmorMoveCost _moveCostFlyStrafe = { 100, 50 };
+	ArmorMoveCost _moveCostFlyUp = { 100, 0 };
+	ArmorMoveCost _moveCostFlyDown = { 100, 0 };
+	ArmorMoveCost _moveCostGravLift = { 100, 0 };
+
 	int _moveSound;
 	std::vector<int> _deathSoundMale, _deathSoundFemale;
 	std::vector<int> _selectUnitSoundMale, _selectUnitSoundFemale;
 	std::vector<int> _startMovingSoundMale, _startMovingSoundFemale;
 	std::vector<int> _selectWeaponSoundMale, _selectWeaponSoundFemale;
 	std::vector<int> _annoyedSoundMale, _annoyedSoundFemale;
+
 	int _size, _weight, _visibilityAtDark, _visibilityAtDay, _personalLight;
 	int _camouflageAtDay, _camouflageAtDark, _antiCamouflageAtDay, _antiCamouflageAtDark, _heatVision, _psiVision, _psiCamouflage;
 	float _damageModifier[DAMAGE_TYPES];
@@ -178,10 +233,34 @@ public:
 	bool getTurnBeforeFirstStep() const { return _turnBeforeFirstStep; }
 	/// Gets the turn cost.
 	int getTurnCost() const { return _turnCost; }
-	/// Multiplier of move TU cost.
-	int getMoveTimeCostPercent() const { return _moveTimeCostPercent; }
-	/// Multiplier of move Energy cost.
-	int getMoveEnergyCostPercent() const { return _moveEnergyCostPercent; }
+
+	/// Multiplier of all move costs.
+	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }
+	/// Multiplier of normal base move cost.
+	ArmorMoveCost getMoveCostBaseNormal() const { return _moveCostBaseNormal; }
+	/// Multiplier of fly base move cost.
+	ArmorMoveCost getMoveCostBaseFly() const { return _moveCostBaseFly; }
+
+	/// Multiplier of walk move cost.
+	ArmorMoveCost getMoveCostWalk() const { return _moveCostWalk; }
+	/// Multiplier of run move cost.
+	ArmorMoveCost getMoveCostRun() const { return _moveCostRun; }
+	/// Multiplier of strafe move cost.
+	ArmorMoveCost getMoveCostStrafe() const { return _moveCostStrafe; }
+	/// Multiplier of sneak move cost.
+	ArmorMoveCost getMoveCostSneak() const { return _moveCostSneak; }
+	/// Multiplier of fly "walk" move cost.
+	ArmorMoveCost getMoveCostFlyWalk() const { return _moveCostFlyWalk; }
+	/// Multiplier of fly "run" move cost.
+	ArmorMoveCost getMoveCostFlyRun() const { return _moveCostFlyRun; }
+	/// Multiplier of fly "strafe" cost.
+	ArmorMoveCost getMoveCostFlyStrafe() const { return _moveCostFlyStrafe; }
+	/// Multiplier of fly up move cost.
+	ArmorMoveCost getMoveCostFlyUp() const { return _moveCostFlyUp; }
+	/// Multiplier of fly down move cost.
+	ArmorMoveCost getMoveCostFlyDown() const { return _moveCostFlyDown; }
+	/// Multiplier of moving using GravLift cost.
+	ArmorMoveCost getMoveCostGravLift() const { return _moveCostGravLift; }
 
 	/// Gets the move sound id. Overrides default/unit's move sound. To be used in BattleUnit constructors only too!
 	int getMoveSound() const;

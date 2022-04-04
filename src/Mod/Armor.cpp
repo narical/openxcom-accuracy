@@ -143,11 +143,23 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	_turnCost = node["turnCost"].as<int>(_turnCost);
 	if (const YAML::Node &move =  node["moveCost"])
 	{
-		if (const YAML::Node &base =  move["basePercent"])
-		{
-			std::tie(_moveTimeCostPercent, _moveEnergyCostPercent) = base.as<std::pair<int, int>>();
-		}
-		//TODO: add other moddifers for move
+		_moveCostBase.load(move["basePercent"]);
+		_moveCostBaseFly.load(move["baseFlyPercent"]);
+		_moveCostBaseNormal.load(move["baseNormalPercent"]);
+
+		_moveCostWalk.load(move["walkPercent"]);
+		_moveCostRun.load(move["runPercent"]);
+		_moveCostStrafe.load(move["strafePercent"]);
+		_moveCostSneak.load(move["sneakPercent"]);
+
+		_moveCostFlyWalk.load(move["flyWalkPercent"]);
+		_moveCostFlyRun.load(move["flyRunPercent"]);
+		_moveCostFlyStrafe.load(move["flyStrafePercent"]);
+
+		_moveCostFlyUp.load(move["flyUpPercent"]);
+		_moveCostFlyDown.load(move["flyDownPercent"]);
+
+		_moveCostGravLift.load(move["gravLiftPercent"]);
 	}
 
 	mod->loadSoundOffset(_type, _moveSound, node["moveSound"], "BATTLE.CAT");
@@ -1202,8 +1214,13 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.add<&getArmorValueScript>("getArmor");
 
 
-	ar.addField<&Armor::_moveTimeCostPercent>("MoveCost.getBaseTimePercent");
-	ar.addField<&Armor::_moveEnergyCostPercent>("MoveCost.getBaseEnergyPercent");
+	ar.addField<&Armor::_moveCostBase, &ArmorMoveCost::TimePercent>("MoveCost.getBaseTimePercent");
+	ar.addField<&Armor::_moveCostBase, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseEnergyPercent");
+	ar.addField<&Armor::_moveCostBaseNormal, &ArmorMoveCost::TimePercent>("MoveCost.getBaseNormalTimePercent");
+	ar.addField<&Armor::_moveCostBaseNormal, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseNormalEnergyPercent");
+	ar.addField<&Armor::_moveCostBaseFly, &ArmorMoveCost::TimePercent>("MoveCost.getBaseFlyTimePercent");
+	ar.addField<&Armor::_moveCostBaseFly, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseFlyEnergyPercent");
+
 
 	ar.addScriptValue<BindBase::OnlyGet, &Armor::_scriptValues>();
 	ar.addDebugDisplay<&debugDisplayScript>();
