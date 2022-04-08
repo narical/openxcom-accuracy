@@ -606,6 +606,10 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_waypoints = node["waypoints"].as<int>(_waypoints);
 	_fixedWeapon = node["fixedWeapon"].as<bool>(_fixedWeapon);
 	_fixedWeaponShow = node["fixedWeaponShow"].as<bool>(_fixedWeaponShow);
+	if (const YAML::Node& cost = node["inventoryMoveCost"])
+	{
+		_inventoryMoveCostPercent = cost["basePercent"].as<int>(_inventoryMoveCostPercent);
+	}
 	mod->loadNameNull(_type, _defaultInventorySlotName, node["defaultInventorySlot"]);
 	_defaultInvSlotX = node["defaultInvSlotX"].as<int>(_defaultInvSlotX);
 	_defaultInvSlotY = node["defaultInvSlotY"].as<int>(_defaultInvSlotY);

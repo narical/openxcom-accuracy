@@ -52,6 +52,7 @@ private:
 	BattleUnit *_owner, *_previousOwner;
 	BattleUnit *_unit;
 	Tile *_tile;
+	int _inventoryMoveCostPercent = 0;
 	const RuleInventory *_inventorySlot;
 	int _inventoryX, _inventoryY;
 	BattleItem *_ammoItem[RuleItem::AmmoSlotMax] = { };
