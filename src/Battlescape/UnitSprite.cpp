@@ -793,7 +793,7 @@ void UnitSprite::drawRoutine2()
 
 	Part s{ BODYPART_LARGE_TORSO + _part };
 
-	const int hoverTank = _unit->getMovementType() == MT_FLY ? 32 : 0;
+	const int hoverTank = _unit->getOriginalMovementType() == MT_FLY ? 32 : 0;
 	const int turret = _unit->getTurretType();
 
 	// draw the animated propulsion below the hwp
@@ -1335,7 +1335,7 @@ void UnitSprite::drawRoutine11()
 
 	int body = 0;
 	int animFrame = _unit->getWalkingPhase() % 4;
-	if (_unit->getMovementType() == MT_FLY)
+	if (_unit->getOriginalMovementType() == MT_FLY)
 	{
 		body = 128;
 		animFrame = _animationFrame % 4;

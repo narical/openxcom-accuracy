@@ -164,6 +164,7 @@ private:
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;
 	MovementType _movementType;
+	MovementType _originalMovementType;
 	ArmorMoveCost _moveCostBase = { 0, 0 };
 	ArmorMoveCost _moveCostBaseFly = { 0, 0 };
 	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
@@ -679,8 +680,12 @@ public:
 	void setEnviSmoke(int damage);
 	/// Calculate smoke and fire damage from environment.
 	void calculateEnviDamage(Mod *mod, SavedBattleGame *save);
+	/// Gets original unit's movement type.
+	MovementType getOriginalMovementType() const { return _originalMovementType; }
 	/// Use this function to check the unit's movement type.
-	MovementType getMovementType() const;
+	MovementType getMovementType() const { return _movementType; }
+	/// Set unit movement type.
+	void setMovementType(MovementType type) { _movementType = type; }
 	/// Gets the turn cost.
 	int getTurnCost() const;
 	/// Gets cost of standing up from kneeling.

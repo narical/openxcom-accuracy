@@ -85,7 +85,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_intelligence = 2;
 	_aggression = 1;
 	_specab = (SpecialAbility)_armor->getSpecialAbility();
-	_movementType = _armor->getMovementTypeByDepth(depth);
+	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -205,7 +205,7 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_floatHeight = _armor->getFloatHeight() == -1 ? soldier->getRules()->getFloatHeight() : _armor->getFloatHeight();
 
 	_specab = (SpecialAbility)_armor->getSpecialAbility();
-	_movementType = _armor->getMovementTypeByDepth(depth);
+	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -466,7 +466,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 		_vip = true;
 	}
 
-	_movementType = _armor->getMovementTypeByDepth(depth);
+	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -573,7 +573,7 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	_floatHeight = _armor->getFloatHeight() == -1 ? _unitRules->getFloatHeight() : _armor->getFloatHeight();
 	_loftempsSet = _armor->getLoftempsSet();
 
-	_movementType = _armor->getMovementTypeByDepth(depth);
+	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
@@ -708,6 +708,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_resummonedFakeCivilian = node["resummonedFakeCivilian"].as<bool>(_resummonedFakeCivilian);
 	_pickUpWeaponsMoreActively = node["pickUpWeaponsMoreActively"].as<bool>(_pickUpWeaponsMoreActively);
 	_disableIndicators = node["disableIndicators"].as<bool>(_disableIndicators);
+	_movementType = (MovementType)node["movementType"].as<int>(_movementType);
 	if (const YAML::Node& p = node["moveCost"])
 	{
 		_moveCostBase.load(p["basePercent"]);
@@ -812,6 +813,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["pickUpWeaponsMoreActively"] = _pickUpWeaponsMoreActively;
 	if (_disableIndicators)
 		node["disableIndicators"] = _disableIndicators;
+
+	if (_originalMovementType != _movementType)
+		node["movementType"] = (int)_movementType;
+
 	{
 		YAML::Node p;
 		if (_moveCostBase != _armor->getMoveCostBase())
@@ -4832,14 +4837,6 @@ void BattleUnit::calculateEnviDamage(Mod *mod, SavedBattleGame *save)
 }
 
 /**
- * use this instead of checking the rules of the armor.
- */
-MovementType BattleUnit::getMovementType() const
-{
-	return _movementType;
-}
-
-/**
  * Gets the turn cost.
  */
 int BattleUnit::getTurnCost() const
@@ -5353,6 +5350,37 @@ void getFatalWoundMaxScript(const BattleUnit *bu, int &ret, int part)
 	}
 	ret = 0;
 }
+
+
+
+void getMovmentTypeScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = (int)bu->getMovementType();
+		return;
+	}
+	ret = 0;
+}
+void getOriginalMovmentTypeScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = (int)bu->getOriginalMovementType();
+		return;
+	}
+	ret = 0;
+}
+
+void setMovmentTypeScript(BattleUnit *bu, int type)
+{
+	if (bu && 0 <= type && type <= MT_SLIDE)
+	{
+		bu->setMovementType((MovementType)type);
+		return;
+	}
+}
+
 
 
 void getGenderScript(const BattleUnit *bu, int &ret)
@@ -6078,6 +6106,11 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
 
+
+	bu.add<&getMovmentTypeScript>("getMovmentType", "get move type of unit");
+	bu.add<&getOriginalMovmentTypeScript>("getOriginalMovmentType", "get original move type of unit");
+	bu.add<&setMovmentTypeScript>("setMovmentType", "set move type of unit");
+
 	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::TimePercent>("MoveCost.getBaseTimePercent", "MoveCost.setBaseTimePercent");
 	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
 	bu.addField<&BattleUnit::_moveCostBaseFly, &ArmorMoveCost::TimePercent>("MoveCost.getBaseFlyTimePercent", "MoveCost.setBaseFlyTimePercent");
@@ -6167,6 +6200,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.addCustomConst("GENDER_MALE", GENDER_MALE);
 	bu.addCustomConst("GENDER_FEMALE", GENDER_FEMALE);
+
+	bu.addCustomConst("movment_type_walk", MT_WALK);
+	bu.addCustomConst("movment_type_fly", MT_FLY);
+	bu.addCustomConst("movment_type_slide", MT_SLIDE);
 }
 
 /**

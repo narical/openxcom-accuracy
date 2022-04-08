@@ -933,6 +933,14 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 				noSound = true;
 				statePushNext(new UnitDieBState(this, (*j), getMod()->getDamageType(DT_NONE), noSound)); // no damage type used there
 			}
+			else
+			{
+				// piggyback of cleanup after script that change move type
+				if ((*j)->haveNoFloorBelow() && (*j)->getMovementType() != MT_FLY)
+				{
+					_parentState->getBattleGame()->getSave()->addFallingUnit(*j);
+				}
+			}
 		}
 	}
 
