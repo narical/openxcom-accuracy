@@ -2703,7 +2703,7 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 			if (slot != -1)
 			{
 				BattleActionCost cost{ unit };
-				cost.Time += Mod::EXTENDED_ITEM_RELOAD_COST ? i->getSlot()->getCost(weapon->getSlot()) : 0;
+				cost.Time += Mod::EXTENDED_ITEM_RELOAD_COST ? i->getMoveToCost(weapon->getSlot()) : 0;
 				cost.Time += weapon->getRules()->getTULoad(slot);
 				if (cost.haveTU() && !weapon->getAmmoForSlot(slot))
 				{
@@ -2719,7 +2719,7 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 	auto equipItem = [&unit](RuleInventory *slot, BattleItem* i)
 	{
 		BattleActionCost cost{ unit };
-		cost.Time += i->getSlot()->getCost(slot);
+		cost.Time += i->getMoveToCost(slot);
 		if (cost.haveTU() && unit->fitItemToInventory(slot, i))
 		{
 			cost.spendTU();

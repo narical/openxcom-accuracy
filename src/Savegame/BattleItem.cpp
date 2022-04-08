@@ -563,6 +563,16 @@ const RuleInventory *BattleItem::getSlot() const
 }
 
 /**
+ * Gets the cost of moving item to given slot.
+ */
+int BattleItem::getMoveToCost(const RuleInventory *slot) const
+{
+	auto cost = _inventorySlot->getCost(slot);
+
+	return cost;
+}
+
+/**
  * Sets the item's inventory slot.
  * @param slot The slot id.
  */

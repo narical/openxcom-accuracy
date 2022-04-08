@@ -130,6 +130,8 @@ public:
 	bool isSpecialWeapon() const { return getOwner() && !getSlot(); }
 	/// Gets the item's inventory slot.
 	const RuleInventory *getSlot() const;
+	/// Gets the cost of moving item to given slot.
+	int getMoveToCost(const RuleInventory *slot) const;
 	/// Sets the item's inventory slot.
 	void setSlot(const RuleInventory *slot);
 	/// Gets the item's inventory X position.
