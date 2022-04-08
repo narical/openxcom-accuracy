@@ -6107,9 +6107,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
 
 
-	bu.add<&getMovmentTypeScript>("getMovmentType", "get move type of unit");
-	bu.add<&getOriginalMovmentTypeScript>("getOriginalMovmentType", "get original move type of unit");
-	bu.add<&setMovmentTypeScript>("setMovmentType", "set move type of unit");
+	bu.add<&getMovmentTypeScript>("getMovmentType", BindBase::functionInvisible); //old bugged name
+	bu.add<&getMovmentTypeScript>("getMovementType", "get move type of unit");
+	bu.add<&getOriginalMovmentTypeScript>("getOriginalMovementType", "get original move type of unit");
+	bu.add<&setMovmentTypeScript>("setMovementType", "set move type of unit");
 
 	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::TimePercent>("MoveCost.getBaseTimePercent", "MoveCost.setBaseTimePercent");
 	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
@@ -6201,9 +6202,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addCustomConst("GENDER_MALE", GENDER_MALE);
 	bu.addCustomConst("GENDER_FEMALE", GENDER_FEMALE);
 
-	bu.addCustomConst("movment_type_walk", MT_WALK);
-	bu.addCustomConst("movment_type_fly", MT_FLY);
-	bu.addCustomConst("movment_type_slide", MT_SLIDE);
+	bu.addCustomConst("movement_type_walk", MT_WALK);
+	bu.addCustomConst("movement_type_fly", MT_FLY);
+	bu.addCustomConst("movement_type_slide", MT_SLIDE);
 }
 
 /**
