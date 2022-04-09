@@ -1514,7 +1514,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 
 	bi.addFunc<getRuleInventorySlotScript>("getSlot");
 	bi.addFunc<getRuleInventoryMoveToCostScript>("getMoveToCost", "cost of moving item from slot in first arg to slot from last arg");
-	bi.addField<&BattleItem::_inventoryMoveCostPercent>("InvenotryMoveCost.getBaseTimePercent", "InvenotryMoveCost.setBaseTimePercent");
+	bi.addField<&BattleItem::_inventoryMoveCostPercent>("InventoryMoveCost.getBaseTimePercent", "InventoryMoveCost.setBaseTimePercent");
 
 	bi.addPair<BattleUnit, &BattleItem::getPreviousOwner, &BattleItem::getPreviousOwner>("getPreviousOwner");
 	bi.addPair<BattleUnit, &BattleItem::getOwner, &BattleItem::getOwner>("getOwner");
