@@ -2357,6 +2357,7 @@ void GeoscapeState::time1Day()
 			saveGame->getAvailableResearchProjects(before, mod, base);
 		}
 		// 3. add finished research, including lookups and getonefrees (up to 4x)
+		std::vector<const RuleResearch*> topicsToCheck;
 		for (ResearchProject *project : finished)
 		{
 			const RuleResearch *bonus = 0;
@@ -2501,12 +2502,16 @@ void GeoscapeState::time1Day()
 				popup(new NewPossibleFacilityState(base, _globe, newPossibleFacilities));
 			}
 
-			std::vector<const RuleResearch*> topicsToCheck;
 			topicsToCheck.push_back(research);
 			if (bonus)
 			{
 				topicsToCheck.push_back(bonus);
 			}
+		}
+		if (!topicsToCheck.empty())
+		{
+			Collections::sortVector(topicsToCheck);
+			Collections::sortVectorMakeUnique(topicsToCheck);
 			// Side effects:
 			// 1. remove obsolete research projects from all bases
 			// 2. handle items spawned by research
