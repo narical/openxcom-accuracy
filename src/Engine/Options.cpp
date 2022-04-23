@@ -837,19 +837,32 @@ void updateMods()
 	FileMap::clear(false, Options::oxceEmbeddedOnly);
 
 	refreshMods();
-	FileMap::setup(getActiveMods(), Options::oxceEmbeddedOnly);
+
+	// check active mods that don't meet the OXCE requirements
+	auto activeModsList = getActiveMods();
+	bool forceQuit = false;
+	for (auto* modInf : activeModsList)
+	{
+		if (!modInf->isVersionOk())
+		{
+			forceQuit = true;
+			Log(LOG_ERROR) << "- " << modInf->getId() << " v" << modInf->getVersion();
+			Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' requires at least OXCE v" << modInf->getRequiredExtendedVersion();
+		}
+	}
+	if (forceQuit)
+	{
+		throw Exception("Incompatible mods are active. Please upgrade OpenXcom.");
+	}
+
+	FileMap::setup(activeModsList, Options::oxceEmbeddedOnly);
 	userSplitMasters();
 
-	// report active mods that don't meet the minimum OXCE requirements
 	Log(LOG_INFO) << "Active mods:";
 	auto activeMods = getActiveMods();
 	for (auto modInf : activeMods)
 	{
 		Log(LOG_INFO) << "- " << modInf->getId() << " v" << modInf->getVersion();
-		if (!modInf->isVersionOk())
-		{
-			Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' requires at least OXCE v" << modInf->getRequiredExtendedVersion();
-		}
 	}
 }
 

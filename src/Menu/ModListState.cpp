@@ -174,7 +174,7 @@ void ModListState::cbxMasterChange(Action *)
 	{
 		if (!masterModInfo->isVersionOk())
 		{
-			_game->pushState(new ModConfirmExtendedState(this, true, masterModInfo->getRequiredExtendedVersion()));
+			_game->pushState(new ModConfirmExtendedState(this, masterModInfo));
 			return;
 		}
 	}
@@ -262,7 +262,7 @@ void ModListState::lstModsClick(Action *action)
 		const ModInfo *modInfo = &Options::getModInfos().at(mod.first);
 		if (!modInfo->isVersionOk())
 		{
-			_game->pushState(new ModConfirmExtendedState(this, false, modInfo->getRequiredExtendedVersion()));
+			_game->pushState(new ModConfirmExtendedState(this, modInfo));
 			return;
 		}
 	}
