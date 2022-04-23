@@ -29,7 +29,7 @@ namespace OpenXcom
 ModInfo::ModInfo(const std::string &path) :
 	 _path(path), _name(CrossPlatform::baseFilename(path)),
 	_desc("No description."), _version("1.0"), _author("unknown author"),
-	_id(_name), _master("xcom1"), _isMaster(false), _reservedSpace(1), _versionOk(true), _enforcedVersionOk(true)
+	_id(_name), _master("xcom1"), _isMaster(false), _reservedSpace(1), _versionOk(true)
 {
 	// empty
 }
@@ -44,19 +44,10 @@ void ModInfo::load(const YAML::Node& doc)
 	_isMaster = doc["isMaster"].as<bool>(_isMaster);
 	_reservedSpace = doc["reservedSpace"].as<int>(_reservedSpace);
 	_requiredExtendedVersion = doc["requiredExtendedVersion"].as<std::string>(_requiredExtendedVersion);
-	_enforcedExtendedVersion = doc["enforcedExtendedVersion"].as<std::string>(_enforcedExtendedVersion);
 
 	if (!_requiredExtendedVersion.empty())
 	{
 		_versionOk = !CrossPlatform::isHigherThanCurrentVersion(_requiredExtendedVersion);
-	}
-	if (!_enforcedExtendedVersion.empty())
-	{
-		_enforcedVersionOk = !CrossPlatform::isHigherThanCurrentVersion(_enforcedExtendedVersion);
-		if (!_enforcedVersionOk)
-		{
-			_versionOk = false;
-		}
 	}
 
 	if (_reservedSpace < 1)
@@ -94,7 +85,6 @@ const std::string &ModInfo::getId()                      const { return _id;    
 const std::string &ModInfo::getMaster()                  const { return _master;                  }
 bool               ModInfo::isMaster()                   const { return _isMaster;                }
 const std::string &ModInfo::getRequiredExtendedVersion() const { return _requiredExtendedVersion; }
-const std::string &ModInfo::getEnforcedExtendedVersion() const { return _enforcedExtendedVersion; }
 const std::string &ModInfo::getResourceConfigFile()      const { return _resourceConfigFile;      }
 int                ModInfo::getReservedSpace()           const { return _reservedSpace;           }
 
@@ -122,15 +112,6 @@ const std::vector<std::string> &ModInfo::getExternalResourceDirs() const { retur
 bool ModInfo::isVersionOk() const
 {
 	return _versionOk;
-}
-
-/**
- * Gets whether the current OXCE version is equal to (or higher than) the enforced OXCE version.
- * @return True if the enforced version is OK.
-*/
-bool ModInfo::isEnforcedVersionOk() const
-{
-	return _enforcedVersionOk;
 }
 
 }

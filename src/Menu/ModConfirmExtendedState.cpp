@@ -19,7 +19,6 @@
 #include "ModConfirmExtendedState.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
-#include "../Engine/ModInfo.h"
 #include "../Engine/Options.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
@@ -34,9 +33,9 @@ namespace OpenXcom
 	 * Initializes all the elements in the Confirm OXCE screen.
 	 * @param state Pointer to the Options|Mod state.
 	 * @param isMaster Are we enabling a standard mod or a master mod?
-	 * @param masterModInfo Info about OXCE version required and/or enforced.
+	 * @param versionRequired Minimum OXCE version required.
 	 */
-	ModConfirmExtendedState::ModConfirmExtendedState(ModListState *state, bool isMaster, const ModInfo* masterModInfo) : _state(state), _isMaster(isMaster)
+	ModConfirmExtendedState::ModConfirmExtendedState(ModListState *state, bool isMaster, const std::string &versionRequired) : _state(state), _isMaster(isMaster)
 	{
 		_screen = false;
 
@@ -61,12 +60,6 @@ namespace OpenXcom
 
 		_btnYes->setText(tr("STR_YES"));
 		_btnYes->onMouseClick((ActionHandler)&ModConfirmExtendedState::btnYesClick);
-		std::string ver = masterModInfo->getRequiredExtendedVersion();
-		if (!masterModInfo->isEnforcedVersionOk())
-		{
-			_btnYes->setVisible(false);
-			ver = masterModInfo->getEnforcedExtendedVersion();
-		}
 
 		_btnNo->setText(tr("STR_NO"));
 		_btnNo->onMouseClick((ActionHandler)&ModConfirmExtendedState::btnNoClick);
@@ -74,7 +67,7 @@ namespace OpenXcom
 		_txtTitle->setAlign(ALIGN_CENTER);
 		_txtTitle->setBig();
 		_txtTitle->setWordWrap(true);
-		_txtTitle->setText(tr("STR_VERSION_REQUIRED_QUESTION").arg(ver));
+		_txtTitle->setText(tr("STR_VERSION_REQUIRED_QUESTION").arg(versionRequired));
 	}
 
 	/**
