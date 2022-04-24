@@ -1365,7 +1365,7 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 				}
 			}
 		}
-		else if (_craft && _craft->hasCustomDeployment())
+		else if (_craft && _craft->hasCustomDeployment() && _craft->getRules() == _craftRules)
 		{
 			setCustomCraftInventoryTile();
 
