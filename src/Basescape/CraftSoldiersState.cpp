@@ -55,11 +55,17 @@ namespace OpenXcom
 CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 		:  _base(base), _craft(craft), _otherCraftColor(0), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
-	bool isNewBattle = _game->getSavedGame()->getMonthsPassed() == -1;
+	bool hidePreview = _game->getSavedGame()->getMonthsPassed() == -1;
+	Craft *c = _base->getCrafts()->at(_craft);
+	if (c && !c->getRules()->getBattlescapeTerrainData())
+	{
+		// no battlescape map available
+		hidePreview = true;
+	}
 
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
-	_btnOk = new TextButton(isNewBattle ? 148 : 30, 16, isNewBattle ? 164 : 274, 176);
+	_btnOk = new TextButton(hidePreview ? 148 : 30, 16, hidePreview ? 164 : 274, 176);
 	_btnPreview = new TextButton(102, 16, 164, 176);
 	_txtTitle = new Text(300, 17, 16, 7);
 	_txtName = new Text(114, 9, 16, 32);
@@ -99,11 +105,10 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnDeassignCraftSoldiersClick, Options::keyRemoveSoldiersFromCraft);
 
 	_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
-	_btnPreview->setVisible(!isNewBattle);
+	_btnPreview->setVisible(!hidePreview);
 	_btnPreview->onMouseClick((ActionHandler)&CraftSoldiersState::btnPreviewClick);
 
 	_txtTitle->setBig();
-	Craft *c = _base->getCrafts()->at(_craft);
 	_txtTitle->setText(tr("STR_SELECT_SQUAD_FOR_CRAFT").arg(c->getName(_game->getLanguage())));
 
 	_txtName->setText(tr("STR_NAME_UC"));

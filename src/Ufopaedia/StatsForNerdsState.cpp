@@ -275,7 +275,7 @@ void StatsForNerdsState::init()
 				return;
 			}
 			RuleCraft* craftRule = _game->getMod()->getCraft(_topicId);
-			if (craftRule->getMaxUnits() > 0)
+			if (craftRule->getMaxUnits() > 0 && craftRule->getBattlescapeTerrainData())
 			{
 				auto& data = _game->getSavedGame()->getCustomRuleCraftDeployments();
 				auto find = data.find(craftRule->getType());
