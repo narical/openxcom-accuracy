@@ -388,7 +388,7 @@ void BasescapeState::viewLeftClick(Action *)
 		}
 		else
 		{
-			if (fac->getRules()->isLift())
+			if (fac->getRules()->isLift() && _base->getFacilities()->size() > 1)
 			{
 				// Note: vehicles will not be deployed in the base preview
 				if (_base->getAvailableSoldiers(true, true) > 0/* || !_base->getVehicles()->empty()*/)
