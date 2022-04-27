@@ -1558,7 +1558,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 	UnitBodyPart bodypart = BODYPART_TORSO;
 
 	_hitByAnything = true;
-	if (damage <= 0 || _health <= 0)
+	if (_health <= 0)
 	{
 		return 0;
 	}
@@ -1686,6 +1686,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 
 	// update state of unit stats
+	if (damage > 0)
 	{
 		constexpr int toHealth = 0;
 		constexpr int toArmor = 1;
