@@ -23,6 +23,7 @@
 #include "Exception.h"
 #include <yaml-cpp/yaml.h>
 #include <sstream>
+#include <assert.h>
 
 namespace OpenXcom
 {
@@ -143,5 +144,27 @@ bool ModInfo::canActivate(const std::string &curMaster) const
 
 
 const std::vector<std::string> &ModInfo::getExternalResourceDirs() const { return _externalResourceDirs; }
+
+
+
+#ifdef OXCE_AUTO_TEST
+
+static auto dummy = ([]
+{
+	auto create = [](int i, int j, int k, int l)
+	{
+		return std::array<int, 4>{{i, j, k, l}};
+	};
+
+	assert(findCompatibleEngine(supportedEngines, "Extended", create(OPENXCOM_VERSION_NUMBER)));
+	assert(findCompatibleEngine(supportedEngines, "Extended", create(1, 0, 0, 0)));
+	assert(findCompatibleEngine(supportedEngines, "", create(0, 0, 0, 0)));
+	assert(!findCompatibleEngine(supportedEngines, "Extended", create(OPENXCOM_VERSION_NUMBER + 1)));
+	assert(!findCompatibleEngine(supportedEngines, "XYZ", create(OPENXCOM_VERSION_NUMBER)));
+	assert(!findCompatibleEngine(supportedEngines, "XYZ", create(0, 0, 0, 0)));
+
+	return 0;
+})();
+#endif
 
 }
