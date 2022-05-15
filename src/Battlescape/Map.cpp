@@ -115,13 +115,17 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_iconWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
 	_messageColor = _game->getMod()->getInterface("battlescape")->getElement("messageWindows")->color;
 
-	_previewSetting = Options::battleNewPreviewPath;
+	PathPreview previewSetting = Options::battleNewPreviewPath;
 	_smoothCamera = Options::battleSmoothCamera;
 	if (Options::traceAI)
 	{
 		// turn everything on because we want to see the markers.
-		_previewSetting = PATH_FULL;
+		previewSetting = PATH_ARROW_TU;
 	}
+	_previewSettingArrows = previewSetting & PATH_ARROWS;
+	_previewSettingTu     = previewSetting & PATH_TU_COST;
+	_previewSettingEnergy = previewSetting & PATH_ENERGY_COST;
+
 	_save = _game->getSavedGame()->getSavedBattle();
 	if ((int)(_game->getMod()->getLUTs()->size()) > _save->getDepth())
 	{
@@ -797,7 +801,7 @@ void Map::drawTerrain(Surface *surface)
 
 	bool pathfinderTurnedOn = _save->getPathfinding()->isPathPreviewed();
 
-	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSetting & PATH_TU_COST)))
+	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)))
 	{
 		_numWaypid = new NumberText(15, 15, 20, 30);
 		_numWaypid->setPalette(getPalette());
@@ -1161,7 +1165,7 @@ void Map::drawTerrain(Surface *surface)
 					}
 
 					// Draw Path Preview
-					if (tile->getPreview() != -1 && tile->isDiscovered(O_FLOOR) && (_previewSetting & PATH_ARROWS))
+					if (_previewSettingArrows && tile->getPreview() != -1 && tile->isDiscovered(O_FLOOR))
 					{
 						if (itZ > 0 && tile->hasNoFloor(_save))
 						{
@@ -1497,7 +1501,7 @@ void Map::drawTerrain(Surface *surface)
 						if (!tile || !tile->isDiscovered(O_FLOOR) || tile->getPreview() == -1)
 							continue;
 						int adjustment = -tile->getTerrainLevel();
-						if (_previewSetting & PATH_ARROWS)
+						if (_previewSettingArrows)
 						{
 							if (itZ > 0 && tile->hasNoFloor(_save))
 							{
@@ -1515,26 +1519,48 @@ void Map::drawTerrain(Surface *surface)
 							}
 						}
 
-						if (_previewSetting & PATH_TU_COST && tile->getTUMarker() > -1)
+						if ((_previewSettingTu || _previewSettingEnergy) && (tile->getTUMarker() > -1 || tile->getEnergyMarker() > -1))
 						{
 							int off = tile->getTUMarker() > 9 ? 5 : 3;
+							int offE = tile->getEnergyMarker() > 9 ? 5 : 3;
+							int mcolor = _previewSettingArrows ? 0 : tile->getMarkerColor();
+							if (_previewSettingArrows)
+							{
+								adjustment += 7;
+							}
 							if (_save->getSelectedUnit() && _save->getSelectedUnit()->getArmor()->getSize() > 1)
 							{
 								adjustment += 1;
-								if (!(_previewSetting & PATH_ARROWS))
+								if (!_previewSettingArrows)
 								{
 									adjustment += 7;
 								}
 							}
-							_numWaypid->setValue(tile->getTUMarker());
-							_numWaypid->draw();
-							if ( !(_previewSetting & PATH_ARROWS) )
+							if (_previewSettingTu)
 							{
-								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29-adjustment), 0, false, tile->getMarkerColor() );
+								_numWaypid->setValue(tile->getTUMarker());
+								_numWaypid->draw();
+								if (_previewSettingEnergy)
+								{
+									// TU
+									_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22 - adjustment), 0, false, mcolor);
+									// and Energy
+									_numWaypid->setValue(tile->getEnergyMarker());
+									_numWaypid->draw();
+									_numWaypid->blitNShade(surface, screenPosition.x + 16 - offE, screenPosition.y + (29 - adjustment), 0, false, mcolor);
+								}
+								else
+								{
+									// only TU
+									_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29 - adjustment), 0, false, mcolor);
+								}
 							}
-							else
+							else if (_previewSettingEnergy)
 							{
-								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0);
+								// only Energy
+								_numWaypid->setValue(tile->getEnergyMarker());
+								_numWaypid->draw();
+								_numWaypid->blitNShade(surface, screenPosition.x + 16 - offE, screenPosition.y + (29 - adjustment), 0, false, mcolor);
 							}
 						}
 					}

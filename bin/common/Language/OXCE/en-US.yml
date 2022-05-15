@@ -428,6 +428,9 @@ en-US:
   STR_OXCE: "Extended"
 #OptionsBaseState.cpp
   STR_FOLDERS: "FOLDERS"
+#OptionsBattlescapeState.cpp
+  STR_PATH_ENERGY_COST: "Energy"
+  STR_PATH_ENERGY_COST_DESC: "Clicking shows the energy your unit will have remaining after moving to the destination."
 #OptionsFoldersState.cpp
   STR_DATA_FOLDER: "Data Folder (original resources)"
   STR_USER_FOLDER: "User Folder (mods, openxcom.log)"

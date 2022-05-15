@@ -99,7 +99,7 @@ private:
 	std::vector<Position> _waypoints;
 	bool _unitDying, _smoothCamera, _smoothingEngaged, _flashScreen;
 	int _bgColor;
-	PathPreview _previewSetting;
+	bool _previewSettingArrows, _previewSettingTu, _previewSettingEnergy;
 	Text *_txtAccuracy;
 	SurfaceSet *_projectileSet;
 
