@@ -46,6 +46,7 @@ class RuleResearch
 	std::string _name, _lookup, _cutscene, _spawnedItem, _spawnedEvent;
 	int _spawnedItemCount;
 	std::vector<std::string> _spawnedItemList;
+	std::vector<std::string> _decreaseCounter, _increaseCounter;
 	int _cost, _points;
 	std::vector<std::string> _dependenciesName, _unlocksName, _disablesName, _reenablesName, _getOneFreeName, _requiresName;
 	RuleBaseFacilityFunctions _requiresBaseFunc;
@@ -115,6 +116,10 @@ public:
 	const std::vector<std::string>& getSpawnedItemList() const { return _spawnedItemList; }
 	/// Gets the geoscape event to spawn when this topic is researched.
 	const std::string& getSpawnedEvent() const { return _spawnedEvent; }
+	/// Gets the name of custom counter variables to decrease when this topic is researched.
+	const std::vector<std::string>& getDecreaseCounter() const { return _decreaseCounter; }
+	/// Gets the name of custom counter variables to increase when this topic is researched.
+	const std::vector<std::string>& getIncreaseCounter() const { return _increaseCounter; }
 };
 
 }

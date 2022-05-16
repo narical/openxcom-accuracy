@@ -3372,6 +3372,15 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 		// 3l. handle spawned events
 		RuleEvent* spawnedEventRule = mod->getEvent(myResearchRule->getSpawnedEvent());
 		spawnEvent(spawnedEventRule);
+		// 3m. handle counters
+		for (auto& inc : myResearchRule->getIncreaseCounter())
+		{
+			increaseCustomCounter(inc);
+		}
+		for (auto& dec : myResearchRule->getDecreaseCounter())
+		{
+			decreaseCustomCounter(dec);
+		}
 	}
 }
 
