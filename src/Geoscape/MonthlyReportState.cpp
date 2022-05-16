@@ -229,6 +229,7 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	_txtBalance->setText(ss3.str());
 
 	_txtDesc->setWordWrap(true);
+	_txtDesc->setScrollable(true);
 
 	// calculate satisfaction
 	std::ostringstream ss5;
