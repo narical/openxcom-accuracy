@@ -588,7 +588,7 @@ void AIModule::setupPatrol()
 		}
 
 		// in base defense missions, the smaller aliens walk towards target nodes - or if there, shoot objects around them
-		else if (_unit->getArmor()->getSize() == 1)
+		else if (_unit->getArmor()->getSize() == 1 && _unit->getOriginalFaction() == FACTION_HOSTILE)
 		{
 			// can i shoot an object?
 			if (_fromNode->isTarget() &&
