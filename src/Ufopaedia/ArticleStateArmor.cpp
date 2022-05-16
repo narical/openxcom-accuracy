@@ -79,9 +79,6 @@ namespace OpenXcom
 		_txtTitle->setBig();
 		_txtTitle->setText(tr(defs->getTitleForPage(_state->current_page)));
 
-		_image = new Surface(320, 200, 0, 0);
-		add(_image);
-
 		if (customArmorSprite)
 		{
 			// blit on the background, so that text and button are always visible
@@ -98,7 +95,7 @@ namespace OpenXcom
 			for (const auto& layer : s->getArmorLayers())
 			{
 				auto surf = _game->getMod()->getSurface(layer, true);
-				surf->blitNShade(_image, 0, 0);
+				surf->blitNShade(_bg, 0, 0);
 			}
 		}
 		else
@@ -113,7 +110,7 @@ namespace OpenXcom
 			{
 				look = armor->getSpriteInventory();
 			}
-			_game->getMod()->getSurface(look, true)->blitNShade(_image, 0, 0);
+			_game->getMod()->getSurface(look, true)->blitNShade(_bg, 0, 0);
 		}
 
 
