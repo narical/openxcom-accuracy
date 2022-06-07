@@ -492,7 +492,7 @@ void TransferItemsState::btnOkClick(Action *)
 		// But only check the base whose available space is decreasing.
 		double freeStoresTo = _baseTo->getAvailableStores() - _baseTo->getUsedStores() - _iQty;
 		double freeStoresFrom = _baseFrom->getAvailableStores() - _baseFrom->getUsedStores() + _iQty;
-		if (_iQty > 0.0 ? freeStoresTo < 0.0 : freeStoresFrom < 0.0)
+		if (_iQty > 0.0 ? freeStoresTo < -0.00001 : freeStoresFrom < -0.00001)
 		{
 			RuleInterface *menuInterface = _game->getMod()->getInterface("transferMenu");
 			_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_STORE_SPACE"), _palette, menuInterface->getElement("errorMessage")->color, "BACK13.SCR", menuInterface->getElement("errorPalette")->color));
