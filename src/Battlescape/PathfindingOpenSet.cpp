@@ -78,7 +78,7 @@ void PathfindingOpenSet::push(PathfindingNode *node)
 {
 	OpenSetEntry *entry = new OpenSetEntry;
 	entry->_node = node;
-	entry->_cost = node->getTUCost(false).time + node->getTUGuess();
+	entry->_cost = node->getTUCost(false).time * 4 + node->getTUGuess(); //HACK: this is not real cost, more rough approximation for algorithm, as bonus `getTUGuess` work more like gravity/potential than normal cost.
 	if (node->_openentry)
 		node->_openentry->_node = 0;
 	node->_openentry = entry;
