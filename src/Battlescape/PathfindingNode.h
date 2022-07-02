@@ -86,14 +86,15 @@ class PathfindingNode
 {
 private:
 	Position _pos;
-	bool _checked;
 	PathfindingCost _tuCost;
 	PathfindingNode* _prevNode;
 	int _prevDir;
 	/// Approximate cost to reach goal position.
-	int _tuGuess;
+	Sint16 _tuGuess;
+	/// Is best path find for this tile.
+	bool _checked;
 	// Invasive field needed by PathfindingOpenSet
-	OpenSetEntry *_openentry;
+	Uint8 _openentry;
 	friend class PathfindingOpenSet;
 public:
 	/// Creates a new PathfindingNode class.
