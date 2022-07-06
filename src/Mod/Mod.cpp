@@ -1065,6 +1065,12 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
  */
 void Mod::verifySoundOffset(const std::string &parent, const int& sound, const std::string &set) const
 {
+	if (Options::mute)
+	{
+		// when mute is set not sound data is loaded and we can't check for correct data
+		return;
+	}
+
 	auto* s = getSoundSet(set);
 
 	checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
@@ -1075,6 +1081,12 @@ void Mod::verifySoundOffset(const std::string &parent, const int& sound, const s
  */
 void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& sounds, const std::string &set) const
 {
+	if (Options::mute)
+	{
+		// when mute is set not sound data is loaded and we can't check for correct data
+		return;
+	}
+
 	auto* s = getSoundSet(set);
 
 	for (auto sound : sounds)
