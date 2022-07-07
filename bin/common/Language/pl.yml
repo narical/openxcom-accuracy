@@ -248,7 +248,6 @@ pl:
   STR_ALIEN_RACE: "Rasa"
   STR_ALIEN_TECH_LEVEL: "Poziom techniczny"
   STR_RANDOMIZE: "Losuj"
-  STR_OXCE_REQUIRED_QUESTION: "Ta modyfikacja do poprawnego działania wymaga OpenXcom Extended. Uruchomić modyfikację?"
   STR_RESTORE_DEFAULTS_QUESTION: "Czy na pewno chcesz przywrócić domyślne ustawienia?"
   STR_DISPLAY_OPTIONS_CONFIRM: "Czy chcesz zachować obecne opcje wyświetlania?"
   STR_DISPLAY_OPTIONS_REVERT: "Przywracam za 0:{0}"
