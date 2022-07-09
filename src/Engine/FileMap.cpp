@@ -907,6 +907,7 @@ void scanModZipRW(SDL_RWops *rwops, const std::string& fullpath) {
 	// check if this is maybe a zip of a single mod (metadata.yml at the top level)
 	if (mz_zip_reader_locate_file_v2(mzip, "metadata.yml", NULL, 0, NULL)) {
 		Log(LOG_VERBOSE) << log_ctx << "retrying as a single-mod .zip";
+		// FIXME: this doesn't seem to work at all... do we support this?
 		mapZippedMod(mzip, fullpath, "");
 		return;
 	}
@@ -923,6 +924,9 @@ void scanModZipRW(SDL_RWops *rwops, const std::string& fullpath) {
 		}
 		auto slashpos = prefix.find_first_of("/"); // miniz returns dirnames with trailing slashes
 		if (slashpos != prefix.size() - 1) { continue; } // not top-level: skip.
+		// FIXME: if Microsoft Windows "Send to > Compressed (zipped) folder" is used to create the ZIP archive,
+		// this will never be called, because the top-level directory is NOT on the file list... yes, seriously, I'm not kidding!
+		// Do we want to handle this somehow or do we just call it unsupported?
 		mapZippedMod(mzip, fullpath, prefix);
 	}
 }
