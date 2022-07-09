@@ -1754,6 +1754,13 @@ void Map::keyboardPress(Action *action, State *state)
  * Handles map vision toggle mode.
  */
 
+void Map::enableNightVision()
+{
+	_nightVisionOn = true;
+	_debugVisionMode = 0;
+	persistToggles();
+}
+
 void Map::toggleNightVision()
 {
 	_nightVisionOn = !_nightVisionOn;

@@ -601,7 +601,7 @@ BattlescapeState::BattlescapeState() :
 			// turn personal lights off
 			//_save->getTileEngine()->togglePersonalLighting();
 			// turn night vision on
-			_map->toggleNightVision();
+			_map->enableNightVision();
 		}
 	}
 

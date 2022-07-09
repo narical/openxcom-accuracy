@@ -200,6 +200,7 @@ public:
 	/// Modify shade for fading
 	int reShade(Tile *tile);
 	/// toggle the night-vision mode
+	void enableNightVision();
 	void toggleNightVision();
 	void toggleDebugVisionMode();
 	void persistToggles();
