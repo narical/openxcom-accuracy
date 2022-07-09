@@ -26,6 +26,7 @@
 #include "../Mod/Mod.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
+#include "../Mod/RuleInterface.h"
 
 namespace OpenXcom
 {
@@ -39,6 +40,11 @@ namespace OpenXcom
 		// Set palette
 		setStandardPalette("PAL_UFOPAEDIA");
 
+		_buttonColor = _game->getMod()->getInterface("articleText")->getElement("button")->color;
+		_titleColor = _game->getMod()->getInterface("articleText")->getElement("title")->color;
+		_textColor1 = _game->getMod()->getInterface("articleText")->getElement("text")->color;
+		_textColor2 = _game->getMod()->getInterface("articleText")->getElement("text")->color2;
+
 		ArticleState::initLayout();
 
 		// add other elements
@@ -49,16 +55,16 @@ namespace OpenXcom
 
 		// Set up objects
 		_game->getMod()->getSurface("BACK10.SCR")->blitNShade(_bg, 0, 0);
-		_btnOk->setColor(Palette::blockOffset(5));
-		_btnPrev->setColor(Palette::blockOffset(5));
-		_btnNext->setColor(Palette::blockOffset(5));
+		_btnOk->setColor(_buttonColor);
+		_btnPrev->setColor(_buttonColor);
+		_btnNext->setColor(_buttonColor);
 
-		_txtTitle->setColor(Palette::blockOffset(15)+4);
+		_txtTitle->setColor(_titleColor);
 		_txtTitle->setBig();
 		_txtTitle->setText(tr(defs->getTitleForPage(_state->current_page)));
 
-		_txtInfo->setColor(Palette::blockOffset(15)-1);
-		_txtInfo->setSecondaryColor(Palette::blockOffset(15) + 4);
+		_txtInfo->setColor(_textColor1);
+		_txtInfo->setSecondaryColor(_textColor2);
 		_txtInfo->setWordWrap(true);
 		_txtInfo->setScrollable(true);
 		_txtInfo->setText(tr(defs->getTextForPage(_state->current_page)));
