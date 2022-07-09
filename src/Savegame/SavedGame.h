@@ -161,6 +161,8 @@ private:
 	std::vector<AlienMission*> _activeMissions;
 	std::vector<GeoscapeEvent*> _geoscapeEvents;
 	bool _debug, _warned;
+	bool _togglePersonalLight, _toggleNightVision;
+	int _toggleBrightness;
 	int _monthsPassed;
 	std::string _graphRegionToggles;
 	std::string _graphCountryToggles;
@@ -374,6 +376,20 @@ public:
 	bool getWarned() const;
 	/// sets whether or not the player has been warned
 	void setWarned(bool warned);
+
+	/// gets personal light toggle
+	bool getTogglePersonalLight() const { return _togglePersonalLight; }
+	/// sets personal light toggle
+	void setTogglePersonalLight(bool togglePersonalLight) { _togglePersonalLight = togglePersonalLight; }
+	/// gets night vision toggle
+	bool getToggleNightVision() const { return _toggleNightVision; }
+	/// sets night vision toggle
+	void setToggleNightVision(bool toggleNightVision) { _toggleNightVision = toggleNightVision; }
+	/// gets brightness toggle
+	int getToggleBrightness() const { return _toggleBrightness; }
+	/// sets brightness toggle
+	void setToggleBrightness(int toggleBrightness) { _toggleBrightness = toggleBrightness; }
+
 	/// Full access to the alien strategy data.
 	AlienStrategy &getAlienStrategy() { return *_alienStrategy; }
 	/// Read-only access to the alien strategy data.

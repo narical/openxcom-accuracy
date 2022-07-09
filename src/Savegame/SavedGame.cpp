@@ -144,9 +144,11 @@ bool haveReserchVector(const std::vector<const RuleResearch*> &vec,  const std::
 /**
  * Initializes a brand new saved game according to the specified difficulty.
  */
-SavedGame::SavedGame() : _difficulty(DIFF_BEGINNER), _end(END_NONE), _ironman(false), _globeLon(0.0),
-						 _globeLat(0.0), _globeZoom(0), _battleGame(0), _previewBase(nullptr), _debug(false),
-						 _warned(false), _monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
+SavedGame::SavedGame() :
+	_difficulty(DIFF_BEGINNER), _end(END_NONE), _ironman(false), _globeLon(0.0), _globeLat(0.0), _globeZoom(0),
+	_battleGame(0), _previewBase(nullptr), _debug(false), _warned(false),
+	_togglePersonalLight(true), _toggleNightVision(false), _toggleBrightness(0),
+	_monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
 {
 	_time = new GameTime(6, 1, 1, 1999, 12, 0, 0);
 	_alienStrategy = new AlienStrategy();
@@ -443,6 +445,9 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	_incomes = doc["incomes"].as< std::vector<int64_t> >(_incomes);
 	_expenditures = doc["expenditures"].as< std::vector<int64_t> >(_expenditures);
 	_warned = doc["warned"].as<bool>(_warned);
+	_togglePersonalLight = doc["togglePersonalLight"].as<bool>(_togglePersonalLight);
+	_toggleNightVision = doc["toggleNightVision"].as<bool>(_toggleNightVision);
+	_toggleBrightness = doc["toggleBrightness"].as<int>(_toggleBrightness);
 	_globeLon = doc["globeLon"].as<double>(_globeLon);
 	_globeLat = doc["globeLat"].as<double>(_globeLat);
 	_globeZoom = doc["globeZoom"].as<int>(_globeZoom);
@@ -849,6 +854,9 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["incomes"] = _incomes;
 	node["expenditures"] = _expenditures;
 	node["warned"] = _warned;
+	node["togglePersonalLight"] = _togglePersonalLight;
+	node["toggleNightVision"] = _toggleNightVision;
+	node["toggleBrightness"] = _toggleBrightness;
 	node["globeLon"] = serializeDouble(_globeLon);
 	node["globeLat"] = serializeDouble(_globeLat);
 	node["globeZoom"] = _globeZoom;

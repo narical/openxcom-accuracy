@@ -117,6 +117,8 @@ private:
 	int _turnLimit, _cheatTurn;
 	ChronoTrigger _chronoTrigger;
 	bool _beforeGame;
+	bool _togglePersonalLight, _toggleNightVision;
+	int _toggleBrightness;
 	std::string _hiddenMovementBackground;
 	HitLog *_hitLog;
 	ScriptValues<SavedBattleGame> _scriptValues;
@@ -604,6 +606,20 @@ public:
 	void setCheatTurn(int turn);
 	/// Check whether the battle has actually commenced or not.
 	bool isBeforeGame() const;
+
+	/// gets personal light toggle
+	bool getTogglePersonalLight() const { return _togglePersonalLight; }
+	/// sets personal light toggle
+	void setTogglePersonalLight(bool togglePersonalLight) { _togglePersonalLight = togglePersonalLight; }
+	/// gets night vision toggle
+	bool getToggleNightVision() const { return _toggleNightVision; }
+	/// sets night vision toggle
+	void setToggleNightVision(bool toggleNightVision) { _toggleNightVision = toggleNightVision; }
+	/// gets brightness toggle
+	int getToggleBrightness() const { return _toggleBrightness; }
+	/// sets brightness toggle
+	void setToggleBrightness(int toggleBrightness) { _toggleBrightness = toggleBrightness; }
+
 	/// Randomly chooses hidden movement background.
 	void setRandomHiddenMovementBackground(const Mod *mod);
 	/// Gets the hidden movement background ID.

@@ -70,7 +70,8 @@ SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
 	_objectiveType(-1), _objectivesDestroyed(0), _objectivesNeeded(0),
 	_unitsFalling(false), _cheating(false), _tuReserved(BA_NONE), _kneelReserved(false), _depth(0),
 	_ambience(-1), _ambientVolume(0.5), _minAmbienceRandomDelay(20), _maxAmbienceRandomDelay(60), _currentAmbienceDelay(0),
-	_turnLimit(0), _cheatTurn(20), _chronoTrigger(FORCE_LOSE), _beforeGame(true)
+	_turnLimit(0), _cheatTurn(20), _chronoTrigger(FORCE_LOSE), _beforeGame(true),
+	_togglePersonalLight(true), _toggleNightVision(false), _toggleBrightness(0)
 {
 	_tileSearch.resize(11*11);
 	for (int i = 0; i < 121; ++i)
@@ -461,6 +462,9 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_turnLimit = node["turnLimit"].as<int>(_turnLimit);
 	_chronoTrigger = ChronoTrigger(node["chronoTrigger"].as<int>(_chronoTrigger));
 	_cheatTurn = node["cheatTurn"].as<int>(_cheatTurn);
+	_togglePersonalLight = node["togglePersonalLight"].as<bool>(_togglePersonalLight);
+	_toggleNightVision = node["toggleNightVision"].as<bool>(_toggleNightVision);
+	_toggleBrightness = node["toggleBrightness"].as<int>(_toggleBrightness);
 	_scriptValues.load(node, _rule->getScriptGlobal());
 }
 
@@ -642,6 +646,9 @@ YAML::Node SavedBattleGame::save() const
 	node["turnLimit"] = _turnLimit;
 	node["chronoTrigger"] = int(_chronoTrigger);
 	node["cheatTurn"] = _cheatTurn;
+	node["togglePersonalLight"] = _togglePersonalLight;
+	node["toggleNightVision"] = _toggleNightVision;
+	node["toggleBrightness"] = _toggleBrightness;
 	_scriptValues.save(node, _rule->getScriptGlobal());
 
 	return node;

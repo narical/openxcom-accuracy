@@ -202,6 +202,7 @@ public:
 	/// toggle the night-vision mode
 	void toggleNightVision();
 	void toggleDebugVisionMode();
+	void persistToggles();
 	/// Resets obstacle markers.
 	void resetObstacles();
 	/// Enables obstacle markers.

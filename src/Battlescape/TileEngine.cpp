@@ -365,6 +365,21 @@ TileEngine::TileEngine(SavedBattleGame *save, Mod *mod) :
 {
 	_blockVisibility.resize(save->getMapSizeXYZ());
 	_cacheTilePos = invalid;
+
+	if (Options::oxceTogglePersonalLightType == 2)
+	{
+		// persisted per campaign
+		SavedGame* geosave = _save->getGeoscapeSave();
+		if (geosave)
+		{
+			_personalLighting = geosave->getTogglePersonalLight();
+		}
+	}
+	else if (Options::oxceTogglePersonalLightType == 1)
+	{
+		// persisted per battle
+		_personalLighting = _save->getTogglePersonalLight();
+	}
 }
 
 /**
@@ -3916,6 +3931,22 @@ void TileEngine::voxelCheckFlush()
 void TileEngine::togglePersonalLighting()
 {
 	_personalLighting = !_personalLighting;
+
+	if (Options::oxceTogglePersonalLightType == 2)
+	{
+		// persisted per campaign
+		SavedGame* geosave = _save->getGeoscapeSave();
+		if (geosave)
+		{
+			geosave->setTogglePersonalLight(_personalLighting);
+		}
+	}
+	else if (Options::oxceTogglePersonalLightType == 1)
+	{
+		// persisted per battle
+		_save->setTogglePersonalLight(_personalLighting);
+	}
+
 	calculateLighting(LL_UNITS);
 	recalculateFOV();
 }

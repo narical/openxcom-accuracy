@@ -87,6 +87,10 @@ OPT bool oxceEnableSlackingIndicator;
 OPT bool oxceEnablePaletteFlickerFix;
 OPT bool oxcePersonalLayoutIncludingArmor;
 OPT bool oxceManufactureFilterSuppliesOK;
+// 0 = not persisted; 1 = persisted per battle; 2 = persisted per campaign
+OPT int oxceTogglePersonalLightType;
+OPT int oxceToggleNightVisionType;
+OPT int oxceToggleBrightnessType;
 /**
  * Verification level of mod data.
  * Same levels supported as `SeverityLevel`.

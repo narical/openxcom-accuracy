@@ -159,7 +159,29 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_cacheHasLOS = -1;
 
 	_nightVisionOn = false;
+	if (Options::oxceToggleNightVisionType == 2)
+	{
+		// persisted per campaign
+		_nightVisionOn = _game->getSavedGame()->getToggleNightVision();
+	}
+	else if (Options::oxceToggleNightVisionType == 1)
+	{
+		// persisted per battle
+		_nightVisionOn = _save->getToggleNightVision();
+	}
+
 	_debugVisionMode = 0;
+	if (Options::oxceToggleBrightnessType == 2)
+	{
+		// persisted per campaign
+		_debugVisionMode = _game->getSavedGame()->getToggleBrightness();
+	}
+	else if (Options::oxceToggleBrightnessType == 1)
+	{
+		// persisted per battle
+		_debugVisionMode = _save->getToggleBrightness();
+	}
+
 	_fadeShade = 16;
 	_nvColor = 0;
 	_fadeTimer = new Timer(FADE_INTERVAL);
@@ -1736,12 +1758,39 @@ void Map::toggleNightVision()
 {
 	_nightVisionOn = !_nightVisionOn;
 	_debugVisionMode = 0;
+	persistToggles();
 }
 
 void Map::toggleDebugVisionMode()
 {
 	_debugVisionMode = (_debugVisionMode + 1) % 3;
 	_nightVisionOn = false;
+	persistToggles();
+}
+
+void Map::persistToggles()
+{
+	if (Options::oxceToggleNightVisionType == 2)
+	{
+		// persisted per campaign
+		_game->getSavedGame()->setToggleNightVision(_nightVisionOn);
+	}
+	else if (Options::oxceToggleNightVisionType == 1)
+	{
+		// persisted per battle
+		_save->setToggleNightVision(_nightVisionOn);
+	}
+
+	if (Options::oxceToggleBrightnessType == 2)
+	{
+		// persisted per campaign
+		_game->getSavedGame()->setToggleBrightness(_debugVisionMode);
+	}
+	else if (Options::oxceToggleBrightnessType == 1)
+	{
+		// persisted per battle
+		_save->setToggleBrightness(_debugVisionMode);
+	}
 }
 
 /**
