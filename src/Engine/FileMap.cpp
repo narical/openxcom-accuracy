@@ -914,13 +914,13 @@ void scanModZipRW(SDL_RWops *rwops, const std::string& fullpath) {
 	for (mz_uint fi = 0; fi < filecount; ++fi) {
 		mz_zip_archive_file_stat fistat;
 		mz_zip_reader_file_stat(mzip, fi, &fistat);
+		if (fistat.m_is_encrypted || !fistat.m_is_supported) { continue; }
+		if (!fistat.m_is_directory) { continue; } // skip files, we're only interested in toplevel dirs.
 		std::string prefix = fistat.m_filename;
 		if (!sanitizeZipEntryName(prefix)) {
 			Log(LOG_WARNING) << "Bogus dirname " << hexDumpBogusData(prefix) << " in " << fullpath << ", ignoring.";
 			continue;
 		}
-		if (fistat.m_is_encrypted || !fistat.m_is_supported) { continue; }
-		if (!fistat.m_is_directory) { continue; } // skip files, we're only interested in toplevel dirs.
 		auto slashpos = prefix.find_first_of("/"); // miniz returns dirnames with trailing slashes
 		if (slashpos != prefix.size() - 1) { continue; } // not top-level: skip.
 		mapZippedMod(mzip, fullpath, prefix);
