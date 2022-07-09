@@ -812,7 +812,7 @@ void BattlescapeGenerator::run()
 
 	generateMap(script, ruleDeploy->getCustomUfoName());
 
-	if (isPreview)
+	if (isPreview && ruleDeploy->isHidden())
 	{
 		_save->revealMap();
 	}
