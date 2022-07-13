@@ -2158,6 +2158,13 @@ void StatsForNerdsState::initItemList()
 		addBoolean(ss, itemRule->isSpecialUsingEmptyHand(), "specialUseEmptyHand");
 		addBoolean(ss, itemRule->showSpecialInEmptyHand(), "specialUseEmptyHandShow");
 
+		addHeading("inventoryMoveCost");
+		{
+			addInteger(ss, itemRule->getInventoryMoveCostPercent(), "basePercent", 100);
+
+			endHeading();
+		}
+
 		addSection("{Recovery}", "", _white);
 		addBoolean(ss, !itemRule->canBeEquippedBeforeBaseDefense(), "ignoreInBaseDefense"); // negated!
 		addBoolean(ss, !itemRule->canBeEquippedToCraftInventory(), "ignoreInCraftEquip", !itemRule->isUsefulBattlescapeItem()); // negated!
@@ -2686,29 +2693,6 @@ void StatsForNerdsState::initArmorList()
 		endHeading();
 	}
 
-	addHeading("moveCost");
-	{
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostRun(), "runPercent", { 75, 75 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostStrafe(), "strafePercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostSneak(), "sneakPercent", { 100, 50 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyWalk(), "flyWalkPercent", { 100, 50 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyRun(), "flyRunPercent", { 75, 75 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyStrafe(), "flyStrafePercent", { 100, 50 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
-
-		addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
-
-		endHeading();
-	}
-
 	addVectorOfRules(ss, armorRule->getUnits(), "units");
 
 	ModScript::scriptCallback<ModScript::StatsForNerdsArmor>(armorRule, armorRule, this, _game->getSavedGame());
@@ -2789,6 +2773,29 @@ void StatsForNerdsState::initArmorList()
 		addBoolean(ss, armorRule->isPilotArmor(), "isPilotArmor");
 		addBoolean(ss, armorRule->getAllowTwoMainWeapons(), "allowTwoMainWeapons");
 		addBoolean(ss, armorRule->getInstantWoundRecovery(), "instantWoundRecovery");
+
+		addHeading("moveCost");
+		{
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostRun(), "runPercent", { 75, 75 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostStrafe(), "strafePercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostSneak(), "sneakPercent", { 100, 50 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyWalk(), "flyWalkPercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyRun(), "flyRunPercent", { 75, 75 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyStrafe(), "flyStrafePercent", { 100, 50 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
+
+			endHeading();
+		}
 
 		addSection("{Basics}", "Stuff from the main article", _white, true);
 		addInteger(ss, armorRule->getFrontArmor(), "frontArmor");

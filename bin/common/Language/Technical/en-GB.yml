@@ -240,6 +240,7 @@ en-GB:
   armor: "Armor"
 #
   medikitType: "Medikit type"
+  medikitActionName: "Medikit action name"
   medikitTargetSelf: "Medikit on self?"
   medikitTargetImmune: "Medikit on bleed immune?"
   medikitTargetMatrix: "Medikit targets"
@@ -312,6 +313,7 @@ en-GB:
   movementType: "Movement type"
   allowsRunning: "Allow running?"
   allowsStrafing: "Allow strafing?"
+  allowsSneaking: "Allow sneaking?"
   allowsKneeling: "Allow kneeling?"
   allowsMoving: "Allow moving?"
   fearImmune: "Immune to morale loss?"
