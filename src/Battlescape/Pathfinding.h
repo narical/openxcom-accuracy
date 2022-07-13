@@ -57,7 +57,7 @@ private:
 	/// Gets the node at certain position.
 	PathfindingNode *getNode(Position pos);
 
-	/// Gets movement type of unit or movment of missile.
+	/// Gets movement type of unit or movement of missile.
 	MovementType getMovementType(const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
 	/// Determines whether a tile blocks a certain movementType.
 	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, BattleActionMove bam, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;

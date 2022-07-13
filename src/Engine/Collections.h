@@ -148,7 +148,7 @@ public:
 		auto begin = vec.begin();
 		auto newEnd = vec.begin();
 
-		// inital scan for first elemet to remove
+		// initial scan for the first element to remove
 		for (; begin != vec.end(); ++begin, ++newEnd)
 		{
 			if (func(*begin))

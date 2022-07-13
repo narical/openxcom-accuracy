@@ -584,8 +584,8 @@ int BattleItem::getMoveToCost(const RuleInventory *slot) const
 	}
 	else if (_inventorySlot->getType() == INV_HAND && slot->getType() == INV_GROUND)
 	{
-		// this special case have two roles:
-		// * rigth now droping ammo when reloading only use default move cost, manually droping should have same cost.
+		// this special case has two roles:
+		// * right now dropping ammo when reloading only uses default move cost, manually dropping should have same cost.
 		// * conceptually you should be able to relese grip and item should fall down, "hard to grab, easy to drop"
 		return cost;
 	}

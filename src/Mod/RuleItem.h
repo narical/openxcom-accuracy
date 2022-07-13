@@ -496,7 +496,7 @@ public:
 	/// Gets the item's reference in SPICONS.DAT for special weapon button.
 	int getSpecialIconSprite() const;
 
-	/// Gets cost of moving item araund inventory.
+	/// Gets cost of moving item around inventory.
 	int getInventoryMoveCostPercent() const { return _inventoryMoveCostPercent; }
 	/// Gets if the item is two-handed.
 	bool isTwoHanded() const;

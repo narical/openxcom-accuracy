@@ -1890,7 +1890,7 @@ void BattlescapeGame::primaryAction(Position pos)
 				_save->getPathfinding()->removePreview();
 			}
 			_currentAction.target = pos;
-			_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, BAM_NORMAL); // precalucalte move
+			_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, BAM_NORMAL); // precalculate move
 
 			_currentAction.strafe = false;
 			_currentAction.run = false;
@@ -1912,7 +1912,7 @@ void BattlescapeGame::primaryAction(Position pos)
 				_currentAction.sneak = _save->getSelectedUnit()->getArmor()->allowsSneaking(_save->getSelectedUnit()->isSmallUnit());
 			}
 
-			//recalucate path after setting new move types
+			// recalculate path after setting new move types
 			if (BAM_NORMAL != _currentAction.getMoveType())
 			{
 				_save->getPathfinding()->calculate(_currentAction.actor, _currentAction.target, _currentAction.getMoveType());

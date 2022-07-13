@@ -27,17 +27,17 @@ struct OpenSetEntry;
 
 /**
  * Cost of one step.
- * As this is 2d point value it is not totaly ordered.
+ * As this is 2d point value it is not totally ordered.
  */
 struct PathfindingCost
 {
 	Sint16 time = 0;
 	Sint16 energy = 0;
 
-	/// Default constructir.
+	/// Default constructor.
 	PathfindingCost() = default;
 
-	/// Cosntructor from ints.
+	/// Constructor from ints.
 	PathfindingCost(int t, int e) : time(t), energy(e) {}
 
 	PathfindingCost operator+(PathfindingCost c) const

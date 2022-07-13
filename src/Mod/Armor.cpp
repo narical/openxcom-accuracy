@@ -567,7 +567,7 @@ MovementType Armor::getMovementType() const
 }
 
 /**
- * Get MovementType based on deapth of battle.
+ * Get MovementType based on depth of battle.
  */
 MovementType Armor::getMovementTypeByDepth(int depth) const
 {
@@ -1104,7 +1104,7 @@ bool Armor::allowsStrafing(bool def) const
 }
 
 /**
- * Can you sneaking while wearing this armor?
+ * Can you sneak while wearing this armor?
  * @return True if you are allowed to sneak.
  */
 bool Armor::allowsSneaking(bool def) const
