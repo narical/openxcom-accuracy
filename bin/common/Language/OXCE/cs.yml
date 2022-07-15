@@ -280,6 +280,7 @@ cs:
   STR_NOTES: "Poznámky"
   STR_OXCE: "Rozšířené"
   STR_FOLDERS: "SLOŽKY"
+  STR_PATH_ENERGY_COST: "Výdrž"
   STR_DATA_FOLDER: "Data (originální zdroje)"
   STR_USER_FOLDER: "Uživatelská (módy, openxcom.log)"
   STR_SAVE_FOLDER: "Pozice (uložené hry, snímky obrazovky)"

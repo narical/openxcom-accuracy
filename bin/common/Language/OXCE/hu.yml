@@ -257,6 +257,7 @@ hu:
   STR_LATEST_VERSION_INFO: "A legfrissebb OpenXcom verziót használod."
   STR_OXCE: "Bővített"
   STR_FOLDERS: "MAPPÁK"
+  STR_PATH_ENERGY_COST: "Energia"
   STR_DATA_FOLDER: "Data-mappa (eredeti erőforrás)"
   STR_USER_FOLDER: "User-mappa (modok, openxcom.log)"
   STR_SAVE_FOLDER: "Mentésmappa (mentett állások, képernyőmentések)"

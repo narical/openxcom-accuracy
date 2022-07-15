@@ -240,6 +240,7 @@ es-419:
   armor: ""
 #
   medikitType: ""
+  medikitActionName: ""
   medikitTargetSelf: ""
   medikitTargetImmune: ""
   medikitTargetMatrix: ""
@@ -312,6 +313,7 @@ es-419:
   movementType: ""
   allowsRunning: ""
   allowsStrafing: ""
+  allowsSneaking: ""
   allowsKneeling: ""
   allowsMoving: ""
   fearImmune: ""

@@ -240,6 +240,7 @@ ko:
   armor: "장갑"
 #
   medikitType: "메디키트 종류"
+  medikitActionName: ""
   medikitTargetSelf: "메디키트 자기사용?"
   medikitTargetImmune: "출혈면역에게 메디키트 사용?"
   medikitTargetMatrix: "메디키트 대상"
@@ -312,6 +313,7 @@ ko:
   movementType: "이동 방식"
   allowsRunning: "달리기 허용?"
   allowsStrafing: "게걸음 허용?"
+  allowsSneaking: ""
   allowsKneeling: "무릎꿇기 허용?"
   allowsMoving: "이동 허용?"
   fearImmune: "사기하락 면역?"

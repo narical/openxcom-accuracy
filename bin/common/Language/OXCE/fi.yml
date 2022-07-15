@@ -314,6 +314,7 @@ fi:
   STR_NEW_NOTE: "<NEW NOTE>"
   STR_OXCE: "Laajennettu"
   STR_FOLDERS: "KANSIOT"
+  STR_PATH_ENERGY_COST: "Energia"
   STR_DATA_FOLDER: "Tiedostokansio (alkuperäiset tiedostot)"
   STR_USER_FOLDER: "Käyttäjäkansio (modit, openxcom.log)"
   STR_SAVE_FOLDER: "Tallennuskansio (tallennetut pelit, kuvakaappaukset)"

@@ -240,6 +240,7 @@ ru:
   armor: "Броня"
 #
   medikitType: "Тип медкомплекта"
+  medikitActionName: ""
   medikitTargetSelf: "Применение медкомплекта на себе?"
   medikitTargetImmune: "Применение медкомплекта на иммунном к кровотечению?"
   medikitTargetMatrix: "Цели применения медкомплекта"
@@ -312,6 +313,7 @@ ru:
   movementType: "Способ перемещения"
   allowsRunning: "Позволяет бегать?"
   allowsStrafing: "Позволяет двиг. вбок?"
+  allowsSneaking: ""
   allowsKneeling: "Позволяет приседать?"
   allowsMoving: "Позволяет двигаться?"
   fearImmune: "Иммунитет к снижению морали?"

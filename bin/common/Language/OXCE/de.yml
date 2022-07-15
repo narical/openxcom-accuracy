@@ -263,6 +263,7 @@ de:
   STR_LATEST_VERSION_INFO: "Du nutzt die aktuellste OpenXcom Version"
   STR_OXCE: "Extended"
   STR_FOLDERS: "Ordner"
+  STR_PATH_ENERGY_COST: "Energie"
   STR_DATA_FOLDER: "Dateiordner (original resources)"
   STR_USER_FOLDER: "Nutzerordner (Mods, openxcom.log)"
   STR_CONFIG_FOLDER: "Konfigurationsordner (options.cfg)"

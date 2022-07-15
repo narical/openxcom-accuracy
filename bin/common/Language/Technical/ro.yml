@@ -240,6 +240,7 @@ ro:
   armor: ""
 #
   medikitType: ""
+  medikitActionName: ""
   medikitTargetSelf: ""
   medikitTargetImmune: ""
   medikitTargetMatrix: ""
@@ -312,6 +313,7 @@ ro:
   movementType: ""
   allowsRunning: ""
   allowsStrafing: ""
+  allowsSneaking: ""
   allowsKneeling: ""
   allowsMoving: ""
   fearImmune: ""

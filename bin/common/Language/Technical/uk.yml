@@ -240,6 +240,7 @@ uk:
   armor: "Броня"
 #
   medikitType: "Тип аптечки"
+  medikitActionName: ""
   medikitTargetSelf: "Лікувати себе?"
   medikitTargetImmune: "Лікувати об'єкт з імунітетом до кровотечі?"
   medikitTargetMatrix: "Цілі для лікування"
@@ -312,6 +313,7 @@ uk:
   movementType: "Тип руху"
   allowsRunning: "Дозволити біг?"
   allowsStrafing: "Дозволити обстріл?"
+  allowsSneaking: ""
   allowsKneeling: "Дозволити присідання?"
   allowsMoving: "Дозволити переміщення?"
   fearImmune: "Імунітет до втрати моралі?"

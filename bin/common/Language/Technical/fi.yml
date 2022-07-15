@@ -240,6 +240,7 @@ fi:
   armor: "Panssari"
 #
   medikitType: "Ensiapulaitetyyppi"
+  medikitActionName: ""
   medikitTargetSelf: "Ensiapulaitteen käyttö itseen?"
   medikitTargetImmune: "Ensiapulaitteen käyttö verenvuodolle immuuneihin?"
   medikitTargetMatrix: "Ensiapulaitteen kohteet"
@@ -312,6 +313,7 @@ fi:
   movementType: "Liikkumistapa"
   allowsRunning: "Salli juoksu?"
   allowsStrafing: "Salli sivuttaisastunta?"
+  allowsSneaking: ""
   allowsKneeling: "Salli polvistuminen?"
   allowsMoving: "Salli liikkuminen?"
   fearImmune: "Immuuni taistelutahdon laskulle?"

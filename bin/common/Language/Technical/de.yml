@@ -240,6 +240,7 @@ de:
   armor: "Rüstung"
 #
   medikitType: "Medikit-Typ"
+  medikitActionName: ""
   medikitTargetSelf: "Medikit selbst benutzen?"
   medikitTargetImmune: "Medikit bei Blutungsimmunen?"
   medikitTargetMatrix: "Medikit Ziele"
@@ -312,6 +313,7 @@ de:
   movementType: "Bewegungstyp"
   allowsRunning: "Erlaube rennen?"
   allowsStrafing: "Erlaube Streifschüsse?"
+  allowsSneaking: ""
   allowsKneeling: "Erlaube hinknien?"
   allowsMoving: "Erlaube Bewegung"
   fearImmune: "Immun gegen Moralverlust"

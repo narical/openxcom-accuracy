@@ -240,6 +240,7 @@ hu:
   armor: "Páncél"
 #
   medikitType: "Elsősegélycsomag fajtája"
+  medikitActionName: ""
   medikitTargetSelf: "Medikit önmagán?"
   medikitTargetImmune: "Medikit immunison?"
   medikitTargetMatrix: "Medikit célpontok"
@@ -312,6 +313,7 @@ hu:
   movementType: "Mozgástípus"
   allowsRunning: "Futás engedélyezve?"
   allowsStrafing: "Oldalazás engedélyezve?"
+  allowsSneaking: ""
   allowsKneeling: "Térdelés engedélyezve?"
   allowsMoving: "Mozgás engedélyezve?"
   fearImmune: "Immunis a morálcsökkenésre?"

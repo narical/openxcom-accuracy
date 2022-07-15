@@ -240,6 +240,7 @@ cs:
   armor: "Zbroj"
 #
   medikitType: "Typ lékárničky"
+  medikitActionName: ""
   medikitTargetSelf: ""
   medikitTargetImmune: ""
   medikitTargetMatrix: ""
@@ -312,6 +313,7 @@ cs:
   movementType: "Typ pohybu"
   allowsRunning: "Umožňuje běh?"
   allowsStrafing: "Umožňuje úkrok?"
+  allowsSneaking: ""
   allowsKneeling: "Umožňuje zakleknutí?"
   allowsMoving: ""
   fearImmune: "Imunní ke ztrátě morálky?"

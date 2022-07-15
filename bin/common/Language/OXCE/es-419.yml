@@ -122,6 +122,7 @@ es-419:
   STR_MISSION_OVER: "Misión completada."
   STR_UNITS_WITH_FATAL_WOUNDS:
     one: "{N} de nosotros seguimos fatalmente lastimados"
+    many: "{N} de nosotros siguen fatalmente lastimados."
     other: "{N} de nosotros siguen fatalmente lastimados."
   STR_END_MISSION_QUESTION: "Terminar misión?"
   STR_LOOT: "BOTÍN"
