@@ -1380,6 +1380,22 @@ int Craft::getSpaceUsed() const
 }
 
 /**
+ * Checks if the commander is onboard.
+ * @return True if the commander is onboard.
+ */
+bool Craft::isCommanderOnboard()
+{
+	for (Soldier* s : *_base->getSoldiers())
+	{
+		if (s->getCraft() == this && s->getRank() == RANK_COMMANDER)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Checks if there are only permitted soldier types onboard.
  * @return True if all soldiers onboard are permitted.
  */

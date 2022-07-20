@@ -33,6 +33,8 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Craft.h"
 #include "../Mod/RuleCraft.h"
+#include "../Mod/AlienDeployment.h"
+#include "../Mod/RuleStartingCondition.h"
 #include "ConfirmCydoniaState.h"
 #include "../Engine/Options.h"
 
@@ -139,6 +141,21 @@ SelectDestinationState::SelectDestinationState(std::vector<Craft*> crafts, Globe
 	{
 		_btnCydonia->setText(tr("STR_CYDONIA"));
 		_btnCydonia->onMouseClick((ActionHandler)&SelectDestinationState::btnCydoniaClick);
+
+		// one more check...
+		for (auto& depl : _game->getMod()->getDeploymentsList())
+		{
+			AlienDeployment* deploymentRule = _game->getMod()->getDeployment(depl);
+			if (deploymentRule->isFinalDestination())
+			{
+				RuleStartingCondition* sc = _game->getMod()->getStartingCondition(deploymentRule->getStartingCondition());
+				if (sc && sc->requiresCommanderOnboard() && !_crafts.front()->isCommanderOnboard())
+				{
+					_btnCydonia->setVisible(false);
+				}
+				break;
+			}
+		}
 	}
 
 	if (_crafts.front()->getStatus() != "STR_OUT")

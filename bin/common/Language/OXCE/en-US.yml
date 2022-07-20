@@ -353,6 +353,7 @@ en-US:
   STR_ALIEN_MISSILES_HAVE_DAMAGED_OUR_BASE: "Alien missiles have damaged our base {0}"
   STR_ALIEN_MISSILES_HAVE_DESTROYED_OUR_BASE: "Alien missiles have destroyed our base {0}"
 #ConfirmDestinationState.cpp
+  STR_STARTING_CONDITION_COMMANDER: "This mission requires the presence of the commander."
   STR_STARTING_CONDITION_CRAFT: "This craft is unsuitable for this mission."
   STR_STARTING_CONDITION_CRAFT_ALLOWED: "This craft is unsuitable for this mission.{NEWLINE}{NEWLINE}Allowed craft: {0}"
   STR_STARTING_CONDITION_CRAFT_FORBIDDEN: "This craft is unsuitable for this mission.{NEWLINE}{NEWLINE}Forbidden craft: {0}"

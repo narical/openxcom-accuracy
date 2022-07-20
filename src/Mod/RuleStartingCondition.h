@@ -44,6 +44,7 @@ private:
 	std::vector<std::string> _allowedSoldierTypes, _forbiddenSoldierTypes;
 	std::map<std::string, int> _requiredItems;
 	bool _destroyRequiredItems;
+	bool _requireCommanderOnboard;
 public:
 	/// Creates a blank Starting Conditions ruleset.
 	RuleStartingCondition(const std::string& type);
@@ -69,6 +70,8 @@ public:
 	const std::map<std::string, int>& getRequiredItems() const { return _requiredItems; }
 	/// Should the required items be destroyed when the mission starts?
 	bool getDestroyRequiredItems() const { return _destroyRequiredItems; }
+	/// Does the mission require a commander present onboard?
+	bool requiresCommanderOnboard() const { return _requireCommanderOnboard; }
 	/// Checks if the craft type is permitted.
 	bool isCraftPermitted(const std::string& craftType) const;
 	/// Checks if the soldier type is permitted.
