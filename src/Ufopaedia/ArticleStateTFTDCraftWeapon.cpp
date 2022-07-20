@@ -34,7 +34,7 @@ namespace OpenXcom
 
 	ArticleStateTFTDCraftWeapon::ArticleStateTFTDCraftWeapon(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state) : ArticleStateTFTD(defs, std::move(state))
 	{
-		_btnInfo->setVisible(true);
+		_btnInfo->setVisible(_game->getMod()->getShowPediaInfoButton());
 
 		RuleCraftWeapon *weapon = _game->getMod()->getCraftWeapon(defs->id, true);
 
