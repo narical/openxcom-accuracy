@@ -526,8 +526,8 @@ void InventoryState::init()
  */
 void InventoryState::edtSoldierPress(Action *)
 {
-	// renaming available only in the base (not during mission)
-	if (_base == 0 || _btnLinks->getVisible())
+	// Note: the links button and the name textedit overlap, and the button doesn't work if editing is allowed...
+	if (_btnLinks->getVisible())
 	{
 		_txtName->setFocus(false);
 	}
@@ -1920,13 +1920,12 @@ void InventoryState::handle(Action *action)
 {
 	State::handle(action);
 
-	if (action->getDetails()->type == SDL_KEYDOWN)
+	if (action->getDetails()->type == SDL_KEYDOWN && !_btnQuickSearch->isFocused() && !_txtName->isFocused())
 	{
 		// "ctrl+1..9" - save equipment
 		// "1..9" - load equipment
 		if (action->getDetails()->key.keysym.sym >= SDLK_1 && action->getDetails()->key.keysym.sym <= SDLK_9)
 		{
-			if (!_btnQuickSearch->isFocused())
 			{
 				btnGlobalEquipmentLayoutClick(action);
 			}
