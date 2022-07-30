@@ -734,8 +734,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["genUnitArmor"] = _armor->getType();
 	node["faction"] = (int)_faction;
 	node["status"] = (int)_status;
-	node["wantsToSurrender"] = _wantsToSurrender;
-	node["isSurrendering"] = _isSurrendering;
+	if (_wantsToSurrender)
+		node["wantsToSurrender"] = _wantsToSurrender;
+	if (_isSurrendering)
+		node["isSurrendering"] = _isSurrendering;
 	node["position"] = _pos;
 	node["direction"] = _direction;
 	node["directionTurret"] = _directionTurret;
@@ -745,8 +747,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["stunlevel"] = _stunlevel;
 	node["energy"] = _energy;
 	node["morale"] = _morale;
-	node["kneeled"] = _kneeled;
-	node["floating"] = _floating;
+	if (_kneeled)
+		node["kneeled"] = _kneeled;
+	if (_floating)
+		node["floating"] = _floating;
 	node["armor"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < SIDE_MAX; i++) node["armor"].push_back(_currentArmor[i]);
 	node["fatalWounds"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < BODYPART_MAX; i++) node["fatalWounds"].push_back(_fatalWounds[i]);
 	node["fire"] = _fire;
@@ -759,8 +763,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["expMana"] = _exp.mana;
 	node["expMelee"] = _exp.melee;
 	node["currStats"] = _stats;
-	node["turretType"] = _turretType;
-	node["visible"] = _visible;
+	if (_turretType > -1)
+		node["turretType"] = _turretType;
+	if (_visible)
+		node["visible"] = _visible;
 	node["turnsSinceSpotted"] = _turnsSinceSpotted;
 	node["turnsLeftSpottedForSnipers"] = _turnsLeftSpottedForSnipers;
 	node["turnsSinceStunned"] = _turnsSinceStunned;
@@ -770,7 +776,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	{
 		node["AI"] = getAIModule()->save();
 	}
-	node["killedBy"] = (int)_killedBy;
+	if (_killedBy)
+		node["killedBy"] = (int)_killedBy;
 	if (_originalFaction != _faction)
 		node["originalFaction"] = (int)_originalFaction;
 	if (_kills)
@@ -786,16 +793,22 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	}
 
 	node["motionPoints"] = _motionPoints;
-	node["alreadyRespawned"] = _alreadyRespawned;
+	if (_alreadyRespawned)
+		node["alreadyRespawned"] = _alreadyRespawned;
 	node["activeHand"] = _activeHand;
 	if (!_preferredHandForReactions.empty())
 		node["preferredHandForReactions"] = _preferredHandForReactions;
 	node["tempUnitStatistics"] = _statistics->save();
-	node["murdererId"] = _murdererId;
-	node["fatalShotSide"] = (int)_fatalShotSide;
-	node["fatalShotBodyPart"] = (int)_fatalShotBodyPart;
-	node["murdererWeapon"] = _murdererWeapon;
-	node["murdererWeaponAmmo"] = _murdererWeaponAmmo;
+	if (_murdererId)
+		node["murdererId"] = _murdererId;
+	if (_fatalShotSide)
+		node["fatalShotSide"] = (int)_fatalShotSide;
+	if (_fatalShotBodyPart)
+		node["fatalShotBodyPart"] = (int)_fatalShotBodyPart;
+	if (!_murdererWeapon.empty())
+		node["murdererWeapon"] = _murdererWeapon;
+	if (!_murdererWeaponAmmo.empty())
+		node["murdererWeaponAmmo"] = _murdererWeaponAmmo;
 
 	for (size_t i = 0; i < _recolor.size(); ++i)
 	{
@@ -805,8 +818,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		p.push_back((int)_recolor[i].second);
 		node["recolor"].push_back(p);
 	}
-	node["mindControllerID"] = _mindControllerID;
-	node["summonedPlayerUnit"] = _summonedPlayerUnit;
+	if (_mindControllerID)
+		node["mindControllerID"] = _mindControllerID;
+	if (_summonedPlayerUnit)
+		node["summonedPlayerUnit"] = _summonedPlayerUnit;
 	if (_resummonedFakeCivilian)
 		node["resummonedFakeCivilian"] = _resummonedFakeCivilian;
 	if (_pickUpWeaponsMoreActively)

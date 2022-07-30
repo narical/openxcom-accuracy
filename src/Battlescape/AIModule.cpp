@@ -121,6 +121,7 @@ YAML::Node AIModule::save() const
 		toNodeID = _toNode->getID();
 
 	YAML::Node node;
+	node.SetStyle(YAML::EmitterStyle::Flow);
 	node["fromNode"] = fromNodeID;
 	node["toNode"] = toNodeID;
 	node["AIMode"] = _AIMode;

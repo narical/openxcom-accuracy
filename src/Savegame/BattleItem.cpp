@@ -159,18 +159,23 @@ YAML::Node BattleItem::save(const ScriptGlobal *shared) const
 		node["inventoryMoveCost"]["basePercent"] = _inventoryMoveCostPercent;
 	}
 	if (_inventorySlot)
+	{
 		node["inventoryslot"] = _inventorySlot->getId();
-	node["inventoryX"] = _inventoryX;
-	node["inventoryY"] = _inventoryY;
+		if (_inventorySlot->getType() == INV_SLOT) // only for slot items this matter, for hands and ground it can be `0` for both
+		{
+			node["inventoryX"] = _inventoryX;
+			node["inventoryY"] = _inventoryY;
+		}
+	}
 
 	if (_tile)
 		node["position"] = _tile->getPosition();
-	node["ammoqty"] = _ammoQuantity;
+	if (_ammoQuantity)
+		node["ammoqty"] = _ammoQuantity;
 	if (_ammoItem[0])
 	{
 		node["ammoItem"] = _ammoItem[0]->getId();
 	}
-	node["ammoItemSlots"].SetStyle(YAML::EmitterStyle::Flow);
 	Collections::untilLastIf(
 		_ammoItem,
 		[](BattleItem *i)
@@ -179,6 +184,7 @@ YAML::Node BattleItem::save(const ScriptGlobal *shared) const
 		},
 		[&](BattleItem *i)
 		{
+			node["ammoItemSlots"].SetStyle(YAML::EmitterStyle::Flow); // called multiple times but prevent creating empty `ammoItemSlots: ~`
 			node["ammoItemSlots"].push_back(i ? i->getId() : -1);
 		}
 	);
