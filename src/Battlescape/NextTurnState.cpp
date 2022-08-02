@@ -451,6 +451,12 @@ void NextTurnState::handle(Action *action)
 {
 	State::handle(action);
 
+	if (_battleGame->isPreview())
+	{
+		// prevent NPE on Android/iOS
+		return;
+	}
+
 	if (_btnBriefingReinforcements->getVisible() && action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
 	{
 		double mx = action->getAbsoluteXMouse();
