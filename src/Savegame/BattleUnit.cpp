@@ -1659,6 +1659,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		ModScript::HitUnit::Output args { damage, bodypart, side, };
 		ModScript::HitUnit::Worker work { this, attack.damage_item, attack.weapon_item, attack.attacker, save, attack.skill_rules, orgDamage, type->ResistType, attack.type };
 
+		if (attack.damage_item)
+		{
+			work.execute(attack.damage_item->getRules()->getScript<ModScript::HitUnitAmmo>(), args);
+		}
+
 		work.execute(this->getArmor()->getScript<ModScript::HitUnit>(), args);
 
 		damage = args.getFirst();
@@ -1751,6 +1756,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		}
 
 		ModScript::DamageUnit::Worker work { this, attack.damage_item, attack.weapon_item, attack.attacker, save, attack.skill_rules, damage, orgDamage, bodypart, side, type->ResistType, attack.type, };
+
+		if (attack.damage_item)
+		{
+			work.execute(attack.damage_item->getRules()->getScript<ModScript::DamageUnitAmmo>(), args);
+		}
 
 		work.execute(this->getArmor()->getScript<ModScript::DamageUnit>(), args);
 
