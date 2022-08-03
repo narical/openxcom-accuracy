@@ -2439,7 +2439,7 @@ int BattleUnit::getFiringAccuracy(BattleActionAttack::ReadOnly attack, Mod *mod)
 		result = result * item->getRules()->getKneelBonus(mod) / 100;
 	}
 
-	if (item->getRules()->isTwoHanded())
+	if (item->getRules()->isTwoHanded() && actionType != BA_THROW)
 	{
 		// two handed weapon, means one hand should be empty
 		if (attack.attacker->getRightHandWeapon() != 0 && attack.attacker->getLeftHandWeapon() != 0)
