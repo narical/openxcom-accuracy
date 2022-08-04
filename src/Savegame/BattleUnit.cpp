@@ -4624,8 +4624,8 @@ bool BattleUnit::checkViewSector (Position pos, bool useTurretDirection /* = fal
 	{
 		for (int y = 0; y < unitSize; ++y)
 		{
-			int deltaX = pos.x + x - _pos.x;
-			int deltaY = _pos.y - pos.y - y;
+			int deltaX = pos.x - (_pos.x + x);
+			int deltaY = (_pos.y + y) - pos.y;
 			switch (useTurretDirection ? _directionTurret : _direction)
 			{
 			case 0:
