@@ -64,7 +64,7 @@ namespace OpenXcom
 			bottomOffset = 9;
 		}
 
-		if (!_game->getMod()->getExtraNerdyPediaInfo())
+		if (_game->getMod()->getExtraNerdyPediaInfoType() == 0)
 		{
 			// feature turned off
 			bottomOffset = 0;
@@ -468,7 +468,14 @@ namespace OpenXcom
 							ss << numberAbs << "*";
 						}
 
-						ss << tr(StatsForNerdsState::translationMap.at(item.first));
+						if (_game->getMod()->getExtraNerdyPediaInfoType() > 1)
+						{
+							ss << tr(StatsForNerdsState::shortTranslationMap.at(item.first));
+						}
+						else
+						{
+							ss << tr(StatsForNerdsState::translationMap.at(item.first));
+						}
 						if (power > 1)
 						{
 							ss << "^" << power;

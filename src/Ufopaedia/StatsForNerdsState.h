@@ -165,6 +165,7 @@ public:
 	static void ScriptRegister(ScriptParserBase* parser);
 
 	static const std::map<std::string, std::string> translationMap;
+	static const std::map<std::string, std::string> shortTranslationMap;
 
 
 	/// Creates the StatsForNerdsState state.

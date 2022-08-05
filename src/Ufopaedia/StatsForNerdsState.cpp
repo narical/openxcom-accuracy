@@ -96,6 +96,47 @@ const std::map<std::string, std::string> StatsForNerdsState::translationMap =
 	{ "energyRegen", "STR_ENERGY_REGENERATION" }, // new, special stat returning vanilla energy regen
 };
 
+const std::map<std::string, std::string> StatsForNerdsState::shortTranslationMap =
+{
+	{ "flatOne", "" }, // no translation
+	{ "flatHundred", "" }, // no translation
+	{ "strength", "STR_STRENGTH_ABBREVIATION" },
+	{ "psi", "STR_PSI_SKILL_AND_PSI_STRENGTH_ABBREVIATION" }, // new, STR_PSIONIC_SKILL * STR_PSIONIC_STRENGTH
+	{ "psiSkill", "STR_PSIONIC_SKILL_ABBREVIATION" },
+	{ "psiStrength", "STR_PSIONIC_STRENGTH_ABBREVIATION" },
+	{ "throwing", "STR_THROWING_ACCURACY_ABBREVIATION" },
+	{ "bravery", "STR_BRAVERY_ABBREVIATION" },
+	{ "firing", "STR_FIRING_ACCURACY_ABBREVIATION" },
+	{ "health", "STR_HEALTH_ABBREVIATION" },
+	{ "mana", "STR_MANA_ABBREVIATION" },
+	{ "tu", "STR_TIME_UNITS_ABBREVIATION" },
+	{ "reactions", "STR_REACTIONS_ABBREVIATION" },
+	{ "stamina", "STR_STAMINA_ABBREVIATION" },
+	{ "melee", "STR_MELEE_ACCURACY_ABBREVIATION" },
+	{ "strengthMelee", "STR_STRENGTH_AND_MELEE_ACCURACY_ABBREVIATION" }, // new, STR_STRENGTH * STR_MELEE_ACCURACY
+	{ "strengthThrowing", "STR_STRENGTH_AND_THROWING_ACCURACY_ABBREVIATION" }, // new, STR_STRENGTH * STR_THROWING_ACCURACY
+	{ "firingReactions", "STR_FIRING_ACCURACY_AND_REACTIONS_ABBREVIATION" }, // new, STR_FIRING_ACCURACY * STR_REACTIONS
+
+	{ "rank", "STR_RANK" },
+	{ "fatalWounds", "STR_FATAL_WOUNDS" },
+
+	{ "healthCurrent", "STR_HEALTH_CURRENT_ABBREVIATION" }, // new, current HP (i.e. not max HP)
+	{ "manaCurrent", "STR_MANA_CURRENT_ABBREVIATION" },
+	{ "tuCurrent", "STR_TIME_UNITS_CURRENT_ABBREVIATION" }, // new
+	{ "energyCurrent", "STR_ENERGY" },
+	{ "moraleCurrent", "STR_MORALE" },
+	{ "stunCurrent", "STR_STUN_LEVEL_CURRENT_ABBREVIATION" }, // new
+
+	{ "healthNormalized", "STR_HEALTH_NORMALIZED_ABBREVIATION" }, // new, current HP normalized to [0, 1] interval
+	{ "manaNormalized", "STR_MANA_NORMALIZED_ABBREVIATION" },
+	{ "tuNormalized", "STR_TIME_UNITS_NORMALIZED_ABBREVIATION" }, // new
+	{ "energyNormalized", "STR_ENERGY_NORMALIZED_ABBREVIATION" }, // new
+	{ "moraleNormalized", "STR_MORALE_NORMALIZED_ABBREVIATION" }, // new
+	{ "stunNormalized", "STR_STUN_LEVEL_NORMALIZED_ABBREVIATION" }, // new
+
+	{ "energyRegen", "STR_ENERGY_REGENERATION_ABBREVIATION" }, // new, special stat returning vanilla energy regen
+};
+
 /**
  * Initializes all the elements on the UI.
  */
