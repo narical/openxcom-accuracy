@@ -167,11 +167,15 @@ void GeoscapeEventState::eventLogic()
 				{
 					Transfer* t = new Transfer(24);
 					Soldier* s = mod->genSoldier(save, ruleSoldier->getType());
+					s->load(rule.getSpawnedSoldierTemplate(), mod, save, mod->getScriptGlobal(), true); // load from soldier template
 					if (!rule.getSpawnedPersonName().empty())
 					{
 						s->setName(tr(rule.getSpawnedPersonName()));
 					}
-					s->load(rule.getSpawnedSoldierTemplate(), mod, save, mod->getScriptGlobal(), true); // load from soldier template
+					else
+					{
+						s->genName();
+					}
 					t->setSoldier(s);
 					hq->getTransfers()->push_back(t);
 				}

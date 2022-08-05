@@ -102,6 +102,8 @@ public:
 	std::string getName(bool statstring = false, unsigned int maxLength = 20) const;
 	/// Sets the soldier's name.
 	void setName(const std::string &name);
+	/// Generates a new name based on nationality.
+	void genName();
 	/// Gets the soldier's callsign.
 	std::string getCallsign(unsigned int maxLength = 20) const;
 	/// Sets the soldier's callsign.

@@ -2508,11 +2508,15 @@ void DebriefingState::recoverCivilian(BattleUnit *from, Base *base)
 		{
 			Transfer *t = new Transfer(24);
 			Soldier *s = _game->getMod()->genSoldier(_game->getSavedGame(), ruleSoldier->getType());
+			s->load(from->getUnitRules()->getSpawnedSoldierTemplate(), _game->getMod(), _game->getSavedGame(), _game->getMod()->getScriptGlobal(), true); // load from soldier template
 			if (!from->getUnitRules()->getSpawnedPersonName().empty())
 			{
 				s->setName(tr(from->getUnitRules()->getSpawnedPersonName()));
 			}
-			s->load(from->getUnitRules()->getSpawnedSoldierTemplate(), _game->getMod(), _game->getSavedGame(), _game->getMod()->getScriptGlobal(), true); // load from soldier template
+			else
+			{
+				s->genName();
+			}
 			t->setSoldier(s);
 			base->getTransfers()->push_back(t);
 		}

@@ -235,11 +235,15 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					{
 						Transfer *t = new Transfer(24);
 						Soldier *s = m->genSoldier(g, rule->getType());
+						s->load(_rules->getSpawnedSoldierTemplate(), m, g, m->getScriptGlobal(), true); // load from soldier template
 						if (_rules->getSpawnedPersonName() != "")
 						{
 							s->setName(lang->getString(_rules->getSpawnedPersonName()));
 						}
-						s->load(_rules->getSpawnedSoldierTemplate(), m, g, m->getScriptGlobal(), true); // load from soldier template
+						else
+						{
+							s->genName();
+						}
 						t->setSoldier(s);
 						b->getTransfers()->push_back(t);
 					}

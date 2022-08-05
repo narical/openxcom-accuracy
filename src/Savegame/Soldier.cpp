@@ -358,6 +358,29 @@ void Soldier::setName(const std::string &name)
 }
 
 /**
+ * Generates a new name based on nationality.
+ */
+void Soldier::genName()
+{
+	const std::vector<SoldierNamePool*>& names = _rules->getNames();
+	if (!names.empty())
+	{
+		// clamp (and randomize) nationality if needed (i.e. if the modder messed up)
+		if ((size_t)_nationality >= names.size())
+		{
+			_nationality = RNG::generate(0, names.size() - 1);
+		}
+		_name = names.at(_nationality)->genName(&_gender, _rules->getFemaleFrequency());
+		_callsign = generateCallsign(_rules->getNames());
+		_look = (SoldierLook)names.at(_nationality)->genLook(4); // Once we add the ability to mod in extra looks, this will need to reference the ruleset for the maximum amount of looks.
+	}
+	else
+	{
+		_nationality = 0;
+	}
+}
+
+/**
  * Returns the soldier's callsign.
  * @param maxLength Restrict length to a certain value.
  * @return Soldier callsign.
