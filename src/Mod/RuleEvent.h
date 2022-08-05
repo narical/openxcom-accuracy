@@ -42,6 +42,7 @@ private:
 	YAML::Node _spawnedSoldier;
 	std::map<std::string, int> _everyMultiItemList;
 	std::vector<std::string> _everyItemList, _randomItemList;
+	std::vector<std::map<std::string, int> > _randomMultiItemList;
 	WeightedOptions _weightedItemList;
 	std::vector<std::string> _researchList;
 	std::string _interruptResearch;
@@ -85,6 +86,8 @@ public:
 	const std::vector<std::string> &getEveryItemList() const { return _everyItemList; }
 	/// Gets a list of items; one of them is randomly selected and transferred to HQ stores when this event pops up.
 	const std::vector<std::string> &getRandomItemList() const { return _randomItemList; }
+	/// Gets a list of lists of items; one of them is randomly selected and transferred to HQ stores when this event pops up.
+	const std::vector<std::map<std::string, int> > &getRandomMultiItemList() const { return _randomMultiItemList; }
 	/// Gets a list of items; one of them is randomly selected (considering weights) and transferred to HQ stores when this event pops up.
 	const WeightedOptions &getWeightedItemList() const { return _weightedItemList; }
 	/// Gets a list of research projects; one of them will be randomly discovered when this event pops up.

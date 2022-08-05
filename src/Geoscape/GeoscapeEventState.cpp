@@ -214,6 +214,20 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
+	if (!rule.getRandomMultiItemList().empty())
+	{
+		size_t pickItem = RNG::generate(0, rule.getRandomMultiItemList().size() - 1);
+		auto& sublist = rule.getRandomMultiItemList().at(pickItem);
+		for (auto& pair : sublist)
+		{
+			const RuleItem* itemRule = mod->getItem(pair.first, true);
+			if (itemRule)
+			{
+				itemsToTransfer[itemRule->getType()] += pair.second;
+			}
+		}
+	}
+
 	if (!rule.getWeightedItemList().empty())
 	{
 		const RuleItem *randomItem = mod->getItem(rule.getWeightedItemList().choose(), true);
