@@ -292,24 +292,20 @@ namespace OpenXcom
 		_txtAccuracyModifier = new Text(300, 9, 8, 174);
 		_txtPowerBonus = new Text(300, 17, 8, 183);
 
-		if (bottomOffset > 0)
-		{
-			if (bottomOffset >= 20)
-			{
-				add(_txtAccuracyModifier);
-			}
-			add(_txtPowerBonus);
-		}
+		add(_txtAccuracyModifier);
+		add(_txtPowerBonus);
 
 		_txtAccuracyModifier->setColor(_textColor);
 		_txtAccuracyModifier->setSecondaryColor(_listColor2);
 		_txtAccuracyModifier->setWordWrap(false);
 		_txtAccuracyModifier->setText(tr("STR_ACCURACY_MODIFIER").arg(accuracyModifier));
+		_txtAccuracyModifier->setVisible(bottomOffset >= 20);
 
 		_txtPowerBonus->setColor(_textColor);
 		_txtPowerBonus->setSecondaryColor(_listColor2);
 		_txtPowerBonus->setWordWrap(true);
 		_txtPowerBonus->setText(tr("STR_POWER_BONUS").arg(powerBonus));
+		_txtPowerBonus->setVisible(bottomOffset > 0);
 
 		// AMMO column
 		std::ostringstream ss;
