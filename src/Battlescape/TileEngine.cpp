@@ -533,8 +533,8 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 		{
 			currLight = std::max(currLight, unit->getArmor()->getPersonalLight());
 		}
-		BattleItem *handWeapons[] = { unit->getLeftHandWeapon(), unit->getRightHandWeapon() };
-		for (BattleItem *w : handWeapons)
+		const BattleItem *handWeapons[] = { unit->getLeftHandWeapon(), unit->getRightHandWeapon() };
+		for (const BattleItem *w : handWeapons)
 		{
 			if (!w) continue;
 
