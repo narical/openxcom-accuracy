@@ -694,6 +694,20 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 				totalCost += ruleItem->getMonthlyMaintenance() * transfer->getQuantity();
 			}
 		}
+		else if (transfer->getType() == TRANSFER_SOLDIER)
+		{
+			auto ruleItem = transfer->getSoldier()->getArmor()->getStoreItem();
+			if (ruleItem && ruleItem->getMonthlySalary() != 0)
+			{
+				staffCount += 1;
+				totalCost += ruleItem->getMonthlySalary();
+			}
+			if (ruleItem && ruleItem->getMonthlyMaintenance() != 0)
+			{
+				inventoryCount += 1;
+				totalCost += ruleItem->getMonthlyMaintenance();
+			}
+		}
 	}
 	for (const auto& storeItem : *_items->getContents())
 	{
