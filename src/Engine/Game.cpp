@@ -287,7 +287,7 @@ void Game::run()
 						// "ctrl-n" notes UI
 						else if (action.getDetails()->key.keysym.sym == SDLK_n && isCtrlPressed())
 						{
-							if (_save)
+							if (_save && !containsNotesState())
 							{
 								if (_save->getSavedBattle())
 								{
@@ -535,6 +535,23 @@ bool Game::containsUfopaediaStartState() const
 	{
 		auto* pedia = dynamic_cast<UfopaediaStartState*>(state);
 		if (pedia)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Returns whether a NotesState is in the background.
+ * @return Is there a NotesState in the background?
+ */
+bool Game::containsNotesState() const
+{
+	for (auto* state : _states)
+	{
+		auto* notes = dynamic_cast<NotesState*>(state);
+		if (notes)
 		{
 			return true;
 		}

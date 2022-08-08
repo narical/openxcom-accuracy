@@ -99,6 +99,8 @@ public:
 	bool isState(State *state) const;
 	/// Returns whether a UfopaediaStartState is in the background.
 	bool containsUfopaediaStartState() const;
+	/// Returns whether a NotesState is in the background.
+	bool containsNotesState() const;
 	/// Returns whether the game is shutting down.
 	bool isQuitting() const;
 	/// Loads the default and current language.
