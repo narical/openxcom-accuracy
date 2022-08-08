@@ -524,19 +524,7 @@ void GeoscapeState::handle(Action *action)
 		// "ctrl-d" - enable debug mode
 		if (Options::debug && action->getDetails()->key.keysym.sym == SDLK_d && _game->isCtrlPressed())
 		{
-			_game->getSavedGame()->setDebugMode();
-			if (_game->getSavedGame()->getDebugMode())
-			{
-				_txtDebug->setText("DEBUG MODE");
-			}
-			else
-			{
-				_txtDebug->setText("");
-			}
-			_cbxRegion->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType >= 1);
-			_cbxZone->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 2);
-			_cbxArea->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 2);
-			_cbxCountry->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 0);
+			btnDebugClick(nullptr);
 		}
 		if (Options::debug && _game->getSavedGame()->getDebugMode() && _game->isCtrlPressed())
 		{
@@ -2924,6 +2912,27 @@ void GeoscapeState::btnGlobalResearchClick(Action *)
 void GeoscapeState::btnDogfightExperienceClick(Action *)
 {
 	_game->pushState(new DogfightExperienceState());
+}
+
+/**
+ * Toggles debug mode.
+ * @param action Pointer to an action.
+ */
+void GeoscapeState::btnDebugClick(Action *)
+{
+	_game->getSavedGame()->setDebugMode();
+	if (_game->getSavedGame()->getDebugMode())
+	{
+		_txtDebug->setText("DEBUG MODE");
+	}
+	else
+	{
+		_txtDebug->setText("");
+	}
+	_cbxRegion->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType >= 1);
+	_cbxZone->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 2);
+	_cbxArea->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 2);
+	_cbxCountry->setVisible(_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->debugType == 0);
 }
 
 /**
