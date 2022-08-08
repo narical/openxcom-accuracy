@@ -324,11 +324,18 @@ void StoresState::initList(bool grandTotal)
 				// 5. items in transfer
 				for (auto* transfer : *base->getTransfers())
 				{
-					Craft *craft2 = transfer->getCraft();
-					if (craft2)
+					if (transfer->getCraft())
 					{
 						// 5a. craft equipment, weapons, vehicles
-						qty += craft2->getTotalItemCount(rule);
+						qty += transfer->getCraft()->getTotalItemCount(rule);
+					}
+					else if (transfer->getSoldier())
+					{
+						// 5c. armor in use (worn by soldiers)
+						if (transfer->getSoldier()->getArmor()->getStoreItem() == rule)
+						{
+							qty += 1;
+						}
 					}
 					else if (transfer->getItems() == item)
 					{
