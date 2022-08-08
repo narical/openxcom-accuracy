@@ -125,6 +125,18 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 		}
 		Log(LOG_ERROR) << "Mission was interrupted! Temporarily assigned to a new region: " << _region;
 	}
+	AlienRace* race = mod->getAlienRace(_race, false);
+	if (!race)
+	{
+		Log(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid alien race: " << _race;
+		_interrupted = true;
+		_race = mod->getAlienRacesList().front();
+		if (_liveUfos > 0)
+		{
+			Log(LOG_ERROR) << "Mission still has some live UFOs, please leave them be until they disappear.";
+		}
+		Log(LOG_ERROR) << "Mission was interrupted! Temporarily assigned a new alien race: " << _race;
+	}
 }
 
 /**
