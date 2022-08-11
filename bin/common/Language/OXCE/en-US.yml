@@ -101,6 +101,9 @@ en-US:
   STR_RANDOM_PRODUCTION_SUMMARY: "Summary"
 #PurchaseState.cpp
   STR_NOT_ENOUGH_PRISON_SPACE: "NOT ENOUGH ALIEN CONTAINMENT!{SMALLLINE}Build new alien containment or transfer aliens to other bases."
+  STR_MONTHLY_ITEM_PURCHASE_LIMIT_EXCEEDED: "MONTHLY PURCHASE LIMIT EXCEEDED!{SMALLLINE}More items will be available next month."
+  STR_MONTHLY_CRAFT_PURCHASE_LIMIT_EXCEEDED: "MONTHLY PURCHASE LIMIT EXCEEDED!{SMALLLINE}More craft will be available next month."
+  STR_MONTHLY_SOLDIER_HIRING_LIMIT_EXCEEDED: "MONTHLY HIRING LIMIT EXCEEDED!{SMALLLINE}More recruits will be available next month."
 #SoldierArmorState.cpp
   STR_NOT_ENOUGH_CRAFT_SPACE: "Not enough space onboard!"
 #SoldierAvatarState.cpp

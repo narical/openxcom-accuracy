@@ -265,6 +265,7 @@ en-US:
 #
   size: "Size"
   costBuy: "Buy cost"
+  monthlyBuyLimit: "Monthly buy limit"
   costSell: "Sell cost"
   transferTime: "Hours to transfer"
   monthlySalary: "Salary/month"

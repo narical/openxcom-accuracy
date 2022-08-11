@@ -71,6 +71,7 @@ private:
 	const Armor* _armor;
 	std::string _specWeaponName;
 	const RuleItem* _specWeapon;
+	int _monthlyBuyLimit;
 	int _costBuy, _costSalary, _costSalarySquaddie, _costSalarySergeant, _costSalaryCaptain, _costSalaryColonel, _costSalaryCommander;
 	int _standHeight, _kneelHeight, _floatHeight;
 	int _femaleFrequency, _value, _transferTime, _moraleLossWhenKilled;
@@ -124,6 +125,8 @@ public:
 	UnitStats getTrainingStatCaps() const;
 	/// Gets the improvement chances for pilots (after dogfight).
 	UnitStats getDogfightExperience() const;
+	/// Gets the monthly hiring limit.
+	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
 	/// Gets the cost of the soldier.
 	int getBuyCost() const;
 	/// Does salary depend on rank?

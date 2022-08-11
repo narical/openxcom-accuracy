@@ -609,6 +609,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	_ufopediaRuleStatus = doc["ufopediaRuleStatus"].as< std::map<std::string, int> >(_ufopediaRuleStatus);
 	_manufactureRuleStatus = doc["manufactureRuleStatus"].as< std::map<std::string, int> >(_manufactureRuleStatus);
 	_researchRuleStatus = doc["researchRuleStatus"].as< std::map<std::string, int> >(_researchRuleStatus);
+	_monthlyPurchaseLimitLog = doc["monthlyPurchaseLimitLog"].as< std::map<std::string, int> >(_monthlyPurchaseLimitLog);
 	_hiddenPurchaseItemsMap = doc["hiddenPurchaseItems"].as< std::map<std::string, bool> >(_hiddenPurchaseItemsMap);
 	_customRuleCraftDeployments = doc["customRuleCraftDeployments"].as< std::map<std::string, RuleCraftDeployment > >(_customRuleCraftDeployments);
 
@@ -912,6 +913,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["ufopediaRuleStatus"] = _ufopediaRuleStatus;
 	node["manufactureRuleStatus"] = _manufactureRuleStatus;
 	node["researchRuleStatus"] = _researchRuleStatus;
+	node["monthlyPurchaseLimitLog"] = _monthlyPurchaseLimitLog;
 	node["hiddenPurchaseItems"] = _hiddenPurchaseItemsMap;
 	node["customRuleCraftDeployments"] = _customRuleCraftDeployments;
 	node["alienStrategy"] = _alienStrategy->save();
@@ -2821,6 +2823,8 @@ void SavedGame::setGraphFinanceToggles(const std::string &value)
 void SavedGame::addMonth()
 {
 	++_monthsPassed;
+
+	_monthlyPurchaseLimitLog.clear();
 }
 
 /*

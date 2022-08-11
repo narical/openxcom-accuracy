@@ -2158,6 +2158,7 @@ void StatsForNerdsState::initItemList()
 
 	addDouble(ss, itemRule->getSize(), "size");
 	addInteger(ss, itemRule->getBuyCost(), "costBuy", 0, true);
+	addInteger(ss, itemRule->getMonthlyBuyLimit(), "monthlyBuyLimit");
 	addInteger(ss, itemRule->getTransferTime(), "transferTime", 24);
 	addInteger(ss, itemRule->getMonthlySalary(), "monthlySalary", 0, true);
 	addInteger(ss, itemRule->getMonthlyMaintenance(), "monthlyMaintenance", 0, true);
@@ -3147,6 +3148,7 @@ void StatsForNerdsState::initCraftList()
 	addVectorOfStrings(ss, mod->getBaseFunctionNames(craftRule->getRequiresBuyBaseFunc()), "requiresBuyBaseFunc");
 
 	addInteger(ss, craftRule->getBuyCost(), "costBuy", 0, true);
+	addInteger(ss, craftRule->getMonthlyBuyLimit(), "monthlyBuyLimit");
 	addInteger(ss, craftRule->getRentCost(), "costRent", 0, true);
 	addInteger(ss, craftRule->getSellCost(), "costSell", 0, true);
 	addInteger(ss, craftRule->getTransferTime(), "transferTime", 24);

@@ -696,6 +696,12 @@ void PurchaseState::btnOkClick(Action *)
 				for (int s = 0; s < i->amount; s++)
 				{
 					RuleSoldier *rule = (RuleSoldier*)i->rule;
+					if (rule->getMonthlyBuyLimit() > 0)
+					{
+						// remember the hire for the limit check
+						auto& soldierHireLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+						soldierHireLimitLog[rule->getType()] += 1;
+					}
 					int time = rule->getTransferTime();
 					if (time == 0)
 						time = _game->getMod()->getPersonnelTime();
@@ -718,6 +724,12 @@ void PurchaseState::btnOkClick(Action *)
 				for (int c = 0; c < i->amount; c++)
 				{
 					RuleCraft *rule = (RuleCraft*)i->rule;
+					if (rule->getMonthlyBuyLimit() > 0)
+					{
+						// remember the purchase for the limit check
+						auto& craftPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+						craftPurchaseLimitLog[rule->getType()] += 1;
+					}
 					t = new Transfer(rule->getTransferTime());
 					Craft *craft = new Craft(rule, _base, _game->getSavedGame()->getId(rule->getType()));
 					craft->initFixedWeapons(_game->getMod());
@@ -729,6 +741,12 @@ void PurchaseState::btnOkClick(Action *)
 			case TRANSFER_ITEM:
 				{
 					RuleItem *rule = (RuleItem*)i->rule;
+					if (rule->getMonthlyBuyLimit() > 0)
+					{
+						// remember the purchase for the limit check
+						auto& itemPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+						itemPurchaseLimitLog[rule->getType()] += i->amount;
+					}
 					t = new Transfer(rule->getTransferTime());
 					t->setItems(rule->getType(), i->amount);
 					_base->getTransfers()->push_back(t);
@@ -951,9 +969,22 @@ void PurchaseState::increaseByValue(int change)
 	else
 	{
 		RuleItem *rule = nullptr;
+		RuleSoldier* ruleS = nullptr;
+		RuleCraft* ruleC = nullptr;
 		switch (getRow().type)
 		{
 		case TRANSFER_SOLDIER:
+			ruleS = (RuleSoldier*)getRow().rule;
+			if (ruleS->getMonthlyBuyLimit() > 0)
+			{
+				auto& soldierHireLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+				int maxByLimit = std::max(0, ruleS->getMonthlyBuyLimit() - soldierHireLimitLog[ruleS->getType()] - getRow().amount);
+				if (maxByLimit <= 0)
+				{
+					errorMessage = tr("STR_MONTHLY_SOLDIER_HIRING_LIMIT_EXCEEDED");
+				}
+			}
+			// fall-through
 		case TRANSFER_SCIENTIST:
 		case TRANSFER_ENGINEER:
 			if (_pQty + 1 > _base->getAvailableQuarters() - _base->getUsedQuarters())
@@ -962,9 +993,19 @@ void PurchaseState::increaseByValue(int change)
 			}
 			break;
 		case TRANSFER_CRAFT:
+			ruleC = (RuleCraft*)getRow().rule;
 			if (_cQty + 1 > _base->getAvailableHangars() - _base->getUsedHangars())
 			{
 				errorMessage = tr("STR_NO_FREE_HANGARS_FOR_PURCHASE");
+			}
+			else if (ruleC->getMonthlyBuyLimit() > 0)
+			{
+				auto& craftPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+				int maxByLimit = std::max(0, ruleC->getMonthlyBuyLimit() - craftPurchaseLimitLog[ruleC->getType()] - getRow().amount);
+				if (maxByLimit <= 0)
+				{
+					errorMessage = tr("STR_MONTHLY_CRAFT_PURCHASE_LIMIT_EXCEEDED");
+				}
 			}
 			break;
 		case TRANSFER_ITEM:
@@ -981,6 +1022,15 @@ void PurchaseState::increaseByValue(int change)
 					errorMessage = trAlt("STR_NOT_ENOUGH_PRISON_SPACE", p);
 				}
 			}
+			else if (rule->getMonthlyBuyLimit() > 0)
+			{
+				auto& itemPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+				int maxByLimit = std::max(0, rule->getMonthlyBuyLimit() - itemPurchaseLimitLog[rule->getType()] - getRow().amount);
+				if (maxByLimit <= 0)
+				{
+					errorMessage = tr("STR_MONTHLY_ITEM_PURCHASE_LIMIT_EXCEEDED");
+				}
+			}
 			break;
 		}
 	}
@@ -993,6 +1043,16 @@ void PurchaseState::increaseByValue(int change)
 		switch (getRow().type)
 		{
 		case TRANSFER_SOLDIER:
+			{
+				RuleSoldier *ruleS = (RuleSoldier*)getRow().rule;
+				if (ruleS->getMonthlyBuyLimit() > 0)
+				{
+					auto& soldierHireLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+					int maxByLimit = std::max(0, ruleS->getMonthlyBuyLimit() - soldierHireLimitLog[ruleS->getType()] - getRow().amount);
+					change = std::min(maxByLimit, change);
+				}
+			}
+			// fall-through
 		case TRANSFER_SCIENTIST:
 		case TRANSFER_ENGINEER:
 			{
@@ -1003,6 +1063,13 @@ void PurchaseState::increaseByValue(int change)
 			break;
 		case TRANSFER_CRAFT:
 			{
+				RuleCraft *ruleC = (RuleCraft*)getRow().rule;
+				if (ruleC->getMonthlyBuyLimit() > 0)
+				{
+					auto& craftPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+					int maxByLimit = std::max(0, ruleC->getMonthlyBuyLimit() - craftPurchaseLimitLog[ruleC->getType()] - getRow().amount);
+					change = std::min(maxByLimit, change);
+				}
 				int maxByHangars = _base->getAvailableHangars() - _base->getUsedHangars() - _cQty;
 				change = std::min(maxByHangars, change);
 				_cQty += change;
@@ -1011,6 +1078,12 @@ void PurchaseState::increaseByValue(int change)
 		case TRANSFER_ITEM:
 			{
 				RuleItem *rule = (RuleItem*)getRow().rule;
+				if (rule->getMonthlyBuyLimit() > 0)
+				{
+					auto& itemPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+					int maxByLimit = std::max(0, rule->getMonthlyBuyLimit() - itemPurchaseLimitLog[rule->getType()] - getRow().amount);
+					change = std::min(maxByLimit, change);
+				}
 				int p = rule->getPrisonType();
 				if (rule->isAlien())
 				{

@@ -330,6 +330,7 @@ private:
 
 	Unit* _vehicleUnit;
 	double _size;
+	int _monthlyBuyLimit;
 	int _costBuy, _costSell, _transferTime, _weight;
 	int _throwRange, _underwaterThrowRange;
 	int _bigSprite;
@@ -476,6 +477,8 @@ public:
 	Unit* getVehicleUnit() const;
 	/// Gets the item's size.
 	double getSize() const;
+	/// Gets the item's monthly buy limit.
+	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
 	/// Gets the item's purchase cost.
 	int getBuyCost() const;
 	/// Gets the item's sale cost.
