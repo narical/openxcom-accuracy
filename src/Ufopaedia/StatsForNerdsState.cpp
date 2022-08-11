@@ -2152,6 +2152,7 @@ void StatsForNerdsState::initItemList()
 	addVectorOfResearch(ss, itemRule->getRequirements(), "requires");
 	addVectorOfResearch(ss, itemRule->getBuyRequirements(), "requiresBuy");
 	addVectorOfStrings(ss, mod->getBaseFunctionNames(itemRule->getRequiresBuyBaseFunc()), "requiresBuyBaseFunc");
+	addSingleString(ss, itemRule->getRequiresBuyCountry(), "requiresBuyCountry");
 	addVectorOfStrings(ss, itemRule->getCategories(), "categories");
 	addVectorOfRulesId(ss, itemRule->getSupportedInventorySections(), "supportedInventorySections");
 

@@ -377,6 +377,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_nameAsAmmo = node["nameAsAmmo"].as<std::string>(_nameAsAmmo);
 
 	//requires
+	_requiresBuyCountry = node["requiresBuyCountry"].as<std::string>(_requiresBuyCountry);
 	mod->loadUnorderedNames(_type, _requiresName, node["requires"]);
 	mod->loadUnorderedNames(_type, _requiresBuyName, node["requiresBuy"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, node["requiresBuyBaseFunc"]);

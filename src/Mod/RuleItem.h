@@ -318,6 +318,7 @@ public:
 
 private:
 	std::string _type, _name, _nameAsAmmo; // two types of objects can have the same name
+	std::string _requiresBuyCountry;
 	std::vector<std::string> _requiresName;
 	std::vector<std::string> _requiresBuyName;
 	std::vector<const RuleResearch *> _requires, _requiresBuy;
@@ -459,6 +460,8 @@ public:
 	const std::vector<const RuleResearch*> &getRequirements() const;
 	/// Gets the item's buy requirements.
 	const std::vector<const RuleResearch*> &getBuyRequirements() const;
+	/// Gets the allied country name required to buy this item.
+	const std::string& getRequiresBuyCountry() const { return _requiresBuyCountry; }
 	/// Gets the base functions required to buy craft.
 	RuleBaseFacilityFunctions getRequiresBuyBaseFunc() const { return _requiresBuyBaseFunc; }
 	/// Gets the dividers used for recovery of special items.

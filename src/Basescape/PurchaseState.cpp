@@ -50,6 +50,8 @@
 #include "../Mod/Armor.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Battlescape/CannotReequipState.h"
+#include "../Savegame/Country.h"
+#include "../Mod/RuleCountry.h"
 
 namespace OpenXcom
 {
@@ -617,6 +619,24 @@ void PurchaseState::updateList()
 		if (_items[i].type == TRANSFER_ITEM)
 		{
 			RuleItem *rule = (RuleItem*)_items[i].rule;
+			if (!rule->getRequiresBuyCountry().empty())
+			{
+				// required allied country
+				bool allied = true;
+				auto* countries = _game->getSavedGame()->getCountries();
+				for (auto* country : *countries)
+				{
+					if (country->getPact() && country->getRules()->getType() == rule->getRequiresBuyCountry())
+					{
+						allied = false;
+						break;
+					}
+				}
+				if (!allied)
+				{
+					continue;
+				}
+			}
 			ammo = (rule->getBattleType() == BT_AMMO || (rule->getBattleType() == BT_NONE && rule->getClipSize() > 0));
 			if (ammo)
 			{
