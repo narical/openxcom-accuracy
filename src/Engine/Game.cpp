@@ -285,7 +285,7 @@ void Game::run()
 							SDL_WM_GrabInput(Options::captureMouse);
 						}
 						// "ctrl-n" notes UI
-						else if (action.getDetails()->key.keysym.sym == SDLK_n && isCtrlPressed())
+						else if (action.getDetails()->key.keysym.sym == SDLK_n && isCtrlPressed() && !isAltPressed())
 						{
 							if (_save && !containsNotesState())
 							{
