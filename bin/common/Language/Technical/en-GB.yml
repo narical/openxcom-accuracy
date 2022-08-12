@@ -483,4 +483,5 @@ en-GB:
   clip: "Clip item"
   ammoMax: "Rounds"
   rearmRate: "Rearm rate"
+  bulletSaving: "Bullet saving?"
   _averageTotalDamage: "Average total damage"

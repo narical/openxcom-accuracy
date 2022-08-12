@@ -3645,6 +3645,7 @@ void StatsForNerdsState::initCraftWeaponList()
 	addRule(ss, craftWeaponRule->getClipItem(), "clip");
 	addInteger(ss, craftWeaponRule->getAmmoMax(), "ammoMax");
 	addInteger(ss, craftWeaponRule->getRearmRate(), "rearmRate", 1);
+	addBoolean(ss, craftWeaponRule->useStatisticalBulletSaving(), "bulletSaving");
 
 	addHeading("stats");
 	{
