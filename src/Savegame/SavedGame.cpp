@@ -213,7 +213,7 @@ SavedGame::~SavedGame()
 	{
 		delete *i;
 	}
-	for (int j = 0; j < MAX_EQUIPMENT_LAYOUT_TEMPLATES; ++j)
+	for (int j = 0; j < Options::oxceMaxEquipmentLayoutTemplates; ++j)
 	{
 		for (std::vector<EquipmentLayoutItem*>::iterator i = _globalEquipmentLayout[j].begin(); i != _globalEquipmentLayout[j].end(); ++i)
 		{
@@ -701,7 +701,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 	}
 
-	for (int j = 0; j < MAX_EQUIPMENT_LAYOUT_TEMPLATES; ++j)
+	for (int j = 0; j < Options::oxceMaxEquipmentLayoutTemplates; ++j)
 	{
 		std::ostringstream oss;
 		oss << "globalEquipmentLayout" << j;
@@ -921,7 +921,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		node["deadSoldiers"].push_back((*i)->save(mod->getScriptGlobal()));
 	}
-	for (int j = 0; j < MAX_EQUIPMENT_LAYOUT_TEMPLATES; ++j)
+	for (int j = 0; j < Options::oxceMaxEquipmentLayoutTemplates; ++j)
 	{
 		std::ostringstream oss;
 		oss << "globalEquipmentLayout" << j;

@@ -2241,6 +2241,16 @@ void Mod::loadAll()
 		Options::save();
 	}
 
+	// additional validation of options not visible in the GUI
+	{
+		if (Options::oxceMaxEquipmentLayoutTemplates < 10 ||
+			Options::oxceMaxEquipmentLayoutTemplates > SavedGame::MAX_EQUIPMENT_LAYOUT_TEMPLATES ||
+			Options::oxceMaxEquipmentLayoutTemplates % 10 != 0)
+		{
+			Options::oxceMaxEquipmentLayoutTemplates = 20;
+		}
+	}
+
 	Log(LOG_INFO) << "Loading ended.";
 
 	sortLists();

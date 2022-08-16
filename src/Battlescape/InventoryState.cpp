@@ -932,7 +932,7 @@ void InventoryState::btnGlobalEquipmentLayoutClick(Action *action)
 
 	const int index = 10 * _key_repeats + layout_no - 1;
 
-	if (index < 0 || index >= SavedGame::MAX_EQUIPMENT_LAYOUT_TEMPLATES)
+	if (index < 0 || index >= Options::oxceMaxEquipmentLayoutTemplates)
 	{
 		// do nothing if the layout index is out of bounds
 		return;
