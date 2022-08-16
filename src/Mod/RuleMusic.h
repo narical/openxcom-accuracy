@@ -33,7 +33,7 @@ public:
 	RuleMusic(const std::string &type);
 	~RuleMusic();
 	void load(const YAML::Node &node);
-	std::string getName() const;
+	const std::string& getName() const;
 	int getCatPos() const;
 	float getNormalization() const;
 };

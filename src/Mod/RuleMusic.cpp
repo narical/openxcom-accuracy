@@ -53,7 +53,7 @@ void RuleMusic::load(const YAML::Node& node)
  * Gets the track's filename in the SOUND folder.
  * @return the track's filename (no extension).
  */
-std::string RuleMusic::getName() const
+const std::string& RuleMusic::getName() const
 {
 	if (_name.empty())
 		return _type;
