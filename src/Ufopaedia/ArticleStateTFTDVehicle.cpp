@@ -34,6 +34,8 @@ namespace OpenXcom
 
 	ArticleStateTFTDVehicle::ArticleStateTFTDVehicle(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state) : ArticleStateTFTD(defs, std::move(state))
 	{
+		_txtInfo->setHeight(72);
+
 		RuleItem *item = _game->getMod()->getItem(defs->id, true);
 		Unit *unit = item->getVehicleUnit();
 		if (!unit)

@@ -34,6 +34,8 @@ namespace OpenXcom
 
 	ArticleStateTFTDUso::ArticleStateTFTDUso(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state) : ArticleStateTFTD(defs, std::move(state))
 	{
+		_txtInfo->setHeight(112);
+
 		_btnInfo->setVisible(_game->getMod()->getShowPediaInfoButton());
 
 		RuleUfo *ufo = _game->getMod()->getUfo(defs->id, true);

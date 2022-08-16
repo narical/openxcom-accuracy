@@ -177,6 +177,9 @@ namespace OpenXcom
 			default: break;
 		}
 
+		if (!_txtAmmoType[0]->getText().empty())
+			_txtInfo->setHeight(112);
+
 		// multi-page indicator
 		_txtArrows = new Text(32, 9, 277, 134);
 		add(_txtArrows);
