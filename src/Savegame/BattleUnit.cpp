@@ -776,8 +776,7 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	{
 		node["AI"] = getAIModule()->save();
 	}
-	if (_killedBy)
-		node["killedBy"] = (int)_killedBy;
+	node["killedBy"] = (int)_killedBy; // does not have a default value, must always be saved
 	if (_originalFaction != _faction)
 		node["originalFaction"] = (int)_originalFaction;
 	if (_kills)
