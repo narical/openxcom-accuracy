@@ -93,7 +93,7 @@ private:
 	/// sets the map size and associated vars
 	void init(bool resetTerrain);
 	/// Generates a new battlescape map.
-	void generateMap(const std::vector<MapScript*> *script, const std::string &customUfoName);
+	void generateMap(const std::vector<MapScript*> *script, const std::string &customUfoName, const RuleStartingCondition* startingCondition);
 	/// Adds a vehicle to the game.
 	BattleUnit *addXCOMVehicle(Vehicle *v);
 	/// Adds a soldier to the game.

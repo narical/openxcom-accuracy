@@ -2118,6 +2118,7 @@ void Mod::loadAll()
 	afterLoadHelper("units", this, _units, &Unit::afterLoad);
 	afterLoadHelper("soldiers", this, _soldiers, &RuleSoldier::afterLoad);
 	afterLoadHelper("facilities", this, _facilities, &RuleBaseFacility::afterLoad);
+	afterLoadHelper("startingConditions", this, _startingConditions, &RuleStartingCondition::afterLoad);
 	afterLoadHelper("enviroEffects", this, _enviroEffects, &RuleEnviroEffects::afterLoad);
 	afterLoadHelper("commendations", this, _commendations, &RuleCommendations::afterLoad);
 	afterLoadHelper("skills", this, _skills, &RuleSkill::afterLoad);

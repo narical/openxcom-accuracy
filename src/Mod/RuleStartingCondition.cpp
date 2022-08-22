@@ -68,6 +68,7 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
 	mod->loadUnorderedNames(_type, _allowedSoldierTypes, node["allowedSoldierTypes"]);
 	mod->loadUnorderedNames(_type, _forbiddenSoldierTypes, node["forbiddenSoldierTypes"]);
 	mod->loadUnorderedNamesToInt(_type, _requiredItems, node["requiredItems"]);
+	mod->loadUnorderedNamesToNames(_type, _craftTransformationsName, node["craftTransformations"]);
 	_destroyRequiredItems = node["destroyRequiredItems"].as<bool>(_destroyRequiredItems);
 	_requireCommanderOnboard = node["requireCommanderOnboard"].as<bool>(_requireCommanderOnboard);
 
@@ -76,6 +77,22 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
 	{
 		Log(LOG_ERROR) << "There are invalid/obsolete attributes in starting condition " << _type << ". Please review the ruleset.";
 	}
+}
+
+/**
+ * Cross link with other rules.
+ */
+void RuleStartingCondition::afterLoad(const Mod* mod)
+{
+	for (auto& pair : _craftTransformationsName)
+	{
+		auto src = mod->getCraft(pair.first, true);
+		auto dest = mod->getCraft(pair.second, true);
+		_craftTransformations[src] = dest;
+	}
+
+	//remove not needed data
+	Collections::removeAll(_craftTransformationsName);
 }
 
 /**
@@ -148,6 +165,26 @@ std::string RuleStartingCondition::getArmorReplacement(const std::string& soldie
 	}
 
 	return "";
+}
+
+/**
+ * Gets the replacement craft.
+ * @param sourceCraft Existing/old craft type.
+ * @param mapScriptCraft Fallback craft type defined by map script (can be null).
+ * @return Replacement craft type (or nullptr if no replacement is needed).
+ */
+const RuleCraft* RuleStartingCondition::getCraftReplacement(const RuleCraft* sourceCraft, const RuleCraft* mapScriptCraft) const
+{
+	if (!_craftTransformations.empty())
+	{
+		auto i = _craftTransformations.find(sourceCraft);
+		if (i != _craftTransformations.end())
+		{
+			return i->second;
+		}
+	}
+
+	return mapScriptCraft;
 }
 
 /**

@@ -27,6 +27,7 @@ namespace OpenXcom
 class Mod;
 class Armor;
 class Craft;
+class RuleCraft;
 
 /**
  * Represents a specific Starting Condition.
@@ -43,6 +44,8 @@ private:
 	std::vector<std::string> _allowedCraft, _forbiddenCraft;
 	std::vector<std::string> _allowedSoldierTypes, _forbiddenSoldierTypes;
 	std::map<std::string, int> _requiredItems;
+	std::map<std::string, std::string> _craftTransformationsName;
+	std::map<const RuleCraft*, const RuleCraft*> _craftTransformations;
 	bool _destroyRequiredItems;
 	bool _requireCommanderOnboard;
 public:
@@ -52,6 +55,8 @@ public:
 	~RuleStartingCondition();
 	/// Loads Starting Conditions data from YAML.
 	void load(const YAML::Node& node, Mod *mod);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Gets the Starting Conditions's type.
 	const std::string& getType() const { return _type; }
 	/// Gets the allowed armor types.
@@ -78,6 +83,8 @@ public:
 	bool isSoldierTypePermitted(const std::string& soldierType) const;
 	/// Gets the replacement armor.
 	std::string getArmorReplacement(const std::string& soldierType, const std::string& armorType) const;
+	/// Gets the replacement craft.
+	const RuleCraft* getCraftReplacement(const RuleCraft* sourceCraft, const RuleCraft* mapScriptCraft) const;
 	/// Checks if the vehicle type is permitted.
 	bool isVehiclePermitted(const std::string& vehicleType) const;
 	/// Checks if the item type is permitted.
