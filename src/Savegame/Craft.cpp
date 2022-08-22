@@ -872,6 +872,16 @@ int Craft::getShieldPercentage() const
 }
 
 /**
+ * Returns whether the craft is ignored by hunter-killers.
+ * (is returning from a mission or is low on fuel).
+ * @return True if it's ignored, false otherwise.
+ */
+bool Craft::isIgnoredByHK() const
+{
+	return getMissionComplete() || getLowFuel();
+}
+
+/**
  * Returns whether the craft is currently low on fuel
  * (only has enough to head back to base).
  * @return True if it's low, false otherwise.

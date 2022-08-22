@@ -189,6 +189,8 @@ public:
 	void setShield(int shield);
 	/// Gets the percent shield remaining
 	int getShieldPercentage() const;
+	/// Gets whether the craft is ignored by hunter-killers.
+	bool isIgnoredByHK() const;
 	/// Gets whether the craft is running out of fuel.
 	bool getLowFuel() const;
 	/// Sets whether the craft is running out of fuel.

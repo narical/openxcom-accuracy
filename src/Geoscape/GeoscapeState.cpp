@@ -972,7 +972,7 @@ void GeoscapeState::time5Seconds()
 							int secondaryTargets = 0;
 							for (auto craft : *activeCrafts)
 							{
-								if (!craft->getMissionComplete() && craft != c)
+								if (!craft->isIgnoredByHK() && craft != c)
 								{
 									// craft is close enough and has at least one loaded weapon
 									if (craft->getNumWeapons(true) > 0 && craft->getDistance(c) < Nautical(_game->getMod()->getEscortRange()))
@@ -1259,7 +1259,7 @@ void GeoscapeState::time5Seconds()
 								int secondaryTargets = 0;
 								for (auto craft : *activeCrafts)
 								{
-									if (!craft->getMissionComplete() && craft != (*j))
+									if (!craft->isIgnoredByHK() && craft != (*j))
 									{
 										// craft is close enough and has at least one loaded weapon
 										if (craft->getNumWeapons(true) > 0 && craft->getDistance((*j)) < Nautical(_game->getMod()->getEscortRange()))
@@ -1584,7 +1584,7 @@ void GeoscapeState::ufoHuntingAndEscorting()
 			{
 				originalTarget = (*ufo)->getTargetedXcomCraft();
 			}
-			if (originalTarget && !originalTarget->getMissionComplete())
+			if (originalTarget && !originalTarget->isIgnoredByHK())
 			{
 				if ((*ufo)->insideRadarRange(originalTarget))
 				{
@@ -1596,7 +1596,7 @@ void GeoscapeState::ufoHuntingAndEscorting()
 			// look for more attractive target
 			for (auto craft : *activeCrafts)
 			{
-				if (!craft->getMissionComplete() && !craft->getRules()->isUndetectable())
+				if (!craft->isIgnoredByHK() && !craft->getRules()->isUndetectable())
 				{
 					int tmpAttraction = craft->getHunterKillerAttraction((*ufo)->getHuntMode());
 					if (tmpAttraction < newAttraction && (*ufo)->insideRadarRange(craft))
