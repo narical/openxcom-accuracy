@@ -112,6 +112,12 @@ AbortMissionState::AbortMissionState(SavedBattleGame *battleGame, BattlescapeSta
 	_inExit = tally.inExit;
 	_outside = tally.inField;
 
+	if (!exit && _inExit > 0)
+	{
+		// FIXME: better would be to correctly decide already at the top (how??), but for now this will do...
+		exit = true;
+	}
+
 	// Set up objects
 	_window->setHighContrast(true);
 	_window->setBackground(_game->getMod()->getSurface("TAC00.SCR"));
