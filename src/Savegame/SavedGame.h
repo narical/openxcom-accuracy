@@ -349,6 +349,8 @@ public:
 	bool isItemObtained(const std::string &itemType) const;
 	/// Gets if a certain facility has been built.
 	bool isFacilityBuilt(const std::string &facilityType) const;
+	/// Gets if a certain soldier type has been hired.
+	bool isSoldierTypeHired(const std::string& soldierType) const;
 	/// Gets the soldier matching this ID.
 	Soldier *getSoldier(int id) const;
 	/// Handles the higher promotions.

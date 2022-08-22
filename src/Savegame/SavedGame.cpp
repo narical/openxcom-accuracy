@@ -2285,6 +2285,26 @@ bool SavedGame::isFacilityBuilt(const std::string &facilityType) const
 }
 
 /**
+ * Returns if a certain soldier type has been hired in any base.
+ * @param soldierType soldier type ID.
+ * @return Whether it's been hired (and arrived already) or not.
+ */
+bool SavedGame::isSoldierTypeHired(const std::string& soldierType) const
+{
+	for (auto* base : _bases)
+	{
+		for (auto* soldier : *base->getSoldiers())
+		{
+			if (soldier->getRules()->getType() == soldierType)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
  * Returns pointer to the Soldier given it's unique ID.
  * @param id A soldier's unique id.
  * @return Pointer to Soldier.

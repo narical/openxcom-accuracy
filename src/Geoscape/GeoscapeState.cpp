@@ -3835,6 +3835,16 @@ void GeoscapeState::determineAlienMissions()
 				}
 				if (triggerHappy)
 				{
+					// soldier type requirements
+					for (auto& triggerSoldierType : eventScript->getSoldierTypeTriggers())
+					{
+						triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
 					// xcom base requirements
 					for (auto& triggerXcomBase : eventScript->getXcomBaseInRegionTriggers())
 					{
