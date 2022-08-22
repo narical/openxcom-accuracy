@@ -18,6 +18,7 @@
  */
 #include "PlaceFacilityState.h"
 #include "../Engine/Game.h"
+#include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"
@@ -300,6 +301,10 @@ void PlaceFacilityState::viewClick(Action *)
 				fac->setBuildTime(std::max(1, fac->getBuildTime() - reducedBuildTimeRounded));
 			}
 			_base->getFacilities()->push_back(fac);
+			if (fac->getRules()->getPlaceSound() != Mod::NO_SOUND)
+			{
+				_game->getMod()->getSound("GEO.CAT", fac->getRules()->getPlaceSound())->play();
+			}
 			if (Options::allowBuildingQueue)
 			{
 				if (_view->isQueuedBuilding(_rule)) fac->setBuildTime(INT_MAX);

@@ -3114,6 +3114,11 @@ void StatsForNerdsState::initFacilityList()
 		tmpSoundVector.clear();
 		tmpSoundVector.push_back(facilityRule->getHitSound());
 		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
+
+		addInteger(ss, facilityRule->getPlaceSound(), "placeSound", -1);
+		tmpSoundVector.clear();
+		tmpSoundVector.push_back(facilityRule->getPlaceSound());
+		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
 	}
 }
 

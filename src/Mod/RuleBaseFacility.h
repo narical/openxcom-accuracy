@@ -58,7 +58,7 @@ private:
 	std::map<std::string, std::pair<int, int> > _buildCostItems;
 	int _storage, _personnel, _aliens, _crafts, _labs, _workshops, _psiLabs;
 	int _sightRange, _sightChance;
-	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound;
+	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound, _placeSound;
 	int _ammoNeeded;
 	const RuleItem* _ammoItem;
 	std::string _ammoItemName;
@@ -171,6 +171,8 @@ public:
 	int getFireSound() const;
 	/// Gets the facility's hit sound.
 	int getHitSound() const;
+	/// Gets the facility's place sound.
+	int getPlaceSound() const { return _placeSound; }
 	/// Gets the facility's list weight.
 	int getListOrder() const;
 	/// Gets the facility's training capacity.

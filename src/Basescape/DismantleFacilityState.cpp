@@ -18,6 +18,7 @@
  */
 #include "DismantleFacilityState.h"
 #include "../Engine/Game.h"
+#include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
 #include "../Engine/Exception.h"
 #include "../Engine/LocalizedText.h"
@@ -147,6 +148,10 @@ void DismantleFacilityState::btnOkClick(Action *)
 				if (_fac->getBuildTime() == 0 && _fac->getRules()->getLeavesBehindOnSell().size() != 0)
 				{
 					const auto &facList = _fac->getRules()->getLeavesBehindOnSell();
+					if (facList.at(0)->getPlaceSound() != Mod::NO_SOUND)
+					{
+						_game->getMod()->getSound("GEO.CAT", facList.at(0)->getPlaceSound())->play();
+					}
 					// Make sure the size of the facilities left behind matches the one we removed
 					if (facList.at(0)->getSize() == _fac->getRules()->getSize()) // equal size facilities
 					{
