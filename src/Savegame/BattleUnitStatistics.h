@@ -393,7 +393,6 @@ struct BattleUnitStatistics
 	YAML::Node save() const
 	{
 		YAML::Node node;
-		node.SetStyle(YAML::EmitterStyle::Flow);
 		if (wasUnconcious) node["wasUnconcious"] = wasUnconcious;
 		if (!kills.empty())
 		{
