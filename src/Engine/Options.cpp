@@ -31,6 +31,7 @@
 #include "Exception.h"
 #include "Logger.h"
 #include "CrossPlatform.h"
+#include "../Menu/ModConfirmExtendedState.h"
 #include "FileMap.h"
 #include "Screen.h"
 
@@ -843,21 +844,29 @@ void updateMods()
 	refreshMods();
 
 	// check active mods that don't meet the enforced OXCE requirements
+	auto masterInf = getActiveMasterInfo();
 	auto activeModsList = getActiveMods();
 	bool forceQuit = false;
 	for (auto modInf : activeModsList)
 	{
-		if (!modInf->isEngineOk())
+		if (ModConfirmExtendedState::isModNotValid(modInf, masterInf))
 		{
-			forceQuit = true;
 			Log(LOG_ERROR) << "- " << modInf->getId() << " v" << modInf->getVersion();
-			if (modInf->getRequiredExtendedEngine() != OPENXCOM_VERSION_ENGINE)
+			if (!modInf->isEngineOk())
 			{
-				Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' require OXC " << modInf->getRequiredExtendedEngine() << " engine to run";
+				forceQuit = true;
+				if (modInf->getRequiredExtendedEngine() != OPENXCOM_VERSION_ENGINE)
+				{
+					Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' require OXC " << modInf->getRequiredExtendedEngine() << " engine to run";
+				}
+				else
+				{
+					Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' enforces at least OXC " << OPENXCOM_VERSION_ENGINE << " v" << modInf->getRequiredExtendedVersion();
+				}
 			}
-			else
+			if (!modInf->isParentMasterOk(masterInf))
 			{
-				Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' enforces at least OXC " << OPENXCOM_VERSION_ENGINE << " v" << modInf->getRequiredExtendedVersion();
+				Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' require version " << modInf->getRequiredMasterVersion() << " of master mod to run (current one is " << masterInf->getVersion() << ")";
 			}
 		}
 	}
@@ -902,6 +911,14 @@ bool isPasswordCorrect()
 std::string getActiveMaster()
 {
 	return _masterMod;
+}
+
+/**
+ * Gets the master mod info.
+ */
+const ModInfo* getActiveMasterInfo()
+{
+	return &_modInfos.at(_masterMod);
 }
 
 bool getLoadLastSave()
