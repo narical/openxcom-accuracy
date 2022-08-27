@@ -109,6 +109,8 @@ namespace Options
 	bool isPasswordCorrect();
 	/// returns the id of the active master mod
 	std::string getActiveMaster();
+	/// Gets the master mod info.
+	const ModInfo* getActiveMasterInfo();
 	/// Gets the map of mod ids to mod infos
 	const std::map<std::string, ModInfo> &getModInfos();
 	/// Refreshes the mods.

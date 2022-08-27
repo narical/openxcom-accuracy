@@ -171,12 +171,9 @@ void ModListState::cbxMasterChange(Action *)
 	const ModInfo *masterModInfo = _masters[_cbxMasters->getSelected()];
 
 	// when changing a master mod, check if it requires OXCE
+	if (ModConfirmExtendedState::tryShowMasterNotValidConfirmationState(this, masterModInfo))
 	{
-		if (!masterModInfo->isEngineOk())
-		{
-			_game->pushState(new ModConfirmExtendedState(this, masterModInfo));
-			return;
-		}
+		return;
 	}
 
 	changeMasterMod();
@@ -260,9 +257,10 @@ void ModListState::lstModsClick(Action *action)
 	if (!mod.second)
 	{
 		const ModInfo *modInfo = &Options::getModInfos().at(mod.first);
-		if (!modInfo->isEngineOk())
+		const ModInfo *masterInfo = _masters[_cbxMasters->getSelected()];
+
+		if (ModConfirmExtendedState::tryShowModNotValidConfirmationState(this, modInfo, masterInfo))
 		{
-			_game->pushState(new ModConfirmExtendedState(this, modInfo));
 			return;
 		}
 	}
