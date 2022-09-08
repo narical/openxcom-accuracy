@@ -851,7 +851,7 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 		}
 	}
 	if (!mapped_anything) { // well, nothing found. say so.
-		Log(LOG_ERROR) << log_ctx << "external resources not found.";
+		Log(LOG_INFO) << log_ctx << "external resources not found.";
 	}
 	return mapped_anything;
 }
