@@ -256,6 +256,7 @@ private:
 	std::pair<std::string, int> _alienFuel;
 	std::string _fontName, _finalResearch, _psiUnlockResearch, _fakeUnderwaterBaseUnlockResearch, _newBaseUnlockResearch;
 	std::string _hireScientistsUnlockResearch, _hireEngineersUnlockResearch;
+	RuleBaseFacilityFunctions _hireScientistsRequiresBaseFunc, _hireEngineersRequiresBaseFunc;
 
 	std::string _destroyedFacility;
 	YAML::Node _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -753,16 +754,26 @@ public:
 	int getEnhancedLighting() const { return _enhancedLighting; }
 	/// Get basic damage type
 	const RuleDamageType *getDamageType(ItemDamageType type) const;
+
 	/// Gets the cost of hiring an engineer.
 	int getHireEngineerCost() const;
+	/// Gets the research topic required for hiring new engineers.
+	const std::string &getHireEngineersUnlockResearch() const { return _hireEngineersUnlockResearch; }
+	/// Gets the base functions required for hiring new engineers.
+	RuleBaseFacilityFunctions getHireEngineersRequiresBaseFunc() const { return _hireEngineersRequiresBaseFunc; }
 	/// Gets the cost of hiring a scientist.
 	int getHireScientistCost() const;
+	/// Gets the research topic required for hiring new scientists.
+	const std::string &getHireScientistsUnlockResearch() const { return _hireScientistsUnlockResearch; }
+	/// Gets the base functions topic required for hiring new scientists.
+	RuleBaseFacilityFunctions getHireScientistsRequiresBaseFunc() const { return _hireScientistsRequiresBaseFunc; }
 	/// Gets the monthly cost of an engineer.
 	int getEngineerCost() const;
 	/// Gets the monthly cost of a scientist.
 	int getScientistCost() const;
 	/// Gets the transfer time of personnel.
 	int getPersonnelTime() const;
+
 	/// Gets first turn when AI can use Blaster launcher.
 	int getAIUseDelayBlaster() const  {return _aiUseDelayBlaster;}
 	/// Gets first turn when AI can use firearms.
@@ -866,10 +877,6 @@ public:
 	const std::string &getFakeUnderwaterBaseUnlockResearch() const { return _fakeUnderwaterBaseUnlockResearch; }
 	/// Gets the research topic required for building XCOM bases.
 	const std::string &getNewBaseUnlockResearch() const { return _newBaseUnlockResearch; }
-	/// Gets the research topic required for hiring new scientists.
-	const std::string &getHireScientistsUnlockResearch() const { return _hireScientistsUnlockResearch; }
-	/// Gets the research topic required for hiring new engineers.
-	const std::string &getHireEngineersUnlockResearch() const { return _hireEngineersUnlockResearch; }
 
 	/// Gets the threshold for defining a glancing hit on a ufo during interception
 	int getUfoGlancingHitThreshold() const { return _ufoGlancingHitThreshold; }

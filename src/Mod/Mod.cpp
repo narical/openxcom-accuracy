@@ -2781,6 +2781,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_newBaseUnlockResearch = doc["newBaseUnlockResearch"].as<std::string>(_newBaseUnlockResearch);
 	_hireScientistsUnlockResearch = doc["hireScientistsUnlockResearch"].as<std::string>(_hireScientistsUnlockResearch);
 	_hireEngineersUnlockResearch = doc["hireEngineersUnlockResearch"].as<std::string>(_hireEngineersUnlockResearch);
+	loadBaseFunction("mod", _hireScientistsRequiresBaseFunc, doc["hireScientistsRequiresBaseFunc"]);
+	loadBaseFunction("mod", _hireEngineersRequiresBaseFunc, doc["hireEngineersRequiresBaseFunc"]);
 	_destroyedFacility = doc["destroyedFacility"].as<std::string>(_destroyedFacility);
 
 	_aiUseDelayGrenade = doc["turnAIUseGrenade"].as<int>(_aiUseDelayGrenade);
