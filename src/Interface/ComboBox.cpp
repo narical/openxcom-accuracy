@@ -405,7 +405,7 @@ void ComboBox::toggle(bool first)
 	}
 	if (_list->getVisible())
 	{
-		if (_sel < _list->getVisibleRows()/2)
+		if (_sel < _list->getVisibleRows()/2 || _sel == (size_t)-1)
 		{
 			_list->scrollTo(0);
 		}
