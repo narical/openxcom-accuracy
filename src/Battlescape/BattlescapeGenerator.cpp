@@ -4017,7 +4017,14 @@ bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL
 	{
 		if (_blocks[roadX][roadY] == 0)
 		{
-			addBlock(roadX, roadY, terrain->getRandomMapBlock(10, 10, typeToAdd), terrain);
+			MapBlock* randomMapBlock1 = terrain->getRandomMapBlock(10, 10, typeToAdd);
+			if (!randomMapBlock1)
+			{
+				std::ostringstream ss1;
+				ss1 << "Map script command `addLine` failed (1). Terrain " + terrain->getName() + ", block group " << typeToAdd << ", script " << _save->getLastUsedMapScript();
+				throw Exception(ss1.str());
+			}
+			addBlock(roadX, roadY, randomMapBlock1, terrain);
 
 			SDL_Rect blockRect;
 			blockRect.x = roadX;
@@ -4034,7 +4041,14 @@ bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL
 		}
 		else if (_blocks[roadX][roadY]->isInGroup(comparator))
 		{
-			_blocks[roadX][roadY] = terrain->getRandomMapBlock(10, 10, crossingGroup);
+			MapBlock* randomMapBlock2 = terrain->getRandomMapBlock(10, 10, crossingGroup);
+			if (!randomMapBlock2)
+			{
+				std::ostringstream ss2;
+				ss2 << "Map script command `addLine` failed (2). Terrain " + terrain->getName() + ", block group " << crossingGroup << ", script " << _save->getLastUsedMapScript();
+				throw Exception(ss2.str());
+			}
+			_blocks[roadX][roadY] = randomMapBlock2;
 			clearModule(roadX * 10, roadY * 10, 10, 10);
 			int terrainMapDataSetIDOffset = loadExtraTerrain(terrain);
 			loadMAP(_blocks[roadX][roadY], roadX * 10, roadY * 10, 0, terrain, terrainMapDataSetIDOffset);
