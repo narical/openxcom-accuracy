@@ -948,7 +948,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 				// piggyback of cleanup after script that change move type
 				if ((*j)->haveNoFloorBelow() && (*j)->getMovementType() != MT_FLY)
 				{
-					_parentState->getBattleGame()->getSave()->addFallingUnit(*j);
+					_save->addFallingUnit(*j);
 				}
 			}
 		}
