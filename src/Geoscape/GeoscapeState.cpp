@@ -1035,7 +1035,7 @@ void GeoscapeState::time5Seconds()
 					(*i)->setDestination(0);
 					base->setupDefenses(mission);
 					timerReset();
-					if (!base->getDefenses()->empty())
+					if (!base->getDefenses()->empty() && !(*i)->getMission()->getRules().ignoreBaseDefenses())
 					{
 						popup(new BaseDefenseState(base, *i, this));
 						return; // don't allow multiple simultaneous attacks in the same game tick
