@@ -223,9 +223,29 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	else if ((mod.getDeployment(wave.ufoType) && !mod.getUfo(wave.ufoType) && !mod.getDeployment(wave.ufoType)->getMarkerName().empty()) // a mission site that we want to spawn directly
 			|| (_rule.getObjective() == OBJECTIVE_SITE && wave.objective)) // or we want to spawn one at random according to our terrain
 	{
-		std::vector<MissionArea> areas = mod.getRegion(_region, true)->getMissionZones().at((_rule.getSpawnZone() == -1) ? trajectory.getZone(0) : _rule.getSpawnZone()).areas;
-		MissionArea area = areas.at((_missionSiteZone == -1) ? RNG::generate(0, areas.size()-1) : _missionSiteZone);
-		spawnMissionSite(game, mod, area, 0, mod.getDeployment(wave.ufoType, false));
+		RuleRegion* regionRules = mod.getRegion(_region, true);
+		std::vector<MissionArea> areas = regionRules->getMissionZones().at((_rule.getSpawnZone() == -1) ? trajectory.getZone(0) : _rule.getSpawnZone()).areas;
+		MissionArea area = areas.at((_missionSiteZone == -1) ? RNG::generate(0, areas.size() - 1) : _missionSiteZone);
+
+		if (wave.objectiveOnXcomBase)
+		{
+			Base* xcombase = selectXcomBase(game, *regionRules);
+			// no xcom base = don't spawn a mission site
+			if (xcombase)
+			{
+				area.lonMin = xcombase->getLongitude();
+				area.lonMax = xcombase->getLongitude();
+				area.latMin = xcombase->getLatitude();
+				area.latMax = xcombase->getLatitude();
+				// area.texture is taken from the ruleset
+				area.name = ""; // remove the city name, if there was any
+				spawnMissionSite(game, mod, area, 0, mod.getDeployment(wave.ufoType, false));
+			}
+		}
+		else
+		{
+			spawnMissionSite(game, mod, area, 0, mod.getDeployment(wave.ufoType, false));
+		}
 	}
 
 	++_nextUfoCounter;
@@ -404,6 +424,51 @@ void AlienMission::think(Game &engine, const Globe &globe)
 }
 
 /**
+ * Selects an xcom base in a given region.
+ * @param game The saved game information.
+ * @param regionRules The rule for the given region.
+ * @return Pointer to the selected xcom base or nullptr.
+ */
+Base* AlienMission::selectXcomBase(SavedGame& game, const RuleRegion& regionRules)
+{
+	std::vector<Base*> validxcombases;
+	for (auto* xb : *game.getBases())
+	{
+		if (regionRules.insideRegion(xb->getLongitude(), xb->getLatitude()))
+		{
+			if (_rule.getObjective() == OBJECTIVE_RETALIATION)
+			{
+				// only discovered xcom bases!
+				if (xb->getRetaliationTarget())
+				{
+					validxcombases.push_back(xb);
+					break; // vanilla: the first is enough
+				}
+			}
+			else // instant retaliation; or a mission wave with `objectiveOnXcomBase: true`
+			{
+				validxcombases.push_back(xb);
+			}
+		}
+	}
+	Base* xcombase = nullptr;
+	if (!validxcombases.empty())
+	{
+		if (validxcombases.size() == 1)
+		{
+			// take the first (don't mess with the RNG seed)
+			xcombase = validxcombases.front();
+		}
+		else
+		{
+			int rngpick = RNG::generate(0, validxcombases.size() - 1);
+			xcombase = validxcombases[rngpick];
+		}
+	}
+	return xcombase;
+}
+
+/**
  * This function will spawn a UFO according the mission rules.
  * Some code is duplicated between cases, that's ok for now. It's on different
  * code paths and the function is MUCH easier to read written this way.
@@ -435,36 +500,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	if (_rule.getObjective() == OBJECTIVE_RETALIATION || _rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
 	{
 		const RuleRegion &regionRules = *mod.getRegion(_region, true);
-		std::vector<Base*> validxcombases;
-		for (auto* xb : *game.getBases())
-		{
-			if (regionRules.insideRegion(xb->getLongitude(), xb->getLatitude()))
-			{
-				if (_rule.getObjective() == OBJECTIVE_RETALIATION && xb->getRetaliationTarget())
-				{
-					validxcombases.push_back(xb);
-					break; // vanilla: the first is enough
-				}
-				else if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
-				{
-					validxcombases.push_back(xb);
-				}
-			}
-		}
-		Base* xcombase = nullptr;
-		if (!validxcombases.empty())
-		{
-			if (validxcombases.size() == 1)
-			{
-				// take the first (don't mess with the RNG seed)
-				xcombase = validxcombases.front();
-			}
-			else
-			{
-				int rngpick = RNG::generate(0, validxcombases.size() - 1);
-				xcombase = validxcombases[rngpick];
-			}
-		}
+		Base* xcombase = selectXcomBase(game, regionRules);
 		if (xcombase)
 		{
 			// Spawn a battleship straight for the XCOM base.

@@ -33,6 +33,7 @@ namespace YAML
 			node["timer"] = rhs.spawnTimer;
 			node["objective"] = rhs.objective;
 			node["objectiveOnTheLandingSite"] = rhs.objectiveOnTheLandingSite;
+			node["objectiveOnXcomBase"] = rhs.objectiveOnXcomBase;
 			node["hunterKillerPercentage"] = rhs.hunterKillerPercentage;
 			node["huntMode"] = rhs.huntMode;
 			node["huntBehavior"] = rhs.huntBehavior;
@@ -52,6 +53,7 @@ namespace YAML
 			rhs.spawnTimer = node["timer"].as<size_t>();
 			rhs.objective = node["objective"].as<bool>(false);
 			rhs.objectiveOnTheLandingSite = node["objectiveOnTheLandingSite"].as<bool>(false);
+			rhs.objectiveOnXcomBase = node["objectiveOnXcomBase"].as<bool>(false);
 			rhs.hunterKillerPercentage = node["hunterKillerPercentage"].as<int>(-1);
 			rhs.huntMode = node["huntMode"].as<int>(-1);
 			rhs.huntBehavior = node["huntBehavior"].as<int>(-1);

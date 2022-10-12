@@ -70,6 +70,10 @@ struct MissionWave
 	 * Make the UFO land on a random landing site (instead of always top left). Make the mission site spawn exactly on the landing site.
 	 */
 	bool objectiveOnTheLandingSite;
+	/**
+	 * Make the mission site spawn on an xcom base (or not at all).
+	 */
+	bool objectiveOnXcomBase;
 	/// The chance to become a hunter-killer UFO upon spawning.
 	/**
 	 * -1 (default): take the info from RuleUfo
