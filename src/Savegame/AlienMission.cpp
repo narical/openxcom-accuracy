@@ -194,21 +194,6 @@ bool AlienMission::isOver() const
 	return false;
 }
 
-/**
- * Find an XCOM base in this region that is marked for retaliation.
- */
-class FindMarkedXCOMBase
-{
-	typedef const Base* argument_type;
-	typedef bool result_type;
-
-public:
-	FindMarkedXCOMBase(const RuleRegion &region) : _region(region) { /* Empty by design. */ }
-	bool operator()(const Base *base) const { return (_region.insideRegion(base->getLongitude(), base->getLatitude()) && base->getRetaliationTarget()); }
-private:
-	const RuleRegion &_region;
-};
-
 void AlienMission::think(Game &engine, const Globe &globe)
 {
 	// if interrupted, don't generate any more UFOs or anything else
@@ -447,13 +432,40 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	{
 		huntBehavior = ufoRule->getHuntBehavior();
 	}
-	if (_rule.getObjective() == OBJECTIVE_RETALIATION)
+	if (_rule.getObjective() == OBJECTIVE_RETALIATION || _rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
 	{
 		const RuleRegion &regionRules = *mod.getRegion(_region, true);
-		std::vector<Base *>::const_iterator found =
-			std::find_if (game.getBases()->begin(), game.getBases()->end(),
-				 FindMarkedXCOMBase(regionRules));
-		if (found != game.getBases()->end())
+		std::vector<Base*> validxcombases;
+		for (auto* xb : *game.getBases())
+		{
+			if (regionRules.insideRegion(xb->getLongitude(), xb->getLatitude()))
+			{
+				if (_rule.getObjective() == OBJECTIVE_RETALIATION && xb->getRetaliationTarget())
+				{
+					validxcombases.push_back(xb);
+					break; // vanilla: the first is enough
+				}
+				else if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
+				{
+					validxcombases.push_back(xb);
+				}
+			}
+		}
+		Base* xcombase = nullptr;
+		if (!validxcombases.empty())
+		{
+			if (validxcombases.size() == 1)
+			{
+				// take the first (don't mess with the RNG seed)
+				xcombase = validxcombases.front();
+			}
+			else
+			{
+				int rngpick = RNG::generate(0, validxcombases.size() - 1);
+				xcombase = validxcombases[rngpick];
+			}
+		}
+		if (xcombase)
 		{
 			// Spawn a battleship straight for the XCOM base.
 			const RuleUfo &battleshipRule = *mod.getUfo(_rule.getSpawnUfo(), true);
@@ -461,7 +473,12 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			Ufo *ufo = new Ufo(&battleshipRule, game.getId("STR_UFO_UNIQUE"));
 			ufo->setMissionInfo(this, &assaultTrajectory);
 			std::pair<double, double> pos;
-			if (_rule.getOperationType() != AMOT_SPACE && _base)
+			if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
+			{
+				pos.first = xcombase->getLongitude();
+				pos.second = xcombase->getLatitude();
+			}
+			else if (_rule.getOperationType() != AMOT_SPACE && _base)
 			{
 				pos.first = _base->getLongitude();
 				pos.second = _base->getLatitude();
@@ -479,10 +496,16 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			ufo->setLongitude(pos.first);
 			ufo->setLatitude(pos.second);
 			Waypoint *wp = new Waypoint();
-			wp->setLongitude((*found)->getLongitude());
-			wp->setLatitude((*found)->getLatitude());
+			wp->setLongitude(xcombase->getLongitude());
+			wp->setLatitude(xcombase->getLatitude());
 			ufo->setDestination(wp);
 			return ufo;
+		}
+		else if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
+		{
+			// no xcom base found, nothing to do, terminate
+			_interrupted = true;
+			return 0;
 		}
 	}
 	else if (_rule.getObjective() == OBJECTIVE_SUPPLY)

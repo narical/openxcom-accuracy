@@ -1576,6 +1576,7 @@ int Base::getGravShields() const
 
 void Base::setupDefenses(AlienMission* am)
 {
+	// Note: OBJECTIVE_INSTANT_RETALIATION is intentionally ignored here
 	if (am->getRules().getObjective() == OBJECTIVE_RETALIATION)
 	{
 		setRetaliationMission(am);

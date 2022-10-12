@@ -209,10 +209,14 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 
 	if (!isPreview && base && mission == "STR_BASE_DEFENSE")
 	{
-		// And make sure the base is unmarked.
-		base->setRetaliationTarget(false);
-
 		auto* am = base->getRetaliationMission();
+
+		// And make sure the base is unmarked (but only for vanilla retaliations, not for instant retaliations)
+		if (am)
+		{
+			base->setRetaliationTarget(false);
+		}
+
 		if (am && am->getRules().isMultiUfoRetaliation())
 		{
 			// Remember that more UFOs may be coming
