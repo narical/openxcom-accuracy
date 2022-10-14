@@ -2332,7 +2332,8 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 			_save->getEnviroEffects(),
 			type->getArmor(),
 			nullptr,
-			getDepth());
+			getDepth(),
+			_save->getStartingCondition());
 
 		// just bare minimum, this unit will never be used for anything except recovery (not even for scoring)
 		newUnit->setTile(nullptr, _save);
@@ -2881,7 +2882,15 @@ BattlescapeTally BattlescapeGame::tallyUnits()
 						}
 						else if ((*j)->isInExitArea(END_POINT))
 						{
-							tally.vipInExit++;
+							if ((*j)->isBannedInNextStage())
+							{
+								// this guy would (theoretically) go into timeout
+								tally.vipInField++;
+							}
+							else
+							{
+								tally.vipInExit++;
+							}
 						}
 						else
 						{
@@ -2897,7 +2906,15 @@ BattlescapeTally BattlescapeGame::tallyUnits()
 				}
 				else if ((*j)->isInExitArea(END_POINT))
 				{
-					tally.inExit++;
+					if ((*j)->isBannedInNextStage())
+					{
+						// this guy will go into timeout
+						tally.inField++;
+					}
+					else
+					{
+						tally.inExit++;
+					}
 				}
 				else
 				{

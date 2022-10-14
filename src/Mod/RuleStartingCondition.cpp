@@ -57,6 +57,7 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
 	mod->loadUnorderedNamesToNamesToInt(_type, _defaultArmor, node["defaultArmor"]);
 	mod->loadUnorderedNames(_type, _allowedArmors, node["allowedArmors"]);
 	mod->loadUnorderedNames(_type, _forbiddenArmors, node["forbiddenArmors"]);
+	mod->loadUnorderedNames(_type, _forbiddenArmorsInNextStageName, node["forbiddenArmorsInNextStage"]);
 	mod->loadUnorderedNames(_type, _allowedVehicles, node["allowedVehicles"]);
 	mod->loadUnorderedNames(_type, _forbiddenVehicles, node["forbiddenVehicles"]);
 	mod->loadUnorderedNames(_type, _allowedItems, node["allowedItems"]);
@@ -84,6 +85,8 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
  */
 void RuleStartingCondition::afterLoad(const Mod* mod)
 {
+	mod->linkRule(_forbiddenArmorsInNextStage, _forbiddenArmorsInNextStageName);
+
 	for (auto& pair : _craftTransformationsName)
 	{
 		auto src = mod->getCraft(pair.first, true);

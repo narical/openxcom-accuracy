@@ -38,6 +38,8 @@ private:
 	std::string _type;
 	std::map<std::string, std::map<std::string, int> > _defaultArmor;
 	std::vector<std::string> _allowedArmors, _forbiddenArmors;
+	std::vector<std::string> _forbiddenArmorsInNextStageName;
+	std::vector<const Armor*> _forbiddenArmorsInNextStage;
 	std::vector<std::string> _allowedVehicles, _forbiddenVehicles;
 	std::vector<std::string> _allowedItems, _forbiddenItems;
 	std::vector<std::string> _allowedItemCategories, _forbiddenItemCategories;
@@ -63,6 +65,8 @@ public:
 	const std::vector<std::string>& getAllowedArmors() const { return _allowedArmors; }
 	/// Gets the forbidden armor types.
 	const std::vector<std::string>& getForbiddenArmors() const { return _forbiddenArmors; }
+	/// Gets the forbidden armors (in later stages).
+	const std::vector<const Armor*>& getForbiddenArmorsInNextStage() const { return _forbiddenArmorsInNextStage; }
 	/// Gets the allowed craft types.
 	const std::vector<std::string>& getAllowedCraft() const { return _allowedCraft; }
 	/// Gets the forbidden craft types.

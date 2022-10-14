@@ -36,6 +36,7 @@ class BattlescapeGame;
 class Position;
 class Pathfinding;
 class TileEngine;
+class RuleStartingCondition;
 class RuleEnviroEffects;
 class BattleItem;
 class BattleUnit;
@@ -86,6 +87,7 @@ private:
 	std::vector< std::vector<int> > _reinforcementsBlocks;
 	std::vector< std::vector<std::string> > _flattenedMapTerrainNames;
 	std::vector< std::vector<std::string> > _flattenedMapBlockNames;
+	const RuleStartingCondition *_startingCondition;
 	const RuleEnviroEffects *_enviroEffects;
 	bool _ecEnabledFriendly, _ecEnabledHostile, _ecEnabledNeutral;
 	int _globalShade;
@@ -157,6 +159,10 @@ public:
 	const std::string& getMissionCraftOrBase() const { return _strCraftOrBase; }
 	/// Gets the base's items BEFORE the mission.
 	ItemContainer *getBaseStorageItems();
+	/// Sets the starting conditions.
+	void setStartingCondition(const RuleStartingCondition* sc) { _startingCondition = sc; }
+	/// Gets the starting conditions.
+	const RuleStartingCondition* getStartingCondition() const { return _startingCondition; }
 	/// Applies the enviro effects.
 	void applyEnviroEffects(const RuleEnviroEffects* enviroEffects);
 	/// Gets the enviro effects.

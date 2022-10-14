@@ -46,6 +46,7 @@
 #include "../Engine/Logger.h"
 #include "../Engine/ScriptBind.h"
 #include "SerializationHelper.h"
+#include "../Mod/RuleStartingCondition.h"
 #include "../Mod/RuleEnviroEffects.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/RuleSoldier.h"
@@ -63,7 +64,7 @@ SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
 	_isPreview(isPreview), _craftPos(), _craftZ(0), _craftForPreview(nullptr),
 	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0),
-	_reinforcementsItemLevel(0), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
+	_reinforcementsItemLevel(0), _startingCondition(nullptr), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
 	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0), _nameDisplay(false),
 	_debugMode(false), _bughuntMode(false), _aborted(false), _itemId(0),
 	_vipEscapeType(ESCAPE_NONE), _vipSurvivalPercentage(0), _vipsSaved(0), _vipsLost(0), _vipsWaitingOutside(0), _vipsSavedScore(0), _vipsLostScore(0), _vipsWaitingOutsideScore(0),
@@ -144,6 +145,11 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_missionType = node["missionType"].as<std::string>(_missionType);
 	_strTarget = node["strTarget"].as<std::string>(_strTarget);
 	_strCraftOrBase = node["strCraftOrBase"].as<std::string>(_strCraftOrBase);
+	if (node["startingConditionType"])
+	{
+		std::string startingConditionType = node["startingConditionType"].as<std::string>();
+		_startingCondition = mod->getStartingCondition(startingConditionType);
+	}
 	if (node["enviroEffectsType"])
 	{
 		std::string enviroEffectsType = node["enviroEffectsType"].as<std::string>();
@@ -245,7 +251,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		if (id < BattleUnit::MAX_SOLDIER_ID) // Unit is linked to a geoscape soldier
 		{
 			// look up the matching soldier
-			unit = new BattleUnit(mod, savedGame->getSoldier(id), _depth);
+			unit = new BattleUnit(mod, savedGame->getSoldier(id), _depth, nullptr);
 		}
 		else
 		{
@@ -253,7 +259,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			std::string armor = (*i)["genUnitArmor"].as<std::string>();
 			// create a new Unit.
 			if(!mod->getUnit(type) || !mod->getArmor(armor)) continue;
-			unit = new BattleUnit(mod, mod->getUnit(type), originalFaction, id, nullptr, mod->getArmor(armor), mod->getStatAdjustment(savedGame->getDifficulty()), _depth);
+			unit = new BattleUnit(mod, mod->getUnit(type), originalFaction, id, nullptr, mod->getArmor(armor), mod->getStatAdjustment(savedGame->getDifficulty()), _depth, nullptr);
 		}
 		unit->load(*i, this->getMod(), this->getMod()->getScriptGlobal());
 		// Handling of special built-in weapons will be done during and after the load of items
@@ -535,6 +541,10 @@ YAML::Node SavedBattleGame::save() const
 	node["missionType"] = _missionType;
 	node["strTarget"] = _strTarget;
 	node["strCraftOrBase"] = _strCraftOrBase;
+	if (_startingCondition)
+	{
+		node["startingConditionType"] = _startingCondition->getType();
+	}
 	if (_enviroEffects)
 	{
 		node["enviroEffectsType"] = _enviroEffects->getType();
@@ -2008,7 +2018,8 @@ BattleUnit *SavedBattleGame::createTempUnit(const Unit *rules, UnitFaction facti
 		getEnviroEffects(),
 		rules->getArmor(),
 		faction == FACTION_HOSTILE ? _rule->getStatAdjustment(getGeoscapeSave()->getDifficulty()) : nullptr,
-		getDepth());
+		getDepth(),
+		getStartingCondition());
 
 	if (faction == FACTION_PLAYER)
 	{
