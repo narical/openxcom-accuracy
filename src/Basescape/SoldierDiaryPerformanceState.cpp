@@ -367,8 +367,8 @@ void SoldierDiaryPerformanceState::drawSprites()
 	if (_display != DIARY_COMMENDATIONS) return;
 
 	// Commendation sprites
-	_commendationSprite = _game->getMod()->getSurfaceSet("Commendations");
-	_commendationDecoration = _game->getMod()->getSurfaceSet("CommendationDecorations");
+	SurfaceSet* commendationSprite = _game->getMod()->getSurfaceSet("Commendations");
+	SurfaceSet* commendationDecoration = _game->getMod()->getSurfaceSet("CommendationDecorations");
 
 	// Clear sprites
 	for (int i = 0; i != 10; ++i)
@@ -394,12 +394,12 @@ void SoldierDiaryPerformanceState::drawSprites()
 		int _decorationSprite = pair.second->getDecorationLevelInt();
 
 		// Handle commendation sprites
-		_commendationSprite->getFrame(_sprite)->blitNShade(_commendations[vectorIterator - scrollDepth], 0, 0);
+		commendationSprite->getFrame(_sprite)->blitNShade(_commendations[vectorIterator - scrollDepth], 0, 0);
 
 		// Handle commendation decoration sprites
 		if (_decorationSprite != 0)
 		{
-			_commendationDecoration->getFrame(_decorationSprite)->blitNShade(_commendationDecorations[vectorIterator - scrollDepth], 0, 0);
+			commendationDecoration->getFrame(_decorationSprite)->blitNShade(_commendationDecorations[vectorIterator - scrollDepth], 0, 0);
 		}
 
 		vectorIterator++;
