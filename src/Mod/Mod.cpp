@@ -5816,7 +5816,7 @@ Music* Mod::loadMusic(MusicFormat fmt, RuleMusic* rule, CatFile* adlibcat, CatFi
 	static const std::string exts[] = { "", ".flac", ".ogg", ".mp3", ".mod", ".wav", "", "", ".mid" };
 	Music *music = 0;
 	auto soundContents = FileMap::getVFolderContents("SOUND");
-	int track = rule->getCatPos();
+	size_t track = rule->getCatPos();
 	try
 	{
 		// Try Adlib music
