@@ -51,7 +51,7 @@ private:
 	int _AIMode, _intelligence, _closestDist;
 	Node *_fromNode, *_toNode;
 	bool _foundBaseModuleToDestroy;
-	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
+	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy, _reachableWithAimedAttack;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 

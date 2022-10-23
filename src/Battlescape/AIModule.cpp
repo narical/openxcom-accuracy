@@ -283,6 +283,7 @@ void AIModule::think(BattleAction *action)
 				_melee = true;
 				_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, action->weapon));
 			}
+			_reachableWithAimedAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon));
 		}
 		else
 		{
@@ -291,7 +292,7 @@ void AIModule::think(BattleAction *action)
 	}
 
 	BattleItem *grenade = _unit->getGrenadeFromBelt();
-	_grenade = grenade != 0 && _save->getTurn() >= grenade->getRules()->getAIUseDelay(mod);
+	_grenade = grenade != 0 && (_save->getTurn() >= grenade->getRules()->getAIUseDelay(mod) || Options::brutalAI);
 
 	if (_spottingEnemies && !_escapeTUs)
 	{
@@ -359,7 +360,7 @@ void AIModule::think(BattleAction *action)
 	}
 
 
-	if (_save->isCheating() && _AIMode != AI_COMBAT)
+	if (_save->isCheating() && _AIMode != AI_COMBAT || Options::brutalAI)
 	{
 		evaluate = true;
 	}
@@ -577,7 +578,7 @@ void AIModule::setupPatrol()
 		{
 			// after turn 20 or if the morale is low, everyone moves out the UFO and scout
 			// also anyone standing in fire should also probably move
-			if (_save->isCheating() || !_fromNode || _fromNode->getRank() == 0 ||
+			if (_save->isCheating() || !_fromNode || _fromNode->getRank() == 0 || Options::brutalAI ||
 				(_save->getTile(_unit->getPosition()) && _save->getTile(_unit->getPosition())->getFire()))
 			{
 				scout = true;
@@ -819,6 +820,14 @@ void AIModule::setupAttack()
 		{
 			wayPointAction();
 		}
+		if (Options::brutalAI)
+		{
+			if (sniperAction())
+			{
+				// if we can snipe something we should
+				return;
+			}
+		}
 		else if (_unit->getUnitRules()) // xcom soldiers (under mind control) lack unit rules!
 		{
 			// don't always act on spotter information unless modder says so
@@ -867,7 +876,7 @@ void AIModule::setupAttack()
 		}
 		return;
 	}
-	else if (_spottingEnemies || _unit->getAggression() < RNG::generate(0, 3))
+	else if (_spottingEnemies || _unit->getAggression() < RNG::generate(0, 3) || Options::brutalAI)
 	{
 		// if enemies can see us, or if we're feeling lucky, we can try to spot the enemy.
 		if (findFirePoint())
@@ -1162,7 +1171,7 @@ int AIModule::selectNearestTarget()
 	for (std::vector<BattleUnit*>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
 		if (validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE) &&
-			_save->getTileEngine()->visible(_unit, (*i)->getTile()))
+			(_save->getTileEngine()->visible(_unit, (*i)->getTile()) || (Options::brutalAI && (*i)->getTile() != NULL)))
 		{
 			tally++;
 			int dist = Position::distance2d(_unit->getPosition(), (*i)->getPosition());
@@ -1421,7 +1430,7 @@ bool AIModule::selectSpottedUnitForSniper()
 
 	for (std::vector<BattleUnit*>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		if (validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE) && (*i)->getTurnsLeftSpottedForSnipers())
+		if (validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE) && ((*i)->getTurnsLeftSpottedForSnipers() || Options::brutalAI))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = (*i);
@@ -1769,7 +1778,7 @@ void AIModule::evaluateAIMode()
 	}
 
 	// if the aliens are cheating, or the unit is charging, enforce combat as a priority.
-	if ((_unit->getFaction() == FACTION_HOSTILE && _save->isCheating()) || _unit->getCharging() != 0)
+	if ((_unit->getFaction() == FACTION_HOSTILE && _save->isCheating()) || _unit->getCharging() != 0 || Options::brutalAI)
 	{
 		_AIMode = AI_COMBAT;
 	}
@@ -1825,6 +1834,24 @@ bool AIModule::findFirePoint()
 	if (!selectClosestKnownEnemy())
 		return false;
 	std::vector<Position> randomTileSearch = _save->getTileSearch();
+	if (Options::brutalAI)
+	{
+		randomTileSearch.clear();
+		for (int x = 0; x < _save->getMapSizeX(); ++x)
+		{
+			for (int y = 0; y < _save->getMapSizeY(); ++y)
+			{
+				for (int z = 0; z < _save->getMapSizeZ(); ++z)
+				{
+					Position pos;
+					pos.x = x;
+					pos.y = y;
+					pos.z = z;
+					randomTileSearch.push_back(pos);
+				}
+			}
+		}
+	}
 	RNG::shuffle(randomTileSearch);
 	Position target;
 	const int BASE_SYSTEMATIC_SUCCESS = 100;
@@ -1832,13 +1859,25 @@ bool AIModule::findFirePoint()
 	bool waitIfOutsideWeaponRange = _unit->getGeoscapeSoldier() ? false : _unit->getUnitRules()->waitIfOutsideWeaponRange();
 	bool extendedFireModeChoiceEnabled = _save->getBattleGame()->getMod()->getAIExtendedFireModeChoice();
 	int bestScore = 0;
+	bool canAttackAfterMoveToBest = true;
 	_attackAction.type = BA_RETHINK;
 	for (std::vector<Position>::const_iterator i = randomTileSearch.begin(); i != randomTileSearch.end(); ++i)
 	{
 		Position pos = _unit->getPosition() + *i;
+		if (Options::brutalAI)
+		{
+			pos = (*i);
+		}
 		Tile *tile = _save->getTile(pos);
-		if (tile == 0  ||
-			std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos))  == _reachableWithAttack.end())
+		if (tile == 0)
+			continue;
+		if (pos.z > 0 && tile->hasNoFloor() && _unit->getUnitRules()->getFloatHeight() == 0)
+			continue;
+		bool reachableWithAttack = std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos)) != _reachableWithAttack.end();
+		if ((tile->getUnit() != NULL && !tile->getUnit()->isOut()) || (!reachableWithAttack && !Options::brutalAI))
+			continue;
+		int posSpottingUnits = getSpottingUnits(pos);
+		if (!reachableWithAttack && posSpottingUnits > 0)
 			continue;
 		int score = 0;
 		// i should really make a function for this
@@ -1846,14 +1885,21 @@ bool AIModule::findFirePoint()
 			// 4 because -2 is eyes and 2 below that is the rifle (or at least that's my understanding)
 			Position(8,8, _unit->getHeight() + _unit->getFloatHeight() - tile->getTerrainLevel() - 4);
 
-		if (_save->getTileEngine()->canTargetUnit(&origin, _aggroTarget->getTile(), &target, _unit, false))
+		// use much cheaper method of evaluation when we can't reach it with attack anyways
+		if (!reachableWithAttack)
+		{
+			score = BASE_SYSTEMATIC_SUCCESS - posSpottingUnits * 10;
+			score -= Position::distance2d(pos, _aggroTarget->getPosition()) * 5;
+		}
+		else if (_save->getTileEngine()->canTargetUnit(&origin, _aggroTarget->getTile(), &target, _unit, false))
 		{
 			_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
 			// can move here
-			if (_save->getPathfinding()->getStartDirection() != -1)
+			if (_save->getPathfinding()->getStartDirection() != -1 || Options::brutalAI)
 			{
-				score = BASE_SYSTEMATIC_SUCCESS - getSpottingUnits(pos) * 10;
+				score = BASE_SYSTEMATIC_SUCCESS - posSpottingUnits * 10;
 				score += _unit->getTimeUnits() - _save->getPathfinding()->getTotalTUCost();
+
 				if (!_aggroTarget->checkViewSector(pos))
 				{
 					score += 10;
@@ -1871,27 +1917,51 @@ bool AIModule::findFirePoint()
 						score = score * distanceToTarget / proposedDistance;
 					}
 				}
-
-				if (score > bestScore)
-				{
-					bestScore = score;
-					_attackAction.target = pos;
-					_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
-					if (score > FAST_PASS_THRESHOLD)
-					{
-						break;
-					}
-				}
+			}
+		}
+		if (score > bestScore)
+		{
+			bestScore = score;
+			if (!reachableWithAttack)
+			{
+				canAttackAfterMoveToBest = false;
+			}
+			_attackAction.target = pos;
+			_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
+			if (score > FAST_PASS_THRESHOLD)
+			{
+				break;
 			}
 		}
 	}
 
-	if (bestScore > 70)
+	if (bestScore > 70 || (Options::brutalAI && bestScore > 0))
 	{
 		_attackAction.type = BA_WALK;
+		if (!canAttackAfterMoveToBest)
+		{
+			// Stay here and only inch closer if a better target is found
+			Position originalTarget = _attackAction.target;
+			_attackAction.target = _unit->getPosition();
+			int shortestDistance = 255;
+			for (int tileIndex : _reachableWithAimedAttack)
+			{
+				Position posOfTile = _save->getTileCoords(tileIndex);
+				Tile *tile = _save->getTile(posOfTile);
+				if (tile->getUnit() != NULL && !tile->getUnit()->isOut())
+					continue;
+				int distanceToOriginalTarget = Position::distance2d(posOfTile, originalTarget);
+				if (distanceToOriginalTarget < shortestDistance && distanceToOriginalTarget < Position::distance2d(_unit->getPosition(), originalTarget))
+				{
+					shortestDistance = distanceToOriginalTarget;
+					_attackAction.target = posOfTile;
+				}
+			}
+			_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(_attackAction.target, originalTarget);
+		}
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
+			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore << " canAttackAfterMoveToBest: " << canAttackAfterMoveToBest;
 		}
 		return true;
 	}
@@ -2379,11 +2449,15 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		// An intelligence value of 10 will decrease this random factor to 0
 		// Default values for and intelligence value of 0 will make this a 50% to 150% roll
 		int intelligenceModifier = _save->getBattleGame()->getMod()->getAIFireChoiceIntelCoeff() * std::max(10 - _unit->getIntelligence(), 0);
+		if (Options::brutalAI)
+		{
+			intelligenceModifier = 10;
+		}
 		newScore = newScore * (100 + RNG::generate(-intelligenceModifier, intelligenceModifier)) / 100;
 
 		// More aggressive units get a modifier to the score for auto shots
 		// Aggression = 0 lowers the score, aggro = 1 is no modifier, aggro > 1 bumps up the score by 5% (configurable) for each increment over 1
-		if (i == BA_AUTOSHOT)
+		if (i == BA_AUTOSHOT && !Options::brutalAI)
 		{
 			newScore = newScore * (100 + (_unit->getAggression() - 1) * _save->getBattleGame()->getMod()->getAIFireChoiceAggroCoeff()) / 100;
 		}
