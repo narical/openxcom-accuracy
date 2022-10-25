@@ -624,7 +624,7 @@ bool init()
 	updateOptions();
 
 	// set up the logging reportingLevel
-#ifdef _DEBUG
+#ifndef NDEBUG
 	Logger::reportingLevel() = LOG_DEBUG;
 #else
 	Logger::reportingLevel() = LOG_INFO;
