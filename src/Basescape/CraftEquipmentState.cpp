@@ -65,16 +65,18 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from.
  * @param craft ID of the selected craft.
  */
-CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) : _lstScroll(0), _sel(0), _craft(craft), _base(base), _totalItems(0), _totalItemStorageSize(0.0), _ammoColor(0), _reload(true)
+CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
+	_lstScroll(0), _sel(0), _craft(craft), _base(base), _totalItems(0), _totalItemStorageSize(0.0), _ammoColor(0),
+	_reload(true), _isNewBattle(false)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	bool craftHasACrew = c->getNumTotalSoldiers() > 0;
-	bool isNewBattle = _game->getSavedGame()->getMonthsPassed() == -1;
+	_isNewBattle = _game->getSavedGame()->getMonthsPassed() == -1;
 
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnQuickSearch = new TextEdit(this, 48, 9, 264, 12);
-	_btnOk = new TextButton((craftHasACrew || isNewBattle)?30:140, 16, (craftHasACrew || isNewBattle)?274:164, 176);
+	_btnOk = new TextButton((craftHasACrew || _isNewBattle)?30:140, 16, (craftHasACrew || _isNewBattle)?274:164, 176);
 	_btnClear = new TextButton(102, 16, 164, 176);
 	_btnInventory = new TextButton(102, 16, 164, 176);
 	_txtTitle = new Text(300, 17, 16, 7);
@@ -119,11 +121,11 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) : _lstScroll(
 
 	_btnClear->setText(tr("STR_UNLOAD_CRAFT"));
 	_btnClear->onMouseClick((ActionHandler)&CraftEquipmentState::btnClearClick);
-	_btnClear->setVisible(isNewBattle);
+	_btnClear->setVisible(_isNewBattle);
 
 	_btnInventory->setText(tr("STR_INVENTORY"));
 	_btnInventory->onMouseClick((ActionHandler)&CraftEquipmentState::btnInventoryClick);
-	_btnInventory->setVisible(craftHasACrew && !isNewBattle);
+	_btnInventory->setVisible(craftHasACrew && !_isNewBattle);
 	_btnInventory->onKeyboardPress((ActionHandler)&CraftEquipmentState::btnInventoryClick, Options::keyBattleInventory);
 
 	_txtTitle->setBig();
@@ -395,7 +397,7 @@ void CraftEquipmentState::initList()
 
 			_items.push_back(*i);
 			std::ostringstream ss, ss2;
-			if (_game->getSavedGame()->getMonthsPassed() > -1)
+			if (!_isNewBattle)
 			{
 				ss << _base->getStorageItems()->getItem(*i);
 			}
@@ -591,7 +593,7 @@ void CraftEquipmentState::updateQuantity()
 		cQty = c->getItems()->getItem(_items[_sel]);
 	}
 	std::ostringstream ss, ss2;
-	if (_game->getSavedGame()->getMonthsPassed() > -1)
+	if (!_isNewBattle)
 	{
 		ss << _base->getStorageItems()->getItem(_items[_sel]);
 	}
@@ -659,7 +661,7 @@ void CraftEquipmentState::moveLeftByValue(int change)
 			int ammoPerVehicle = item->getVehicleClipsLoaded();
 
 			// Put the vehicles and their ammo back as separate items.
-			if (_game->getSavedGame()->getMonthsPassed() != -1)
+			if (!_isNewBattle)
 			{
 				_base->getStorageItems()->addItem(_items[_sel], change);
 				_base->getStorageItems()->addItem(ammo, ammoPerVehicle * change);
@@ -674,7 +676,7 @@ void CraftEquipmentState::moveLeftByValue(int change)
 		}
 		else
 		{
-			if (_game->getSavedGame()->getMonthsPassed() != -1)
+			if (!_isNewBattle)
 			{
 				_base->getStorageItems()->addItem(_items[_sel], change);
 			}
@@ -691,7 +693,7 @@ void CraftEquipmentState::moveLeftByValue(int change)
 		c->getItems()->removeItem(_items[_sel], change);
 		_totalItems -= change;
 		_totalItemStorageSize -= change * item->getSize();
-		if (_game->getSavedGame()->getMonthsPassed() > -1)
+		if (!_isNewBattle)
 		{
 			_base->getStorageItems()->addItem(_items[_sel], change);
 		}
@@ -719,7 +721,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 	Craft *c = _base->getCrafts()->at(_craft);
 	RuleItem *item = _game->getMod()->getItem(_items[_sel], true);
 	int bqty = _base->getStorageItems()->getItem(_items[_sel]);
-	if (_game->getSavedGame()->getMonthsPassed() == -1)
+	if (_isNewBattle)
 	{
 		if (change == INT_MAX)
 		{
@@ -745,14 +747,14 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 				int ammoPerVehicle = item->getVehicleClipsLoaded();
 
 				int baseQty = _base->getStorageItems()->getItem(ammo) / ammoPerVehicle;
-				if (_game->getSavedGame()->getMonthsPassed() == -1)
+				if (_isNewBattle)
 					baseQty = change;
 				int canBeAdded = std::min(change, baseQty);
 				if (canBeAdded > 0)
 				{
 					for (int i = 0; i < canBeAdded; ++i)
 					{
-						if (_game->getSavedGame()->getMonthsPassed() != -1)
+						if (!_isNewBattle)
 						{
 							_base->getStorageItems()->removeItem(ammo, ammoPerVehicle);
 							_base->getStorageItems()->removeItem(_items[_sel]);
@@ -778,7 +780,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 				{
 					c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size));
 					c->resetCustomDeployment(); // adding a vehicle into a craft invalidates a custom craft deployment
-					if (_game->getSavedGame()->getMonthsPassed() != -1)
+					if (!_isNewBattle)
 					{
 						_base->getStorageItems()->removeItem(_items[_sel]);
 					}
@@ -820,7 +822,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 		c->getItems()->addItem(_items[_sel],change);
 		_totalItems += change;
 		_totalItemStorageSize += change * item->getSize();
-		if (_game->getSavedGame()->getMonthsPassed() > -1)
+		if (!_isNewBattle)
 		{
 			_base->getStorageItems()->removeItem(_items[_sel],change);
 		}
@@ -839,7 +841,7 @@ void CraftEquipmentState::btnClearClick(Action *)
 	}
 
 	// in New Battle, clear also stuff that is not displayed on the GUI (for whatever reason)
-	if (_game->getSavedGame()->getMonthsPassed() == -1)
+	if (_isNewBattle)
 	{
 		Craft* c = _base->getCrafts()->at(_craft);
 		c->getItems()->getContents()->clear();
@@ -969,7 +971,7 @@ void CraftEquipmentState::loadGlobalLoadout(int index)
 */
 void CraftEquipmentState::btnLoadClick(Action *)
 {
-	if (_game->getSavedGame()->getMonthsPassed() > -1)
+	if (!_isNewBattle)
 	{
 		_game->pushState(new CraftEquipmentLoadState(this));
 	}
@@ -981,7 +983,7 @@ void CraftEquipmentState::btnLoadClick(Action *)
 */
 void CraftEquipmentState::btnSaveClick(Action *)
 {
-	if (_game->getSavedGame()->getMonthsPassed() > -1)
+	if (!_isNewBattle)
 	{
 		_game->pushState(new CraftEquipmentSaveState(this));
 	}
