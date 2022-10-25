@@ -67,7 +67,7 @@ namespace OpenXcom
  */
 CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 	_lstScroll(0), _sel(0), _craft(craft), _base(base), _totalItems(0), _totalItemStorageSize(0.0), _ammoColor(0),
-	_reload(true), _isNewBattle(false)
+	_reload(true), _returningFromGlobalTemplates(false), _firstInit(true), _isNewBattle(false)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	bool craftHasACrew = c->getNumTotalSoldiers() > 0;
@@ -250,9 +250,19 @@ void CraftEquipmentState::init()
 	// don't reload after closing error popups
 	if (_reload)
 	{
+		if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+		{
+			// skip when returning from craft equipment template load/save
+			if (!_returningFromGlobalTemplates)
+			{
+				c->calculateTotalSoldierEquipment();
+			}
+		}
 		initList();
 	}
 	_reload = true;
+	_returningFromGlobalTemplates = false;
+	_firstInit = false;
 }
 
 /**
@@ -331,8 +341,13 @@ void CraftEquipmentState::initList()
 		}
 
 		int bQty = _base->getStorageItems()->getItem(*i);
+		int reserved = 0;
+		if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+		{
+			reserved = c->getSoldierItems()->getItem(*i);
+		}
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
-			(bQty > 0 || cQty > 0))
+			(bQty > 0 || cQty > 0 || reserved > 0))
 		{
 			// check research requirements
 			if (!_game->getSavedGame()->isResearched(rule->getRequirements()))
@@ -398,7 +413,37 @@ void CraftEquipmentState::initList()
 
 			_items.push_back(*i);
 			std::ostringstream ss, ss2;
-			ss2 << cQty;
+			if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+			{
+				// doing this once (on opening the screen) is enough
+				// and just to make sure, we must skip this when returning from craft equipment template load/save
+				if (_firstInit && !isVehicle && cQty < reserved && !_returningFromGlobalTemplates)
+				{
+					// try to automatically add more items (if possible)
+					int itemsToAdd = std::min(bQty, reserved - cQty);
+					if (itemsToAdd > 0)
+					{
+						_base->getStorageItems()->removeItem(*i, itemsToAdd);
+						bQty -= itemsToAdd;
+						c->getItems()->addItem(*i, itemsToAdd);
+						cQty += itemsToAdd;
+						_totalItems += itemsToAdd;
+						_totalItemStorageSize += itemsToAdd * rule->getSize();
+					}
+				}
+				if (isVehicle)
+					ss2 << cQty;
+				else if (cQty - reserved > 0)
+					ss2 << reserved << "/+" << cQty - reserved;
+				else if (cQty - reserved == 0)
+					ss2 << cQty;
+				else
+					ss2 << cQty << "/" << cQty - reserved;
+			}
+			else
+			{
+				ss2 << cQty;
+			}
 			if (!_isNewBattle)
 			{
 				ss << bQty;
@@ -602,7 +647,22 @@ void CraftEquipmentState::updateQuantity()
 	{
 		ss << "-";
 	}
-	ss2 << cQty;
+	if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+	{
+		int reserved = c->getSoldierItems()->getItem(_items[_sel]);
+		if (item->getVehicleUnit())
+			ss2 << cQty;
+		else if (cQty - reserved > 0)
+			ss2 << reserved << "/+" << cQty - reserved;
+		else if (cQty - reserved == 0)
+			ss2 << cQty;
+		else
+			ss2 << cQty << "/" << cQty - reserved;
+	}
+	else
+	{
+		ss2 << cQty;
+	}
 
 	Uint8 color;
 	if (cQty == 0)
@@ -651,7 +711,23 @@ void CraftEquipmentState::moveLeftByValue(int change)
 	if (item->getVehicleUnit()) cQty = c->getVehicleCount(_items[_sel]);
 	else cQty = c->getItems()->getItem(_items[_sel]);
 	if (change <= 0 || cQty <= 0) return;
-	change = std::min(cQty, change);
+	if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+	{
+		int reserved = c->getSoldierItems()->getItem(_items[_sel]);
+		if (cQty - reserved > 0)
+		{
+			change = std::min(cQty - reserved, change);
+		}
+		else
+		{
+			//change = 0;
+			return;
+		}
+	}
+	else
+	{
+		change = std::min(cQty, change);
+	}
 	// Convert vehicle to item
 	if (item->getVehicleUnit())
 	{
@@ -903,6 +979,10 @@ void CraftEquipmentState::saveGlobalLoadout(int index)
 
 void CraftEquipmentState::loadGlobalLoadout(int index)
 {
+	// temporarily turn off alternate craft equipment management to allow removing all items from the craft
+	bool backup = Options::oxceAlternateCraftEquipmentManagement;
+	Options::oxceAlternateCraftEquipmentManagement = false;
+
 	// reset filters and reload the full equipment list
 	_btnQuickSearch->setText("");
 	_cbxFilterBy->setSelected(0);
@@ -964,6 +1044,9 @@ void CraftEquipmentState::loadGlobalLoadout(int index)
 		_game->pushState(new CannotReequipState(_missingItems, _base));
 		_reload = false;
 	}
+
+	// turn back the original setting
+	Options::oxceAlternateCraftEquipmentManagement = backup;
 }
 
 /**
@@ -975,6 +1058,7 @@ void CraftEquipmentState::btnLoadClick(Action *)
 	if (!_isNewBattle)
 	{
 		_game->pushState(new CraftEquipmentLoadState(this));
+		_returningFromGlobalTemplates = true;
 	}
 }
 
@@ -987,6 +1071,7 @@ void CraftEquipmentState::btnSaveClick(Action *)
 	if (!_isNewBattle)
 	{
 		_game->pushState(new CraftEquipmentSaveState(this));
+		_returningFromGlobalTemplates = true;
 	}
 }
 

@@ -118,6 +118,8 @@ public:
 	Craft *getCraft() const;
 	/// Sets the soldier's craft.
 	void setCraft(Craft *craft, bool resetCustomDeployment = false);
+	/// Sets the soldier's craft and automatically moves the equipment (if enabled).
+	void setCraftAndMoveEquipment(Craft* craft, Base* base, bool isNewBattle, bool resetCustomDeployment = false);
 	/// Gets the soldier's craft string.
 	std::string getCraftString(Language *lang, const BaseSumDailyRecovery& recovery) const;
 	/// Gets a string version of the soldier's rank.
@@ -296,6 +298,8 @@ public:
 
 private:
 	std::string generateCallsign(const std::vector<SoldierNamePool*> &names);
+	/// Automatically move equipment between the craft and the base when assigning/deassigning/reassigning soldiers.
+	void autoMoveEquipment(Craft* craft, Base* base, int toBase);
 
 };
 

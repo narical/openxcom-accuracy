@@ -3896,7 +3896,7 @@ bool BattleUnit::postMissionProcedures(const Mod *mod, SavedGame *geoscape, Save
 	if (s->isWounded())
 	{
 		// remove from craft
-		s->setCraft(nullptr);
+		//s->setCraft(nullptr); // Note to self: we need to do this much later (as late as possible), so that we can correctly remove the items too (without side effects)
 
 		// remove from training, but remember to return to training when healed
 		{
