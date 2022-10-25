@@ -330,8 +330,9 @@ void CraftEquipmentState::initList()
 			_totalItemStorageSize += cQty * rule->getSize();
 		}
 
+		int bQty = _base->getStorageItems()->getItem(*i);
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
-			(_base->getStorageItems()->getItem(*i) > 0 || cQty > 0))
+			(bQty > 0 || cQty > 0))
 		{
 			// check research requirements
 			if (!_game->getSavedGame()->isResearched(rule->getRequirements()))
@@ -397,15 +398,15 @@ void CraftEquipmentState::initList()
 
 			_items.push_back(*i);
 			std::ostringstream ss, ss2;
+			ss2 << cQty;
 			if (!_isNewBattle)
 			{
-				ss << _base->getStorageItems()->getItem(*i);
+				ss << bQty;
 			}
 			else
 			{
 				ss << "-";
 			}
-			ss2 << cQty;
 
 			std::string s = tr(*i);
 			if (rule->getBattleType() == BT_AMMO)
