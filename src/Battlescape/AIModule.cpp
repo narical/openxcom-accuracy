@@ -1843,7 +1843,7 @@ bool AIModule::findFirePoint()
 	{
 		Position pos = _unit->getPosition() + *i;
 		Tile *tile = _save->getTile(pos);
-		if (tile == 0 ||
+		if (tile == 0  ||
 			std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos)) == _reachableWithAttack.end())
 			continue;
 		int score = 0;
@@ -1855,6 +1855,7 @@ bool AIModule::findFirePoint()
 		if (_save->getTileEngine()->canTargetUnit(&origin, _aggroTarget->getTile(), &target, _unit, false))
 		{
 			_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
+			// can move here
 			if (_save->getPathfinding()->getStartDirection() != -1)
 			{
 				score = BASE_SYSTEMATIC_SUCCESS - getSpottingUnits(pos) * 10;
@@ -1876,16 +1877,16 @@ bool AIModule::findFirePoint()
 						score = score * distanceToTarget / proposedDistance;
 					}
 				}
-			}
-			if (score > bestScore)
-			{
-				bestScore = score;
-
-				_attackAction.target = pos;
-				_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
-				if (score > FAST_PASS_THRESHOLD)
+				if (score > bestScore)
 				{
-					break;
+					bestScore = score;
+
+					_attackAction.target = pos;
+					_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
+					if (score > FAST_PASS_THRESHOLD)
+					{
+						break;
+					}
 				}
 			}
 		}
@@ -1894,7 +1895,7 @@ bool AIModule::findFirePoint()
 	if (bestScore > 70)
 	{
 		_attackAction.type = BA_WALK;
-			if (_traceAI)
+		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
 		}
