@@ -456,6 +456,70 @@ Craft *Soldier::getCraft() const
 }
 
 /**
+ * Automatically move equipment between the craft and the base when assigning/deassigning/reassigning soldiers.
+ */
+void Soldier::autoMoveEquipment(Craft* craft, Base* base, int toBase)
+{
+	auto* inTheBase = base->getStorageItems();
+	auto* onTheCraft = _craft->getItems();
+	auto* reservedForTheCraft = _craft->getSoldierItems();
+
+	// Disclaimer: no checks for items not allowed on crafts; no checks for any craft limits (item number or weight). I'm not willing to spend the next 5+ years fixing it!
+	for (auto* invItem : _equipmentLayout)
+	{
+		// ignore fixed weapons...
+		if (!invItem->isFixed())
+		{
+			const std::string& invItemMain = invItem->getItemType();
+			if (toBase > 0)
+			{
+				if (onTheCraft->getItem(invItemMain) > 0)
+				{
+					inTheBase->addItem(invItemMain, 1);
+					onTheCraft->removeItem(invItemMain, 1);
+				}
+				reservedForTheCraft->removeItem(invItemMain, 1);
+			}
+			else if (toBase < 0)
+			{
+				if (inTheBase->getItem(invItemMain) > 0)
+				{
+					inTheBase->removeItem(invItemMain, 1);
+					onTheCraft->addItem(invItemMain, 1);
+				}
+				reservedForTheCraft->addItem(invItemMain, 1);
+			}
+		}
+		// ...but not their ammo
+		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+		{
+			const std::string& invItemAmmo = invItem->getAmmoItemForSlot(slot);
+			if (invItemAmmo != "NONE")
+			{
+				if (toBase > 0)
+				{
+					if (onTheCraft->getItem(invItemAmmo) > 0)
+					{
+						inTheBase->addItem(invItemAmmo, 1);
+						onTheCraft->removeItem(invItemAmmo, 1);
+					}
+					reservedForTheCraft->removeItem(invItemAmmo, 1);
+				}
+				else if (toBase < 0)
+				{
+					if (inTheBase->getItem(invItemAmmo) > 0)
+					{
+						inTheBase->removeItem(invItemAmmo, 1);
+						onTheCraft->addItem(invItemAmmo, 1);
+					}
+					reservedForTheCraft->addItem(invItemAmmo, 1);
+				}
+			}
+		}
+	}
+}
+
+/**
  * Assigns the soldier to a new craft.
  * @param craft Pointer to craft.
  */
@@ -467,6 +531,31 @@ void Soldier::setCraft(Craft *craft, bool resetCustomDeployment)
 	{
 		// adding a soldier into a craft invalidates a custom craft deployment
 		_craft->resetCustomDeployment();
+	}
+}
+/**
+ * Assigns the soldier to a new craft and automatically moves the equipment (if enabled).
+ */
+void Soldier::setCraftAndMoveEquipment(Craft* craft, Base* base, bool isNewBattle, bool resetCustomDeployment)
+{
+	bool notTheSameCraft = (_craft != craft);
+
+	if (Options::oxceAlternateCraftEquipmentManagement && !isNewBattle && notTheSameCraft && base)
+	{
+		if (_craft)
+		{
+			autoMoveEquipment(_craft, base, 1); // move from old craft to base
+		}
+	}
+
+	setCraft(craft, resetCustomDeployment);
+
+	if (Options::oxceAlternateCraftEquipmentManagement && !isNewBattle && notTheSameCraft && base)
+	{
+		if (craft)
+		{
+			autoMoveEquipment(craft, base, -1); // move from base to new craft
+		}
 	}
 }
 
@@ -1606,7 +1695,7 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 	_psiTraining = false;
 
 	// needed, because the armor size may change (also, it just makes sense)
-	sourceSoldier->setCraft(0);
+	sourceSoldier->setCraftAndMoveEquipment(0, base, false);
 
 	if (transformationRule->isCreatingClone())
 	{

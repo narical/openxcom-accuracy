@@ -294,6 +294,8 @@ en-US:
 #===================
   STR_OXCE_LINKS: "Extended links"
   STR_OXCE_LINKS_DESC: "Enables additional menus/buttons/links for OXCE features."
+  STR_ALTERNATE_CRAFT_EQUIPMENT_MANAGEMENT: "Alternate craft equipment management"
+  STR_ALTERNATE_CRAFT_EQUIPMENT_MANAGEMENT_DESC: "If enabled, moving soldiers between a base and a craft will move their equipment too (if possible)."
   STR_UFO_LANDING_ALERT: "UFO landing alert"
   STR_UFO_LANDING_ALERT_DESC: "If enabled, a message will pop up each time a detected UFO lands."
   STR_WOUNDED_DEFEND_BASE_IF: "Wounded defend (if HP above x%)"

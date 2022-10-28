@@ -441,7 +441,7 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 				Craft* c = _base->getCrafts()->at(_craft);
 				if (s->getCraft() == c)
 				{
-					s->setCraft(0);
+					s->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
 					_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 1, tr("STR_NONE_UC"));
 					_lstSoldiers->setRowColor(_lstSoldiers->getSelectedRow(), _lstSoldiers->getColor());
 				}
@@ -450,7 +450,7 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 					auto space = c->getSpaceAvailable();
 					if (c->validateAddingSoldier(space, s))
 					{
-						s->setCraft(c, true);
+						s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
 						_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 1, c->getName(_game->getLanguage()));
 						_lstSoldiers->setRowColor(_lstSoldiers->getSelectedRow(), _lstSoldiers->getSecondaryColor());
 					}
