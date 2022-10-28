@@ -139,6 +139,16 @@ public:
 	BattleUnit* getTarget();
 	/// Frees up the destination node for another Unit to select
 	void freePatrolTarget();
+	/// Checks whether anyone on our team can see the target
+	bool visibleToAnyFriend(BattleUnit *target, bool ignoreMyself = false);
+	/// Handles behavior of brutalAI
+	void brutalThink(BattleAction *action);
+	/// Like selectSpottedUnitForSniper but works for everyone
+	bool brutalSelectSpottedUnitForSniper();
+	/// Like validTarget but no recently seen check
+	bool brutalValidTarget(BattleUnit *target, bool assessDanger, bool includeCivs) const;
+	/// checks whether a position should be avoided
+	bool isAvoidPosition(std::vector<Position> trajectory, Position pos);
 };
 
 }
