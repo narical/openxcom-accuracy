@@ -619,7 +619,9 @@ public:
 	/// Gets a unit's random aggro sound.
 	int getRandomAggroSound() const;
 	/// Sets the unit's time units.
-	void setTimeUnits(int tu);
+	void setTimeUnits(int tu, bool ignoreBounds = false);
+	/// Sets the unit's energy.
+	void setEnergy(int energy);
 	/// Get the faction that killed this unit.
 	UnitFaction killedBy() const;
 	/// Set the faction that killed this unit.
