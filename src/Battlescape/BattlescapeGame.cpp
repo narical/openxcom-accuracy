@@ -335,7 +335,10 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
+		if (Options::traceAI)
+		{
+			Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType() << " Position: " << unit->getPosition();
+		}
 	}
 
 	BattleAction action;
@@ -399,6 +402,11 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
 			targetTile->setDangerous(true);
 		}
+	}
+	if (action.type == BA_TURN)
+	{
+		ss << "Turning in direction " << action.target;
+		statePushBack(new UnitTurnBState(this, action));
 	}
 
 	if (action.type == BA_SNAPSHOT || action.type == BA_AUTOSHOT || action.type == BA_AIMEDSHOT || action.type == BA_THROW || action.type == BA_HIT || action.type == BA_MINDCONTROL || action.type == BA_USE || action.type == BA_PANIC || action.type == BA_LAUNCH)
