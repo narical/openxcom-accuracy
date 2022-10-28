@@ -1844,7 +1844,7 @@ bool AIModule::findFirePoint()
 		Position pos = _unit->getPosition() + *i;
 		Tile *tile = _save->getTile(pos);
 		if (tile == 0  ||
-			std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos)) == _reachableWithAttack.end())
+			std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos))  == _reachableWithAttack.end())
 			continue;
 		int score = 0;
 		// i should really make a function for this
@@ -1877,10 +1877,10 @@ bool AIModule::findFirePoint()
 						score = score * distanceToTarget / proposedDistance;
 					}
 				}
+
 				if (score > bestScore)
 				{
 					bestScore = score;
-
 					_attackAction.target = pos;
 					_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
 					if (score > FAST_PASS_THRESHOLD)
