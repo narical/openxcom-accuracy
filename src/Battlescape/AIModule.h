@@ -52,7 +52,7 @@ private:
 	int _AIMode, _intelligence, _closestDist;
 	Node *_fromNode, *_toNode;
 	bool _foundBaseModuleToDestroy;
-	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy, _reachableWithAimedAttack;
+	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
 	std::vector<PathfindingNode*> _allPathFindingNodes;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
@@ -153,8 +153,8 @@ public:
 	bool isAvoidPosition(std::vector<Position> trajectory, Position pos);
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
 	int tuCostToReachPosition(Position pos);
-	/// find the cloest Position to our target we can reach within cost
-	Position furthestToGoTowards(Position target, BattleActionCost cost);
+	/// find the cloest Position to our target we can reach while reserving for a BattleAction
+	Position furthestToGoTowards(Position target, BattleActionCost reserve);
 };
 
 }
