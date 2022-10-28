@@ -2873,6 +2873,15 @@ bool AIModule::visibleToAnyFriend(BattleUnit* target, bool ignoreMyself)
 
 void AIModule::brutalThink(BattleAction* action)
 {
+	// Create reachabiliy and turncost-list for the entire map by briefly raising TUs and energy to 10000
+	int timeUnitsBefore = _unit->getTimeUnits();
+	int energyBefore = _unit->getEnergy();
+	_unit->setTimeUnits(10000, true);
+	_unit->setEnergy(10000);
+	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost());
+	_unit->setTimeUnits(timeUnitsBefore);
+	_unit->setEnergy(energyBefore);
+
 	// Phase 1: Check if you can attack anything from where you currently are
 	_attackAction.type = BA_RETHINK;
 	_psiAction.type = BA_NONE;
@@ -2917,6 +2926,7 @@ void AIModule::brutalThink(BattleAction* action)
 		action->type = _attackAction.type;
 		action->target = _attackAction.target;
 		action->weapon = _attackAction.weapon;
+		action->number -= 1;
 		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE)
 		{
 			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
@@ -2940,14 +2950,8 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleUnit *bestTargetableEnemy = NULL;
 	int mostSeenBy = 0;
 	int closestDist = 255;
-	float closestDistToUnitToBestTargetableEnemy = 255;
-	float myDistToBestTargetableEnemy = 255;
-	BattleUnit* friendWithBestVision = NULL;
-	float bestViewVision = 0;
-	float bestLosScore = 0;
-	bool atLeastOneHasLos = false;
 	bool needToFlee = false;
-	float preferredRange = 1;
+	float preferredRange = 16;
 
 	BattleActionCost costSnap(BA_SNAPSHOT, _unit, action->weapon);
 	if (_unit->getTimeUnits() < costSnap.Time)
@@ -2959,7 +2963,6 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		if (target->getFaction() == FACTION_NEUTRAL)
 			continue;
-		float currentLosScore = 0;
 		float seenFrom = 1;
 		Position pos = target->getPosition();
 		Tile *tile = _save->getTile(pos);
@@ -2985,7 +2988,6 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			mostSeenBy = seenBy;
 			bestTargetableEnemy = target;
-			Log(LOG_INFO) << " bestTargetableEnemy: " << bestTargetableEnemy->getId() << " seenBy: " << seenBy;
 		}
 		int dist = Position::distance2d(target->getPosition(), _unit->getPosition());
 		if (dist < closestDist)
@@ -3005,13 +3007,6 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (current != _unit)
 					_save->getTileEngine()->calculateLineTile(current->getPosition(), bestTargetableEnemy->getPosition(), positionsToAvoid);
-				float currentDist = Position::distance(current->getPosition(), bestTargetableEnemy->getPosition());
-				if (current == _unit)
-					myDistToBestTargetableEnemy = currentDist;
-				if (currentDist < closestDistToUnitToBestTargetableEnemy)
-				{
-					closestDistToUnitToBestTargetableEnemy = currentDist;
-				}
 			}
 		}
 	}
@@ -3019,6 +3014,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float bestAltScore = 0;
 	Position bestAltPosition = _unit->getPosition();
 	std::vector<int> reachable = _reachableWithAttack;
+	bool iCanGetLineOfFireTobestTargetableEnemy = false;
 	if (needToFlee)
 		reachable = _reachable;
 	for (int idx : reachable)
@@ -3034,7 +3030,6 @@ void AIModule::brutalThink(BattleAction* action)
 							Position(8, 8, _unit->getHeight() + _unit->getFloatHeight() - tile->getTerrainLevel() - 4);
 		float currentScore = 0;
 		float seenFrom = 1;
-		int minUnitDistance = 255;
 		float averageDistanceToEnemies = 0;
 		float closestDistanceToEnemy = 255;
 		float enemyCount = 0;
@@ -3052,6 +3047,11 @@ void AIModule::brutalThink(BattleAction* action)
 				float giveScore = 100;
 				if (visibleToAnyFriend(target, true))
 					giveScore *= 3;
+				if (target = bestTargetableEnemy)
+				{
+					iCanGetLineOfFireTobestTargetableEnemy = true;
+					giveScore *= 2;
+				}
 				if (target == unitToFaceTo)
 					giveScore *= 2;
 				currentScore = giveScore;
@@ -3066,12 +3066,6 @@ void AIModule::brutalThink(BattleAction* action)
 		else
 			currentAltScore = preferredRange * (currentAltScore / preferredRange);
 		currentAltScore /= seenFrom;
-		if (_traceAI)
-		{
-			tile->setMarkerColor(3);
-			tile->setPreview(10);
-			tile->setTUMarker(currentAltScore);
-		}
 		if (currentAltScore > bestAltScore)
 		{
 			bestAltScore = currentAltScore;
@@ -3079,57 +3073,31 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (currentScore == 0)
 			continue;
-		_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
-		if (_save->getPathfinding()->getPath().empty() && _unit->getPosition() != pos)
-			continue;
-		float timeFactor = (float)(_unit->getTimeUnits() - _save->getPathfinding()->getTotalTUCost()) / (float)_unit->getTimeUnits();
+		float timeFactor = (float)(_unit->getTimeUnits() - tuCostToReachPosition(pos)) / (float)_unit->getTimeUnits();
 		currentScore *= timeFactor;
 		currentScore /= seenFrom;
 		if (currentScore > bestPositionScore)
 		{
 			bestPositionScore = currentScore;
 			bestPostionToAttackFrom = pos;
-			Log(LOG_INFO) << " best position: " << bestPostionToAttackFrom << " score: " << bestPositionScore;
 		}
 	}
-	Log(LOG_INFO) << " closestDistToUnitToBestTargetableEnemy: " << closestDistToUnitToBestTargetableEnemy << " myDistToBestTargetableEnemy: " << myDistToBestTargetableEnemy;
 	Position travelTarget = _unit->getPosition();
-	/* if (bestTargetableEnemy != NULL && mostSeenBy >= 2 && !needToFlee)
+	if (bestTargetableEnemy != NULL && !needToFlee && !(visibleToAnyFriend(bestTargetableEnemy) && iCanGetLineOfFireTobestTargetableEnemy))
 		travelTarget = bestTargetableEnemy->getPosition();
-	else
-		*/
-	if (bestPositionScore == 0 || needToFlee)
+	else if (bestPositionScore == 0 || needToFlee)
 		travelTarget = bestAltPosition;
 	if (travelTarget != _unit->getPosition())
 	{
-		int shortestPathLength = 255;
-		std::vector<int> reachable = _reachableWithAimedAttack;
+		BattleActionCost reserved = BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon);
 		if (needToFlee)
-			reachable = _reachable;
-		for (int posId : reachable)
-		{
-			Position pos = _save->getTileCoords(posId);
-			if (isAvoidPosition(positionsToAvoid, pos))
-				continue;
-			_save->getPathfinding()->calculate(_unit, pos, travelTarget, BAM_NORMAL);
-			if (_save->getPathfinding()->getPath().empty() && _unit->getPosition() != pos)
-				continue;
-			int len = _save->getPathfinding()->getPath().size();
-			if (len < shortestPathLength)
-			{
-				shortestPathLength = len;
-				bestPostionToAttackFrom = pos;
-				Log(LOG_INFO) << " nearby tile on the way to " << travelTarget << " is: " << bestPostionToAttackFrom;
-			}
-		}
+			reserved = BattleActionCost(_unit);
+		bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
 	}
 	action->type = BA_WALK;
 	action->target = bestPostionToAttackFrom;
 	if (unitToFaceTo != NULL)
-	{
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, unitToFaceTo->getPosition());
-		Log(LOG_INFO) << " should walk to " << action->target << " should face: " << action->finalFacing << " facing: " << _unit->getDirection() << " tile to face: " << unitToFaceTo->getPosition() << " unit to face: " << unitToFaceTo->getId();
-	}
 	action->updateTU();
 	if (action->type == BA_WALK)
 	{
@@ -3265,6 +3233,56 @@ bool AIModule::isAvoidPosition(std::vector<Position> trajectory, Position pos)
 			return true;
 	}
 	return false;
+}
+
+int AIModule::tuCostToReachPosition(Position pos)
+{
+	float closestDistToTarget = 255;
+	int tuCostToClosestNode = 10000;
+	for (auto pn : _allPathFindingNodes)
+	{
+		if (pos == pn->getPosition())
+			return pn->getTUCost(false).time;
+		float currDist = Position::distance(pos, pn->getPosition());
+		if (currDist < closestDistToTarget)
+		{
+			closestDistToTarget = currDist;
+			tuCostToClosestNode = pn->getTUCost(false).time;
+		}
+	}
+	return 10000;
+}
+
+Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserved)
+{
+	//consider time-units we already spent
+	reserved.Time = _unit->getTimeUnits() - reserved.Time;
+	PathfindingNode *targetNode = NULL;
+	float closestDistToTarget = 255;
+	for (auto pn : _allPathFindingNodes)
+	{
+		if (target == pn->getPosition())
+		{
+			targetNode = pn;
+			break;
+		}
+		float currDist = Position::distance(target, pn->getPosition());
+		if (currDist < closestDistToTarget)
+		{
+			closestDistToTarget = currDist;
+			targetNode = pn;
+		}
+	}
+	if (targetNode != NULL)
+	{
+		while (targetNode->getTUCost(false).time > reserved.Time && targetNode->getPrevNode() != NULL)
+		{
+			Tile *tile = _save->getTile(targetNode->getPosition());
+			targetNode = targetNode->getPrevNode();
+		}
+		return targetNode->getPosition();
+	}
+	return _unit->getPosition();
 }
 
 }
