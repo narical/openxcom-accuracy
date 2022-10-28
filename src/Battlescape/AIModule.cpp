@@ -291,7 +291,7 @@ void AIModule::think(BattleAction *action)
 	}
 
 	BattleItem *grenade = _unit->getGrenadeFromBelt();
-	_grenade = grenade != 0 && (_save->getTurn() >= grenade->getRules()->getAIUseDelay(mod));
+	_grenade = grenade != 0 && _save->getTurn() >= grenade->getRules()->getAIUseDelay(mod);
 
 	if (Options::brutalAI && _unit->getFaction() == FACTION_HOSTILE)
 	{
