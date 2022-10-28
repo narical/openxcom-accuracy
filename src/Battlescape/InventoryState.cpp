@@ -1033,7 +1033,10 @@ void InventoryState::btnOkClick(Action *)
 	_game->popState();
 	if (!_tu)
 	{
-		saveEquipmentLayout();
+		if (_base || !Options::oxceAlternateCraftEquipmentManagement)
+		{
+			saveEquipmentLayout();
+		}
 		if (_parent)
 		{
 			_battleGame->startFirstTurn();

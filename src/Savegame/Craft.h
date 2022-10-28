@@ -78,6 +78,7 @@ private:
 	int _fuel, _damage, _shield, _interceptionOrder, _takeoff;
 	std::vector<CraftWeapon*> _weapons;
 	ItemContainer *_items;
+	ItemContainer *_tempSoldierItems;
 	std::vector<Vehicle*> _vehicles;
 	std::string _status;
 	bool _lowFuel, _mission, _inBattlescape, _inDogfight;
@@ -153,8 +154,12 @@ public:
 	std::vector<CraftWeapon*> *getWeapons();
 	/// Gets the craft's items.
 	ItemContainer *getItems();
+	/// Gets the craft's items equipped by the soldiers.
+	ItemContainer* getSoldierItems();
 	/// Gets the craft's vehicles.
 	std::vector<Vehicle*> *getVehicles();
+	/// Calculates (and stores) the sum of all equipment of all soldiers on the craft.
+	void calculateTotalSoldierEquipment();
 
 	/// Gets the total storage size of all items in the craft. Including vehicles+ammo and craft weapons+ammo.
 	double getTotalItemStorageSize(const Mod* mod) const;

@@ -62,7 +62,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	bool isTransformationAvailable = availableTransformations.size() > 0;
 
 	// if both training buttons would be displayed, or if there are any transformations, switch to combobox
-	bool showCombobox = isTransformationAvailable || (isPsiBtnVisible && isTrnBtnVisible);
+	bool showCombobox = isTransformationAvailable || (isPsiBtnVisible && isTrnBtnVisible) || Options::oxceAlternateCraftEquipmentManagement;
 	// 3 buttons or 2 buttons?
 	bool showThreeButtons = !showCombobox && (isPsiBtnVisible || isTrnBtnVisible);
 
@@ -140,6 +140,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 
 		_availableOptions.push_back("STR_SOLDIER_INFO");
 		_availableOptions.push_back("STR_MEMORIAL");
+		_availableOptions.push_back("STR_INVENTORY");
 
 		if (isPsiBtnVisible)
 			_availableOptions.push_back("STR_PSI_TRAINING");
@@ -584,6 +585,11 @@ void SoldiersState::cbxScreenActionsChange(Action *action)
 	{
 		_cbxScreenActions->setSelected(0);
 		_game->pushState(new SoldierMemorialState);
+	}
+	else if (selAction == "STR_INVENTORY")
+	{
+		_cbxScreenActions->setSelected(0);
+		btnInventoryClick(nullptr);
 	}
 	else if (selAction == "STR_PSI_TRAINING")
 	{
