@@ -283,7 +283,6 @@ void AIModule::think(BattleAction *action)
 				_melee = true;
 				_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, action->weapon));
 			}
-			_reachableWithAimedAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon));
 		}
 		else
 		{
@@ -1839,18 +1838,15 @@ bool AIModule::findFirePoint()
 	bool waitIfOutsideWeaponRange = _unit->getGeoscapeSoldier() ? false : _unit->getUnitRules()->waitIfOutsideWeaponRange();
 	bool extendedFireModeChoiceEnabled = _save->getBattleGame()->getMod()->getAIExtendedFireModeChoice();
 	int bestScore = 0;
-	bool canAttackAfterMoveToBest = true;
 	_attackAction.type = BA_RETHINK;
 	for (std::vector<Position>::const_iterator i = randomTileSearch.begin(); i != randomTileSearch.end(); ++i)
 	{
 		Position pos = _unit->getPosition() + *i;
 		Tile *tile = _save->getTile(pos);
-		if (tile == 0)
+		if (tile == 0 ||
+			std::find(_reachableWithAttack.begin(), _reachableWithAttack.end(), _save->getTileIndex(pos)) == _reachableWithAttack.end())
 			continue;
-		if ((tile->getUnit() != NULL && !tile->getUnit()->isOut()))
-			continue;
-		int posSpottingUnits = getSpottingUnits(pos);
-		float score = 0;
+		int score = 0;
 		// i should really make a function for this
 		Position origin = pos.toVoxel() +
 			// 4 because -2 is eyes and 2 below that is the rifle (or at least that's my understanding)
@@ -1861,9 +1857,8 @@ bool AIModule::findFirePoint()
 			_save->getPathfinding()->calculate(_unit, pos, BAM_NORMAL);
 			if (_save->getPathfinding()->getStartDirection() != -1)
 			{
-				score = BASE_SYSTEMATIC_SUCCESS - posSpottingUnits * 10;
+				score = BASE_SYSTEMATIC_SUCCESS - getSpottingUnits(pos) * 10;
 				score += _unit->getTimeUnits() - _save->getPathfinding()->getTotalTUCost();
-
 				if (!_aggroTarget->checkViewSector(pos))
 				{
 					score += 10;
@@ -1882,16 +1877,16 @@ bool AIModule::findFirePoint()
 					}
 				}
 			}
-		}
-		if (score > bestScore)
-		{
-			bestScore = score;
-
-			_attackAction.target = pos;
-			_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
-			if (score > FAST_PASS_THRESHOLD)
+			if (score > bestScore)
 			{
-				break;
+				bestScore = score;
+
+				_attackAction.target = pos;
+				_attackAction.finalFacing = _save->getTileEngine()->getDirectionTo(pos, _aggroTarget->getPosition());
+				if (score > FAST_PASS_THRESHOLD)
+				{
+					break;
+				}
 			}
 		}
 	}
@@ -1899,8 +1894,7 @@ bool AIModule::findFirePoint()
 	if (bestScore > 70)
 	{
 		_attackAction.type = BA_WALK;
-
-		if (_traceAI)
+			if (_traceAI)
 		{
 			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
 		}
@@ -2390,7 +2384,6 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		// An intelligence value of 10 will decrease this random factor to 0
 		// Default values for and intelligence value of 0 will make this a 50% to 150% roll
 		int intelligenceModifier = _save->getBattleGame()->getMod()->getAIFireChoiceIntelCoeff() * std::max(10 - _unit->getIntelligence(), 0);
-
 		newScore = newScore * (100 + RNG::generate(-intelligenceModifier, intelligenceModifier)) / 100;
 
 		// More aggressive units get a modifier to the score for auto shots
