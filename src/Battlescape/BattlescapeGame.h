@@ -40,7 +40,7 @@ class InfoboxOKState;
 class SoldierDiary;
 class RuleSkill;
 
-enum BattleActionMove : char { BAM_NORMAL = 0, BAM_RUN = 1, BAM_STRAFE = 2, BAM_SNEAK = 3, BAM_MISSILE = 4, BAM_AI = 5 };
+enum BattleActionMove : char { BAM_NORMAL = 0, BAM_RUN = 1, BAM_STRAFE = 2, BAM_SNEAK = 3, BAM_MISSILE = 4 };
 
 struct BattleActionCost : RuleItemUseCost
 {
