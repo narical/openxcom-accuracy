@@ -83,16 +83,29 @@ PathfindingNode *Pathfinding::getNode(Position pos)
  */
 void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget, int maxTUCost)
 {
+	calculate(unit, unit->getPosition(), endPosition, bam, missileTarget, maxTUCost);
+}
+
+/**
+ * Calculates the shortest path.
+ * @param unit Unit taking the path.
+ * @param startPosition The position we want to start from.
+ * @param endPosition The position we want to reach.
+ * @param missileTarget Target of the path.
+ * @param maxTUCost Maximum time units the path can cost.
+ */
+void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget, int maxTUCost)
+{
 	_totalTUCost = {};
 	_path.clear();
 	// i'm DONE with these out of bounds errors.
-	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0) return;
+	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0)
+		return;
 
 	bool sneak = Options::sneakyAI && unit->getFaction() == FACTION_HOSTILE;
 
-	auto startPosition = unit->getPosition();
 	auto movementType = getMovementType(unit, missileTarget, bam);
-	if (missileTarget != 0 && maxTUCost == -1 && bam == BAM_MISSILE)  // pathfinding for missile
+	if (missileTarget != 0 && maxTUCost == -1 && bam == BAM_MISSILE) // pathfinding for missile
 	{
 		maxTUCost = 10000;
 	}
@@ -101,7 +114,8 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	Tile *destinationTile = _save->getTile(endPosition);
 
 	// check if destination is not blocked
-	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
+	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget))
+		return;
 
 	// the following check avoids that the unit walks behind the stairs if we click behind the stairs to make it go up the stairs.
 	// it only works if the unit is on one of the 2 tiles on the stairs, or on the tile right in front of the stairs.
@@ -128,18 +142,16 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 		endPosition.z--;
 		destinationTile = _save->getTile(endPosition);
 	}
-	// check if destination is not blocked
-	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
 
 	// Strafing move allowed only to adjacent squares on same z. "Same z" rule mainly to simplify walking render.
 	_strafeMove = bam == BAM_STRAFE && (startPosition.z == endPosition.z) &&
-							(abs(startPosition.x - endPosition.x) <= 1) && (abs(startPosition.y - endPosition.y) <= 1);
+				  (abs(startPosition.x - endPosition.x) <= 1) && (abs(startPosition.y - endPosition.y) <= 1);
 
 	if (_strafeMove)
 	{
 		auto direction = -1;
 		vectorToDirection(endPosition - startPosition, direction);
-		if (direction == -1 || std::min(abs(8 + direction - _unit->getDirection()), std::min( abs(_unit->getDirection() - direction), abs(8 + _unit->getDirection() - direction))) > 2)
+		if (direction == -1 || std::min(abs(8 + direction - _unit->getDirection()), std::min(abs(_unit->getDirection() - direction), abs(8 + _unit->getDirection() - direction))) > 2)
 		{
 			// Strafing backwards-ish currently unsupported, turn it off and continue.
 			_strafeMove = false;
@@ -154,7 +166,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	// look for a possible fast and accurate bresenham path and skip A*
 	if (startPosition.z == endPosition.z && bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
 	{
-		std::reverse(_path.begin(), _path.end()); //paths are stored in reverse order
+		std::reverse(_path.begin(), _path.end()); // paths are stored in reverse order
 		return;
 	}
 	else

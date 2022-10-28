@@ -101,6 +101,8 @@ public:
 	~Pathfinding();
 	/// Calculates the shortest path.
 	void calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
+	/// Overload function to be able to seek paths between positions without units
+	void calculate(BattleUnit *unit, Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
 
 	/**
 	 * Converts direction to a vector. Direction starts north = 0 and goes clockwise.
