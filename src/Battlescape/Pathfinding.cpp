@@ -1334,11 +1334,30 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
  */
 std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const BattleActionCost &cost)
 {
+	std::vector<PathfindingNode *> reachable = findReachablePathFindingNodes(unit, cost);
+	std::vector<int> tiles;
+	tiles.reserve(reachable.size());
+	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
+	{
+		tiles.push_back(_save->getTileIndex((*it)->getPosition()));
+	}
+	return tiles;
+}
+
+/**
+ * Locates all tiles reachable to @a *unit with a TU cost no more than @a tuMax.
+ * Uses Dijkstra's algorithm.
+ * @param unit Pointer to the unit.
+ * @param tuMax The maximum cost of the path to each tile.
+ * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
+ */
+std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost)
+{
 	const Position start = unit->getPosition();
 	int tuMax = unit->getTimeUnits() - cost.Time;
 	int energyMax = unit->getEnergy() - cost.Energy;
 
-	PathfindingCost costMax = { tuMax, energyMax };
+	PathfindingCost costMax = {tuMax, energyMax};
 
 	for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
 	{
@@ -1348,7 +1367,7 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 	startNode->connect({}, 0, 0);
 	PathfindingOpenSet unvisited;
 	unvisited.push(startNode);
-	std::vector<PathfindingNode*> reachable;
+	std::vector<PathfindingNode *> reachable;
 	while (!unvisited.empty())
 	{
 		PathfindingNode *currentNode = unvisited.pop();
@@ -1377,13 +1396,7 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 		reachable.push_back(currentNode);
 	}
 	std::sort(reachable.begin(), reachable.end(), MinNodeCosts());
-	std::vector<int> tiles;
-	tiles.reserve(reachable.size());
-	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
-	{
-		tiles.push_back(_save->getTileIndex((*it)->getPosition()));
-	}
-	return tiles;
+	return reachable;
 }
 
 /**
