@@ -97,6 +97,8 @@ namespace OpenXcom
 				auto surf = _game->getMod()->getSurface(layer, true);
 				surf->blitNShade(_bg, 0, 0);
 			}
+			delete s;
+			s = nullptr;
 		}
 		else
 		{
