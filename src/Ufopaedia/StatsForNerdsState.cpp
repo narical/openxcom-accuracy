@@ -439,7 +439,7 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 		{
 			// we use NEGATIVE soldier IDs to make sure there is not even a theoretical chance of modifying real geoscape soldiers during the preview
 			int newId = -(i + 1);
-			Soldier* soldier = new Soldier(soldierRule, defaultArmor, newId);
+			Soldier* soldier = new Soldier(soldierRule, defaultArmor, 0 /*nationality*/, newId);
 			base->getSoldiers()->push_back(soldier);
 			soldier->setName("Position" + std::to_string(newId));
 		}

@@ -1082,7 +1082,7 @@ void SaveConverter::loadDatSoldier()
 			node["look"] = (int)load<Uint8>(sdata + _rules->getOffset("SOLDIER.DAT_LOOK"));
 			node["id"] = _save->getId("STR_SOLDIER");
 
-			Soldier *soldier = new Soldier(_mod->getSoldier(_mod->getSoldiersList().front(), true), 0);
+			Soldier *soldier = new Soldier(_mod->getSoldier(_mod->getSoldiersList().front(), true), nullptr, 0 /*nationality*/);
 			soldier->load(node, _mod, _save, _mod->getScriptGlobal());
 			if (base != 0xFFFF)
 			{

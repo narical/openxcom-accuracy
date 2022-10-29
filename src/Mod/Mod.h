@@ -209,7 +209,7 @@ private:
 	int _maxViewDistance, _maxDarknessToSeeUnits;
 	int _maxStaticLightDistance, _maxDynamicLightDistance, _enhancedLighting;
 	int _costHireEngineer, _costHireScientist;
-	int _costEngineer, _costScientist, _timePersonnel, _initialFunding;
+	int _costEngineer, _costScientist, _timePersonnel, _hireByCountryOdds, _hireByRegionOdds, _initialFunding;
 	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayMelee, _aiUseDelayPsionic;
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
@@ -773,6 +773,10 @@ public:
 	int getScientistCost() const;
 	/// Gets the transfer time of personnel.
 	int getPersonnelTime() const;
+	/// Gets the odds of hiring soldiers by country.
+	int getHireByCountryOdds() const { return _hireByCountryOdds; }
+	/// Gets the odds of hiring soldiers by region.
+	int getHireByRegionOdds() const { return _hireByRegionOdds; }
 
 	/// Gets first turn when AI can use Blaster launcher.
 	int getAIUseDelayBlaster() const  {return _aiUseDelayBlaster;}
@@ -1004,7 +1008,7 @@ public:
 	/// Returns the sorted list of inventories.
 	const std::vector<std::string> &getInvsList() const;
 	/// Generates a new soldier.
-	Soldier *genSoldier(SavedGame *save, std::string type = "") const;
+	Soldier *genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int nationality) const;
 	/// Gets the item to be used as fuel for ships.
 	std::string getAlienFuelName() const;
 	/// Gets the amount of alien fuel to recover

@@ -91,7 +91,7 @@ private:
 	ScriptValues<Soldier> _scriptValues;
 public:
 	/// Creates a new soldier.
-	Soldier(RuleSoldier *rules, Armor *armor, int id = 0);
+	Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id = 0);
 	/// Cleans up the soldier.
 	~Soldier();
 	/// Loads the soldier from YAML.

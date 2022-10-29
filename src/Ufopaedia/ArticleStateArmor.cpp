@@ -87,7 +87,7 @@ namespace OpenXcom
 		else if (armor->hasLayersDefinition())
 		{
 			// dummy default soldier (M0)
-			Soldier *s = new Soldier(_game->getMod()->getSoldier(_game->getMod()->getSoldiersList().front(), true), armor, 0);
+			Soldier *s = new Soldier(_game->getMod()->getSoldier(_game->getMod()->getSoldiersList().front(), true), armor, 0 /*nationality*/, 0 /*id*/);
 			s->setGender(GENDER_MALE);
 			s->setLook(LOOK_BLONDE);
 			s->setLookVariant(0);
