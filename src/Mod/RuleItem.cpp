@@ -2047,6 +2047,9 @@ int RuleItem::getTurretType() const
  */
 int RuleItem::getAIUseDelay(const Mod *mod) const
 {
+	if (Options::brutalAI)
+		return 0;
+
 	if (mod == 0 || _aiUseDelay >= 0)
 		return _aiUseDelay;
 
