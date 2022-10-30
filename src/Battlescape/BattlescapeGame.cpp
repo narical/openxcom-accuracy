@@ -351,7 +351,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 
 	_AIActionCounter = action.number;
 	BattleItem *weapon = unit->getMainHandWeapon();
-	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively();
+	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || Options::brutalAI;
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
