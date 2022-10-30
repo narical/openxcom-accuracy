@@ -476,6 +476,7 @@ void SoldierTransformationState::performTransformation()
 		destinationSoldier = new Soldier(
 			newSoldierType,
 			newSoldierType->getDefaultArmor(),
+			_sourceSoldier->getNationality(), // try to preserve nationality if possible
 			newId);
 
 		// copy stuff that is not influenced by transformation ruleset

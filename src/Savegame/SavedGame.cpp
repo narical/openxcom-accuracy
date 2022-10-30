@@ -62,6 +62,7 @@
 #include "../Mod/RuleCountry.h"
 #include "../Mod/RuleRegion.h"
 #include "../Mod/RuleSoldier.h"
+#include "../Mod/SoldierNamePool.h"
 #include "BaseFacility.h"
 #include "MissionStatistics.h"
 #include "SoldierDeath.h"
@@ -691,7 +692,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		std::string type = (*i)["type"].as<std::string>(mod->getSoldiersList().front());
 		if (mod->getSoldier(type))
 		{
-			Soldier *soldier = new Soldier(mod->getSoldier(type), 0);
+			Soldier *soldier = new Soldier(mod->getSoldier(type), nullptr, 0 /*nationality*/);
 			soldier->load(*i, mod, this, mod->getScriptGlobal());
 			_deadSoldiers.push_back(soldier);
 		}
@@ -2776,6 +2777,69 @@ Country* SavedGame::locateCountry(double lon, double lat) const
 Country* SavedGame::locateCountry(const Target& target) const
 {
 	return locateCountry(target.getLongitude(), target.getLatitude());
+}
+
+/**
+ * Select a soldier nationality based on mod rules and location on the globe.
+ */
+int SavedGame::selectSoldierNationalityByLocation(const Mod* mod, const RuleSoldier* rule, const Target* target) const
+{
+	if (!target)
+	{
+		return -1;
+	}
+
+	if (mod->getHireByCountryOdds() > 0 && RNG::percent(mod->getHireByCountryOdds()))
+	{
+		Country* country = locateCountry(*target);
+		if (country)
+		{
+			int nationality = 0;
+			for (auto* namepool : rule->getNames())
+			{
+				// we assume there is only one such name pool (or none), thus we stop searching on the first hit
+				if (country->getRules()->getType() == namepool->getCountry())
+				{
+					return nationality;
+				}
+				++nationality;
+			}
+		}
+	}
+
+	if (mod->getHireByRegionOdds() > 0 && RNG::percent(mod->getHireByRegionOdds()))
+	{
+		Region* region = locateRegion(*target);
+		if (region)
+		{
+			// build a new name pool collection, filtered by the region
+			std::vector<std::pair<SoldierNamePool*, int> > filteredNames;
+			int totalFilteredNamePoolWeight = 0;
+			int nationality = 0;
+			for (auto* namepool : rule->getNames())
+			{
+				if (region->getRules()->getType() == namepool->getRegion())
+				{
+					filteredNames.push_back(std::make_pair(namepool, nationality));
+					totalFilteredNamePoolWeight += namepool->getGlobalWeight();
+				}
+				++nationality;
+			}
+
+			// select the nationality from the filtered pool, by weight
+			int tmp = RNG::generate(0, totalFilteredNamePoolWeight);
+			for (auto& namepoolPair : filteredNames)
+			{
+				if (tmp <= namepoolPair.first->getGlobalWeight())
+				{
+					return namepoolPair.second;
+				}
+				tmp -= namepoolPair.first->getGlobalWeight();
+			}
+		}
+	}
+
+	return -1;
 }
 
 /*

@@ -144,7 +144,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		std::string type = (*i)["type"].as<std::string>(_mod->getSoldiersList().front());
 		if (_mod->getSoldier(type))
 		{
-			Soldier *s = new Soldier(_mod->getSoldier(type), 0);
+			Soldier *s = new Soldier(_mod->getSoldier(type), nullptr, 0 /*nationality*/);
 			s->load(*i, _mod, save, _mod->getScriptGlobal());
 			s->setCraft(0);
 			if (const YAML::Node &craft = (*i)["craft"])

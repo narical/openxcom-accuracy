@@ -49,7 +49,7 @@ namespace OpenXcom
  * @param armor Soldier armor.
  * @param id Unique soldier id for soldier generation.
  */
-Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
+Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_id(id), _nationality(0),
 	_improvement(0), _psiStrImprovement(0), _rules(rules), _rank(RANK_ROOKIE), _craft(0),
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
@@ -80,7 +80,32 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 		const std::vector<SoldierNamePool*> &names = rules->getNames();
 		if (!names.empty())
 		{
-			_nationality = RNG::generate(0, names.size() - 1);
+			if (nationality > -1)
+			{
+				// nationality by location, or hardcoded/technical nationality
+				_nationality = nationality;
+			}
+			else
+			{
+				// nationality by name pool weights
+				int tmp = RNG::generate(0, rules->getTotalSoldierNamePoolWeight());
+				int nat = 0;
+				for (auto* namepool : names)
+				{
+					if (tmp <= namepool->getGlobalWeight())
+					{
+						break;
+					}
+					tmp -= namepool->getGlobalWeight();
+					++nat;
+				}
+				_nationality = nat;
+			}
+			if ((size_t)_nationality >= names.size())
+			{
+				// handling weird cases, e.g. corner cases in soldier transformations
+				_nationality = RNG::generate(0, names.size() - 1);
+			}
 			_name = names.at(_nationality)->genName(&_gender, rules->getFemaleFrequency());
 			_callsign = generateCallsign(rules->getNames());
 			_look = (SoldierLook)names.at(_nationality)->genLook(4); // Once we add the ability to mod in extra looks, this will need to reference the ruleset for the maximum amount of looks.
@@ -1767,7 +1792,7 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 
 		// and randomize stats where needed
 		{
-			Soldier *tmpSoldier = new Soldier(_rules, 0, _id);
+			Soldier *tmpSoldier = new Soldier(_rules, nullptr, 0 /*nationality*/, _id);
 			_currentStats = UnitStats::combine(transformationRule->getRerollStats(), _currentStats, *tmpSoldier->getCurrentStats());
 			delete tmpSoldier;
 			tmpSoldier = 0;

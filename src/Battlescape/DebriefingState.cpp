@@ -1658,7 +1658,7 @@ void DebriefingState::prepareDebriefing()
 					{
 						addStat("STR_CIVILIANS_SAVED", 1, (*j)->getValue());
 					}
-					recoverCivilian(*j, base);
+					recoverCivilian(*j, base, craft);
 				}
 			}
 		}
@@ -2490,7 +2490,7 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base)
 * @param from Battle unit to recover.
 * @param base Base to add items to.
 */
-void DebriefingState::recoverCivilian(BattleUnit *from, Base *base)
+void DebriefingState::recoverCivilian(BattleUnit *from, Base *base, Craft* craft)
 {
 	std::string type = from->getUnitRules()->getCivilianRecoveryType();
 	if (type.empty())
@@ -2515,7 +2515,13 @@ void DebriefingState::recoverCivilian(BattleUnit *from, Base *base)
 		if (ruleSoldier != 0)
 		{
 			Transfer *t = new Transfer(24);
-			Soldier *s = _game->getMod()->genSoldier(_game->getSavedGame(), ruleSoldier->getType());
+			Target* target = craft;
+			if (!target)
+			{
+				target = base;
+			}
+			int nationality = _game->getSavedGame()->selectSoldierNationalityByLocation(_game->getMod(), ruleSoldier, target);
+			Soldier *s = _game->getMod()->genSoldier(_game->getSavedGame(), ruleSoldier, nationality);
 			s->load(from->getUnitRules()->getSpawnedSoldierTemplate(), _game->getMod(), _game->getSavedGame(), _game->getMod()->getScriptGlobal(), true); // load from soldier template
 			if (!from->getUnitRules()->getSpawnedPersonName().empty())
 			{
