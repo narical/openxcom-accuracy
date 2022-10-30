@@ -155,6 +155,10 @@ public:
 	int tuCostToReachPosition(Position pos);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve);
+	/// Check if I'd have to fear reaction-fire when stepping on that tile with the given amount of time-units
+	bool wouldBeTargetOfReactionFire(Position pos, int tu);
+	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
+	bool brutalPsiAction();
 };
 
 }
