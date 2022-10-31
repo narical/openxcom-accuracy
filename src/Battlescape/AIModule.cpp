@@ -3103,11 +3103,15 @@ void AIModule::brutalThink(BattleAction* action)
 		for (auto pu : _allPathFindingNodes)
 		{
 			Position pos = pu->getPosition();
+			Tile *tile = _save->getTile(pos);
+			if (tile == NULL)
+				continue;
+			if (tile->hasNoFloor() && _unit->getFloatHeight() == 0)
+				continue;
 			if (isAvoidPosition(positionsToAvoid, pos) && !IAmPureMelee)
 				continue;
 			if (getSpottingUnits(pos) > 0 && !IAmPureMelee)
 				continue;
-			Tile *tile = _save->getTile(pos);
 			float enemyCount = 0;
 			float averageDistanceToEnemies = 0;
 			float closestDistanceToEnemy = 255;
@@ -3136,21 +3140,29 @@ void AIModule::brutalThink(BattleAction* action)
 			if (closestDistanceToFriends < 3)
 				continue;
 			float elevationBonus = 1.0f + pos.z * 0.25f;
+			float currentAltScore = 0;
 			if (enemyCount > 0)
+			{
 				averageDistanceToEnemies /= enemyCount;
+				currentAltScore = (closestDistanceToEnemy + averageDistanceToEnemies) / 2.0;
+				if (currentAltScore > preferredRange)
+					currentAltScore = preferredRange * (preferredRange / currentAltScore);
+				else
+					currentAltScore = preferredRange * (currentAltScore / preferredRange);
+			}
 			if (friendCount > 0)
+			{
 				closestDistanceToFriends /= friendCount;
-			float currentAltScore = (closestDistanceToEnemy + averageDistanceToEnemies) / 2.0;
-			if (currentAltScore > preferredRange)
-				currentAltScore = preferredRange * (preferredRange / currentAltScore);
-			else
-				currentAltScore = preferredRange * (currentAltScore / preferredRange);
-			float friendModifier = (closestDistanceToFriends + averageDistanceToFriends) / 2.0;
-			if (friendModifier > 5)
-				friendModifier = 5 * (5 / friendModifier);
-			else
-				friendModifier = 5 * (friendModifier / 5);
-			currentAltScore += friendModifier;
+				float friendModifier = (closestDistanceToFriends + averageDistanceToFriends) / 2.0;
+				if (friendModifier > 5)
+					friendModifier = 5 * (5 / friendModifier);
+				else
+					friendModifier = 5 * (friendModifier / 5);
+				currentAltScore += friendModifier;
+			}
+			//If everyone ouf our friends is dead and I don't know of any enemies, go to whatever is furthest away from me
+			if (currentAltScore == 0)
+				currentAltScore = pu->getTUCost(false).time;
 			if (needToFlee)
 			{
 				currentAltScore = (float)(_unit->getTimeUnits() - pu->getTUCost(false).time) / (float)_unit->getTimeUnits();
