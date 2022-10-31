@@ -147,8 +147,6 @@ public:
 	void brutalThink(BattleAction *action);
 	/// Like selectSpottedUnitForSniper but works for everyone
 	bool brutalSelectSpottedUnitForSniper();
-	/// Like validTarget but no recently seen check
-	bool brutalValidTarget(BattleUnit *target, bool assessDanger, bool includeCivs) const;
 	/// checks whether a position should be avoided
 	bool isAvoidPosition(std::vector<Position> trajectory, Position pos);
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
@@ -159,6 +157,13 @@ public:
 	bool wouldBeTargetOfReactionFire(Position pos, int tu);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
+	/// Chooses a firing mode for the AI based on expected damage dealt
+	void brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false);
+	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
+	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
+	/// Used as multiplier for the throw-action in brutalScoreFiringMode
+	int brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
+
 };
 
 }
