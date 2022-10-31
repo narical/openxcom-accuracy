@@ -3770,7 +3770,10 @@ int AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingU
 	// don't go kamikaze unless we're already doomed.
 	if (abs(attackingUnit->getPosition().z - targetPos.z) <= Options::battleExplosionHeight && distance <= radius)
 	{
-		enemiesAffected -= 2;
+		if (_unit->getFaction() == _unit->getOriginalFaction())
+			enemiesAffected -= 2;
+		else
+			enemiesAffected++;
 	}
 
 	// account for the unit we're targetting
