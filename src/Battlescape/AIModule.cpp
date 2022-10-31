@@ -3098,6 +3098,8 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 
+	Position* bestPositionToLookAt = NULL;
+	float bestPositionToLookAtScore = 0;
 	if (bestPositionScore == 0 || needToFlee || _blaster == true)
 	{
 		for (auto pu : _allPathFindingNodes)
@@ -3120,22 +3122,22 @@ void AIModule::brutalThink(BattleAction* action)
 			float friendCount = 0;
 			for (BattleUnit *target : *(_save->getUnits()))
 			{
-				if (target->isOut())
-					continue;
 				float currentDist = Position::distance(target->getPosition(), pos);
-				if (target != _unit && target->getFaction() == _unit->getFaction())
+				if ((target->isOut() && bestTargetableEnemy == NULL) || validTarget(target, true, true))
+				{
+					//treat both dead enemies and friends the same as living enemies. It makes sense that where there's one, there's also others.
+					if (currentDist < closestDistanceToEnemy)
+						closestDistanceToEnemy = currentDist;
+					averageDistanceToEnemies += currentDist;
+					enemyCount++;
+				}
+				else if (target != _unit && target->getFaction() == _unit->getFaction())
 				{
 					friendCount++;
 					averageDistanceToFriends += currentDist;
 					if (currentDist < closestDistanceToFriends)
 						closestDistanceToFriends = currentDist;
 				}
-				if (!validTarget(target, true, true))
-					continue;
-				enemyCount++;
-				if (currentDist < closestDistanceToEnemy)
-					closestDistanceToEnemy = currentDist;
-				averageDistanceToEnemies += currentDist;
 			}
 			if (closestDistanceToFriends < 3)
 				continue;
@@ -3144,7 +3146,14 @@ void AIModule::brutalThink(BattleAction* action)
 			if (enemyCount > 0)
 			{
 				averageDistanceToEnemies /= enemyCount;
+				float lookAtScore = 100.0 / averageDistanceToEnemies;
+				if (lookAtScore > bestPositionToLookAtScore)
+				{
+					bestPositionToLookAtScore = lookAtScore;
+					bestPositionToLookAt = &pos;
+				}
 				currentAltScore = (closestDistanceToEnemy + averageDistanceToEnemies) / 2.0;
+
 				if (currentAltScore > preferredRange)
 					currentAltScore = preferredRange * (preferredRange / currentAltScore);
 				else
@@ -3213,6 +3222,8 @@ void AIModule::brutalThink(BattleAction* action)
 	action->type = BA_WALK;
 	action->target = bestPostionToAttackFrom;
 	action->finalFacing = -1;
+	if (bestPositionToLookAt != NULL && !needToFlee)
+		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, *bestPositionToLookAt);
 	if (unitToFaceTo != NULL && !needToFlee)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, unitToFaceTo->getPosition());
 	action->updateTU();
