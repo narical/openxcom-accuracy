@@ -2977,20 +2977,6 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (IAmPureMelee)
 		bestTargetableEnemy = unitToFaceTo;
-	std::vector<Position> positionsToAvoid;
-	if (bestTargetableEnemy != NULL)
-	{
-		for (BattleUnit *current : *(_save->getUnits()))
-		{
-			if (current->isOut())
-				continue;
-			if (current->getFaction() == _unit->getOriginalFaction())
-			{
-				if (current != _unit)
-					_save->getTileEngine()->calculateLineTile(current->getPosition(), bestTargetableEnemy->getPosition(), positionsToAvoid);
-			}
-		}
-	}
 	float bestPositionScore = 0;
 	float bestAltScore = 0;
 	Position bestAltPosition = _unit->getPosition();
@@ -3002,8 +2988,6 @@ void AIModule::brutalThink(BattleAction* action)
 		Position pos = _save->getTileCoords(idx);
 		Tile *tile = _save->getTile(pos);
 		if (tile == NULL)
-			continue;
-		if (isAvoidPosition(positionsToAvoid, pos))
 			continue;
 		if (tile->hasNoFloor() && _unit->getFloatHeight() == 0)
 			continue;
@@ -3103,8 +3087,6 @@ void AIModule::brutalThink(BattleAction* action)
 			if (tile == NULL)
 				continue;
 			if (tile->hasNoFloor() && _unit->getFloatHeight() == 0)
-				continue;
-			if (isAvoidPosition(positionsToAvoid, pos) && !IAmPureMelee)
 				continue;
 			if (getSpottingUnits(pos) > 0 && !IAmPureMelee)
 				continue;
@@ -3328,16 +3310,6 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	}
 
 	return _aggroTarget != 0;
-}
-
-bool AIModule::isAvoidPosition(std::vector<Position> trajectory, Position pos)
-{
-	for (Position avoidPos : trajectory)
-	{
-		if (avoidPos == pos)
-			return true;
-	}
-	return false;
 }
 
 int AIModule::tuCostToReachPosition(Position pos)

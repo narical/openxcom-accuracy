@@ -147,8 +147,6 @@ public:
 	void brutalThink(BattleAction *action);
 	/// Like selectSpottedUnitForSniper but works for everyone
 	bool brutalSelectSpottedUnitForSniper();
-	/// checks whether a position should be avoided
-	bool isAvoidPosition(std::vector<Position> trajectory, Position pos);
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
 	int tuCostToReachPosition(Position pos);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
