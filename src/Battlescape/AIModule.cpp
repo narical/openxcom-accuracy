@@ -2868,13 +2868,7 @@ bool AIModule::visibleToAnyFriend(BattleUnit* target, bool ignoreMyself)
 void AIModule::brutalThink(BattleAction* action)
 {
 	// Create reachabiliy and turncost-list for the entire map by briefly raising TUs and energy to 10000
-	int timeUnitsBefore = _unit->getTimeUnits();
-	int energyBefore = _unit->getEnergy();
-	_unit->setTimeUnits(10000, true);
-	_unit->setEnergy(10000);
-	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost());
-	_unit->setTimeUnits(timeUnitsBefore);
-	_unit->setEnergy(energyBefore);
+	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true);
 
 	bool IAmPureMelee = _melee && !_blaster && !_rifle && !_grenade;
 	if (IAmPureMelee)

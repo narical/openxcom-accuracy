@@ -1349,9 +1349,10 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
  * Uses Dijkstra's algorithm.
  * @param unit Pointer to the unit.
  * @param tuMax The maximum cost of the path to each tile.
+ * @param entireMap Ignore the constraints of the unit and create Nodes for the entire map from the unit as starting-point
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost)
+std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap)
 {
 	const Position start = unit->getPosition();
 	int tuMax = unit->getTimeUnits() - cost.Time;
@@ -1380,7 +1381,7 @@ std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const B
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
-			if (!(totalTuCost <= costMax)) // Run out of TUs/Energy
+			if (!(totalTuCost <= costMax) && !entireMap) // Run out of TUs/Energy
 				continue;
 			PathfindingNode *nextNode = getNode(r.pos);
 			if (nextNode->isChecked()) // Our algorithm means this node is already at minimum cost.

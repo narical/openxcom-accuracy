@@ -4477,12 +4477,9 @@ int BattleUnit::getRandomAggroSound() const
  * @param tu time units.
  * @param bool whether the units minimum and maximum time units can be exceeded.
  */
-void BattleUnit::setTimeUnits(int tu, bool ignoreBounds)
+void BattleUnit::setTimeUnits(int tu)
 {
-	if (ignoreBounds)
-		_tu = tu;
-	else
-		_tu = Clamp(tu, 0, (int)_stats.tu);
+	_tu = Clamp(tu, 0, (int)_stats.tu);
 }
 
 /**
