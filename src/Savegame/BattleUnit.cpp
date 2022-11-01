@@ -4475,10 +4475,20 @@ int BattleUnit::getRandomAggroSound() const
 /**
  * Set a specific amount of time units.
  * @param tu time units.
+ * @param bool whether the units minimum and maximum time units can be exceeded.
  */
 void BattleUnit::setTimeUnits(int tu)
 {
 	_tu = Clamp(tu, 0, (int)_stats.tu);
+}
+
+/**
+ * Set a specific amount of energy.
+ * @param energy.
+ */
+void BattleUnit::setEnergy(int energy)
+{
+	_energy = energy;
 }
 
 /**

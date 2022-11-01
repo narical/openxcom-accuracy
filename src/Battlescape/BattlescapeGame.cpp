@@ -351,7 +351,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 
 	_AIActionCounter = action.number;
 	BattleItem *weapon = unit->getMainHandWeapon();
-	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively();
+	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || Options::brutalAI;
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
@@ -399,6 +399,11 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
 			targetTile->setDangerous(true);
 		}
+	}
+	if (action.type == BA_TURN)
+	{
+		ss << "Turning in direction of " << action.target;
+		statePushBack(new UnitTurnBState(this, action));
 	}
 
 	if (action.type == BA_SNAPSHOT || action.type == BA_AUTOSHOT || action.type == BA_AIMEDSHOT || action.type == BA_THROW || action.type == BA_HIT || action.type == BA_MINDCONTROL || action.type == BA_USE || action.type == BA_PANIC || action.type == BA_LAUNCH)

@@ -20,6 +20,7 @@
 #include <yaml-cpp/yaml.h>
 #include "BattlescapeGame.h"
 #include "Position.h"
+#include "Pathfinding.h"
 #include "../Savegame/BattleUnit.h"
 #include <vector>
 
@@ -52,6 +53,7 @@ private:
 	Node *_fromNode, *_toNode;
 	bool _foundBaseModuleToDestroy;
 	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
+	std::vector<PathfindingNode*> _allPathFindingNodes;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 
@@ -139,6 +141,27 @@ public:
 	BattleUnit* getTarget();
 	/// Frees up the destination node for another Unit to select
 	void freePatrolTarget();
+	/// Checks whether anyone on our team can see the target
+	bool visibleToAnyFriend(BattleUnit *target, bool ignoreMyself = false);
+	/// Handles behavior of brutalAI
+	void brutalThink(BattleAction *action);
+	/// Like selectSpottedUnitForSniper but works for everyone
+	bool brutalSelectSpottedUnitForSniper();
+	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
+	int tuCostToReachPosition(Position pos);
+	/// find the cloest Position to our target we can reach while reserving for a BattleAction
+	Position furthestToGoTowards(Position target, BattleActionCost reserve);
+	/// Check if I'd have to fear reaction-fire when stepping on that tile with the given amount of time-units
+	bool wouldBeTargetOfReactionFire(Position pos, int tu);
+	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
+	bool brutalPsiAction();
+	/// Chooses a firing mode for the AI based on expected damage dealt
+	void brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false);
+	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
+	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
+	/// Used as multiplier for the throw-action in brutalScoreFiringMode
+	int brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
+
 };
 
 }

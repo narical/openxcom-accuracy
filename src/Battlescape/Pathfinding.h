@@ -101,6 +101,8 @@ public:
 	~Pathfinding();
 	/// Calculates the shortest path.
 	void calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
+	/// Overload function to be able to seek paths between positions without units
+	void calculate(BattleUnit *unit, Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
 
 	/**
 	 * Converts direction to a vector. Direction starts north = 0 and goes clockwise.
@@ -165,6 +167,8 @@ public:
 	void setUnit(BattleUnit *unit);
 	/// Gets all reachable tiles, based on cost.
 	std::vector<int> findReachable(const BattleUnit *unit, const BattleActionCost &cost);
+	/// Gets all reachable tiles, based on cost and returns the associated cost of getting there too
+	std::vector<PathfindingNode*> findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap = false);
 	/// Gets _totalTUCost; finds out whether we can hike somewhere in this turn or not.
 	int getTotalTUCost() const { return _totalTUCost.time; }
 	/// Gets the path preview setting.

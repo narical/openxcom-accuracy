@@ -121,6 +121,8 @@ en-US:
   STR_SHOWMORESTATSININVENTORYVIEW_DESC: "Show extra information on the selected soldier in the inventory screen."
   STR_SNEAKYAI: "Sneaky AI"
   STR_SNEAKYAI_DESC: "AI avoids exposing themselves to the player whenever possible."
+  STR_BRUTALAI: "Brutal AI"
+  STR_BRUTALAI_DESC: "AI units play as a team instead of simulating individuals."
   STR_STRAFE: "Alternate movement methods"
   STR_STRAFE_DESC: "Enables strafing, running, and independent tank turret movement when holding CTRL."
   STR_BATTLEEXPLOSIONHEIGHT: "Explosion height"
