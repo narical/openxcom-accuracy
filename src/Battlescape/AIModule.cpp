@@ -3172,7 +3172,7 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	Position travelTarget = _unit->getPosition();
 
-	if (bestTargetableEnemy != NULL && !needToFlee && !(visibleToAnyFriend(bestTargetableEnemy) && iCanGetLineOfFireTobestTargetableEnemy) && !_blaster && (!IAmPureMelee && bestPositionScore > 0))
+	if (bestTargetableEnemy != NULL && !needToFlee && !(visibleToAnyFriend(bestTargetableEnemy) && iCanGetLineOfFireTobestTargetableEnemy) && !_blaster && (!IAmPureMelee && bestPositionScore == 0))
 		travelTarget = bestTargetableEnemy->getPosition();
 	else if (bestAltScore > 0)
 		travelTarget = bestAltPosition;
