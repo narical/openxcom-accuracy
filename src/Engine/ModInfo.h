@@ -45,6 +45,7 @@ class ModInfo
 private:
 	const std::string _path;
 	std::string _name, _desc, _author, _url, _id, _master;
+	std::string _versionDisplay;
 	ModInfoVersion _version;
 	bool _isMaster;
 	int _reservedSpace;
@@ -69,6 +70,8 @@ public:
 	const std::string &getDescription() const;
 	/// Gets the version of this mod.
 	const std::string &getVersion() const;
+	/// Gets the version for display of this mod.
+	const std::string &getVersionDisplay() const;
 	/// Gets the author of this mod.
 	const std::string &getAuthor() const;
 	/// Gets the id for this mod.

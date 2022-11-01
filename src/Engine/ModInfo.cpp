@@ -159,6 +159,7 @@ ModInfo::ModInfo(const std::string &path) :
 	 _path(path), _name(CrossPlatform::baseFilename(path)),
 	_desc("No description."), _author("unknown author"),
 	_id(_name), _master("xcom1"),
+	_versionDisplay("1.0"),
 	_version(defaultModVersion),
 	_isMaster(false), _reservedSpace(1),
 	_engineOk(false)
@@ -206,7 +207,9 @@ void ModInfo::load(const YAML::Node& doc)
 	if (const YAML::Node& ver = doc["version"])
 	{
 		_version  = normalizeModVersion(_id, ver.as<std::string>());
+		_versionDisplay = _version.first;
 	}
+	_versionDisplay = doc["versionDisplay"].as<std::string>(_versionDisplay);
 	_author   = doc["author"].as<std::string>(_author);
 	_isMaster = doc["isMaster"].as<bool>(_isMaster);
 	_reservedSpace = doc["reservedSpace"].as<int>(_reservedSpace);
@@ -262,6 +265,7 @@ const std::string &ModInfo::getPath()                    const { return _path;  
 const std::string &ModInfo::getName()                    const { return _name;                    }
 const std::string &ModInfo::getDescription()             const { return _desc;                    }
 const std::string &ModInfo::getVersion()                 const { return _version.first;           }
+const std::string &ModInfo::getVersionDisplay()          const { return _versionDisplay;          }
 const std::string &ModInfo::getAuthor()                  const { return _author;                  }
 const std::string &ModInfo::getId()                      const { return _id;                      }
 const std::string &ModInfo::getMaster()                  const { return _master;                  }

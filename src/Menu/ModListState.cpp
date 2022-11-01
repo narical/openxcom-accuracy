@@ -158,7 +158,7 @@ ModListState::~ModListState()
 
 std::string ModListState::makeTooltip(const ModInfo &modInfo)
 {
-	return tr("STR_MODS_TOOLTIP").arg(modInfo.getVersion()).arg(modInfo.getAuthor()).arg(modInfo.getDescription());
+	return tr("STR_MODS_TOOLTIP").arg(modInfo.getVersionDisplay()).arg(modInfo.getAuthor()).arg(modInfo.getDescription());
 }
 
 void ModListState::cbxMasterHover(Action *)
