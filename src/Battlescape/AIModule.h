@@ -151,8 +151,6 @@ public:
 	int tuCostToReachPosition(Position pos);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve);
-	/// Check if I'd have to fear reaction-fire when stepping on that tile with the given amount of time-units
-	bool wouldBeTargetOfReactionFire(Position pos, int tu);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
 	/// Chooses a firing mode for the AI based on expected damage dealt
@@ -161,7 +159,8 @@ public:
 	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
 	int brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
-
+	/// An inaccurate simplified check for line of fire from a specific position to a specific target
+	bool quickLineOfFire(Position pos, BattleUnit *target);
 };
 
 }

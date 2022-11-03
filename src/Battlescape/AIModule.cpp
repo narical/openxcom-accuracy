@@ -2924,11 +2924,10 @@ void AIModule::brutalThink(BattleAction* action)
 	Position bestPostionToAttackFrom = _unit->getPosition();
 	Position targetReference;
 	BattleUnit* unitToFaceTo = NULL;
-	BattleUnit *bestTargetableEnemy = NULL;
 	int mostSeenBy = 0;
 	int closestDist = 255;
 	bool needToFlee = false;
-	float preferredRange = _save->getMod()->getMaxViewDistance() + 1;
+	float preferredRange = _save->getMod()->getMaxViewDistance();
 	if (IAmPureMelee)
 		preferredRange = 1;
 
@@ -2936,74 +2935,27 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getTimeUnits() < costSnap.Time && !IAmPureMelee)
 		needToFlee = true;
 
-	for (BattleUnit *target : *(_save->getUnits()))
-	{
-		if (target->isOut())
-			continue;
-		float seenFrom = 1;
-		Position pos = target->getPosition();
-		Tile *tile = _save->getTile(pos);
-		if (!validTarget(target, true, true))
-			continue;
-		int seenBy = 0;
-		for (BattleUnit *ourUnit : *(_save->getUnits()))
-		{
-			if (ourUnit->isOut())
-				continue;
-			if (ourUnit->getFaction() == _unit->getOriginalFaction())
-			{
-				Position ourPos = ourUnit->getPosition();
-				Tile *ourTile = _save->getTile(ourPos);
-				BattleAction action;
-				action.actor = _unit;
-				action.weapon = _attackAction.weapon;
-				action.target = pos;
-				Position ourOrigin = _save->getTileEngine()->getOriginVoxel(action, tile);
-				if (_save->getTileEngine()->canTargetUnit(&ourOrigin, tile, &targetReference, ourUnit, false, target))
-					seenBy += 1;
-			}
-		}
-		if (seenBy > mostSeenBy)
-		{
-			mostSeenBy = seenBy;
-			bestTargetableEnemy = target;
-		}
-		int dist = Position::distance2d(target->getPosition(), _unit->getPosition());
-		if (dist < closestDist)
-		{
-			closestDist = dist;
-			unitToFaceTo = target;
-		}
-	}
-	if (IAmPureMelee)
-		bestTargetableEnemy = unitToFaceTo;
 	float bestPositionScore = 0;
-	float bestAltScore = 0;
-	Position bestAltPosition = _unit->getPosition();
-	bool iCanGetLineOfFireTobestTargetableEnemy = false;
 
-	std::vector<int> reachable = _reachableWithAttack;
-	for (int idx : reachable)
+	bool ourFriendsAreAlreadyFighting = false;
+
+	for (auto pu : _allPathFindingNodes)
 	{
-		Position pos = _save->getTileCoords(idx);
+		Position pos = pu->getPosition();
 		Tile *tile = _save->getTile(pos);
 		if (tile == NULL)
 			continue;
-		if (tile->hasNoFloor() && _unit->getFloatHeight() == 0)
+		if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 			continue;
-		BattleAction action;
-		action.actor = _unit;
-		action.weapon = _attackAction.weapon;
-		action.target = pos;
-		Position origin = _save->getTileEngine()->getOriginVoxel(action, tile);
 		float currentScore = 0;
-		float seenFrom = 1;
+		float lofTo = 1;
 		float elevationBonus = 1.0f + pos.z * 0.25f;
-		float bestEnemyReactScore = 0;
+		bool seenByEnemy = false;
 		for (BattleUnit *target : *(_save->getUnits()))
 		{
-			if (!validTarget(target, true, true))
+			if (target->getFaction() == _unit->getFaction() || target->isOut())
 				continue;
+			float currDist = Position::distance(pos, _unit->getPosition());
 			float giveScore = 0;
 			if (IAmPureMelee)
 			{
@@ -3013,57 +2965,38 @@ void AIModule::brutalThink(BattleAction* action)
 					Log(LOG_INFO) << pos << " is in meelee-range to attack " << target->getId() << " on " << target->getPosition();
 					giveScore = 100;
 					giveScore *= elevationBonus;
-					currentScore = giveScore;
+					currentScore = std::max(giveScore, currentScore);
+					continue;
 				}
 			}
-			else if (_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &targetReference, _unit, false, target))
+			else if (quickLineOfFire(pos, target))
 			{
 				giveScore = 100;
-				bool visibleToFriend = visibleToAnyFriend(target, true);
-				if (visibleToFriend)
-					giveScore *= 3;
-				if (target == bestTargetableEnemy)
-				{
-					iCanGetLineOfFireTobestTargetableEnemy = true;
-					giveScore *= 2;
-				}
-				if (target == unitToFaceTo)
-					giveScore *= 2;
+				if (currDist <= _save->getMod()->getMaxViewDistance())
+					seenByEnemy = true;
 				giveScore *= elevationBonus;
-				currentScore = giveScore;
-				seenFrom += 1;
+				currentScore = std::max(giveScore, currentScore);
+				lofTo += 1;
 			}
-			if (!IAmPureMelee && target->hasVisibleTile(tile))
+		}
+		if (needToFlee)
+		{
+			if (seenByEnemy)
 			{
-				float currentReactionScore = target->getReactionScore();
-				if (currentReactionScore > bestEnemyReactScore)
-					bestEnemyReactScore = currentReactionScore;
+				currentScore = 100;
 			}
+			else
+				currentScore = 0;
 		}
 		if (currentScore == 0)
 			continue;
-		float timeFactor = (float)(_unit->getTimeUnits() - tuCostToReachPosition(pos)) / (float)_unit->getTimeUnits();
-		//we don't want to step into enemy reaction-fire
-		if (!IAmPureMelee)
-		{
-			if (_unit->getBaseStats()->reactions * timeFactor < bestEnemyReactScore)
-			{
-				if (_traceAI)
-				{
-					tile->setMarkerColor(3);
-					tile->setPreview(10);
-					tile->setTUMarker(bestEnemyReactScore);
-				}
-				continue;
-			}
-		}
-		currentScore *= timeFactor;
-		currentScore /= seenFrom;
+		currentScore /= pu->getTUCost(false).time;
+		currentScore /= lofTo;
 		if (_traceAI)
 		{
-			if (currentScore > 0)
+			if (lofTo > 0)
 			{
-				tile->setMarkerColor(7);
+				tile->setMarkerColor(lofTo);
 				tile->setPreview(10);
 				tile->setTUMarker(currentScore);
 			}
@@ -3076,130 +3009,66 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 
-	Position* bestPositionToLookAt = NULL;
-	float bestPositionToLookAtScore = 0;
-	if (bestPositionScore == 0 || needToFlee || _blaster == true)
-	{
-		for (auto pu : _allPathFindingNodes)
-		{
-			Position pos = pu->getPosition();
-			Tile *tile = _save->getTile(pos);
-			if (tile == NULL)
-				continue;
-			if (tile->hasNoFloor() && _unit->getFloatHeight() == 0)
-				continue;
-			if (getSpottingUnits(pos) > 0 && !IAmPureMelee)
-				continue;
-			float enemyCount = 0;
-			float averageDistanceToEnemies = 0;
-			float closestDistanceToEnemy = 255;
-			float averageDistanceToFriends = 0;
-			float closestDistanceToFriends = 255;
-			float friendCount = 0;
-			for (BattleUnit *target : *(_save->getUnits()))
-			{
-				float currentDist = Position::distance(target->getPosition(), pos);
-				if ((target->isOut() && bestTargetableEnemy == NULL) || validTarget(target, true, true))
-				{
-					//treat both dead enemies and friends the same as living enemies. It makes sense that where there's one, there's also others.
-					if (currentDist < closestDistanceToEnemy)
-						closestDistanceToEnemy = currentDist;
-					averageDistanceToEnemies += currentDist;
-					enemyCount++;
-				}
-				else if (target != _unit && target->getFaction() == _unit->getFaction())
-				{
-					friendCount++;
-					averageDistanceToFriends += currentDist;
-					if (currentDist < closestDistanceToFriends)
-						closestDistanceToFriends = currentDist;
-				}
-			}
-			if (closestDistanceToFriends < 3)
-				continue;
-			float elevationBonus = 1.0f + pos.z * 0.25f;
-			float currentAltScore = 0;
-			if (enemyCount > 0)
-			{
-				averageDistanceToEnemies /= enemyCount;
-				float lookAtScore = 100.0 / averageDistanceToEnemies;
-				if (lookAtScore > bestPositionToLookAtScore)
-				{
-					bestPositionToLookAtScore = lookAtScore;
-					bestPositionToLookAt = &pos;
-				}
-				currentAltScore = (closestDistanceToEnemy + averageDistanceToEnemies) / 2.0;
-
-				if (currentAltScore > preferredRange)
-					currentAltScore = preferredRange * (preferredRange / currentAltScore);
-				else
-					currentAltScore = preferredRange * (currentAltScore / preferredRange);
-			}
-			if (friendCount > 0)
-			{
-				closestDistanceToFriends /= friendCount;
-				float friendModifier = (closestDistanceToFriends + averageDistanceToFriends) / 2.0;
-				if (friendModifier > 5)
-					friendModifier = 5 * (5 / friendModifier);
-				else
-					friendModifier = 5 * (friendModifier / 5);
-				currentAltScore += friendModifier;
-			}
-			//If everyone ouf our friends is dead and I don't know of any enemies, go to whatever is furthest away from me
-			if (currentAltScore == 0)
-				currentAltScore = pu->getTUCost(false).time;
-			if (needToFlee)
-			{
-				currentAltScore = (float)(_unit->getTimeUnits() - pu->getTUCost(false).time) / (float)_unit->getTimeUnits();
-			}
-			currentAltScore *= elevationBonus;
-			if (_traceAI)
-			{
-				if (currentAltScore > 0)
-				{
-					//Log(LOG_INFO) << pos << " closestDistanceToFriends: " << closestDistanceToFriends << " averageDistanceToFriends: " << averageDistanceToFriends << " friendModifier: " << friendModifier << " currentAltScore: " << currentAltScore;
-					tile->setMarkerColor(5);
-					tile->setPreview(10);
-					tile->setTUMarker(currentAltScore);
-				}
-			}
-			if (currentAltScore > bestAltScore)
-			{
-				bestAltScore = currentAltScore;
-				bestAltPosition = pos;
-			}
-		}
-	}
 	Position travelTarget = _unit->getPosition();
 
-	if (bestTargetableEnemy != NULL && !needToFlee && !(visibleToAnyFriend(bestTargetableEnemy) && iCanGetLineOfFireTobestTargetableEnemy) && !_blaster && (!IAmPureMelee && bestPositionScore == 0))
-		travelTarget = bestTargetableEnemy->getPosition();
-	else if (bestAltScore > 0)
-		travelTarget = bestAltPosition;
+	float shortestDist = 255;
+	for (BattleUnit *target : *(_save->getUnits()))
+	{
+		if (target->getFaction() == _unit->getFaction() || target->isOut())
+			continue;
+		if (visibleToAnyFriend(target, true))
+			ourFriendsAreAlreadyFighting = true;
+		float currentDist = Position::distance(bestPostionToAttackFrom, target->getPosition());
+		if (currentDist < shortestDist)
+		{
+			shortestDist = currentDist;
+			unitToFaceTo = target;
+		}
+	}
+
+	if (unitToFaceTo != NULL && !needToFlee && !visibleToAnyFriend(unitToFaceTo) && !_blaster)
+		travelTarget = unitToFaceTo->getPosition();
+	else if (bestPositionScore > 0)
+		travelTarget = bestPostionToAttackFrom;
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI wants to go from "
 					  << _unit->getPosition()
-					  << " to " << bestPostionToAttackFrom << " best-Alt was: " << bestAltPosition << " travel-target: " << travelTarget;
+					  << " to " << bestPostionToAttackFrom << " travel-target: " << travelTarget;
 	}
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon);
-		if (needToFlee)
+		if (ourFriendsAreAlreadyFighting)
+			reserved = BattleActionCost(_unit);
+		if (tuCostToReachPosition(travelTarget) < _unit->getTimeUnits())
+			reserved = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
+		if (needToFlee || IAmPureMelee)
 			reserved = BattleActionCost(_unit);
 		bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
 	}
+	
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI final got-position from "
 					  << _unit->getPosition()
 					  << " to " << bestPostionToAttackFrom;
 	}
+	shortestDist = 255;
+	for (BattleUnit *target : *(_save->getUnits()))
+	{
+		if (target->getFaction() == _unit->getFaction() || target->isOut())
+			continue;
+		float currentDist = Position::distance(bestPostionToAttackFrom, target->getPosition());
+		if (currentDist < shortestDist)
+		{
+			shortestDist = currentDist;
+			unitToFaceTo = target;
+		}
+	}
 	action->type = BA_WALK;
 	action->target = bestPostionToAttackFrom;
 	action->finalFacing = -1;
-	if (bestPositionToLookAt != NULL && !needToFlee)
-		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, *bestPositionToLookAt);
 	if (unitToFaceTo != NULL && !needToFlee)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, unitToFaceTo->getPosition());
 	action->updateTU();
@@ -3370,32 +3239,13 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	}
 	if (targetNode != NULL)
 	{
-		while ((targetNode->getTUCost(false).time > reserved.Time || wouldBeTargetOfReactionFire(targetNode->getPosition(), _unit->getTimeUnits() - targetNode->getTUCost(false).time)) && targetNode->getPrevNode() != NULL)
+		while (targetNode->getTUCost(false).time > reserved.Time && targetNode->getPrevNode() != NULL)
 		{
 			targetNode = targetNode->getPrevNode();
 		}
 		return targetNode->getPosition();
 	}
 	return _unit->getPosition();
-}
-
-bool AIModule::wouldBeTargetOfReactionFire(Position pos, int tu)
-{
-	// As a pure melee-unit I can't afford not to run through reaction-fire
-	if (_melee && !_blaster && !_rifle)
-		return false;
-	float myReactScore = _unit->getBaseStats()->reactions * ((float)tu / (float)_unit->getBaseStats()->tu);
-	for (BattleUnit *bu : *(_save->getUnits()))
-	{
-		if (validTarget(bu, true, true))
-		{
-			if (bu->getFaction() == FACTION_PLAYER && bu->hasVisibleTile(_save->getTile(pos)) && bu->getReactionScore() > myReactScore)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 bool AIModule::brutalPsiAction()
@@ -3790,6 +3640,33 @@ int AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingU
 					  << " affected AoE targets: " << enemiesAffected;
 	}
 	return enemiesAffected;
+}
+
+/**
+ * Returns whether we think we'd have a line of fire from a particular positon towards a particular target
+ * @param pos Positon to check
+ * @param target target to check whether we'd have a line of fire
+ * @return whether it's likely there would be a line of fire
+ */
+bool AIModule::quickLineOfFire(Position pos, BattleUnit* target) {
+	Tile *tile = _save->getTile(pos);
+	Position originVoxel = pos.toVoxel() + TileEngine::voxelTileCenter;
+	Position targetPosition = target->getPosition();
+	for (int x = 0; x < target->getArmor()->getSize(); ++x)
+		for (int y = 0; y < target->getArmor()->getSize(); ++y)
+		{
+			Position targetVoxel = targetPosition;
+			targetVoxel += Position(x, y, 0);
+			targetVoxel = targetVoxel.toVoxel();
+			targetVoxel += TileEngine::voxelTileCenter;
+			std::vector<Position> trajectory;
+			if (_save->getTileEngine()->calculateLineVoxel(originVoxel, targetVoxel, false, &trajectory, _unit, NULL, false) == V_UNIT)
+			{
+				if (targetVoxel.toTile() == trajectory.begin()->toTile())
+					return true;
+			}
+		}
+	return false;
 }
 
 }
