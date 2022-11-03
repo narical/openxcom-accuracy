@@ -2937,7 +2937,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	float bestPositionScore = 0;
 
-	bool ourFriendsAreAlreadyFighting = false;
+	bool allowedToSpendAllTimeUnits = false;
 
 	for (auto pu : _allPathFindingNodes)
 	{
@@ -3003,27 +3003,39 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (currentScore > bestPositionScore)
 		{
-			Log(LOG_INFO) << "best positon to attack from " << pos << " score: " << currentScore;
 			bestPositionScore = currentScore;
 			bestPostionToAttackFrom = pos;
 		}
 	}
+	if (_traceAI)
+		Log(LOG_INFO) << "best positon to attack from " << bestPostionToAttackFrom << " score: " << bestPositionScore;
 
 	Position travelTarget = _unit->getPosition();
 
 	float shortestDist = 255;
+	int shortestWalkingPath = 10000;
+	BattleUnit *unitToWalkTo = NULL;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->getFaction() == _unit->getFaction() || target->isOut())
 			continue;
-		if (visibleToAnyFriend(target, true))
-			ourFriendsAreAlreadyFighting = true;
 		float currentDist = Position::distance(bestPostionToAttackFrom, target->getPosition());
+		int currentWalkPath = tuCostToReachPosition(target->getPosition());
 		if (currentDist < shortestDist)
 		{
 			shortestDist = currentDist;
 			unitToFaceTo = target;
 		}
+		if (currentWalkPath < shortestWalkingPath)
+		{
+			shortestWalkingPath = currentWalkPath;
+			unitToWalkTo = target;
+		}
+	}
+	if (unitToWalkTo != NULL)
+	{
+		if (tuCostToReachPosition(unitToFaceTo->getPosition()) > _unit->getBaseStats()->tu * 2 + unitToWalkTo->getBaseStats()->tu)
+			allowedToSpendAllTimeUnits = true;
 	}
 
 	if (unitToFaceTo != NULL && !needToFlee && !visibleToAnyFriend(unitToFaceTo) && !_blaster)
@@ -3039,7 +3051,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon);
-		if (ourFriendsAreAlreadyFighting)
+		if (allowedToSpendAllTimeUnits)
 			reserved = BattleActionCost(_unit);
 		if (tuCostToReachPosition(travelTarget) < _unit->getTimeUnits())
 			reserved = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
