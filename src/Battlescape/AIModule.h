@@ -142,7 +142,7 @@ public:
 	/// Frees up the destination node for another Unit to select
 	void freePatrolTarget();
 	/// Checks whether anyone on our team can see the target
-	bool visibleToAnyFriend(BattleUnit *target, bool ignoreMyself = false);
+	bool visibleToAnyFriend(BattleUnit *target);
 	/// Handles behavior of brutalAI
 	void brutalThink(BattleAction *action);
 	/// Like selectSpottedUnitForSniper but works for everyone
@@ -158,9 +158,17 @@ public:
 	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
 	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
-	int brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
+	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
 	bool quickLineOfFire(Position pos, BattleUnit *target);
+	/// checks whether there is clear sight between two tile-positions
+	bool clearSight(Position pos, Position target);
+	/// how many time-units would it take to turn to a specific target
+	int getTurnCostTowards(Position target);
+	/// Using weapons like the blaster but actually hitting what we want while avoiding to mow down our allies
+	void brutalBlaster();
+	/// Attempts to throw a grenade at tiles near potential targets when target itself couldn't be hit
+	void brutalGrenadeAction();
 };
 
 }

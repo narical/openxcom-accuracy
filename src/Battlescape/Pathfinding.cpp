@@ -329,7 +329,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			// 2 or more voxels poking into this tile = no go
 			auto overlaping = destinationTile[i]->getOverlappingUnit(_save, TUO_IGNORE_SMALL);
-			if (overlaping && overlaping != unit)
+			if (overlaping && overlaping != unit && overlaping != missileTarget)
 			{
 				return {{INVALID_MOVE_COST, 0}};
 			}
@@ -1350,9 +1350,10 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
  * @param unit Pointer to the unit.
  * @param tuMax The maximum cost of the path to each tile.
  * @param entireMap Ignore the constraints of the unit and create Nodes for the entire map from the unit as starting-point
+ * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap)
+std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget)
 {
 	const Position start = unit->getPosition();
 	int tuMax = unit->getTimeUnits() - cost.Time;
@@ -1377,7 +1378,7 @@ std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const B
 		// Try all reachable neighbours.
 		for (int direction = 0; direction < 10; direction++)
 		{
-			auto r = getTUCost(currentPos, direction, unit, 0, BAM_NORMAL);
+			auto r = getTUCost(currentPos, direction, unit, missileTarget, BAM_NORMAL);
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;

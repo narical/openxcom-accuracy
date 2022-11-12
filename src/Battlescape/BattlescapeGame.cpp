@@ -400,7 +400,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 			targetTile->setDangerous(true);
 		}
 	}
-	if (action.type == BA_TURN)
+	if (action.type == BA_TURN || action.type == BA_NONE)
 	{
 		ss << "Turning in direction of " << action.target;
 		statePushBack(new UnitTurnBState(this, action));
@@ -2477,15 +2477,19 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 			else if (!targetItem->getTile()->getUnit() || targetItem->getTile()->getUnit()->isOut())
 			{
 				// if we're not standing on it, we should try to get to it.
-				action->target = targetItem->getTile()->getPosition();
-				action->type = BA_WALK;
-				walkToItem = true;
-				if (pickUpWeaponsMoreActively)
+				_save->getPathfinding()->calculate(action->actor, targetItem->getTile()->getPosition(), BAM_NORMAL);
+				if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getTotalTUCost() <= action->actor->getTimeUnits())
 				{
-					// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
-					action->finalAction = false;
-					action->desperate = false;
-					action->actor->setHiding(false);
+					action->target = targetItem->getTile()->getPosition();
+					action->type = BA_WALK;
+					walkToItem = true;
+					if (pickUpWeaponsMoreActively)
+					{
+						// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
+						action->finalAction = false;
+						action->desperate = false;
+						action->actor->setHiding(false);
+					}
 				}
 			}
 		}

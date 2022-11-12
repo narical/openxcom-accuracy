@@ -220,6 +220,10 @@ void UnitDieBState::think()
 		{
 			_unit->setTurnsSinceSpotted(255);
 		}
+		if (_unit->getTurnsSinceSeen() < 255)
+		{
+			_unit->setTurnsSinceSeen(255);
+		}
 		if (_unit->getTurnsLeftSpottedForSnipers() != 0)
 		{
 			_unit->setTurnsLeftSpottedForSnipers(0);

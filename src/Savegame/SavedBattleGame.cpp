@@ -1535,6 +1535,15 @@ void SavedBattleGame::endTurn()
 		}
 	}
 
+	// I want this to happen on either player's half-turn, so the aliens don't remember locations of people that were briefly visible to them on the player's turn
+	for (std::vector<BattleUnit *>::iterator i = _units.begin(); i != _units.end(); ++i)
+	{
+		if ((*i)->getTurnsSinceSeen() < 255)
+		{
+			(*i)->setTurnsSinceSeen((*i)->getTurnsSinceSeen() + 1);
+		}
+	}
+
 	// hide all aliens (VOF calculations below will turn them visible again)
 	for (std::vector<BattleUnit*>::iterator i = _units.begin(); i != _units.end(); ++i)
 	{

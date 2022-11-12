@@ -923,7 +923,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 								if (unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE)
 								{
 									(*i)->setTurnsSinceSpotted(0);
-
+									(*i)->setTurnsSinceSeen(0);
 									(*i)->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), (*i)->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
 								}
 							}
@@ -4386,6 +4386,7 @@ bool TileEngine::tryConcealUnit(BattleUnit* unit)
 	}
 
 	unit->setTurnsSinceSpotted(255);
+	unit->setTurnsSinceSeen(255);
 	unit->setTurnsLeftSpottedForSnipers(0);
 
 	return true;
@@ -5230,7 +5231,7 @@ void TileEngine::setDangerZone(Position pos, int radius, BattleUnit *unit)
 						// granted this won't properly account for explosions tearing through walls, but then we can't really
 						// know that kind of information before the fact, so let's have the AI assume that the wall (or tree)
 						// is enough to protect them.
-						if (calculateLineVoxel(originVoxel, targetVoxel, false, &trajectory, unit, unit) == V_EMPTY)
+						if (calculateLineVoxel(originVoxel, targetVoxel, true, &trajectory, unit, unit) == V_EMPTY)
 						{
 							if (trajectory.size() && (trajectory.back().toTile()) == pos + Position(x,y,0))
 							{
