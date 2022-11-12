@@ -284,7 +284,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 {
 	std::ostringstream ss;
 
-	if (unit->getTimeUnits() <= 5)
+	if (unit->getTimeUnits() <= 5 || unit->getWantToEndTurn())
 	{
 		unit->dontReselect();
 	}
@@ -451,10 +451,20 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			_parentState->updateSoldierInfo();
 			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
-			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			if (_save->getSelectedUnit()->getId() <= unit->getId() && !Options::brutalAI)
 			{
 				_AISecondMove = true;
 			}
+		}
+	}
+
+	if (action.type == BA_WAIT)
+	{
+		_save->selectNextPlayerUnit(true);
+		if (_save->getSelectedUnit())
+		{
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
 		}
 	}
 }

@@ -47,6 +47,7 @@ private:
 	int _knownEnemies, _visibleEnemies, _spottingEnemies;
 	int _escapeTUs, _ambushTUs;
 	bool _weaponPickedUp;
+	bool _wantToEndTurn;
 	bool _rifle, _melee, _blaster, _grenade;
 	bool _traceAI, _didPsi;
 	int _AIMode, _intelligence, _closestDist;
@@ -169,6 +170,10 @@ public:
 	void brutalBlaster();
 	/// Attempts to throw a grenade at tiles near potential targets when target itself couldn't be hit
 	void brutalGrenadeAction();
+	/// Tells the AI of the unit whether it wants to end the turn or not
+	void setWantToEndTurn(bool wantToEndTurn);
+	/// Asks the unit's AI whether it wants to end the turn or not
+	bool getWantToEndTurn();
 };
 
 }

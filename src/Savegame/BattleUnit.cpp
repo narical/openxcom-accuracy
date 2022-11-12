@@ -2714,6 +2714,7 @@ void BattleUnit::prepareNewTurn(bool fullProcess)
 	_hitByFire = false;
 	_dontReselect = false;
 	_motionPoints = 0;
+	setWantToEndTurn(false);
 
 	if (!isOut())
 	{
@@ -3156,6 +3157,26 @@ void BattleUnit::setAIModule(AIModule *ai)
 		delete _currentAIState;
 	}
 	_currentAIState = ai;
+}
+
+/**
+ * Changes whether the Unit's AI wants to end their turn
+ * @param wantToEndTurn
+ */
+void BattleUnit::setWantToEndTurn(bool wantToEndTurn)
+{
+	if (_currentAIState)
+		_currentAIState->setWantToEndTurn(wantToEndTurn);
+}
+
+/**
+ * Returns whether the unit's AI wants to end their turn
+ */
+bool BattleUnit::getWantToEndTurn()
+{
+	if (_currentAIState)
+		return _currentAIState->getWantToEndTurn();
+	return false;
 }
 
 /**

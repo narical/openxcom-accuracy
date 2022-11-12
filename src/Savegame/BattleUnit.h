@@ -416,6 +416,10 @@ public:
 	AIModule *getAIModule() const;
 	/// Set AI Module.
 	void setAIModule(AIModule *ai);
+	/// Tells the unit whether it wants to end the turn or not
+	void setWantToEndTurn(bool wantToEndTurn);
+	/// Asks the unit's AI whether it wants to end the turn or not
+	bool getWantToEndTurn();
 	/// Set whether this unit is visible
 	void setVisible(bool flag);
 	/// Get whether this unit is visible

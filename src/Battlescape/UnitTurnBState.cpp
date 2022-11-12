@@ -76,6 +76,7 @@ void UnitTurnBState::init()
 		{
 			// try to open a door
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
+			int tuBefore = _unit->getTimeUnits();
 			if (door == 0)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // normal door
@@ -87,6 +88,11 @@ void UnitTurnBState::init()
 			if (door == 4)
 			{
 				_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
+			}
+			// when the tus changed it means a door was opened, in this case tell the unit that it shouldn't end their turn just yet
+			if (_unit->getTimeUnits() != tuBefore)
+			{
+				_unit->setWantToEndTurn(false);
 			}
 		}
 		_parent->popState();
