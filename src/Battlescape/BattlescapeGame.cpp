@@ -288,7 +288,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		unit->dontReselect();
 	}
-	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || unit->getTurnsSinceStunned() == 0) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
+	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || (unit->getTurnsSinceStunned() == 0 && !Options::brutalAI)) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
 	{
 		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
 		{
