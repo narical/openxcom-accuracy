@@ -75,8 +75,8 @@ void UnitTurnBState::init()
 		if (_action.type == BA_NONE)
 		{
 			// try to open a door
-			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
 			int tuBefore = _unit->getTimeUnits();
+			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
 			if (door == 0)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // normal door
