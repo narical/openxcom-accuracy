@@ -3003,7 +3003,7 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = true;
 
 	//Don't flee if we have a pre-primed-grenade. Become a suicide-bomber-instead!
-	if (needToFlee && (_grenade && _unit->getGrenadeFromBelt()->isFuseEnabled()) || _unit->getArmor()->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getArmor()->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
+	if (needToFlee && (_grenade && _unit->getGrenadeFromBelt()->isFuseEnabled()) || _unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
 	{
 		needToFlee = false;
 		IAmPureMelee = true;
