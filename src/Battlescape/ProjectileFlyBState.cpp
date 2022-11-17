@@ -1016,6 +1016,7 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 			{
 				ai->setWasHitBy(_unit);
 				_unit->setTurnsSinceSpotted(0);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()));
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
 		}

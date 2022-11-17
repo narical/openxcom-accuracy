@@ -69,6 +69,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0), _turnsSinceSeen(255),
+	_tileLastSpotted(0),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
@@ -441,6 +442,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_visible(false), _exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
 	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0), _turnsSinceSeen(255),
+	_tileLastSpotted(0),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT),
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
 	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
@@ -685,6 +687,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_turretType = node["turretType"].as<int>(_turretType);
 	_visible = node["visible"].as<bool>(_visible);
 	_turnsSinceSpotted = node["turnsSinceSpotted"].as<int>(_turnsSinceSpotted);
+	_tileLastSpotted = node["tileLastSpotted"].as<int>(_tileLastSpotted);
 	_turnsLeftSpottedForSnipers = node["turnsLeftSpottedForSnipers"].as<int>(_turnsLeftSpottedForSnipers);
 	_turnsSinceSeen = node["turnsSinceSeen"].as<int>(_turnsSinceSeen);
 	_turnsSinceStunned = node["turnsSinceStunned"].as<int>(_turnsSinceStunned);
@@ -796,6 +799,7 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["turnsLeftSpottedForSnipers"] = _turnsLeftSpottedForSnipers;
 	node["turnsSinceSeen"] = _turnsSinceSeen;
 	node["turnsSinceStunned"] = _turnsSinceStunned;
+	node["tileLastSpotted"] = _tileLastSpotted;
 	node["rankInt"] = _rankInt;
 	node["moraleRestored"] = _moraleRestored;
 	if (getAIModule())
@@ -4628,6 +4632,25 @@ void BattleUnit::setTurnsSinceSeen(int turns)
 int BattleUnit::getTurnsSinceSeen() const
 {
 	return _turnsSinceSeen;
+}
+
+/**
+ * Set how long since this unit was last seen.
+ * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
+ * @param turns number of turns
+ */
+void BattleUnit::setTileLastSpotted(int index)
+{
+	_tileLastSpotted = index;
+}
+
+/**
+ * Get how long since this unit was seen.
+ * @return number of turns
+ */
+int BattleUnit::getTileLastSpotted() const
+{
+	return _tileLastSpotted;
 }
 
 /**

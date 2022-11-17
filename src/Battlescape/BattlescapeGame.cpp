@@ -335,7 +335,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
+		//if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
 	}
 
 	BattleAction action;
@@ -883,6 +883,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 								if (victim->getFaction() == FACTION_HOSTILE && murderer)
 								{
 									murderer->setTurnsSinceSpotted(0);
+									murderer->setTileLastSpotted(getSave()->getTileIndex(murderer->getPosition()));
 								}
 							}
 							// the winning squad all get a morale increase

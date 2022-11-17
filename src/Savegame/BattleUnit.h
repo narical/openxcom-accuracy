@@ -125,6 +125,7 @@ private:
 	int _moraleRestored;
 	BattleUnit *_charging;
 	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned, _turnsSinceSeen = 255;
+	int _tileLastSpotted = 0;
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
 	std::string _preferredHandForReactions;
@@ -649,6 +650,10 @@ public:
 	void setTurnsSinceSeen(int turns);
 	/// Get how many turns ago this unit was last seen
 	int getTurnsSinceSeen() const;
+	/// Set where the unit has last been spotted
+	void setTileLastSpotted(int index);
+	/// Get the tile where the unit was last spotted
+	int getTileLastSpotted() const;
 	/// Reset how many turns passed since stunned last time.
 	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Increase how many turns passed since stunned last time.
