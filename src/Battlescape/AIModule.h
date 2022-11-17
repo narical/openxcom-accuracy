@@ -163,7 +163,7 @@ public:
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
 	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
-	bool quickLineOfFire(Position pos, BattleUnit *target);
+	bool quickLineOfFire(Position pos, BattleUnit *target, bool beOkayWithFriendOfTarget = false, bool lastLocationMode = false);
 	/// checks whether there is clear sight between two tile-positions
 	bool clearSight(Position pos, Position target);
 	/// how many time-units would it take to turn to a specific target
@@ -176,6 +176,8 @@ public:
 	void setWantToEndTurn(bool wantToEndTurn);
 	/// Asks the unit's AI whether it wants to end the turn or not
 	bool getWantToEndTurn();
+	/// Attack tiles where units have been seen before but we are not sure where they are
+	void blindFire();
 };
 
 }
