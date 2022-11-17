@@ -20,7 +20,6 @@
 #include "../Engine/Game.h"
 #include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
-#include "../Engine/Exception.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Interface/TextButton.h"
