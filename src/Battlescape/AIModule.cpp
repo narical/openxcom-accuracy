@@ -249,7 +249,7 @@ void AIModule::think(BattleAction *action)
 			AIMode = "Escape";
 			break;
 		}
-		Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
+		//Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
 	}
 
 	if (_unit->isLeeroyJenkins())
@@ -3073,12 +3073,12 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		if (teammate->getFaction() == _unit->getFaction() && !teammate->isOut())
 		{
-			if (unitToWalkTo && quickLineOfFire(teammate->getPosition(), unitToWalkTo, true))
+			if (unitToWalkTo && quickLineOfFire(teammate->getPosition(), unitToWalkTo, false))
 			{
 				friendsWithLof = true;
 				break;
 			}
-			if (unitToFaceTo && quickLineOfFire(teammate->getPosition(), unitToFaceTo, true))
+			if (unitToFaceTo && quickLineOfFire(teammate->getPosition(), unitToFaceTo, false))
 			{
 				friendsWithLof = true;
 				break;
@@ -3117,7 +3117,7 @@ void AIModule::brutalThink(BattleAction* action)
 		bool lineOfFire = false;
 		if (unitToFaceTo)
 		{
-			lineOfFire = quickLineOfFire(pos, unitToFaceTo, true);
+			lineOfFire = quickLineOfFire(pos, unitToFaceTo, false);
 			float currDist = Position::distance(pos, unitToFaceTo->getPosition());
 			if (visibleToAnyFriend(unitToFaceTo) || currDist <= _save->getMod()->getMaxViewDistance())
 			{
@@ -3143,7 +3143,7 @@ void AIModule::brutalThink(BattleAction* action)
 		if (unitToWalkTo)
 		{
 			if (!lineOfFire)
-				lineOfFire = quickLineOfFire(pos, unitToWalkTo, true);
+				lineOfFire = quickLineOfFire(pos, unitToWalkTo, false);
 			float currDist = Position::distance(pos, unitToWalkTo->getPosition());
 			if (visibleToAnyFriend(unitToWalkTo) || currDist <= _save->getMod()->getMaxViewDistance())
 			{
@@ -3965,7 +3965,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 		}
 		else
 		{
-			if (!clearSight(_unit->getPosition(), targetPosition) && !quickLineOfFire(_unit->getPosition(), target, true, false))
+			if (!clearSight(_unit->getPosition(), targetPosition) || !quickLineOfFire(_unit->getPosition(), target, true, true))
 			{
 				return 0;
 			}
