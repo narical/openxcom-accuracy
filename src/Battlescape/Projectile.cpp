@@ -22,8 +22,6 @@
 #include "Camera.h"
 #include "Particle.h"
 #include "Pathfinding.h"
-#include "../Engine/SurfaceSet.h"
-#include "../Engine/Surface.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/MapData.h"
