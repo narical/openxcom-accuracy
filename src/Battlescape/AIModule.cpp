@@ -2995,6 +2995,16 @@ void AIModule::brutalThink(BattleAction* action)
 		action.actor = _unit;
 		explosionRadius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
 	}
+	// Check if I'm a turret. In this case I can skip everything about walking
+	if (!_unit->getArmor()->allowsMoving())
+	{
+		if (_traceAI)
+			Log(LOG_INFO) << "I'm not allowed to move. So I'll just end my turn.";
+		action->type = BA_NONE;
+		setWantToEndTurn(true);
+		return;
+	}
+
 	// Phase 3: Check if there's a tile within your range from where you can attack
 	Position bestPostionToAttackFrom = _unit->getPosition();
 	BattleUnit* unitToFaceTo = NULL;
@@ -3366,6 +3376,8 @@ void AIModule::brutalThink(BattleAction* action)
 				action->target = unitToFaceTo->getPosition();
 			if (isEncircle && encircleTile != NULL)
 				action->target = encircleTile->getPosition();
+			if (_traceAI)
+				Log(LOG_INFO) << _unit->getId() << " wants to turn towards " << action->target;
 		}
 		else
 		{
