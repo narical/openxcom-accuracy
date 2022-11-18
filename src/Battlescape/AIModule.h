@@ -178,6 +178,8 @@ public:
 	bool getWantToEndTurn();
 	/// Attack tiles where units have been seen before but we are not sure where they are
 	void blindFire();
+	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
+	bool validateArcingShot(BattleAction *action);
 };
 
 }

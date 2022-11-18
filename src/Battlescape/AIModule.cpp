@@ -3939,8 +3939,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	{
 		if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 		{
-			targetPosition = target->getPosition().toVoxel() + Position(8, 8, (1 + -target->getTile()->getTerrainLevel()));
-			if (!_save->getTileEngine()->validateThrow((*action), origin, targetPosition, _save->getDepth()))
+			if (!validateArcingShot(action))
 			{
 				return 0;
 			}
@@ -3957,8 +3956,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	{
 		if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 		{
-			targetPosition = _save->getTileCoords(target->getTileLastSpotted()).toVoxel() + Position(8, 8, (1 + -_save->getTile(_save->getTileCoords(target->getTileLastSpotted()))->getTerrainLevel()));
-			if (!_save->getTileEngine()->validateThrow((*action), origin, targetPosition, _save->getDepth()))
+			if (!validateArcingShot(action))
 			{
 				return 0;
 			}
@@ -4288,9 +4286,7 @@ void AIModule::brutalGrenadeAction()
 					if (action.haveTU())
 					{
 						action.target = currentPosition;
-						Position originVoxel = _save->getTileEngine()->getOriginVoxel(action, 0);
-						Position targetVoxel = currentPosition.toVoxel() + Position(8, 8, (1 + -_save->getTile(currentPosition)->getTerrainLevel()));
-						if (!_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
+						if (!validateArcingShot(&action))
 							continue;
 						float currentEfficacy = brutalExplosiveEfficacy(currentPosition, _unit, radius, true);
 						if (_traceAI && currentEfficacy > 0)
@@ -4444,6 +4440,83 @@ void AIModule::blindFire()
 		_attackAction.type = BA_RETHINK;
 		_attackAction.weapon = _unit->getMainHandWeapon(false);
 	}
+}
+
+bool AIModule::validateArcingShot(BattleAction *action)
+{
+	action->actor = _unit;
+	Position origin = _save->getTileEngine()->getOriginVoxel((*action), _unit->getTile());
+	Tile *targetTile = _save->getTile(action->target);
+	Position targetVoxel;
+	std::vector<Position> targets;
+	double curvature;
+	targetVoxel = action->target.toVoxel() + Position(8, 8, (1 + -targetTile->getTerrainLevel()));
+	targets.clear();
+	bool forced = false;
+
+	if (action->type == BA_THROW)
+	{
+		targets.push_back(targetVoxel);
+	}
+	else
+	{
+		BattleUnit *tu = targetTile->getOverlappingUnit(_save);
+		if (Options::forceFire && _save->isCtrlPressed(true) && _save->getSide() == FACTION_PLAYER)
+		{
+			targets.push_back(action->target.toVoxel() + Position(0, 0, 12));
+			forced = true;
+		}
+		else if (tu && ((action->actor->getFaction() != FACTION_PLAYER) ||
+						tu->getVisible()))
+		{                                          // unit
+			targetVoxel.z += tu->getFloatHeight(); // ground level is the base
+			targets.push_back(targetVoxel + Position(0, 0, tu->getHeight() / 2 + 1));
+			targets.push_back(targetVoxel + Position(0, 0, 2));
+			targets.push_back(targetVoxel + Position(0, 0, tu->getHeight() - 1));
+		}
+		else if (targetTile->getMapData(O_OBJECT) != 0)
+		{
+			targetVoxel = action->target.toVoxel() + Position(8, 8, 0);
+			targets.push_back(targetVoxel + Position(0, 0, 13));
+			targets.push_back(targetVoxel + Position(0, 0, 8));
+			targets.push_back(targetVoxel + Position(0, 0, 23));
+			targets.push_back(targetVoxel + Position(0, 0, 2));
+		}
+		else if (targetTile->getMapData(O_NORTHWALL) != 0)
+		{
+			targetVoxel = action->target.toVoxel() + Position(8, 0, 0);
+			targets.push_back(targetVoxel + Position(0, 0, 13));
+			targets.push_back(targetVoxel + Position(0, 0, 8));
+			targets.push_back(targetVoxel + Position(0, 0, 20));
+			targets.push_back(targetVoxel + Position(0, 0, 3));
+		}
+		else if (targetTile->getMapData(O_WESTWALL) != 0)
+		{
+			targetVoxel = action->target.toVoxel() + Position(0, 8, 0);
+			targets.push_back(targetVoxel + Position(0, 0, 13));
+			targets.push_back(targetVoxel + Position(0, 0, 8));
+			targets.push_back(targetVoxel + Position(0, 0, 20));
+			targets.push_back(targetVoxel + Position(0, 0, 2));
+		}
+		else if (targetTile->getMapData(O_FLOOR) != 0)
+		{
+			targets.push_back(targetVoxel);
+		}
+	}
+	int test = V_OUTOFBOUNDS;
+	for (std::vector<Position>::iterator i = targets.begin(); i != targets.end(); ++i)
+	{
+		targetVoxel = *i;
+		if (_save->getTileEngine()->validateThrow((*action), origin, targetVoxel, _save->getDepth(), &curvature, &test, forced))
+		{
+			if (_traceAI)
+				Log(LOG_INFO) << "Can hit from " << _unit->getPosition() << " to " << action->target;
+			return true;
+		}
+	}
+	if (_traceAI)
+		Log(LOG_INFO) << "Would miss from " << action->target << " to "<<action->target;
+	return false;
 }
 
 }
