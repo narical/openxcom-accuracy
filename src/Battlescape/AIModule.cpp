@@ -3925,6 +3925,13 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 		// We assume that when we don't quite hit the target, it still will be within the range, which is the big advantage of grenades afterall
 		accuracy = std::max(100, accuracy);
 	}
+	else
+	{
+		auto ammo = action->weapon->getAmmoForAction(action->type);
+		int radius = ammo->getRules()->getExplosionRadius({action->type, _unit, _attackAction.weapon, ammo});
+		if (radius > 0)
+			numberOfShots *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
+	}
 	int tuTotal = _unit->getBaseStats()->tu;
 
 	// Return a score of zero if this firing mode doesn't exist for this weapon
