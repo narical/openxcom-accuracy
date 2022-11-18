@@ -4092,7 +4092,7 @@ bool AIModule::quickLineOfFire(Position pos, BattleUnit* target, bool beOkayWith
 			{
 				if (targetVoxel.toTile() == trajectory.begin()->toTile())
 					return true;
-				if (beOkayWithFriendOfTarget && _save->getTile(targetVoxel.toTile())->getUnit()->getFaction() == target->getFaction())
+				if (beOkayWithFriendOfTarget && _save->getTile(trajectory.begin()->toTile())->getUnit()->getFaction() == target->getFaction())
 					return true;
 			}
 		}
