@@ -292,7 +292,7 @@ void AIModule::think(BattleAction *action)
 	BattleItem *grenade = _unit->getGrenadeFromBelt();
 	_grenade = grenade != 0 && _save->getTurn() >= grenade->getRules()->getAIUseDelay(mod);
 
-	if (Options::brutalAI && _unit->getFaction() == FACTION_HOSTILE)
+	if (_unit->isBrutal() && _unit->getFaction() == FACTION_HOSTILE)
 	{
 		brutalThink(action);
 		return;
@@ -3385,7 +3385,6 @@ void AIModule::brutalThink(BattleAction* action)
 				action->target = unitToFaceTo->getPosition();
 			if (isEncircle && encircleTile != NULL)
 				action->target = encircleTile->getPosition();
-			_wantToEndTurn = true;
 			if (_traceAI)
 			{
 				Log(LOG_INFO) << _unit->getId() << " wants to end their turn.";
@@ -4189,7 +4188,7 @@ void AIModule::brutalBlaster()
 		int maxWaypoints = _attackAction.weapon->getCurrentWaypoints();
 		if (maxWaypoints == -1)
 		{
-			maxWaypoints = 6 + (_attackAction.diff * 2);
+			maxWaypoints = INT_MAX;
 		}
 		PathfindingNode *targetNode = NULL;
 		Position target = _aggroTarget->getPosition();
@@ -4337,6 +4336,8 @@ void AIModule::setWantToEndTurn(bool wantToEndTurn)
  */
 bool AIModule::getWantToEndTurn()
 {
+	if (!_unit->isBrutal() && _unit->getTurnsSinceStunned() == 0)
+		return true;
 	return _wantToEndTurn;
 }
 
@@ -4516,13 +4517,9 @@ bool AIModule::validateArcingShot(BattleAction *action)
 		targetVoxel = *i;
 		if (_save->getTileEngine()->validateThrow((*action), origin, targetVoxel, _save->getDepth(), &curvature, &test, forced))
 		{
-			if (_traceAI)
-				Log(LOG_INFO) << "Can hit from " << _unit->getPosition() << " to " << action->target;
 			return true;
 		}
 	}
-	if (_traceAI)
-		Log(LOG_INFO) << "Would miss from " << action->target << " to "<<action->target;
 	return false;
 }
 

@@ -5422,6 +5422,16 @@ void BattleUnit::disableIndicators()
 	_disableIndicators = true;
 }
 
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+bool BattleUnit::isBrutal()
+{
+	bool brutal = Options::brutalAI;
+	if (_unitRules && _unitRules->isBrutal())
+		brutal = true;
+	return brutal;
+}
 
 ////////////////////////////////////////////////////////////
 //					Script binding

@@ -435,7 +435,7 @@ private:
 	std::vector<std::vector<const RuleItem*> > _builtInWeapons;
 	bool _capturable;
 	bool _canSurrender, _autoSurrender;
-	bool _isLeeroyJenkins;
+	bool _isLeeroyJenkins, _isBrutal;
 	bool _waitIfOutsideWeaponRange;
 	int _pickUpWeaponsMoreActively;
 	bool _vip;
@@ -529,6 +529,7 @@ public:
 	/// Checks if this unit surrenders automatically, if all other units surrendered too.
 	bool autoSurrender() const;
 	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
+	bool isBrutal() const { return _isBrutal; };
 	/// Should the unit get "stuck" trying to fire from outside of weapon range? Vanilla bug, that may serve as "feature" in rare cases.
 	bool waitIfOutsideWeaponRange() { return _waitIfOutsideWeaponRange; };
 	/// Should the unit try to pick up weapons more actively?

@@ -816,6 +816,8 @@ public:
 	bool indicatorsAreEnabled() const { return !_disableIndicators; }
 	/// Disable showing indicators for this unit.
 	void disableIndicators();
+	/// Returns whether this unit uses brutal-AI
+	bool isBrutal();
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }
