@@ -252,7 +252,8 @@ void AIModule::think(BattleAction *action)
 		//Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
 	}
 
-	if (_unit->isLeeroyJenkins())
+	// Brutal gets priority over Leeroy
+	if (_unit->isLeeroyJenkins() && !_unit->isBrutal())
 	{
 		dont_think(action);
 		return;
@@ -2995,10 +2996,10 @@ void AIModule::brutalThink(BattleAction* action)
 		explosionRadius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
 	}
 	// Check if I'm a turret. In this case I can skip everything about walking
-	if (!_unit->getArmor()->allowsMoving())
+	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
 	{
 		if (_traceAI)
-			Log(LOG_INFO) << "I'm not allowed to move. So I'll just end my turn.";
+			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
 		action->type = BA_NONE;
 		setWantToEndTurn(true);
 		return;
@@ -3111,7 +3112,7 @@ void AIModule::brutalThink(BattleAction* action)
 		float currentScore = 0;
 		float elevationBonus = 1.0f + pos.z * 0.25f;
 		bool canReachThisTurnWithAttack = false;
-		if (pu->getTUCost(false).time <= _unit->getTimeUnits() - snapCost.Time)
+		if (pu->getTUCost(false).time <= _unit->getTimeUnits() - snapCost.Time && pu->getTUCost(false).energy <= _unit->getEnergy())
 			canReachThisTurnWithAttack = true;
 		bool visibleToEnemy = false;
 		bool lineOfFire = false;
@@ -3531,6 +3532,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 {
 	//consider time-units we already spent
 	reserved.Time = _unit->getTimeUnits() - reserved.Time;
+	reserved.Energy = _unit->getEnergy();
 	//We need to consider the cost of standing up
 	if (_unit->isKneeled())
 	{
@@ -3597,7 +3599,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 		}
 		else
 		{
-			while (targetNode->getTUCost(false).time > reserved.Time && targetNode->getPrevNode() != NULL)
+			while ((targetNode->getTUCost(false).time > reserved.Time || targetNode->getTUCost(false).energy > reserved.Energy) && targetNode->getPrevNode() != NULL)
 			{
 				targetNode = targetNode->getPrevNode();
 			}
@@ -3883,8 +3885,14 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 
 	if (action->type != BA_THROW && action->weapon->getRules()->isOutOfRange(distanceSq))
 		accuracy = 0;
-	if (action->type == BA_HIT && !_save->getTileEngine()->validMeleeRange(_unit, target, _unit->getDirection()))
-		accuracy = 0;
+	if (action->type == BA_HIT)
+	{
+		// We can definitely assume we'll be facing the target
+		int directionToLook = _save->getTileEngine()->getDirectionTo(_unit->getPosition(), target->getPosition());
+		if (!_save->getTileEngine()->validMeleeRange(_unit, target, directionToLook))
+			accuracy = 0;
+	}
+
 	float numberOfShots = 1;
 	if (action->type == BA_AIMEDSHOT)
 	{
