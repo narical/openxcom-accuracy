@@ -348,7 +348,12 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		// You didn't come up with anything twice in a row? Just skip your turn then!
 		if (Options::traceAI)
-			Log(LOG_INFO) << unit->getId() << " failed to come up with a plan.";
+		{
+			if (action.actor->isBrutal())
+				Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: Could not formulate a plan.";
+			else
+				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: Could not formulate a plan.";
+		}
 		unit->setWantToEndTurn(true);
 	}
 	action.tuBefore = action.actor->getTimeUnits();
@@ -407,7 +412,12 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 			else
 			{
 				if (Options::traceAI)
-					Log(LOG_INFO) << unit->getId() << " wanted to go somewhere where there's no valid path.";
+				{
+					if (action.actor->isBrutal())
+						Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: No path available.";
+					else
+						Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: No path available.";
+				}
 				action.actor->setWantToEndTurn(true);
 			}
 		}
@@ -1248,7 +1258,7 @@ void BattlescapeGame::popState()
 			if (action.actor->isBrutal())
 				Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
 			else
-				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore;
+				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
 		}
 	}
 	_deleted.push_back(first);
