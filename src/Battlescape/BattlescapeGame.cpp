@@ -177,7 +177,7 @@ bool BattleActionCost::spendTU(std::string *message)
  */
 BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parentState) :
 	_save(save), _parentState(parentState),
-	_playerPanicHandled(true), _AIActionCounter(0), _AISecondMove(false), _playedAggroSound(false),
+	_playerPanicHandled(true), _AIActionCounter(0), _playedAggroSound(false),
 	_endTurnRequested(false), _endConfirmationHandled(false), _allEnemiesNeutralized(false)
 {
 	if (_save->isPreview())
@@ -236,7 +236,7 @@ void BattlescapeGame::think()
 				}
 				else
 				{
-					if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+					if (_save->selectNextPlayerUnit(true) == 0)
 					{
 						if (!_save->getDebugMode())
 						{
@@ -288,9 +288,9 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		unit->dontReselect();
 	}
-	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || (unit->getTurnsSinceStunned() == 0 && !Options::brutalAI)) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
+	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
 	{
-		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		if (_save->selectNextPlayerUnit(true, unit->getWantToEndTurn()) == 0)
 		{
 			if (!_save->getDebugMode())
 			{
@@ -307,10 +307,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			_parentState->updateSoldierInfo();
 			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
-			if (_save->getSelectedUnit()->getId() <= unit->getId())
-			{
-				_AISecondMove = true;
-			}
 		}
 		_AIActionCounter = 0;
 		return;
@@ -335,7 +331,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		//if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
+		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
 	}
 
 	BattleAction action;
@@ -348,10 +344,17 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		_parentState->debug("Rethink");
 		unit->think(&action);
 	}
-
+	if (action.type == BA_RETHINK)
+	{
+		// You didn't come up with anything twice in a row? Just skip your turn then!
+		if (Options::traceAI)
+			Log(LOG_INFO) << unit->getId() << " failed to come up with a plan.";
+		unit->setWantToEndTurn(true);
+	}
+	action.tuBefore = action.actor->getTimeUnits();
 	_AIActionCounter = action.number;
 	BattleItem *weapon = unit->getMainHandWeapon();
-	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || Options::brutalAI;
+	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || unit->isBrutal();
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
@@ -394,10 +397,19 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			statePushBack(new UnitWalkBState(this, action));
 		}
-		else if (walkToItem)
+		else 
 		{
 			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
-			targetTile->setDangerous(true);
+			if (walkToItem)
+			{
+				targetTile->setDangerous(true);
+			}
+			else
+			{
+				if (Options::traceAI)
+					Log(LOG_INFO) << unit->getId() << " wanted to go somewhere where there's no valid path.";
+				action.actor->setWantToEndTurn(true);
+			}
 		}
 	}
 	if (action.type == BA_TURN || action.type == BA_NONE)
@@ -418,7 +430,9 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		}
 		else
 		{
-			statePushBack(new UnitTurnBState(this, action));
+			// Xilmi: Only add the turn-state when we really have to turn as otherwise the resulting popState with no TU-change will be interpreted as invalid action-call
+			if (action.actor->getDirection() != _save->getTileEngine()->getDirectionTo(action.actor->getPosition(), action.target))
+				statePushBack(new UnitTurnBState(this, action));
 			if (action.type == BA_HIT)
 			{
 				statePushBack(new MeleeAttackBState(this, action));
@@ -434,7 +448,8 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_parentState->debug("Idle");
 		_AIActionCounter = 0;
-		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		action.actor->setWantToEndTurn(true);
+		if (_save->selectNextPlayerUnit(true, action.actor->getWantToEndTurn()) == 0)
 		{
 			if (!_save->getDebugMode())
 			{
@@ -451,10 +466,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			_parentState->updateSoldierInfo();
 			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
-			if (_save->getSelectedUnit()->getId() <= unit->getId() && !Options::brutalAI)
-			{
-				_AISecondMove = true;
-			}
 		}
 	}
 
@@ -512,7 +523,6 @@ void BattlescapeGame::endTurn()
 	_currentAction.waypoints.clear();
 	_parentState->showLaunchButton(false);
 	_currentAction.targeting = false;
-	_AISecondMove = false;
 
 	if (_triggerProcessed.tryRun())
 	{
@@ -1224,12 +1234,22 @@ void BattlescapeGame::popState()
 
 	auto first = _states.front();
 	BattleAction action = first->getAction();
-
 	if (action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_PLAYER
 		&& _playerPanicHandled && (_save->getSide() == FACTION_PLAYER || _debugPlay))
 	{
 		_parentState->warning(action.result);
 		actionFailed = true;
+	}
+	if (action.actor && action.tuBefore == action.actor->getTimeUnits())
+	{
+		if (action.type != BA_NONE && action.type != BA_WAIT && Options::traceAI)
+		{
+			action.actor->setWantToEndTurn(true);
+			if (action.actor->isBrutal())
+				Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+			else
+				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore;
+		}
 	}
 	_deleted.push_back(first);
 	_states.pop_front();

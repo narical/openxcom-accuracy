@@ -74,7 +74,6 @@ void UnitTurnBState::init()
 		if (_action.type == BA_NONE)
 		{
 			// try to open a door
-			int tuBefore = _unit->getTimeUnits();
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
 			if (door == 0)
 			{
@@ -87,11 +86,6 @@ void UnitTurnBState::init()
 			if (door == 4)
 			{
 				_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
-			}
-			// when the tus changed it means a door was opened, in this case tell the unit that it shouldn't end their turn just yet
-			if (_unit->getTimeUnits() != tuBefore)
-			{
-				_unit->setWantToEndTurn(false);
 			}
 		}
 		_parent->popState();
