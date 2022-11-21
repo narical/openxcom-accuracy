@@ -331,7 +331,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
 	}
 
 	BattleAction action;
@@ -425,6 +424,8 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	if (action.type == BA_TURN || action.type == BA_NONE)
 	{
 		ss << "Turning in direction of " << action.target;
+		if (action.type == BA_NONE)
+			action.actor->setWantToEndTurn(true);
 		statePushBack(new UnitTurnBState(this, action));
 	}
 
@@ -458,7 +459,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_parentState->debug("Idle");
 		_AIActionCounter = 0;
-		action.actor->setWantToEndTurn(true);
 		if (_save->selectNextPlayerUnit(true, action.actor->getWantToEndTurn()) == 0)
 		{
 			if (!_save->getDebugMode())

@@ -74,7 +74,18 @@ void UnitTurnBState::init()
 		if (_action.type == BA_NONE)
 		{
 			// try to open a door
+			int tuBefore = _unit->getTimeUnits();
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
+			// when the tus changed it means a door was opened, in this case tell the unit that it shouldn't end their turn just yet
+			if (_unit->getTimeUnits() != tuBefore)
+			{
+				if (Options::traceAI)
+				{
+					Log(LOG_INFO) << _unit->getId() << " should now want to continue their turn";
+				}
+				_unit->setWantToEndTurn(false);
+				_unit->allowReselect();
+			}
 			if (door == 0)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // normal door
