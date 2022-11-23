@@ -142,6 +142,8 @@ public:
 	BattleUnit* getTarget();
 	/// Frees up the destination node for another Unit to select
 	void freePatrolTarget();
+
+	/// Everything below belongs tu Brutal-AI
 	/// Checks whether anyone on our team can see the target
 	bool visibleToAnyFriend(BattleUnit *target);
 	/// Handles behavior of brutalAI
@@ -151,7 +153,7 @@ public:
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
 	int tuCostToReachPosition(Position pos);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
-	Position furthestToGoTowards(Position target, BattleActionCost reserve, bool encircleTileMode = false);
+	Position furthestToGoTowards(Position target, BattleActionCost reserve, bool encircleTileMode = false, Tile* encircleTile = NULL);
 	/// checks if the path to a position is save
 	bool isPathToPositionSave(Position target);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration

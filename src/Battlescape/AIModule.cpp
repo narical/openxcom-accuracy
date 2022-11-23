@@ -223,11 +223,12 @@ void AIModule::think(BattleAction *action)
 		_unit->setCharging(0);
 	}
 
-	if (_traceAI)
+	if (_traceAI && !_unit->isBrutal())
 	{
+		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType();
 		if (_unit->getFaction() == FACTION_HOSTILE)
 		{
-			//Log(LOG_INFO) << "Unit has " << _visibleEnemies << "/" << _knownEnemies << " known enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
+			Log(LOG_INFO) << "Unit has " << _visibleEnemies << "/" << _knownEnemies << " known enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
 		}
 		else
 		{
@@ -249,7 +250,7 @@ void AIModule::think(BattleAction *action)
 			AIMode = "Escape";
 			break;
 		}
-		//Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
+		Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
 	}
 
 	// Brutal gets priority over Leeroy
@@ -3096,109 +3097,110 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	float closestDrawEncDist = 255;
-	for (auto pu : _allPathFindingNodes)
+	// As blaster-user we don't do this at all. We just use encircle-positions to position ourselves
+	if (!_blaster)
 	{
-		// As blaster-user we don't do this at all. We just use encircle-positions to position ourselves
-		if (_blaster)
-			break;
-		Position pos = pu->getPosition();
-		Tile *tile = _save->getTile(pos);
-		if (tile == NULL)
-			continue;
-		if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
-			continue;
-		if (tile->getDangerous())
-			continue;
-		float currentScore = 0;
-		float elevationBonus = 1.0f + pos.z * 0.25f;
-		bool canReachThisTurnWithAttack = false;
-		if (pu->getTUCost(false).time <= _unit->getTimeUnits() - snapCost.Time && pu->getTUCost(false).energy <= _unit->getEnergy())
-			canReachThisTurnWithAttack = true;
-		bool visibleToEnemy = false;
-		bool lineOfFire = false;
-		if (unitToFaceTo)
+		for (auto pu : _allPathFindingNodes)
 		{
-			lineOfFire = quickLineOfFire(pos, unitToFaceTo, false);
-			float currDist = Position::distance(pos, unitToFaceTo->getPosition());
-			if (visibleToAnyFriend(unitToFaceTo) || currDist <= _save->getMod()->getMaxViewDistance())
+			Position pos = pu->getPosition();
+			Tile *tile = _save->getTile(pos);
+			if (tile == NULL)
+				continue;
+			if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
+				continue;
+			if (tile->getDangerous())
+				continue;
+			if (pu->getTUCost(false).time > _unit->getTimeUnits() - snapCost.Time || pu->getTUCost(false).energy > _unit->getEnergy())
+				continue;
+			bool visibleToEnemy = false;
+			bool lineOfFire = false;
+			float currentScore = 0;
+			float elevationBonus = 1.0f + pos.z * 0.25f;
+			if (unitToFaceTo)
 			{
-				if (currentScore == 0)
+				float currDist = Position::distance(pos, unitToFaceTo->getPosition());
+				if (visibleToAnyFriend(unitToFaceTo) || currDist <= _save->getMod()->getMaxViewDistance())
 				{
-					if (IAmPureMelee && _melee)
+					lineOfFire = quickLineOfFire(pos, unitToFaceTo, false);
+					if (currentScore == 0)
 					{
-						if (!unitToFaceTo->getTile()->getDangerous())
+						if (IAmPureMelee)
 						{
-							if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+							if (!unitToFaceTo->getTile()->getDangerous())
 							{
-								currentScore = 100;
+								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+								{
+									currentScore = 100;
+								}
 							}
 						}
-					}
-					else if (lineOfFire)
-					{
-						currentScore = 100;
+						else if (lineOfFire)
+						{
+							currentScore = 100;
+						}
 					}
 				}
 			}
-		}
-		if (unitToWalkTo)
-		{
-			if (!lineOfFire)
-				lineOfFire = quickLineOfFire(pos, unitToWalkTo, false);
-			float currDist = Position::distance(pos, unitToWalkTo->getPosition());
-			if (visibleToAnyFriend(unitToWalkTo) || currDist <= _save->getMod()->getMaxViewDistance())
+			if (unitToWalkTo && unitToFaceTo != unitToWalkTo)
 			{
-				if (currentScore == 0)
+				float currDist = Position::distance(pos, unitToWalkTo->getPosition());
+				if (visibleToAnyFriend(unitToWalkTo) || currDist <= _save->getMod()->getMaxViewDistance())
 				{
-					if (IAmPureMelee && _melee)
+					if (!lineOfFire)
+						lineOfFire = quickLineOfFire(pos, unitToWalkTo, false);
+					if (currentScore == 0)
 					{
-						if (!unitToFaceTo->getTile()->getDangerous())
+						if (IAmPureMelee)
 						{
-							if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+							if (!unitToFaceTo->getTile()->getDangerous())
 							{
-								currentScore = 100;
+								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+								{
+									currentScore = 100;
+								}
 							}
 						}
-					}
-					else if (lineOfFire)
-					{
-						currentScore = 100;
+						else if (lineOfFire)
+						{
+							currentScore = 100;
+						}
 					}
 				}
 			}
-		}
-		for (BattleUnit *target : *(_save->getUnits()))
-		{
-			if (target->isOut())
-				continue;
-			if (target->getFaction() == _unit->getFaction())
-				continue;
-			if (target->hasVisibleTile(tile))
-				visibleToEnemy = true;
-		}
-		if (needToFlee)
-		{
-			if (visibleToEnemy == false)
-				currentScore = 100;
-			else
-				currentScore = 0;
-		}
-		else if (!IAmPureMelee)
-		{
-			if (!friendsWithLof)
+			for (BattleUnit *target : *(_save->getUnits()))
 			{
-				if (!canReachThisTurnWithAttack || !isPathToPositionSave(pos))
+				if (target->isOut())
+					continue;
+				if (target->getFaction() == _unit->getFaction())
+					continue;
+				if (target->hasVisibleTile(tile))
+					visibleToEnemy = true;
+			}
+			if (needToFlee)
+			{
+				if (visibleToEnemy == false)
+				{
+					currentScore = 100;
+					if (!lineOfFire)
+						currentScore *= 3;
+				}
+				else
+					currentScore = 0;
+			}
+			else if (!IAmPureMelee)
+			{
+				if (!isPathToPositionSave(pos))
 					continue;
 			}
-		}
-		if (currentScore == 0)
-			continue;
-		currentScore *= elevationBonus;
-		currentScore /= pu->getTUCost(false).time + 1;
-		if (currentScore > bestPositionScore)
-		{
-			bestPositionScore = currentScore;
-			bestPostionToAttackFrom = pos;
+			if (currentScore == 0)
+				continue;
+			currentScore *= elevationBonus;
+			currentScore /= pu->getTUCost(false).time + 1;
+			if (currentScore > bestPositionScore)
+			{
+				bestPositionScore = currentScore;
+				bestPostionToAttackFrom = pos;
+			}
 		}
 	}
 	if (_traceAI)
@@ -3206,20 +3208,22 @@ void AIModule::brutalThink(BattleAction* action)
 	//If we can't attack this turn and can't get to a spot from where we can oversee any target, we should know about a tile guard from afar
 	bool isEncircle = false;
 	Tile *encircleTile = NULL;
-	if (bestPositionScore == 0 && !IAmPureMelee)
+	if (unitToWalkTo != NULL)
+		encircleTile = _save->getTile(furthestToGoTowards(unitToWalkTo->getPosition(), BattleActionCost(_unit), true));
+	Position encirclePosition = _unit->getPosition();
+	if ((bestPositionScore == 0 && !IAmPureMelee && !friendsWithLof) || _blaster)
 	{
-		if (unitToWalkTo != NULL)
-			encircleTile = _save->getTile(furthestToGoTowards(unitToWalkTo->getPosition(), BattleActionCost(_unit), true));
 		if (encircleTile)
 		{
 			// If we get here, we cannot possibly need to flee
 			needToFlee = false;
-			Position encirclePosition = encircleTile->getPosition();
+			encirclePosition = encircleTile->getPosition();
+			int tuCostToEncircleTile = tuCostToReachPosition(encirclePosition);
 			if (_traceAI)
 			{
 				encircleTile->setMarkerColor(_unit->getId());
 				encircleTile->setPreview(10);
-				encircleTile->setTUMarker(_unit->getId());
+				encircleTile->setTUMarker(_unit->getId() % 100);
 			}
 			for (auto pu : _allPathFindingNodes)
 			{
@@ -3231,6 +3235,8 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (tile->getDangerous())
 					continue;
+				if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
+					continue;
 				float currDist = Position::distance(pos, encirclePosition);
 				bool visibleToEnemy = false;
 				float cuddleAvoidModifier = 1;
@@ -3240,7 +3246,6 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					if (target->isOut())
 						continue;
-					// avoid cuddling and also corpses of our friends to some extend
 					float targetDist = Position::distance(pos, target->getPosition());
 					if (target->getFaction() == _unit->getFaction() && target != _unit)
 					{
@@ -3267,12 +3272,6 @@ void AIModule::brutalThink(BattleAction* action)
 				score /= cuddleAvoidModifier;
 				score /= pu->getTUCost(false).time + 1;
 				score *= elevationBonus;
-				if (_traceAI && score > 0)
-				{
-					encircleTile->setMarkerColor(_unit->getId());
-					encircleTile->setPreview(10);
-					encircleTile->setTUMarker(score);
-				}
 				if (score > bestPositionScore)
 				{
 					isEncircle = true;
@@ -3281,7 +3280,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			if (_traceAI)
-				Log(LOG_INFO) << "best positon to encircle " << bestPostionToAttackFrom << " score: " << bestPositionScore << " encirclePosition: " << encirclePosition;
+				Log(LOG_INFO) << "best position to encircle " << bestPostionToAttackFrom << " score: " << bestPositionScore << " encirclePosition: " << encirclePosition;
 		}
 	}
 
@@ -3304,26 +3303,47 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	//If I'm having friends with line of fire but neither am attacking the enemy nor getting told to move somewhere else, it must mean they are in smoke or something. In this case I move towards them
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << "bestPositionScore: " << bestPositionScore << " encirclePosition: " << encirclePosition << " _unit->getPosition(): " << _unit->getPosition();
+	}
 	if (IAmPureMelee && bestPostionToAttackFrom == _unit->getPosition() && unitToWalkTo != NULL)
 	{
 		travelTarget = unitToWalkTo->getPosition();
 		if (_traceAI)
-			Log(LOG_INFO) << "I'm melee. I should walk towards. " << travelTarget;
+			Log(LOG_INFO) << "I'm melee. I should walk towards " << travelTarget;
 	}
-	else if (!needToFlee && friendsWithLof && bestPostionToAttackFrom == _unit->getPosition() && mostCentralizedEnemy != NULL && !_blaster && !isEncircle)
+	else if (!needToFlee && friendsWithLof && bestPostionToAttackFrom == _unit->getPosition() && unitToWalkTo != NULL && !_blaster && !isEncircle)
 	{
-		travelTarget = mostCentralizedEnemy->getPosition();
+		travelTarget = unitToWalkTo->getPosition();
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Should be able to fire but somehow couldn't. There's probably smoke. Walk towards the most centralized target at " << travelTarget;
-			Tile *tile = mostCentralizedEnemy->getTile();
-			tile->setMarkerColor(3);
-			tile->setPreview(10);
-			tile->setTUMarker(bestCentralizationScore);
+			Log(LOG_INFO) << "Didn't find a location to get a line of fire towards " << travelTarget << " walking closer to there now.";
 		}
 	}
 	else if (bestPositionScore > 0)
+	{
 		travelTarget = bestPostionToAttackFrom;
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << "Default-case, go to the position I figured out is best to go to: " << bestPostionToAttackFrom;
+		}
+	}
+	else if (bestPositionScore == 0 && encirclePosition != _unit->getPosition())
+	{
+		travelTarget = encirclePosition;
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << "No valid tile to encircle in range. Moving towards encirclePosition: " << encirclePosition;
+		}
+	}
+	else
+	{
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << "I stay where I am at: " << travelTarget;
+		}
+	}
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI wants to go from "
@@ -3333,12 +3353,14 @@ void AIModule::brutalThink(BattleAction* action)
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
-		if (tuCostToReachPosition(travelTarget) < _unit->getTimeUnits() && !isEncircle && !needToFlee)
+		if (isEncircle)
 		{
-			reserved = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
-			reserved.Time += getTurnCostTowards(travelTarget);
+			bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
+			if (_traceAI)
+				Log(LOG_INFO) << "I don't have a line of sight yet, so I'll be careful not to get into one.";
 		}
-		bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
+		else
+			bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
 	}
 	
 	if (_traceAI)
@@ -3528,7 +3550,7 @@ int AIModule::tuCostToReachPosition(Position pos)
 	return tuCostToClosestNode;
 }
 
-Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserved, bool encircleTileMode)
+Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserved, bool encircleTileMode, Tile* encircleTile)
 {
 	//consider time-units we already spent
 	reserved.Time = _unit->getTimeUnits() - reserved.Time;
@@ -3576,6 +3598,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	{
 		if (encircleTileMode)
 		{
+			Log(LOG_INFO) << "In encircletile-mode";
 			PathfindingNode *furthestNodeThatWasDangerous = targetNode;
 			while (targetNode->getPrevNode() != NULL)
 			{
@@ -3599,13 +3622,33 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 		}
 		else
 		{
-			while ((targetNode->getTUCost(false).time > reserved.Time || targetNode->getTUCost(false).energy > reserved.Energy) && targetNode->getPrevNode() != NULL)
+			Log(LOG_INFO) << "Not in encircletile-mode";
+			bool haveLosToEncircleTile = true;
+			if (encircleTile != NULL && _unit->getTimeUnits() == _unit->getBaseStats()->tu && targetNode->getTUCost(false).time <= 8)
+				haveLosToEncircleTile = false;
+			while ((targetNode->getTUCost(false).time > reserved.Time || targetNode->getTUCost(false).energy > reserved.Energy || (haveLosToEncircleTile && encircleTile != NULL)) && targetNode->getPrevNode() != NULL)
 			{
 				targetNode = targetNode->getPrevNode();
+				if (encircleTile != NULL)
+				{
+					if (clearSight(targetNode->getPosition(), encircleTile->getPosition()) && (_unit->getTimeUnits() < _unit->getBaseStats()->tu || targetNode->getTUCost(false).time > 8))
+						haveLosToEncircleTile = true;
+					else
+						haveLosToEncircleTile = false;
+					Log(LOG_INFO) << "Have Los to " << encircleTile->getPosition() << " from " << targetNode->getPosition() << ": " << haveLosToEncircleTile;
+					if (_traceAI)
+					{
+						Tile *tile = _save->getTile(targetNode->getPosition());
+						tile->setMarkerColor(haveLosToEncircleTile + 2);
+						tile->setPreview(10);
+						tile->setTUMarker(_unit->getId() % 100);
+					}
+				}
 			}
 			return targetNode->getPosition();
 		}
 	}
+	Log(LOG_INFO) << "No Node found";
 	return _unit->getPosition();
 }
 
@@ -4104,7 +4147,7 @@ bool AIModule::quickLineOfFire(Position pos, BattleUnit* target, bool beOkayWith
 			{
 				if (targetVoxel.toTile() == trajectory.begin()->toTile())
 					return true;
-				if (beOkayWithFriendOfTarget && _save->getTile(trajectory.begin()->toTile())->getUnit()->getFaction() == target->getFaction())
+				if (beOkayWithFriendOfTarget && _save->getTile(trajectory.begin()->toTile())->getUnit() && _save->getTile(trajectory.begin()->toTile())->getUnit()->getFaction() == target->getFaction())
 					return true;
 			}
 		}
@@ -4179,6 +4222,44 @@ void AIModule::brutalBlaster()
 		}
 		_save->getPathfinding()->abortPath();
 	}
+	//consider blind-blastering too
+	bool blindMode = false;
+	Position blindTarget;
+	if (_aggroTarget == 0)
+	{
+		for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _aggroTarget == 0; ++i)
+		{
+			if ((*i)->getTileLastSpotted() == 0)
+				continue;
+			if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !visibleToAnyFriend(*i))
+			{
+				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted());
+				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
+				bool havePath = false;
+				for (auto node : path)
+				{
+					if (node->getPosition() == targetPos)
+						havePath = true;
+				}
+				auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
+				float score = brutalExplosiveEfficacy(targetPos, _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
+				// for blind-fire an efficacy of 0 is good enough
+				if (havePath &&
+					score >= highestScore)
+				{
+					highestScore = score;
+					_aggroTarget = *i;
+					blindMode = true;
+					blindTarget = targetPos;
+					if (_traceAI)
+					{
+						Log(LOG_INFO) << "Blindfire with blaster at " << blindTarget << " would have a score of " << score;
+					}
+				}
+				_save->getPathfinding()->abortPath();
+			}
+		}
+	}
 
 	if (_aggroTarget != 0)
 	{
@@ -4200,6 +4281,8 @@ void AIModule::brutalBlaster()
 		}
 		PathfindingNode *targetNode = NULL;
 		Position target = _aggroTarget->getPosition();
+		if (blindMode)
+			target = blindTarget;
 		float closestDistToTarget = 255;
 		for (auto pn : missilePaths)
 		{
@@ -4213,6 +4296,9 @@ void AIModule::brutalBlaster()
 		if (targetNode != NULL)
 		{
 			_attackAction.waypoints.push_back(target);
+			//If we perform a blind shot we add the final node twice so we hit the ground and not something we might not want to hit
+			if (blindMode && blindTarget != _aggroTarget->getPosition())
+				_attackAction.waypoints.push_back(target);
 			Tile *tile = _save->getTile(target);
 			if (_traceAI)
 			{
@@ -4247,6 +4333,8 @@ void AIModule::brutalBlaster()
 			_attackAction.target = _attackAction.waypoints.front();
 			if (_attackAction.waypoints.size() > maxWaypoints)
 				_attackAction.type = BA_RETHINK;
+			else if (blindMode)
+				_aggroTarget->setTileLastSpotted(0);
 		}
 		else
 		{
