@@ -3353,14 +3353,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
-		if (isEncircle)
-		{
-			bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
-			if (_traceAI)
-				Log(LOG_INFO) << "I don't have a line of sight yet, so I'll be careful not to get into one.";
-		}
-		else
-			bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
+		bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
 	}
 	
 	if (_traceAI)
@@ -3598,7 +3591,6 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	{
 		if (encircleTileMode)
 		{
-			Log(LOG_INFO) << "In encircletile-mode";
 			PathfindingNode *furthestNodeThatWasDangerous = targetNode;
 			while (targetNode->getPrevNode() != NULL)
 			{
