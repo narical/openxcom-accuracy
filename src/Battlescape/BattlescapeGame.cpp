@@ -1252,13 +1252,16 @@ void BattlescapeGame::popState()
 	}
 	if (action.actor && action.tuBefore == action.actor->getTimeUnits())
 	{
-		if (action.type != BA_NONE && action.type != BA_WAIT && Options::traceAI)
+		if (action.type != BA_NONE && action.type != BA_WAIT)
 		{
 			action.actor->setWantToEndTurn(true);
-			if (action.actor->isBrutal())
-				Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
-			else
-				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+			if (Options::traceAI)
+			{
+				if (action.actor->isBrutal())
+					Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+				else
+					Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+			}
 		}
 	}
 	_deleted.push_back(first);
