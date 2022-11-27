@@ -3949,6 +3949,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
 	tuCost += getTurnCostTowards(action->target);
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
+	float damage = 0;
 	if (action->type == BA_THROW && _grenade)
 	{
 		tuCost = _unit->getActionTUs(action->type, _unit->getGrenadeFromBelt()).Time;
@@ -3970,10 +3971,30 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	else
 	{
 		auto ammo = action->weapon->getAmmoForAction(action->type);
-		int radius = ammo->getRules()->getExplosionRadius({action->type, _unit, _attackAction.weapon, ammo});
-		if (radius > 0)
-			numberOfShots *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
+		if (ammo)
+		{
+			damage = ammo->getRules()->getPower();
+			int radius = ammo->getRules()->getExplosionRadius({action->type, _unit, _attackAction.weapon, ammo});
+			if (radius > 0)
+				numberOfShots *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
+		}
+		else
+		{
+			damage = action->weapon->getRules()->getPower();
+		}
 	}
+	damage += action->weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(*action));
+	float relevantArmor = 0;
+	if (action->type == BA_THROW)
+	{
+		relevantArmor = target->getArmor()->getUnderArmor();
+	}
+	else
+	{
+		relevantArmor = target->getArmor()->getFrontArmor();
+	}
+	damage = (damage * 2 - relevantArmor) / 2.0;
+	damage = std::max(damage, 1.0f);
 	int tuTotal = _unit->getBaseStats()->tu;
 
 	// Return a score of zero if this firing mode doesn't exist for this weapon
@@ -4020,9 +4041,9 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " accuracy: " << accuracy << " numberOfShots: " << numberOfShots << " tuCost: " << tuCost;
+		Log(LOG_INFO) << action->weapon->getRules()->getName() << " damage: " << damage << " armor: "<<relevantArmor<<" accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost;
 	}
-	return accuracy * numberOfShots * tuTotal / tuCost;
+	return accuracy * damage * numberOfShots * tuTotal / tuCost;
 }
 
 /**
