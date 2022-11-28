@@ -3978,12 +3978,10 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 			if (radius > 0)
 				numberOfShots *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
 		}
-		else
-		{
-			damage = action->weapon->getRules()->getPower();
-		}
 	}
-	damage += action->weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(*action));
+	// I had to make it mutually exclusive from ammo-damage because that way I wouldn't have power from lasers twice. This seems okay for vanilla but might be wrong for other stuff.
+	if (action->weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(*action)))
+		damage = action->weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(*action));
 	float relevantArmor = 0;
 	if (action->type == BA_THROW)
 	{
