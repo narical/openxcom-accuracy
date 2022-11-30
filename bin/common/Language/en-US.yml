@@ -95,6 +95,8 @@ en-US:
   STR_ADVANCED: "ADVANCED"
   STR_AGGRESSIVERETALIATION: "Aggressive retaliation"
   STR_AGGRESSIVERETALIATION_DESC: "UFOs will attempt to detect your bases at all times, regardless of their mission parameters."
+  STR_DOGFIGHTAI: "Dogfight AI"
+  STR_DOGFIGHTAI_DESC: "UFOs will act more intelligently during dogfights."
   STR_STORAGELIMITSENFORCED: "Storage limits for recovered items"
   STR_STORAGELIMITSENFORCED_DESC: "Enforces alien containment and general store limits for live aliens and artifacts recovered from missions."
   STR_CANSELLLIVEALIENS: "Live alien sale"

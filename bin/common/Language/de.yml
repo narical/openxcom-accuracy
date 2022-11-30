@@ -95,6 +95,8 @@ de:
   STR_ADVANCED: "ERWEITERT"
   STR_AGGRESSIVERETALIATION: "Agressive Vergeltung"
   STR_AGGRESSIVERETALIATION_DESC: "UFOs können jederzeit Ihre Basen aufspüren, unabhängig ihrer Missionsparameter."
+  STR_DOGFIGHTAI: "Luftkampf KI"
+  STR_DOGFIGHTAI_DESC: "UFOs werden sich in Luftkämpfen intelligenter verhalten."
   STR_STORAGELIMITSENFORCED: "Lagerbegrenzung für geborgene Gegenstände."
   STR_STORAGELIMITSENFORCED_DESC: "Erzwingt die Einhaltung der Kapazitätsgrenzen für Klimazellen und Hauptlager, für lebende Außerirdische und geborgene Artefakte aus Missionen."
   STR_CANSELLLIVEALIENS: "Verkauf lebender Aliens"

@@ -247,6 +247,8 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	_interceptionNumber(0), _interceptionsCount(0), _x(0), _y(0), _minimizedIconX(0), _minimizedIconY(0), _firedAtLeastOnce(false), _experienceAwarded(false),
 	_delayedRecolorDone(false)
 {
+	if (Options::dogfightAI)
+		_ufoIsAttacking = true;
 	_screen = false;
 	_craft->setInDogfight(true);
 	_weaponNum = _craft->getRules()->getWeapons();
@@ -978,6 +980,46 @@ void DogfightState::update()
 				else
 				{
 					escapeCounter = 999; // we're still ok, continue shooting...
+				}
+			}
+			if (Options::dogfightAI)
+			{
+				float ufoDamagePerTick = 0;
+				float craftDamagePerTick = 0;
+				int maxRange = 0;
+				for (CraftWeapon *wpn : *(_craft->getWeapons()))
+				{
+					if (wpn->getAmmo() == 0)
+						continue;
+					craftDamagePerTick += (float)wpn->getRules()->getDamage() / (float)wpn->getRules()->getAggressiveReload();
+					if (wpn->getRules()->getRange() > maxRange)
+						maxRange = wpn->getRules()->getRange();
+				}
+				ufoDamagePerTick = (float)_ufo->getRules()->getWeaponPower() / (float)_ufo->getRules()->getWeaponReload();
+				if (ufoDamagePerTick == 0 && _currentDist <= maxRange * 8 + 5)
+				{
+					escapeCounter = 1;
+					_ufoIsAttacking = false;
+				}
+				else if (craftDamagePerTick == 0)
+				{
+					escapeCounter = 999;
+					_ufoIsAttacking = true;
+				}
+				else if (_currentDist <= maxRange * 8 + 5 && (_craft->getDamageMax() - _craft->getDamage()) / ufoDamagePerTick > (_ufo->getCraftStats().damageMax / 2.0f - _ufo->getDamage()) / craftDamagePerTick)
+				{
+					escapeCounter = 1;
+					_ufoIsAttacking = false;
+				}
+				else
+				{
+					escapeCounter = 999;
+					_ufoIsAttacking = true;
+				}
+				int speedMinusTractors = std::max(0, _ufo->getCraftStats().speedMax - _ufo->getTractorBeamSlowdown());
+				if (speedMinusTractors > _craft->getCraftStats().speedMax)
+				{
+					_targetDist = _ufo->getRules()->getWeaponRange() * 8;
 				}
 			}
 
