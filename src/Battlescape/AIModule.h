@@ -182,6 +182,8 @@ public:
 	void blindFire();
 	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
 	bool validateArcingShot(BattleAction *action);
+	/// check if a unit is targetable according to aiTargetMode
+	bool brutalValidTarget(BattleUnit *unit);
 };
 
 }

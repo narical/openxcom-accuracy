@@ -5433,6 +5433,29 @@ bool BattleUnit::isBrutal()
 	return brutal;
 }
 
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+bool BattleUnit::isCheatOnMovement()
+{
+	bool cheat = Options::cheatOnMovement;
+	if (_unitRules && _unitRules->isCheatOnMovement())
+		cheat = true;
+	return cheat;
+}
+
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+int BattleUnit::aiTargetMode()
+{
+	int targetMode = Options::aiTargetMode;
+	if (_unitRules && _unitRules->aiTargetMode() > 0)
+		targetMode = std::max(targetMode, _unitRules->aiTargetMode());
+	targetMode = std::clamp(targetMode, 1, 4);
+	return targetMode;
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////

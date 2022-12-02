@@ -818,6 +818,10 @@ public:
 	void disableIndicators();
 	/// Returns whether this unit uses brutal-AI
 	bool isBrutal();
+	/// Returns whether this unit is allowed to cheat with knowledge it cannot have
+	bool isCheatOnMovement();
+	/// Returns the targetting mode the unit is allowed to use
+	int aiTargetMode();
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }

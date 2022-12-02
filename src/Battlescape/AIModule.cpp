@@ -2960,7 +2960,7 @@ void AIModule::brutalThink(BattleAction* action)
 		brutalSelectSpottedUnitForSniper();
 	if (_attackAction.type == BA_RETHINK && _grenade)
 		brutalGrenadeAction();
-	if (_attackAction.type == BA_RETHINK)
+	if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
 		blindFire();
 
 	if (_attackAction.type != BA_RETHINK)
@@ -3025,12 +3025,12 @@ void AIModule::brutalThink(BattleAction* action)
 	float shortestDist = FLT_MAX;
 	int shortestWalkingPath = INT_MAX;
 	BattleUnit *unitToWalkTo = NULL;
-	BattleUnit *mostCentralizedEnemy = NULL;
-	float bestCentralizationScore = FLT_MAX;
 	int primeScore = 0;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
+			continue;
+		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == 0)
 			continue;
 		float primeDist = Position::distance(_unit->getPosition(), target->getPosition());
 		if (target->getFaction() == _unit->getFaction())
@@ -3041,8 +3041,11 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (primeDist <= explosionRadius)
 			primeScore++;
-		float currentDist = Position::distance(bestPostionToAttackFrom, target->getPosition());
-		int currentWalkPath = tuCostToReachPosition(target->getPosition());
+		Position targetPosition = target->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition =_save->getTileCoords(target->getTileLastSpotted());
+		float currentDist = Position::distance(bestPostionToAttackFrom, targetPosition);
+		int currentWalkPath = tuCostToReachPosition(targetPosition);
 		if (currentDist < shortestDist)
 		{
 			shortestDist = currentDist;
@@ -3052,20 +3055,6 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
-		}
-		float centralizationScore = 0;
-		for (BattleUnit *friendOfTarget : *(_save->getUnits()))
-		{
-			if (friendOfTarget->isOut())
-				continue;
-			if (target->getFaction() != friendOfTarget->getFaction() || target == friendOfTarget)
-				continue;
-			centralizationScore += Position::distance(target->getPosition(), friendOfTarget->getPosition());
-		}
-		if (centralizationScore < bestCentralizationScore)
-		{
-			bestCentralizationScore = centralizationScore;
-			mostCentralizedEnemy = target;
 		}
 	}
 
@@ -3118,17 +3107,22 @@ void AIModule::brutalThink(BattleAction* action)
 			float elevationBonus = 1.0f + pos.z * 0.25f;
 			if (unitToFaceTo)
 			{
-				float currDist = Position::distance(pos, unitToFaceTo->getPosition());
-				if (visibleToAnyFriend(unitToFaceTo) || currDist <= _save->getMod()->getMaxViewDistance())
+				Position targetPosition = unitToWalkTo->getPosition();
+				if (!_unit->isCheatOnMovement())
+					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
+				float currDist = Position::distance(pos, targetPosition);
+				if (brutalValidTarget(unitToFaceTo) || currDist <= _save->getMod()->getMaxViewDistance())
 				{
 					lineOfFire = quickLineOfFire(pos, unitToFaceTo, false);
+					if (!_unit->isCheatOnMovement())
+						lineOfFire = lineOfFire || clearSight(pos, targetPosition);
 					if (currentScore == 0)
 					{
 						if (IAmPureMelee)
 						{
 							if (!unitToFaceTo->getTile()->getDangerous())
 							{
-								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToFaceTo, NULL))
 								{
 									currentScore = 100;
 								}
@@ -3143,18 +3137,23 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			if (unitToWalkTo && unitToFaceTo != unitToWalkTo)
 			{
-				float currDist = Position::distance(pos, unitToWalkTo->getPosition());
-				if (visibleToAnyFriend(unitToWalkTo) || currDist <= _save->getMod()->getMaxViewDistance())
+				Position targetPosition = unitToWalkTo->getPosition();
+				if (!_unit->isCheatOnMovement())
+					targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
+				float currDist = Position::distance(pos, targetPosition);
+				if (brutalValidTarget(unitToWalkTo) || currDist <= _save->getMod()->getMaxViewDistance())
 				{
 					if (!lineOfFire)
 						lineOfFire = quickLineOfFire(pos, unitToWalkTo, false);
+					if (!_unit->isCheatOnMovement())
+						lineOfFire = lineOfFire || clearSight(pos, targetPosition);
 					if (currentScore == 0)
 					{
 						if (IAmPureMelee)
 						{
 							if (!unitToFaceTo->getTile()->getDangerous())
 							{
-								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, unitToFaceTo->getPosition()), _unit, unitToFaceTo, NULL))
+								if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToFaceTo, NULL))
 								{
 									currentScore = 100;
 								}
@@ -3189,7 +3188,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (!IAmPureMelee)
 			{
-				if (!isPathToPositionSave(pos))
+				if (!isPathToPositionSave(pos) && _unit->isCheatOnMovement())
 					continue;
 			}
 			if (currentScore == 0)
@@ -3207,9 +3206,33 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "best positon to attack from " << bestPostionToAttackFrom << " score: " << bestPositionScore << " need to flee: " << needToFlee;
 	//If we can't attack this turn and can't get to a spot from where we can oversee any target, we should know about a tile guard from afar
 	bool isEncircle = false;
+	bool randomScouting = false;
 	Tile *encircleTile = NULL;
 	if (unitToWalkTo != NULL)
-		encircleTile = _save->getTile(furthestToGoTowards(unitToWalkTo->getPosition(), BattleActionCost(_unit), true));
+	{
+		Position targetPosition = unitToWalkTo->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
+		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), true));
+	}
+	else if (!_unit->isCheatOnMovement() && _unit->getTimeUnits() == _unit->getBaseStats()->tu)
+	{
+		if (!encircleTile)
+		{
+			int rand = RNG::generate(0, _allPathFindingNodes.size());
+			int i = 0;
+			for (auto pu : _allPathFindingNodes)
+			{
+				++i;
+				if (i == rand)
+				{
+					encircleTile = _save->getTile(pu->getPosition());
+					randomScouting = true;
+					break;
+				}
+			}
+		}
+	}
 	Position encirclePosition = _unit->getPosition();
 	if ((bestPositionScore == 0 && !IAmPureMelee && !friendsWithLof) || _blaster)
 	{
@@ -3254,6 +3277,8 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					else
 					{
+						if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == 0)
+							continue;
 						if (target->hasVisibleTile(tile))
 						{
 							visibleToEnemy = true;
@@ -3267,7 +3292,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!clearSight(pos, encirclePosition))
 					continue;
-				if (!IAmPureMelee && !isPathToPositionSave(pos))
+				if (!IAmPureMelee && _unit->isCheatOnMovement()  && !isPathToPositionSave(pos))
 					continue;
 				score /= cuddleAvoidModifier;
 				score /= pu->getTUCost(false).time + 1;
@@ -3309,13 +3334,19 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (IAmPureMelee && bestPostionToAttackFrom == _unit->getPosition() && unitToWalkTo != NULL)
 	{
-		travelTarget = unitToWalkTo->getPosition();
+		Position targetPosition = unitToWalkTo->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
+		travelTarget = targetPosition;
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm melee. I should walk towards " << travelTarget;
 	}
 	else if (!needToFlee && friendsWithLof && bestPostionToAttackFrom == _unit->getPosition() && unitToWalkTo != NULL && !_blaster && !isEncircle)
 	{
-		travelTarget = unitToWalkTo->getPosition();
+		Position targetPosition = unitToWalkTo->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
+		travelTarget = targetPosition;
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Didn't find a location to get a line of fire towards " << travelTarget << " walking closer to there now.";
@@ -3353,6 +3384,8 @@ void AIModule::brutalThink(BattleAction* action)
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
+		if (randomScouting)
+			reserved = BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon);
 		bestPostionToAttackFrom = furthestToGoTowards(travelTarget, reserved);
 	}
 	
@@ -3367,6 +3400,8 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		if (target->getFaction() == _unit->getFaction() || target->isOut())
 			continue;
+		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == 0)
+			continue;
 		float currentDist = Position::distance(bestPostionToAttackFrom, target->getPosition());
 		if (currentDist < shortestDist)
 		{
@@ -3378,7 +3413,12 @@ void AIModule::brutalThink(BattleAction* action)
 	action->target = bestPostionToAttackFrom;
 	action->finalFacing = -1;
 	if (unitToFaceTo != NULL && !needToFlee)
-		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, unitToFaceTo->getPosition());
+	{
+		Position targetPosition = unitToFaceTo->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
+		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, targetPosition);
+	}
 	if (isEncircle && encircleTile != NULL)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, encircleTile->getPosition());
 	action->updateTU();
@@ -3388,9 +3428,16 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			action->type = BA_TURN;
 			if (unitToFaceTo != NULL)
-				action->target = unitToFaceTo->getPosition();
+			{
+				Position targetPosition = unitToFaceTo->getPosition();
+				if (!_unit->isCheatOnMovement())
+					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
+				action->target = targetPosition;
+			}
 			if (isEncircle && encircleTile != NULL)
+			{
 				action->target = encircleTile->getPosition();
+			}
 			if (_traceAI)
 				Log(LOG_INFO) << _unit->getId() << " wants to turn towards " << action->target;
 		}
@@ -3398,7 +3445,12 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			action->type = BA_NONE;
 			if (unitToFaceTo != NULL)
-				action->target = unitToFaceTo->getPosition();
+			{
+				Position targetPosition = unitToFaceTo->getPosition();
+				if (!_unit->isCheatOnMovement())
+					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
+				action->target = targetPosition;
+			}
 			if (isEncircle && encircleTile != NULL)
 				action->target = encircleTile->getPosition();
 			if (_traceAI)
@@ -3448,7 +3500,7 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && visibleToAnyFriend(*i))
+		if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && brutalValidTarget(*i))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = (*i);
@@ -3716,13 +3768,11 @@ bool AIModule::brutalPsiAction()
 		{
 			// don't target tanks
 			if ((*i)->getArmor()->getSize() == 1 &&
-				validTarget(*i, true, false) &&
 				// they must be player units
 				(*i)->getOriginalFaction() == _targetFaction &&
 				(!LOSRequired ||
 				 std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), *i) != _unit->getVisibleUnits()->end()) &&
-				// Let's actually be more fair and only psi what someone from our team sees
-				visibleToAnyFriend(*i)
+				brutalValidTarget(*i)
 				)
 			{
 				BattleUnit *victim = (*i);
@@ -4214,7 +4264,7 @@ void AIModule::brutalBlaster()
 	float highestScore = 0;
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _aggroTarget == 0; ++i)
 	{
-		if ((*i)->isOut() || (*i)->getFaction() == _unit->getFaction() || !visibleToAnyFriend(*i))
+		if ((*i)->isOut() || (*i)->getFaction() == _unit->getFaction() || !brutalValidTarget(*i))
 			continue;
 		std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
 		bool havePath = false;
@@ -4236,13 +4286,13 @@ void AIModule::brutalBlaster()
 	//consider blind-blastering too
 	bool blindMode = false;
 	Position blindTarget;
-	if (_aggroTarget == 0)
+	if (_aggroTarget == 0 && _unit->aiTargetMode() >= 3)
 	{
 		for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _aggroTarget == 0; ++i)
 		{
 			if ((*i)->getTileLastSpotted() == 0)
 				continue;
-			if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !visibleToAnyFriend(*i))
+			if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !brutalValidTarget(*i))
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted());
 				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
@@ -4383,7 +4433,7 @@ void AIModule::brutalGrenadeAction()
 			continue;
 		if (target->getFaction() == _unit->getFaction())
 			continue;
-		if (!visibleToAnyFriend(target))
+		if (!brutalValidTarget(target))
 			continue;
 		for (int x = 0; x < _save->getMapSizeX(); ++x)
 		{
@@ -4481,7 +4531,7 @@ void AIModule::blindFire()
 	{
 		if ((*i)->getTileLastSpotted() == 0)
 			continue;
-		if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !visibleToAnyFriend(*i))
+		if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !brutalValidTarget(*i))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = (*i);
@@ -4628,6 +4678,30 @@ bool AIModule::validateArcingShot(BattleAction *action)
 		}
 	}
 	return false;
+}
+
+bool AIModule::brutalValidTarget(BattleUnit *unit)
+{
+	if (unit->isOut() || unit->isIgnoredByAI() ||
+		unit->getFaction() == _unit->getFaction())
+	{
+		return false;
+	}
+	if (_unit->aiTargetMode() < 2)
+	{
+		if (_unit->hasVisibleUnit(unit))
+			return true;
+		else
+			return false;
+	}
+	else if (_unit->aiTargetMode() < 4)
+	{
+		if (visibleToAnyFriend(unit))
+			return true;
+		else
+			return false;
+	}
+	return true;
 }
 
 }

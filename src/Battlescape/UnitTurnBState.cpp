@@ -67,7 +67,8 @@ void UnitTurnBState::init()
 	// if the unit has a turret and we are turning during targeting, then only the turret turns
 	_turret = _unit->getTurretType() != -1 && (_action.targeting || _action.strafe);
 
-	_unit->lookAt(_action.target, _turret);
+	if (_unit->getPosition() != _action.target)
+		_unit->lookAt(_action.target, _turret);
 
 	if (_chargeTUs && _unit->getStatus() != STATUS_TURNING)
 	{
