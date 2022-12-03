@@ -3188,7 +3188,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (!IAmPureMelee)
 			{
-				if (!isPathToPositionSave(pos) && _unit->isCheatOnMovement())
+				if (!isPathToPositionSave(pos))
 					continue;
 			}
 			if (currentScore == 0)
@@ -3292,7 +3292,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!clearSight(pos, encirclePosition))
 					continue;
-				if (!IAmPureMelee && _unit->isCheatOnMovement()  && !isPathToPositionSave(pos))
+				if (!IAmPureMelee && !isPathToPositionSave(pos))
 					continue;
 				score /= cuddleAvoidModifier;
 				score /= pu->getTUCost(false).time + 1;
@@ -3712,14 +3712,26 @@ bool AIModule::isPathToPositionSave(Position target)
 		while (targetNode->getPrevNode() != NULL)
 		{
 			Tile *tile = _save->getTile(targetNode->getPosition());
-			for (BattleUnit *unit : *(_save->getUnits()))
+			if (_unit->isCheatOnMovement())
 			{
-				if (unit->isOut())
-					continue;
-				if (unit->getFaction() == _unit->getFaction())
-					continue;
-				if (unit->hasVisibleTile(tile) && unit->getReactionScore() > (float)_unit->getBaseStats()->reactions * ((float)(_unit->getTimeUnits() - targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
-					return false;
+				for (BattleUnit *unit : *(_save->getUnits()))
+				{
+					if (unit->isOut())
+						continue;
+					if (unit->getFaction() == _unit->getFaction())
+						continue;
+					if (unit->hasVisibleTile(tile) && unit->getReactionScore() > (float)_unit->getBaseStats()->reactions * ((float)(_unit->getTimeUnits() - targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
+						return false;
+				}
+			}
+			else
+			{
+				// When we are not cheating we determine the safety of a path by checking whether there's a corpse of a friend 
+				for (BattleUnit *unit : *(_save->getUnits()))
+				{
+					if (unit->isOut() && unit->getFaction() == _unit->getFaction() && unit->getPosition() == targetNode->getPosition())
+						return false;
+				}
 			}
 			targetNode = targetNode->getPrevNode();
 		}
