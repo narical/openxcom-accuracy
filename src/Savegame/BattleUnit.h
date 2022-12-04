@@ -125,7 +125,7 @@ private:
 	int _moraleRestored;
 	BattleUnit *_charging;
 	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned, _turnsSinceSeen = 255;
-	int _tileLastSpotted = 0;
+	int _tileLastSpotted = -1;
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
 	std::string _preferredHandForReactions;

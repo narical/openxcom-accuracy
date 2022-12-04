@@ -636,7 +636,7 @@ void BattlescapeGenerator::nextStage()
 				(*j)->setTurnsSinceSpotted(255);
 				(*j)->setTurnsSinceSeen(255);
 				(*j)->setTurnsLeftSpottedForSnipers(0);
-				(*j)->setTileLastSpotted(0);
+				(*j)->setTileLastSpotted(-1);
 				if (!selectedFirstSoldier && (*j)->getGeoscapeSoldier())
 				{
 					_save->setSelectedUnit(*j);
