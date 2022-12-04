@@ -19,10 +19,10 @@
  */
 
 #define OPENXCOM_VERSION_ENGINE "Extended"
-#define OPENXCOM_VERSION_SHORT "Extended 7.8.4 + Brutal AI 1.3.0"
+#define OPENXCOM_VERSION_SHORT "Extended 7.8.4 + Brutal AI 1.3.1"
 #define OPENXCOM_VERSION_LONG "7.8.4.0"
 #define OPENXCOM_VERSION_NUMBER 7,8,4,0
 
 #ifndef OPENXCOM_VERSION_GIT
-#define OPENXCOM_VERSION_GIT " (v2022-11-17)"
+#define OPENXCOM_VERSION_GIT " (v2022-12-04)"
 #endif
