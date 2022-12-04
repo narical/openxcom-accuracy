@@ -3060,18 +3060,11 @@ void AIModule::brutalThink(BattleAction* action)
 	float friendsWithLof = 0;
 	float totalFriends = 0;
 	bool iHaveLof = false;
-	bool smoker = false;
-	bool canReachTargetTileWithAttack = false;
-	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	if (unitToWalkTo != NULL)
 	{
 		Position targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
-		Tile *tileOfTarget = _save->getTile(targetPosition);
-		canReachTargetTileWithAttack = tuCostToReachPosition(targetPosition) <= _unit->getTimeUnits() - snapCost.Time;
-		if (tileOfTarget->getSmoke() > 0)
-			smoker = true;
 		iHaveLof = quickLineOfFire(_unit->getPosition(), unitToWalkTo, false);
 		iHaveLof = iHaveLof || clearSight(_unit->getPosition(), targetPosition);
 		for (BattleUnit *teammate : *(_save->getUnits()))
@@ -3090,9 +3083,6 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	bool shouldBeDodgy = false;
-	if (smoker && !canReachTargetTileWithAttack && !brutalValidTarget(unitToWalkTo))
-		shouldBeDodgy = true;
 
 	if (_traceAI)
 	{
@@ -3101,12 +3091,13 @@ void AIModule::brutalThink(BattleAction* action)
 		if (unitToFaceTo)
 			Log(LOG_INFO) << "unit with closest distance " << unitToFaceTo->getId() << " " << unitToFaceTo->getPosition() << " dist: " << shortestDist;
 	}
+	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	// As blaster-user we don't do this at all. We just use encircle-positions to position ourselves
 	float bestPositionScore = 0;
 	float bestSmokePostionScore = 0;
 	Position bestPostionToAttackFrom = _unit->getPosition();
 	Position bestSmokePosition = bestPostionToAttackFrom;
-	if (!_blaster && !shouldBeDodgy)
+	if (!_blaster)
 	{
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3278,7 +3269,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	Position encirclePosition = _unit->getPosition();
-	if ((bestPositionScore == 0 && !IAmPureMelee && friendsWithLof == 0) || _blaster || shouldBeDodgy)
+	if ((bestPositionScore == 0 && !IAmPureMelee && friendsWithLof == 0) || _blaster)
 	{
 		if (encircleTile)
 		{
@@ -3336,7 +3327,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!clearSight(pos, encirclePosition))
 					continue;
-				if (!IAmPureMelee && !isPathToPositionSave(pos) && !shouldBeDodgy)
+				if (!IAmPureMelee && !isPathToPositionSave(pos))
 					continue;
 				score /= cuddleAvoidModifier;
 				score /= pu->getTUCost(false).time + 1;
@@ -3392,7 +3383,7 @@ void AIModule::brutalThink(BattleAction* action)
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
 		if (bestSmokePostionScore > 0)
 		{
-			if (friendsWithLof == totalFriends || friendsWithLof > 1 || canReachTargetTileWithAttack)
+			if (friendsWithLof == totalFriends || friendsWithLof > 1 || tuCostToReachPosition(targetPosition) <= _unit->getTimeUnits() - snapCost.Time)
 			{
 				travelTarget = bestSmokePosition;
 				if (_traceAI)
