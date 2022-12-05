@@ -118,7 +118,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position e
 
 	// the following check avoids that the unit walks behind the stairs if we click behind the stairs to make it go up the stairs.
 	// it only works if the unit is on one of the 2 tiles on the stairs, or on the tile right in front of the stairs.
-	if (isOnStairs(startPosition, endPosition))
+	if (isOnStairs(startPosition, endPosition) && unit->getFaction() == FACTION_PLAYER) //Xilmi: Yeah... but not if the AI actually wants to go behind the stairs!
 	{
 		endPosition.z++;
 		destinationTile = _save->getTile(endPosition);
