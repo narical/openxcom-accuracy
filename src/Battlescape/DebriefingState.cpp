@@ -22,6 +22,8 @@
 #include "DebriefingState.h"
 #include "CannotReequipState.h"
 #include "../Geoscape/GeoscapeEventState.h"
+#include "../Geoscape/GeoscapeState.h"
+#include "../Geoscape/Globe.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -32,6 +34,7 @@
 #include "PromotionsState.h"
 #include "CommendationState.h"
 #include "CommendationLateState.h"
+#include "../Mod/AlienRace.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleCountry.h"
 #include "../Mod/RuleCraft.h"
@@ -1326,6 +1329,79 @@ void DebriefingState::prepareDebriefing()
 				{
 					if ((*i)->getStatus() == Ufo::LANDED)
 					{
+						//Xilmi: Make aliens mad about losing their UFO, same as if it was shot down
+						if (Options::brutalAI)
+						{
+							AlienRace *race = _game->getMod()->getAlienRace((*i)->getAlienRace());
+							AlienMission *mission = (*i)->getMission();
+							mission->ufoShotDown(*(*i));
+							// Check for retaliation trigger.
+							int retaliationOdds = mission->getRules().getRetaliationOdds();
+							if (retaliationOdds == -1)
+							{
+								retaliationOdds = 100 - (4 * (24 - _game->getSavedGame()->getDifficultyCoefficient()) - race->getRetaliationAggression());
+								{
+									int diff = _game->getSavedGame()->getDifficulty();
+									auto &custom = _game->getMod()->getRetaliationTriggerOdds();
+									if (custom.size() > (size_t)diff)
+									{
+										retaliationOdds = custom[diff] + race->getRetaliationAggression();
+									}
+								}
+							}
+							// Have mercy on beginners
+							if (_game->getSavedGame()->getMonthsPassed() < Mod::DIFFICULTY_BASED_RETAL_DELAY[_game->getSavedGame()->getDifficulty()])
+							{
+								retaliationOdds = 0;
+							}
+
+							if (RNG::percent(retaliationOdds))
+							{
+								// Spawn retaliation mission.
+								std::string targetRegion;
+								int retaliationUfoMissionRegionOdds = 50 - 6 * _game->getSavedGame()->getDifficultyCoefficient();
+								{
+									int diff = _game->getSavedGame()->getDifficulty();
+									auto &custom = _game->getMod()->getRetaliationBaseRegionOdds();
+									if (custom.size() > (size_t)diff)
+									{
+										retaliationUfoMissionRegionOdds = 100 - custom[diff];
+									}
+								}
+								if (RNG::percent(retaliationUfoMissionRegionOdds) || !craft)
+								{
+									// Attack on UFO's mission region
+									targetRegion = (*i)->getMission()->getRegion();
+								}
+								else if (craft)
+								{
+									// Try to find and attack the originating base.
+									targetRegion = _game->getSavedGame()->locateRegion(*craft->getBase())->getRules()->getType();
+									// TODO: If the base is removed, the mission is canceled.
+								}
+								// Difference from original: No retaliation until final UFO lands (Original: Is spawned).
+								if (!_game->getSavedGame()->findAlienMission(targetRegion, OBJECTIVE_RETALIATION, race))
+								{
+									auto *retalWeights = race->retaliationMissionWeights(_game->getSavedGame()->getMonthsPassed());
+									std::string retalMission = retalWeights ? retalWeights->choose() : "";
+									const RuleAlienMission *rule = _game->getMod()->getAlienMission(retalMission, false);
+									if (!rule)
+									{
+										rule = _game->getMod()->getRandomMission(OBJECTIVE_RETALIATION, _game->getSavedGame()->getMonthsPassed());
+									}
+
+									if (rule && _game->getGeoscapeState() != NULL)
+									{
+										AlienMission *newMission = new AlienMission(*rule);
+										newMission->setId(_game->getSavedGame()->getId("ALIEN_MISSIONS"));
+										newMission->setRegion(targetRegion, *_game->getMod());
+										newMission->setRace((*i)->getAlienRace());
+										newMission->start(*_game, *_game->getGeoscapeState()->getGlobe(), newMission->getRules().getWave(0).spawnTimer); // fixed delay for first scout
+										_game->getSavedGame()->getAlienMissions().push_back(newMission);
+									}
+								}
+							}
+						}
 						(*i)->setDamage((*i)->getCraftStats().damageMax, _game->getMod());
 					}
 				}
