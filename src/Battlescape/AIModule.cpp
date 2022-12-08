@@ -3132,6 +3132,8 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	if (unitToWalkTo != NULL)
 	{
+		if (brutalValidTarget(unitToWalkTo))
+			sweepMode = true;
 		Position targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
