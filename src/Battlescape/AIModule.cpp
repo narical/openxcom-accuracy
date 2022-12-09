@@ -3196,6 +3196,12 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (_unit->getTimeUnits() < _unit->getBaseStats()->tu)
 		smoker = true;
+	bool dissolveBlockage = false;
+	if (shortestWalkingPath >= 10000 && _unit->getArmor()->getSize() > 1) //We are probably too fat and block the path for others. Let's flee to make room.
+	{
+		needToFlee = true;
+		dissolveBlockage = true;
+	}
 	if (sweepMode)
 		smoker = false;
 	bool peakMode = false;
@@ -3336,6 +3342,8 @@ void AIModule::brutalThink(BattleAction* action)
 			if (needToFlee)
 			{
 				currentScore = 1;
+				if (dissolveBlockage)
+					currentScore = walkToDist;
 				if (visibleToEnemyMod == 0)
 				{
 					currentScore *= 3;
@@ -3365,7 +3373,8 @@ void AIModule::brutalThink(BattleAction* action)
 			currentScore /= cuddleAvoidModifier;
 			currentScore *= elevationBonus;
 			smokePositionScore /= cuddleAvoidModifier;
-			currentScore *= _unit->getTimeUnits() - pu->getTUCost(false).time;
+			if (!dissolveBlockage)
+				currentScore *= _unit->getTimeUnits() - pu->getTUCost(false).time;
 			if (_traceAI)
 			{
 				tile->setMarkerColor(_unit->getId() % 100);
