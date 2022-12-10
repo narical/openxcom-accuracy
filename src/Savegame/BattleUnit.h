@@ -438,7 +438,7 @@ public:
 	/// Gets the item in the specified slot.
 	BattleItem *getItem(RuleInventory *slot, int x = 0, int y = 0) const;
 	/// Gets the item in the main hand.
-	BattleItem *getMainHandWeapon(bool quickest = true) const;
+	BattleItem *getMainHandWeapon(bool quickest = true, bool needammo = true) const;
 	/// Gets a grenade from the belt, if any.
 	BattleItem *getGrenadeFromBelt() const;
 	/// Gets the item from right hand.

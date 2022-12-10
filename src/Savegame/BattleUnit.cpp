@@ -3388,15 +3388,15 @@ BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
  * @param quickest Whether to get the quickest weapon, default true
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
+BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
 {
 	BattleItem *weaponRightHand = getRightHandWeapon();
 	BattleItem *weaponLeftHand = getLeftHandWeapon();
 
 	// ignore weapons without ammo (rules out grenades)
-	if (!weaponRightHand || !weaponRightHand->haveAnyAmmo())
+	if (!weaponRightHand || (!weaponRightHand->haveAnyAmmo() && needammo))
 		weaponRightHand = 0;
-	if (!weaponLeftHand || !weaponLeftHand->haveAnyAmmo())
+	if (!weaponLeftHand || (!weaponLeftHand->haveAnyAmmo() && needammo))
 		weaponLeftHand = 0;
 
 	// if there is only one weapon, it's easy:

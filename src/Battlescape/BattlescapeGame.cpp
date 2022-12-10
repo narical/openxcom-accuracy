@@ -363,6 +363,10 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
 	{
+		if (Options::traceAI)
+		{
+			Log(LOG_INFO) << "I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
+		}
 		if (unit->getOriginalFaction() != FACTION_PLAYER)
 		{
 			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
@@ -2501,6 +2505,21 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 			// if we're already standing on it...
 			if (targetItem->getTile()->getPosition() == action->actor->getPosition())
 			{
+				if(Options::traceAI)
+					Log(LOG_INFO) << "Reached position of " << targetItem->getRules()->getName() << " I want to pick up: " << targetItem->getTile()->getPosition();
+				// Xilmi: Check if the item is a weapon while we have a weapon. If that't the case, we need to drop ours first. The only way this should happen is if our weapon is out of ammo.
+				if (targetItem->isWeaponWithAmmo() && action->actor->getMainHandWeapon(true, false) != NULL)
+				{
+					if (Options::traceAI)
+						Log(LOG_INFO) << targetItem->getRules()->getName() << " has ammo but my " << action->actor->getMainHandWeapon(true, false)->getRules()->getName() << " doesn't. So I drop mine before picking up the other.";
+					if (action->actor->getTimeUnits() >= 2)
+					{
+						dropItem(action->actor->getPosition(), action->actor->getMainHandWeapon(true, false), true);
+						BattleActionCost cost{action->actor};
+						cost.Time += 2;
+						cost.spendTU();
+					}
+				}
 				// try to pick it up
 				if (takeItemFromGround(targetItem, action) == 0)
 				{
@@ -2595,7 +2614,10 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 			targetItem = *i;
 		}
 	}
-
+	if (Options::traceAI && targetItem != NULL)
+	{
+		Log(LOG_INFO) << "Best item to pick up was " << targetItem->getRules()->getName() << " at "<<targetItem->getTile()->getPosition();
+	}
 	return targetItem;
 }
 
