@@ -3072,7 +3072,7 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
-	if (_grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0)
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0)
 	{
 		BattleItem *grenade = _unit->getGrenadeFromBelt();
 		int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
@@ -4206,6 +4206,8 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	}
 	damage = (damage * 2 - relevantArmor) / 2.0;
 	damage = std::max(damage, 1.0f);
+	if (target->getTile()->getDangerous())
+		damage /= 2.0;
 	int tuTotal = _unit->getBaseStats()->tu;
 
 	// Return a score of zero if this firing mode doesn't exist for this weapon
