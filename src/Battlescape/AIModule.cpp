@@ -3578,7 +3578,7 @@ void AIModule::brutalThink(BattleAction* action)
 			targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, targetPosition);
 	}
-	if (isEncircle && encircleTile != NULL)
+	if ((isEncircle || !iHaveLof) && encircleTile != NULL)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(bestPostionToAttackFrom, encircleTile->getPosition());
 	action->updateTU();
 	if (action->target == _unit->getPosition())
@@ -3593,7 +3593,7 @@ void AIModule::brutalThink(BattleAction* action)
 					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
 				action->target = targetPosition;
 			}
-			if (isEncircle && encircleTile != NULL)
+			if ((isEncircle || !iHaveLof) && encircleTile != NULL)
 			{
 				action->target = encircleTile->getPosition();
 			}
@@ -3610,7 +3610,7 @@ void AIModule::brutalThink(BattleAction* action)
 					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
 				action->target = targetPosition;
 			}
-			if (isEncircle && encircleTile != NULL)
+			if ((isEncircle || !iHaveLof) && encircleTile != NULL)
 				action->target = encircleTile->getPosition();
 			if (_traceAI)
 			{
