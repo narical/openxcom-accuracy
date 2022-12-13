@@ -3132,7 +3132,7 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	if (unitToWalkTo != NULL)
 	{
-		if (brutalValidTarget(unitToWalkTo))
+		if (brutalValidTarget(unitToWalkTo, true))
 			sweepMode = true;
 		Position targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
@@ -3144,7 +3144,7 @@ void AIModule::brutalThink(BattleAction* action)
 			canReachTargetTileWithAttack = tuCostToReachPosition(targetPosition) <= _unit->getTimeUnits() - snapCost.Time;
 		iHaveLof = quickLineOfFire(_unit->getPosition(), unitToWalkTo, false);
 		iHaveLof = iHaveLof || clearSight(_unit->getPosition(), targetPosition);
-		if (iHaveLof && !brutalValidTarget(unitToWalkTo))
+		if (iHaveLof && !brutalValidTarget(unitToWalkTo, true))
 			smoker = true;
 		if (encircleTile)
 		{
@@ -3205,7 +3205,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (sweepMode)
 		smoker = false;
 	bool peakMode = false;
-	if (smoker && !canReachTargetTileWithAttack && !brutalValidTarget(unitToWalkTo))
+	if (smoker && !canReachTargetTileWithAttack && !brutalValidTarget(unitToWalkTo, true))
 	{
 		if(_unit->getTimeUnits() < _unit->getBaseStats()->tu || iHaveLof)
 			needToFlee = true;
@@ -4847,7 +4847,7 @@ bool AIModule::validateArcingShot(BattleAction *action)
 	return false;
 }
 
-bool AIModule::brutalValidTarget(BattleUnit *unit)
+bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode)
 {
 	if (unit == NULL)
 		return false;
@@ -4856,14 +4856,14 @@ bool AIModule::brutalValidTarget(BattleUnit *unit)
 	{
 		return false;
 	}
-	if (_unit->aiTargetMode() < 2)
+	if (_unit->aiTargetMode() < 2 && !moveMode)
 	{
 		if (_unit->hasVisibleUnit(unit))
 			return true;
 		else
 			return false;
 	}
-	else if (_unit->aiTargetMode() < 4)
+	else if (_unit->aiTargetMode() < 4 || moveMode)
 	{
 		if (visibleToAnyFriend(unit))
 			return true;
