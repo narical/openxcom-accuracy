@@ -3123,6 +3123,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getFaction() != _unit->getOriginalFaction())
 		sweepMode = true;
 	bool iHaveLof = false;
+	bool iHaveLofIncludingEncircle = false;
 	bool smoker = false;
 	bool canReachTargetTileWithAttack = false;
 	float myMoralAvg = 0;
@@ -3144,14 +3145,15 @@ void AIModule::brutalThink(BattleAction* action)
 			canReachTargetTileWithAttack = tuCostToReachPosition(targetPosition) <= _unit->getTimeUnits() - snapCost.Time;
 		iHaveLof = quickLineOfFire(_unit->getPosition(), unitToWalkTo, false);
 		iHaveLof = iHaveLof || clearSight(_unit->getPosition(), targetPosition);
+		iHaveLofIncludingEncircle = iHaveLof;
 		if (iHaveLof && !brutalValidTarget(unitToWalkTo, true))
 			smoker = true;
 		if (encircleTile)
 		{
 			bool sight = clearSight(_unit->getPosition(), encircleTile->getPosition());
-			if (_unit->getTimeUnits() == _unit->getBaseStats()->tu && sight && !iHaveLof)
+			if (_unit->getTimeUnits() == _unit->getBaseStats()->tu && sight && !iHaveLofIncludingEncircle)
 				smoker = true;
-			iHaveLof = iHaveLof || sight;
+			iHaveLofIncludingEncircle = iHaveLofIncludingEncircle || sight;
 		}
 		for (BattleUnit *teammate : *(_save->getUnits()))
 		{
@@ -3207,7 +3209,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool peakMode = false;
 	if (smoker && !canReachTargetTileWithAttack && !brutalValidTarget(unitToWalkTo, true))
 	{
-		if(_unit->getTimeUnits() < _unit->getBaseStats()->tu || iHaveLof)
+		if (_unit->getTimeUnits() < _unit->getBaseStats()->tu || iHaveLofIncludingEncircle)
 			needToFlee = true;
 		else if (!IAmPureMelee)
 			peakMode = true;
