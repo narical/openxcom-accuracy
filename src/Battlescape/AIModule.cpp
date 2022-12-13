@@ -3190,7 +3190,7 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		enemyMoralAvg /= enemyUnitCount;
 	}
-	if (myMoralAvg > enemyMoralAvg)
+	if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50)
 		sweepMode = true;
 	if (_traceAI)
 	{
