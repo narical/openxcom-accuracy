@@ -365,7 +365,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		if (Options::traceAI)
 		{
-			Log(LOG_INFO) << "I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
+			Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
 		}
 		if (unit->getOriginalFaction() != FACTION_PLAYER)
 		{
