@@ -856,6 +856,23 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	ufo.setTrajectoryPoint(nextWaypoint);
 	const RuleRegion &regionRules = *mod.getRegion(_region, true);
 	std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules, ufo);
+	if (Options::aggressiveRetaliation && _rule.getObjective() == OBJECTIVE_RETALIATION && trajectory.getZone(nextWaypoint) != 5)
+	{
+		for(auto *base : *(engine.getSavedGame()->getBases()))
+		{
+			if(regionRules.insideRegion(base->getLongitude(), base->getLatitude()))
+			{
+				double minLon = base->getLongitude() - M_PI_4 / 3.0;
+				double maxLon = base->getLongitude() + M_PI_4 / 3.0;
+				double minLat = base->getLatitude() - M_PI_4 / 3.0;
+				double maxLat = base->getLatitude() + M_PI_4 / 3.0;
+				double lon = RNG::generate(minLon, maxLon);
+				double lat = RNG::generate(minLat, maxLat);
+				pos = std::make_pair(lon, lat);
+				break;
+			}
+		}
+	}
 
 	Waypoint *wp = new Waypoint();
 	wp->setLongitude(pos.first);
