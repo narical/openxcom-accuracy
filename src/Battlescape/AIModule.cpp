@@ -3234,6 +3234,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float bestSmokePostionScore = 0;
 	Position bestPostionToAttackFrom = _unit->getPosition();
 	Position bestSmokePosition = bestPostionToAttackFrom;
+	float maxPossibleDistance = std::pow(_save->getMapSizeXYZ(), 1.0 / 3.0);
 	if ((!_blaster || needToFlee || peakMode) && unitToWalkTo != NULL)
 	{
 		for (auto pu : _allPathFindingNodes)
@@ -3336,8 +3337,8 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (target->getFaction() == _unit->getFaction())
 					continue;
-				if (target->hasVisibleTile(tile))
-					visibleToEnemyMod += _save->getMod()->getMaxViewDistance() / targetDist;
+				if (target->hasLofTile(tile))
+					visibleToEnemyMod += maxPossibleDistance / targetDist;
 			}
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() - snapCost.Time && !IAmPureMelee)
 				currentScore = 0;
@@ -3348,7 +3349,7 @@ void AIModule::brutalThink(BattleAction* action)
 					currentScore = walkToDist;
 				if (visibleToEnemyMod == 0)
 				{
-					currentScore *= 3;
+					currentScore *= 100;
 				}
 				else if (visibleToEnemyMod > 1)
 				{
@@ -3356,12 +3357,12 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (!lineOfFire)
 				{
-					currentScore *= 3;
+					currentScore *= 100;
 					if (encircleTile)
 					{
 						Position encirclePosition = encircleTile->getPosition();
 						if (!clearSight(pos, encirclePosition))
-							currentScore *= 3;
+							currentScore *= 100;
 					}
 				}
 			}
@@ -3377,6 +3378,12 @@ void AIModule::brutalThink(BattleAction* action)
 			smokePositionScore /= cuddleAvoidModifier;
 			if (!dissolveBlockage)
 				currentScore *= _unit->getTimeUnits() - pu->getTUCost(false).time;
+			Tile *tileAbove = _save->getAboveTile(tile);
+			if (tileAbove && !tileAbove->hasNoFloor())
+			{
+				currentScore *= 10;
+				smokePositionScore *= 10;
+			}
 			if (_traceAI)
 			{
 				tile->setMarkerColor(_unit->getId() % 100);
@@ -3457,6 +3464,11 @@ void AIModule::brutalThink(BattleAction* action)
 				score /= cuddleAvoidModifier;
 				score *= _unit->getTimeUnits() - pu->getTUCost(false).time;
 				score *= elevationBonus;
+				Tile *tileAbove = _save->getAboveTile(tile);
+				if (tileAbove && !tileAbove->hasNoFloor())
+				{
+					score *= 10;
+				}
 				if (score > bestPositionScore)
 				{
 					isEncircle = true;

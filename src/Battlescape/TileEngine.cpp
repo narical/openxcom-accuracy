@@ -917,6 +917,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								unit->addToVisibleUnits((*i));
 								unit->addToVisibleTiles((*i)->getTile());
+								unit->addToLofTiles((*i)->getTile());
 
 								if (unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE)
 								{
@@ -1011,12 +1012,12 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		}
 	}
 	//Test all tiles within view cone for visibility.
-	for (int x = 0; x <= getMaxViewDistance(); ++x) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+	for (int x = 0; x <= _save->getMapSizeX(); ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
 		if (direction & 1)
 		{
 			y1 = 0;
-			y2 = getMaxViewDistance();
+			y2 = _save->getMapSizeY();
 		}
 		else
 		{
@@ -1026,7 +1027,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		for (int y = y1; y <= y2; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
 			const int distanceSqr = x*x + y*y;
-			if (distanceSqr <= getMaxViewDistanceSq() && distanceSqr >= distanceSqrMin)
+			if (distanceSqr >= distanceSqrMin)
 			{
 				posTest.x = posSelf.x + signX[direction] * (swap ? y : x);
 				posTest.y = posSelf.y + signY[direction] * (swap ? x : y);
@@ -1060,7 +1061,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 										Position posVisited = (*i);
 										//Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
 										// this bresenham line's period might be different from the one that originally revealed the tile.
-										if (!unit->hasVisibleTile(_save->getTile(posVisited)))
+										if (!unit->hasVisibleTile(_save->getTile(posVisited)) && x <= getMaxViewDistance() && y <= getMaxViewDistance() && distanceSqr <= getMaxViewDistanceSq())
 										{
 											unit->addToVisibleTiles(_save->getTile(posVisited));
 											_save->getTile(posVisited)->setVisible(+1);
@@ -1071,6 +1072,10 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 											if (t) t->setDiscovered(true, O_WESTWALL);
 											t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
 											if (t) t->setDiscovered(true, O_NORTHWALL);
+										}
+										if (!unit->hasLofTile(_save->getTile(posVisited)))
+										{
+											unit->addToLofTiles(_save->getTile(posVisited));
 										}
 									}
 								}

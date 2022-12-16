@@ -2387,6 +2387,30 @@ const std::vector<Tile*> *BattleUnit::getVisibleTiles()
 }
 
 /**
+ * Add this unit to the list of lof tiles.
+ * @param tile that we now have a lof to.
+ * @return true if a new tile.
+ */
+bool BattleUnit::addToLofTiles(Tile *tile)
+{
+	if (_lofTilesLookup.insert(tile).second)
+	{
+		_lofTiles.push_back(tile);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Get the pointer to the vector of lof tiles.
+ * @return pointer to vector.
+ */
+const std::vector<Tile *> *BattleUnit::getLofTiles()
+{
+	return &_lofTiles;
+}
+
+/**
  * Clears visible tiles. Also reduces the associated visibility counter used by the AI.
  */
 void BattleUnit::clearVisibleTiles()
@@ -2397,6 +2421,16 @@ void BattleUnit::clearVisibleTiles()
 	}
 	_visibleTilesLookup.clear();
 	_visibleTiles.clear();
+	clearLofTiles();
+}
+
+/**
+ * Clears lof-tiles.
+ */
+void BattleUnit::clearLofTiles()
+{
+	_lofTilesLookup.clear();
+	_lofTiles.clear();
 }
 
 /**

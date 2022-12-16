@@ -102,7 +102,9 @@ private:
 	int _walkPhase, _fallPhase;
 	std::vector<BattleUnit *> _visibleUnits, _unitsSpottedThisTurn;
 	std::vector<Tile *> _visibleTiles;
+	std::vector<Tile *> _lofTiles;
 	std::unordered_set<Tile *> _visibleTilesLookup;
+	std::unordered_set<Tile *> _lofTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel, _mana;
 	bool _kneeled, _floating, _dontReselect;
 	bool _haveNoFloorBelow = false;
@@ -366,15 +368,26 @@ public:
 	void clearVisibleUnits();
 	/// Add unit to visible tiles.
 	bool addToVisibleTiles(Tile *tile);
+	/// Add tile to units lof-tiles
+	bool addToLofTiles(Tile *tile);
 	/// Has this unit marked this tile as within its view?
 	bool hasVisibleTile(Tile *tile) const
 	{
 		return _visibleTilesLookup.find(tile) != _visibleTilesLookup.end(); //find?
 	}
+	/// Has this unit marked this tile as within its lof?
+	bool hasLofTile(Tile *tile) const
+	{
+		return _lofTilesLookup.find(tile) != _lofTilesLookup.end(); // find?
+	}
 	/// Get the list of visible tiles.
 	const std::vector<Tile*> *getVisibleTiles();
+	/// Get the list of lof tiles.
+	const std::vector<Tile *> *getLofTiles();
 	/// Clear visible tiles.
 	void clearVisibleTiles();
+	/// Clear lof tiles
+	void clearLofTiles();
 	/// Calculate psi attack accuracy.
 	static int getPsiAccuracy(BattleActionAttack::ReadOnly attack);
 	/// Calculate firing accuracy.
