@@ -888,18 +888,21 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 		if (!(*i)->isOut() && (unit->getId() != (*i)->getId()))
 		{
 			int sizeOther = (*i)->getArmor()->getSize();
+			int totalUnitTiles = 0;
+			int unitTilesNotInViewSector = 0;
 			for (int x = 0; x < sizeOther; ++x)
 			{
 				for (int y = 0; y < sizeOther; ++y)
 				{
+					totalUnitTiles++;
 					Position posToCheck = posOther + Position(x, y, 0);
 					//If we can now find any unit within the arc defined by the event tangent points, its visibility may have been affected by the event.
 					if (inEventVisibilitySector(posToCheck))
 					{
-						if (!unit->checkViewSector(posToCheck, useTurretDirection) && sizeOther < 2)
+						if (!unit->checkViewSector(posToCheck, useTurretDirection))
 						{
 							//Unit within arc, but not in view sector. If it just walked out we need to remove it.
-							unit->removeFromVisibleUnits((*i));
+							unitTilesNotInViewSector++;
 						}
 						else if (visible(unit, _save->getTile(posToCheck))) // (distance is checked here)
 						{
@@ -926,13 +929,16 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
 						}
-						else if (sizeOther < 2)
-						{
+						else						{
 							//Within arc, but not visible. Need to check to see if whatever happened at eventPos blocked a previously seen unit.
-							unit->removeFromVisibleUnits((*i));
+							unitTilesNotInViewSector++;
 						}
 					}
 				}
+			}
+			if (unitTilesNotInViewSector == totalUnitTiles)
+			{
+				unit->removeFromVisibleUnits((*i));
 			}
 		}
 	}
