@@ -48,9 +48,11 @@ Pathfinding::Pathfinding(SavedBattleGame *save) : _save(save), _unit(0), _pathPr
 	_size = _save->getMapSizeXYZ();
 	// Initialize one node per tile
 	_nodes.reserve(_size);
+	_altNodes.reserve(_size);
 	for (int i = 0; i < _size; ++i)
 	{
 		_nodes.push_back(PathfindingNode(_save->getTileCoords(i)));
+		_altNodes.push_back(PathfindingNode(_save->getTileCoords(i)));
 	}
 }
 
@@ -68,8 +70,10 @@ Pathfinding::~Pathfinding()
  * @param pos Position.
  * @return Pointer to node.
  */
-PathfindingNode *Pathfinding::getNode(Position pos)
+PathfindingNode *Pathfinding::getNode(Position pos, bool alt)
 {
+	if (alt)
+		return &_altNodes[_save->getTileIndex(pos)];
 	return &_nodes[_save->getTileIndex(pos)];
 }
 
@@ -1352,19 +1356,31 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
  * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget)
+std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
 {
-	const Position start = unit->getPosition();
+	Position start = unit->getPosition();
+	if (alternateStart)
+		start = *alternateStart;
 	int tuMax = unit->getTimeUnits() - cost.Time;
 	int energyMax = unit->getEnergy() - cost.Energy;
 
 	PathfindingCost costMax = {tuMax, energyMax};
 
-	for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
+	if (alternateStart)
 	{
-		it->reset();
+		for (std::vector<PathfindingNode>::iterator it = _altNodes.begin(); it != _altNodes.end(); ++it)
+		{
+			it->reset();
+		}
 	}
-	PathfindingNode *startNode = getNode(start);
+	else
+	{
+		for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
+		{
+			it->reset();
+		}
+	}
+	PathfindingNode *startNode = getNode(start, alternateStart);
 	startNode->connect({}, 0, 0);
 	PathfindingOpenSet unvisited;
 	unvisited.push(startNode);
@@ -1383,7 +1399,7 @@ std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(const B
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
 			if (!(totalTuCost <= costMax) && !entireMap) // Run out of TUs/Energy
 				continue;
-			PathfindingNode *nextNode = getNode(r.pos);
+			PathfindingNode *nextNode = getNode(r.pos, alternateStart);
 			if (nextNode->isChecked()) // Our algorithm means this node is already at minimum cost.
 				continue;
 			// If this node is unvisited or visited from a better path.
