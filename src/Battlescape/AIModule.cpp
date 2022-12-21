@@ -3467,6 +3467,9 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
 		action->target = furthestToGoTowards(travelTarget, reserved);
+	} else
+	{
+		action->target = _unit->getPosition();
 	}
 	
 	if (_traceAI)
