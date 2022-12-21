@@ -151,11 +151,11 @@ public:
 	/// Like selectSpottedUnitForSniper but works for everyone
 	bool brutalSelectSpottedUnitForSniper();
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
-	int tuCostToReachPosition(Position pos);
+	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, bool encircleTileMode = false, Tile* encircleTile = NULL);
 	/// checks if the path to a position is save
-	bool isPathToPositionSave(Position target);
+	bool isPathToPositionSave(Position target, bool checkForComplicated = false);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
 	/// Chooses a firing mode for the AI based on expected damage dealt
@@ -184,6 +184,8 @@ public:
 	bool validateArcingShot(BattleAction *action);
 	/// check if a unit is targetable according to aiTargetMode
 	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false);
+	/// check the path to an enemy and then subtracts their movement from the cost
+	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
 };
 
 }
