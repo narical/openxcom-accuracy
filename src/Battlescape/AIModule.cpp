@@ -3445,9 +3445,11 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	Position travelTarget = _unit->getPosition();
+	bool shouldHaveLofAfterMove = false;
 	if (bestPrio1Score > 0)
 	{
 		travelTarget = bestPrio1Position;
+		shouldHaveLofAfterMove = true;
 	}
 	else if (bestPrio2Score > 0 && (!sweepMode || needToFlee))
 	{
@@ -3500,9 +3502,17 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted());
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, targetPosition);
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing;
+		}
 	}
-	if (!iHaveLof && encircleTile && encircleTile->getPosition() != _unit->getPosition())
+	if (!shouldHaveLofAfterMove && encircleTile && encircleTile->getPosition() != _unit->getPosition())
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, encircleTile->getPosition());
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << "My facing now is " << action->finalFacing;
+	}
 	action->updateTU();
 	if (action->target == _unit->getPosition())
 	{
