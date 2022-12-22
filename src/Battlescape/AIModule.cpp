@@ -3252,14 +3252,14 @@ void AIModule::brutalThink(BattleAction* action)
 	else if (!IAmPureMelee && !canReachTargetTileWithAttack && !sweepMode)
 		needToFlee = true;
 	bool shouldSkip = false;
-	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode)
+	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !IAmPureMelee)
 		shouldSkip = true;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
 	{
 		Position targetPosition = encircleTile->getPosition();
 		if (unitToWalkTo)
 		{
-			unitToWalkTo->getPosition();
+			targetPosition = unitToWalkTo->getPosition();
 			if (!_unit->isCheatOnMovement())
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
 		}
@@ -3306,7 +3306,7 @@ void AIModule::brutalThink(BattleAction* action)
 				float unitDist = Position::distance(pos, unitPosition);
 				if (unit->getFaction() == _unit->getFaction() && unit != _unit)
 				{
-					if (unitDist < 5)
+					if (unitDist < 5 && !IAmPureMelee)
 						cuddleAvoidModifier += 5 - unitDist;
 				}
 				if (unit->getFaction() == _unit->getFaction())
@@ -3322,19 +3322,19 @@ void AIModule::brutalThink(BattleAction* action)
 			if (peakMode && pu->getTUCost(false).time <= _unit->getTimeUnits() / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
 				shouldPeak = true;
 			int attackTU = snapCost.Time;
-			if (IAmPureMelee)
+			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
 			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
 				haveTUToAttack = true;
 			if (pos != _unit->getPosition() || _unit->getTimeUnits() < attackTU) // If I am at a position and think I should be able to attack, it's a false-positive. Otherwise I wouldn't be here and instead be attacking
 			{
-				if (brutalValidTarget(unitToWalkTo, true) && !IAmPureMelee || shouldPeak)
+				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true) || shouldPeak))
 				{
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
 						lineOfFire = lineOfFire || clearSight(pos, targetPosition);
 				}
-				else
+				if (lineOfFire == false || IAmPureMelee)
 				{
 					if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL))
 					{
