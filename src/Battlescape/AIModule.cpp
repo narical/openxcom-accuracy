@@ -3507,7 +3507,7 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing;
 		}
 	}
-	if (!shouldHaveLofAfterMove && encircleTile && encircleTile->getPosition() != _unit->getPosition())
+	if (!shouldHaveLofAfterMove && encircleTile && encircleTile->getPosition() != _unit->getPosition() && !IAmPureMelee)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, encircleTile->getPosition());
 	if (_traceAI)
 	{
@@ -4238,7 +4238,12 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 	if (abs(attackingUnit->getPosition().z - targetPos.z) <= Options::battleExplosionHeight && distance <= radius)
 	{
 		if (_unit->getFaction() == _unit->getOriginalFaction())
-			enemiesAffected--;
+		{
+			if (!_blaster)
+				enemiesAffected--;
+			else // If we use a blaster we are more willing to take our own death than giving the enemy the kill. So we only subtract part of our value in order to still prefer if we don't die but that should tip it over 0 and make us take the shot anyways.
+				enemiesAffected -= float(radius - distance / 2) / float(radius);
+		}
 		else
 			enemiesAffected += float(radius - distance / 2) / float(radius);
 	}
