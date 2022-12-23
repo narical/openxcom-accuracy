@@ -3304,7 +3304,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!_unit->isCheatOnMovement())
 					unitPosition = _save->getTileCoords(unit->getTileLastSpotted());
 				float unitDist = Position::distance(pos, unitPosition);
-				if (unit->getFaction() == _unit->getFaction() && unit != _unit)
+				if (unit->getFaction() == _unit->getFaction() && unit != _unit && unitPosition.z == pos.z)
 				{
 					if (unitDist < 5 && !IAmPureMelee)
 						cuddleAvoidModifier += 5 - unitDist;
