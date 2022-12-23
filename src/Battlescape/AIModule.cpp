@@ -4169,37 +4169,40 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), 0);
 	Position targetPosition;
-	if (checkLOF)
+	if (action->type != BA_HIT) //Melee-attacks have their own validity check. This additional check can cause false negatives!
 	{
-		if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
+		if (checkLOF)
 		{
-			if (!validateArcingShot(action))
+			if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 			{
-				return 0;
+				if (!validateArcingShot(action))
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				if (!_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &targetPosition, _unit, false, target))
+				{
+					return 0;
+				}
 			}
 		}
 		else
 		{
-			if (!_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &targetPosition, _unit, false, target))
+			if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 			{
-				return 0;
+				if (!validateArcingShot(action))
+				{
+					return 0;
+				}
 			}
-		}
-	}
-	else
-	{
-		if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
-		{
-			if (!validateArcingShot(action))
+			else
 			{
-				return 0;
-			}
-		}
-		else
-		{
-			if (!clearSight(_unit->getPosition(), targetPosition) || !quickLineOfFire(_unit->getPosition(), target, true, true))
-			{
-				return 0;
+				if (!clearSight(_unit->getPosition(), targetPosition) || !quickLineOfFire(_unit->getPosition(), target, true, true))
+				{
+					return 0;
+				}
 			}
 		}
 	}
