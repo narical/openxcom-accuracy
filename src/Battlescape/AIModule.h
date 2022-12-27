@@ -183,7 +183,7 @@ public:
 	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
 	bool validateArcingShot(BattleAction *action);
 	/// check if a unit is targetable according to aiTargetMode
-	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false);
+	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false);
 	/// check the path to an enemy and then subtracts their movement from the cost
 	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
 };

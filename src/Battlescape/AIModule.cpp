@@ -3892,7 +3892,7 @@ bool AIModule::brutalPsiAction()
 				(*i)->getOriginalFaction() == _targetFaction &&
 				(!LOSRequired ||
 				 std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), *i) != _unit->getVisibleUnits()->end()) &&
-				brutalValidTarget(*i)
+				brutalValidTarget(*i, false, true)
 				)
 			{
 				BattleUnit *victim = (*i);
@@ -4806,11 +4806,19 @@ bool AIModule::validateArcingShot(BattleAction *action)
 	return false;
 }
 
-bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode)
+bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode, bool psiMode)
 {
 	if (unit == NULL)
 		return false;
-	if (unit->isOut() || unit->isIgnoredByAI() ||
+	if (psiMode)
+	{
+		if (unit->isOut() || unit->isIgnoredByAI() ||
+			unit->getFaction() == _unit->getFaction())
+		{
+			return false;
+		}
+	}
+	else if (unit->isOut() || unit->isIgnoredByAI() ||
 		unit->getOriginalFaction() == FACTION_HOSTILE)
 	{
 		return false;
