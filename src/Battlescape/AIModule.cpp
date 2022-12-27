@@ -3026,6 +3026,7 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleUnit *unitToWalkTo = NULL;
 	int primeScore = 0;
 	bool amInAnyonesFOW = false;
+	bool haveMindControlled = false;
 
 	Position furthestPositionEnemyCanReach = _unit->getPosition();
 	float closestDistanceofFurthestPosition = FLT_MAX;
@@ -3034,7 +3035,9 @@ void AIModule::brutalThink(BattleAction* action)
 		if (target->isOut())
 			continue;
 		float primeDist = Position::distance(_unit->getPosition(), target->getPosition());
-		if (target->getFaction() == _unit->getFaction())
+		if (target->getFaction() != target->getOriginalFaction() && target->getOriginalFaction() == FACTION_HOSTILE)
+			haveMindControlled = true;
+		if (target->getOriginalFaction() == FACTION_HOSTILE)
 		{
 			if (primeDist <= explosionRadius && target != _unit)
 				primeScore -= 2;
@@ -3141,6 +3144,9 @@ void AIModule::brutalThink(BattleAction* action)
 	bool sweepMode = _unit->isLeeroyJenkins();
 	//When I'm mind-controlled I should definitely be reckless
 	if (_unit->getFaction() != _unit->getOriginalFaction())
+		sweepMode = true;
+	//When the enemy is mindcontrolling our units, there's no time to be careful either, we have to find and kill whatever is spotting and mind-controlling our friends
+	if (haveMindControlled)
 		sweepMode = true;
 	bool iHaveLof = false;
 	bool iHaveLofIncludingEncircle = false;
@@ -4419,7 +4425,7 @@ void AIModule::brutalBlaster()
 		{
 			if ((*i)->getTileLastSpotted() == -1)
 				continue;
-			if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !brutalValidTarget(*i))
+			if (!(*i)->isOut() && (*i)->getOriginalFaction() != FACTION_HOSTILE && !brutalValidTarget(*i))
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted());
 				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
@@ -4651,7 +4657,7 @@ void AIModule::blindFire()
 	{
 		if ((*i)->getTileLastSpotted() == -1)
 			continue;
-		if (!(*i)->isOut() && (*i)->getFaction() != _unit->getFaction() && !brutalValidTarget(*i))
+		if (!(*i)->isOut() && (*i)->getOriginalFaction() != FACTION_HOSTILE && !brutalValidTarget(*i))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = (*i);
@@ -4805,7 +4811,7 @@ bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode)
 	if (unit == NULL)
 		return false;
 	if (unit->isOut() || unit->isIgnoredByAI() ||
-		unit->getFaction() == _unit->getFaction())
+		unit->getOriginalFaction() == FACTION_HOSTILE)
 	{
 		return false;
 	}
