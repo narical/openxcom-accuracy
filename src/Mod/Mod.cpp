@@ -3950,6 +3950,15 @@ int Mod::getPersonnelTime() const
 }
 
 /**
+ * Gets maximum supported lookVariant.
+ * @return value in range from 0 to 63
+ */
+int Mod::getMaxLookVariant() const
+{
+	return abs(_maxLookVariant) % RuleSoldier::LookVariantMax;
+}
+
+/**
  * Gets the escort range.
  * @return Escort range.
  */
