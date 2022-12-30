@@ -2459,6 +2459,22 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	if (const YAML::Node &extended = doc["extended"])
 	{
+		if (const YAML::Node& t = extended["tagsFile"])
+		{
+			auto filePath = t.as<std::string>();
+			auto file = FileMap::getModRuleFile(_modCurrent->info, filePath);
+
+			if (false == checkForSoftError(file == nullptr, "extended", t, "Unknown file name for 'tagsFile': '" + filePath + "'", LOG_ERROR))
+			{
+				//copy only tags and load them in current file.
+				YAML::Node tempTags = file->getYAML()["extended"]["tags"];
+				YAML::Node tempExtended;
+				tempExtended["tags"] = tempTags;
+
+				_scriptGlobal->load(tempExtended);
+			}
+		}
+
 		_scriptGlobal->load(extended);
 		_scriptGlobal->getScriptValues().load(extended, parsers.getShared(), "globals");
 	}
