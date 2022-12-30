@@ -3014,8 +3014,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getTimeUnits() < costSnap.Time && !IAmPureMelee)
 		needToFlee = true;
 
-	//Don't flee if we have a pre-primed-grenade. Become a suicide-bomber-instead!
-	if (needToFlee && (_grenade && _unit->getGrenadeFromBelt()->isFuseEnabled()) || _unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
+	if (_unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
 	{
 		needToFlee = false;
 		IAmPureMelee = true;
@@ -3300,6 +3299,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool visibleToEnemy = false;
 			bool saveFromGrenades = false;
 			float cuddleAvoidModifier = 1;
+			bool eaglesCanFly = false;
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3317,6 +3317,8 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (unit->getFaction() == _unit->getFaction())
 					continue;
+				if (unit->haveNoFloorBelow())
+					eaglesCanFly = true;
 				if (unitDist < closestEnemyDist)
 					closestEnemyDist = unitDist;
 				if (unit->hasLofTile(tile))
@@ -3389,6 +3391,12 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score = 100 / walkToDist;
 			}
 			if (saveFromGrenades)
+			{
+				prio1Score *= 1.25;
+				prio2Score *= 1.25;
+			}
+			//If the enemy has produced smoke for us and can't fly, we like being in smoke
+			if (tile->getSmoke() > 0 && !eaglesCanFly)
 			{
 				prio1Score *= 1.25;
 				prio2Score *= 1.25;
