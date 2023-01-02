@@ -985,6 +985,8 @@ void DogfightState::update()
 				int maxRange = 0;
 				for (CraftWeapon *wpn : *(_craft->getWeapons()))
 				{
+					if (wpn == NULL)
+						continue;
 					if (wpn->getAmmo() == 0)
 						continue;
 					if (wpn->getRules()->getRange() > maxRange)
