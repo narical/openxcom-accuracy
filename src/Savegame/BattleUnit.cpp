@@ -3512,11 +3512,17 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
  * Get a grenade from the belt (used for AI)
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getGrenadeFromBelt() const
+BattleItem *BattleUnit::getGrenadeFromBelt(bool brutal) const
 {
 	for (std::vector<BattleItem*>::const_iterator i = _inventory.begin(); i != _inventory.end(); ++i)
 	{
+		if (brutal && (*i)->getRules()->getDamageType()->RandomType == DRT_NONE)
+			continue;
 		if ((*i)->getRules()->getBattleType() == BT_GRENADE)
+		{
+			return *i;
+		}
+		else if (brutal && (*i)->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
 			return *i;
 		}

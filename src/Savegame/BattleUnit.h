@@ -453,7 +453,7 @@ public:
 	/// Gets the item in the main hand.
 	BattleItem *getMainHandWeapon(bool quickest = true, bool needammo = true) const;
 	/// Gets a grenade from the belt, if any.
-	BattleItem *getGrenadeFromBelt() const;
+	BattleItem *getGrenadeFromBelt(bool brutal = false) const;
 	/// Gets the item from right hand.
 	BattleItem *getRightHandWeapon() const;
 	/// Gets the item from left hand.
