@@ -3314,7 +3314,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (unitDist < 5 && !IAmPureMelee)
 						cuddleAvoidModifier += 5 - unitDist;
 				}
-				if (unit->getFaction() == _unit->getFaction())
+				if (unit->getOriginalFaction() == _unit->getFaction())
 					continue;
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;
