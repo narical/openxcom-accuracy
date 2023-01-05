@@ -3279,7 +3279,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << "need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3293,9 +3293,8 @@ void AIModule::brutalThink(BattleAction* action)
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
 				continue;
-			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee)
-				continue;
 			float closestEnemyDist = FLT_MAX;
+			float targetDist = FLT_MAX;
 			bool visibleToEnemy = false;
 			bool saveFromGrenades = false;
 			float cuddleAvoidModifier = 1;
@@ -3324,6 +3323,11 @@ void AIModule::brutalThink(BattleAction* action)
 				if (unit->hasLofTile(tile))
 					visibleToEnemy = true;
 			}
+			bool outOfRangeForShortRangeWeapon = false;
+			if (Options::battleUFOExtenderAccuracy && maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
+				outOfRangeForShortRangeWeapon = true;
+			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon)
+				continue;
 			bool haveTUToAttack = false;
 			bool lineOfFire = false;
 			bool shouldPeak = false;
@@ -3341,6 +3345,7 @@ void AIModule::brutalThink(BattleAction* action)
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
 						lineOfFire = lineOfFire || clearSight(pos, targetPosition);
+					targetDist = Position::distance(pos, targetPosition);
 				}
 				if (lineOfFire == false || IAmPureMelee)
 				{
@@ -3355,7 +3360,8 @@ void AIModule::brutalThink(BattleAction* action)
 			float prio3Score = 0;
 			if (!_blaster && !needToFlee && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting)
 			{
-				prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
+				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
+					prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
 			Tile *tileAbove = _save->getAboveTile(tile);
 			if (tileAbove && !tileAbove->hasNoFloor())
@@ -4872,6 +4878,23 @@ Position AIModule::closestPositionEnemyCouldReach(BattleUnit *enemy)
 		}
 	}
 	return _unit->getPosition();
+}
+
+int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
+{
+	BattleItem *weapon = unit->getMainHandWeapon();
+	if (weapon == NULL)
+		return 0;
+	if (!Options::battleUFOExtenderAccuracy)
+		return INT_MAX;
+	int highestRangeAvailableWithTUs = 0;
+	if (weapon->getRules()->getCostAimed().Time > 0 && weapon->getRules()->getCostAimed().Time <= tus)
+		highestRangeAvailableWithTUs = weapon->getRules()->getAimRange();
+	if (weapon->getRules()->getCostSnap().Time > 0 && weapon->getRules()->getCostSnap().Time <= tus)
+		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getSnapRange());
+	if (weapon->getRules()->getCostAuto().Time > 0 && weapon->getRules()->getCostAuto().Time <= tus)
+		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getAutoRange());
+	return highestRangeAvailableWithTUs;
 }
 
 }

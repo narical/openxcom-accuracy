@@ -186,6 +186,8 @@ public:
 	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false);
 	/// check the path to an enemy and then subtracts their movement from the cost
 	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
+	/// returns how far a unit can shoot while extender-accuracy is enabled with the given amount of time-units left 
+	int maxExtenderRangeWith(BattleUnit *unit, int tus);
 };
 
 }
