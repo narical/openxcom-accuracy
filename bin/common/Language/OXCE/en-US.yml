@@ -23,6 +23,7 @@ en-US:
   STR_LOAD_CRAFT_LOADOUT_TEMPLATE: "Load Craft Loadout"
   STR_EMPTY_SLOT_N: "Empty slot {0}"
   STR_UNNAMED_SLOT_N: "Unnamed slot {0}"
+  STR_ADD_ON_TOP: "Add on top"
 #CraftEquipmentSaveState.cpp
   STR_SAVE_CRAFT_LOADOUT_TEMPLATE: "Save Craft Loadout"
   STR_SAVE_UC: "SAVE"
