@@ -3324,7 +3324,7 @@ void AIModule::brutalThink(BattleAction* action)
 					visibleToEnemy = true;
 			}
 			bool outOfRangeForShortRangeWeapon = false;
-			if (Options::battleUFOExtenderAccuracy && maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
+			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
 				outOfRangeForShortRangeWeapon = true;
 			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon)
 				continue;
@@ -4886,7 +4886,7 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 	if (weapon == NULL)
 		return 0;
 	if (!Options::battleUFOExtenderAccuracy)
-		return INT_MAX;
+		return weapon->getRules()->getMaxRange();
 	int highestRangeAvailableWithTUs = 0;
 	if (weapon->getRules()->getCostAimed().Time > 0 && weapon->getRules()->getCostAimed().Time <= tus)
 		highestRangeAvailableWithTUs = weapon->getRules()->getAimRange();
@@ -4894,6 +4894,7 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getSnapRange());
 	if (weapon->getRules()->getCostAuto().Time > 0 && weapon->getRules()->getCostAuto().Time <= tus)
 		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getAutoRange());
+	highestRangeAvailableWithTUs = std::min(highestRangeAvailableWithTUs, weapon->getRules()->getMaxRange());
 	return highestRangeAvailableWithTUs;
 }
 
