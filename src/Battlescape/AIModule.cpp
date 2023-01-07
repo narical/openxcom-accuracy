@@ -3046,6 +3046,9 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		if (primeDist <= explosionRadius)
 			primeScore++;
+		// Seems redundant but isn't. This is necessary because we also don't want to attack the units that we have mind-controlled
+		if (target->getFaction() == _unit->getFaction())
+			continue;
 		Position targetPosition = target->getPosition();
 		float currentDist = Position::distance(_unit->getPosition(), targetPosition);
 		if (!_unit->isCheatOnMovement())
@@ -3074,11 +3077,6 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			furthestPositionEnemyCanReach = posUnitCouldReach;
 			closestDistanceofFurthestPosition = distToPosUnitCouldReach;
-		}
-		if (currentDist < shortestDist)
-		{
-			shortestDist = currentDist;
-			unitToFaceTo = target;
 		}
 		if (currentWalkPath < shortestWalkingPath)
 		{
@@ -3238,8 +3236,6 @@ void AIModule::brutalThink(BattleAction* action)
 				Log(LOG_INFO) << "Since I'm not cheating I think " << unitToWalkTo->getId() << " at " << unitToWalkTo->getPosition() << " is at " << targetPosition;
 			}
 		}
-		if (unitToFaceTo)
-			Log(LOG_INFO) << "unit with closest distance " << unitToFaceTo->getId() << " " << unitToFaceTo->getPosition() << " dist: " << shortestDist;
 	}
 	// Prio 1: I can walk right ontop of the unit or the unit is already a valid target and I can attack it from where I go
 	float bestPrio1Score = 0;
@@ -3514,9 +3510,11 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToFaceTo = target;
 		}
 	}
+	if (_traceAI && unitToFaceTo)
+		Log(LOG_INFO) << "unit with closest distance after moving " << unitToFaceTo->getId() << " " << unitToFaceTo->getPosition() << " dist: " << shortestDist;
 	action->type = BA_WALK;
 	action->finalFacing = -1;
-	if (unitToFaceTo != NULL && !needToFlee)
+	if (unitToFaceTo != NULL)
 	{
 		Position targetPosition = unitToFaceTo->getPosition();
 		if (!_unit->isCheatOnMovement())
