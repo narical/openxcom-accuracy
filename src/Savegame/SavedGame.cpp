@@ -297,7 +297,7 @@ std::vector<SaveInfo> SavedGame::getList(Language *lang, bool autoquick)
 	}
 	for (auto i = saves.begin(); i != saves.end(); ++i)
 	{
-		auto filename = std::get<0>(*i);
+		const auto& filename = std::get<0>(*i);
 		try
 		{
 			SaveInfo saveInfo = getSaveInfo(filename, lang);
@@ -1186,8 +1186,8 @@ void SavedGame::setGlobeZoom(int zoom)
  */
 void SavedGame::monthlyFunding()
 {
-	auto countryFunding = getCountryFunding();
-	auto baseMaintenance = getBaseMaintenance();
+	int countryFunding = getCountryFunding();
+	int baseMaintenance = getBaseMaintenance();
 	_funds.back() += (countryFunding - baseMaintenance);
 	_funds.push_back(_funds.back());
 	_maintenance.back() = baseMaintenance;
@@ -1565,7 +1565,7 @@ const RuleResearch* SavedGame::selectGetOneFree(const RuleResearch* research)
 			{
 				pick = RNG::generate(0, possibilities.size() - 1);
 			}
-			auto ret = possibilities.at(pick);
+			auto* ret = possibilities.at(pick);
 			return ret;
 		}
 	}
@@ -1882,7 +1882,7 @@ void SavedGame::getAvailableProductions (std::vector<RuleManufacture *> & produc
 {
 	const std::vector<std::string> &items = mod->getManufactureList();
 	const std::vector<Production *> &baseProductions = base->getProductions();
-	auto baseFunc = base->getProvidedBaseFunc({});
+	RuleBaseFacilityFunctions baseFunc = base->getProvidedBaseFunc({});
 
 	for (std::vector<std::string>::const_iterator iter = items.begin();
 		iter != items.end();
@@ -1933,7 +1933,7 @@ void SavedGame::getDependableManufacture (std::vector<RuleManufacture *> & depen
 		}
 
 		RuleManufacture *m = mod->getManufacture(*iter);
-		const auto &reqs = m->getRequirements();
+		const auto& reqs = m->getRequirements();
 		if (isResearched(reqs) && std::find(reqs.begin(), reqs.end(), research) != reqs.end())
 		{
 			dependables.push_back(m);
@@ -1950,7 +1950,7 @@ void SavedGame::getDependableManufacture (std::vector<RuleManufacture *> & depen
 void SavedGame::getAvailableTransformations (std::vector<RuleSoldierTransformation *> & transformations, const Mod * mod, Base * base) const
 {
 	const std::vector<std::string> &items = mod->getSoldierTransformationList();
-	auto baseFunc = base->getProvidedBaseFunc({});
+	RuleBaseFacilityFunctions baseFunc = base->getProvidedBaseFunc({});
 
 	for (std::vector<std::string>::const_iterator iter = items.begin(); iter != items.end(); ++iter)
 	{
@@ -2255,7 +2255,7 @@ bool SavedGame::isResearched(const std::vector<const RuleResearch *> &research, 
  */
 bool SavedGame::isItemObtained(const std::string &itemType) const
 {
-	for (auto base : _bases)
+	for (auto* base : _bases)
 	{
 		if (base->getStorageItems()->getItem(itemType) > 0)
 			return true;
@@ -2269,9 +2269,9 @@ bool SavedGame::isItemObtained(const std::string &itemType) const
  */
 bool SavedGame::isFacilityBuilt(const std::string &facilityType) const
 {
-	for (auto base : _bases)
+	for (auto* base : _bases)
 	{
-		for (auto fac : *base->getFacilities())
+		for (auto* fac : *base->getFacilities())
 		{
 			if (fac->getBuildTime() == 0 && fac->getRules()->getType() == facilityType)
 			{
@@ -2522,7 +2522,7 @@ int SavedGame::getSoldierIdleDays(Soldier *soldier)
 	if (lastMissionId == -1)
 		return idleDays;
 
-	for (auto missionInfo : _missionStatistics)
+	for (auto* missionInfo : _missionStatistics)
 	{
 		if (missionInfo->id == lastMissionId)
 		{
@@ -3160,9 +3160,9 @@ bool SavedGame::getAutosell(const RuleItem *itype) const
  */
 void SavedGame::removeAllSoldiersFromXcomCraft(Craft *craft)
 {
-	for (auto base : _bases)
+	for (auto* base : _bases)
 	{
-		for (auto soldier : *base->getSoldiers())
+		for (auto* soldier : *base->getSoldiers())
 		{
 			if (soldier->getCraft() == craft)
 			{
@@ -3218,7 +3218,7 @@ void SavedGame::setDisableSoldierEquipment(bool disableSoldierEquipment)
  */
 bool SavedGame::isManaUnlocked(Mod *mod) const
 {
-	auto researchName = mod->getManaUnlockResearch();
+	auto& researchName = mod->getManaUnlockResearch();
 	if (Mod::isEmptyRuleName(researchName) || isResearched(researchName))
 	{
 		return true;
@@ -3235,7 +3235,7 @@ int SavedGame::getCurrentScore(int monthsPassed) const
 	int scoreTotal = _researchScores.at(invertedEntry);
 	if (monthsPassed > 1)
 		scoreTotal += 400;
-	for (auto region : _regions)
+	for (auto* region : _regions)
 	{
 		scoreTotal += region->getActivityXcom().at(invertedEntry) - region->getActivityAlien().at(invertedEntry);
 	}
@@ -3248,7 +3248,7 @@ int SavedGame::getCurrentScore(int monthsPassed) const
 void SavedGame::clearLinksForAlienBase(AlienBase* alienBase, const Mod* mod)
 {
 	// Take care to remove supply missions for this base.
-	for (auto am : _activeMissions)
+	for (auto* am : _activeMissions)
 	{
 		if (am->getAlienBase() == alienBase)
 		{
@@ -3264,7 +3264,7 @@ void SavedGame::clearLinksForAlienBase(AlienBase* alienBase, const Mod* mod)
 	// If there was a pact with this base, cancel it?
 	if (mod->getAllowCountriesToCancelAlienPact() && !alienBase->getPactCountry().empty())
 	{
-		for (auto cntr : _countries)
+		for (auto* cntr : _countries)
 		{
 			if (cntr->getRules()->getType() == alienBase->getPactCountry())
 			{
@@ -3385,7 +3385,7 @@ bool SavedGame::handleResearchUnlockedByMissions(const RuleResearch* research, c
 		addFinishedResearch(researchVec.back(), mod, base, true);
 	}
 
-	if (auto bonus = selectGetOneFree(research))
+	if (auto* bonus = selectGetOneFree(research))
 	{
 		researchVec.push_back(bonus);
 		addFinishedResearch(bonus, mod, base, true);

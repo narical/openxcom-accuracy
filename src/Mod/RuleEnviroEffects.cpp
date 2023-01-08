@@ -105,8 +105,8 @@ void RuleEnviroEffects::afterLoad(const Mod* mod)
 {
 	for (auto& pair : _armorTransformationsName)
 	{
-		auto src = mod->getArmor(pair.first, true);
-		auto dest = mod->getArmor(pair.second, true);
+		auto* src = mod->getArmor(pair.first, true);
+		auto* dest = mod->getArmor(pair.second, true);
 		_armorTransformations[src] = dest;
 	}
 

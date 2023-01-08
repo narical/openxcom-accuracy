@@ -40,8 +40,8 @@ namespace OpenXcom
 
 		RuleItem *item = _game->getMod()->getItem(defs->id, true);
 
-		auto ammoSlot = defs->getAmmoSlotForPage(_state->current_page);
-		auto ammoSlotPrevUsage = defs->getAmmoSlotPrevUsageForPage(_state->current_page);
+		int ammoSlot = defs->getAmmoSlotForPage(_state->current_page);
+		int ammoSlotPrevUsage = defs->getAmmoSlotPrevUsageForPage(_state->current_page);
 		const std::vector<const RuleItem*> dummy;
 		const std::vector<const RuleItem*> *ammo_data = ammoSlot != RuleItem::AmmoSlotSelfUse ? item->getCompatibleAmmoForSlot(ammoSlot) : &dummy;
 

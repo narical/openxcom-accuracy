@@ -310,7 +310,7 @@ public:
 	/// Sets up a mission complete notification.
 	void missionComplete();
 	std::list<BattleState*> getStates();
-	/// Auto end the battle if conditions are met.
+	/// Auto-end the battle if conditions are met.
 	void autoEndBattle();
 	/// Were all enemies neutralized?
 	bool areAllEnemiesNeutralized() const { return _allEnemiesNeutralized; }

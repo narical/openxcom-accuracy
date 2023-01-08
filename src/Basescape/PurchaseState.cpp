@@ -159,12 +159,12 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 		_cats.push_back("STR_FILTER_MISSING");
 	}
 
-	auto providedBaseFunc = _base->getProvidedBaseFunc({});
+	RuleBaseFacilityFunctions providedBaseFunc = _base->getProvidedBaseFunc({});
 	const std::vector<std::string> &soldiers = _game->getMod()->getSoldiersList();
 	for (std::vector<std::string>::const_iterator i = soldiers.begin(); i != soldiers.end(); ++i)
 	{
 		RuleSoldier *rule = _game->getMod()->getSoldier(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_SOLDIER, rule, tr(rule->getType()), rule->getBuyCost(), _base->getSoldierCountAndSalary(rule->getType()).first, 0, 0, -4, 0, 0, 0 };
@@ -202,7 +202,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (std::vector<std::string>::const_iterator i = crafts.begin(); i != crafts.end(); ++i)
 	{
 		RuleCraft *rule = _game->getMod()->getCraft(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_CRAFT, rule, tr(rule->getType()), rule->getBuyCost(), _base->getCraftCount(rule), 0, 0, -1, 0, 0, 0 };
@@ -218,7 +218,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
 	{
 		RuleItem *rule = _game->getMod()->getItem(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && _game->getSavedGame()->isResearched(rule->getBuyRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_ITEM, rule, tr(rule->getType()), rule->getBuyCost(), _base->getStorageItems()->getItem(rule), 0, 0, rule->getListOrder(), 0, 0, 0 };

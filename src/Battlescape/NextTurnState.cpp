@@ -107,7 +107,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 
 	// Note: un-hardcoded the color from 15 to ruleset value, default 15
 	int bgColor = 15;
-	auto sc = _battleGame->getEnviroEffects();
+	auto* sc = _battleGame->getEnviroEffects();
 	if (sc)
 	{
 		bgColor = sc->getMapBackgroundColor();
@@ -494,7 +494,7 @@ void NextTurnState::close()
 	_battleGame->getBattleGame()->cleanupDeleted();
 	_game->popState();
 
-	auto tally = _state->getBattleGame()->tallyUnits();
+	BattlescapeTally tally = _state->getBattleGame()->tallyUnits();
 
 	if (_battleGame->getBattleGame()->areAllEnemiesNeutralized())
 	{
@@ -502,7 +502,7 @@ void NextTurnState::close()
 		tally.liveAliens = 0;
 
 		// mind control anyone who was revived (needed for correct recovery in the debriefing)
-		for (auto bu : *_battleGame->getUnits())
+		for (auto* bu : *_battleGame->getUnits())
 		{
 			if (bu->getOriginalFaction() == FACTION_HOSTILE && !bu->isOut())
 			{
@@ -697,10 +697,10 @@ bool NextTurnState::determineReinforcements()
 					{
 						if (checkGroups)
 						{
-							auto terrain = _game->getMod()->getTerrain(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
+							auto* terrain = _game->getMod()->getTerrain(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
 							if (!terrain)
 							{
-								auto craft = _game->getMod()->getCraft(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
+								auto* craft = _game->getMod()->getCraft(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
 								if (craft)
 								{
 									terrain = craft->getBattlescapeTerrainData();
@@ -708,7 +708,7 @@ bool NextTurnState::determineReinforcements()
 							}
 							if (!terrain)
 							{
-								auto ufo = _game->getMod()->getUfo(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
+								auto* ufo = _game->getMod()->getUfo(_battleGame->getFlattenedMapTerrainNames()[x][y], false);
 								if (ufo)
 								{
 									terrain = ufo->getBattlescapeTerrainData();
@@ -716,11 +716,11 @@ bool NextTurnState::determineReinforcements()
 							}
 							if (terrain)
 							{
-								auto mapblock = terrain->getMapBlock(_battleGame->getFlattenedMapBlockNames()[x][y]);
+								auto* mapblock = terrain->getMapBlock(_battleGame->getFlattenedMapBlockNames()[x][y]);
 								if (mapblock)
 								{
 									bool groupMatched = false;
-									for (auto group : wave.spawnBlockGroups)
+									for (int group : wave.spawnBlockGroups)
 									{
 										if (mapblock->isInGroup(group))
 										{
@@ -761,7 +761,7 @@ bool NextTurnState::determineReinforcements()
 
 			_compliantNodesList.reserve(_battleGame->getNodes()->size());
 
-			for (auto node : *_battleGame->getNodes())
+			for (auto* node : *_battleGame->getNodes())
 			{
 				if (node->isDummy())
 				{
@@ -779,7 +779,7 @@ bool NextTurnState::determineReinforcements()
 				{
 					continue;
 				}
-				auto tileToCheck = _battleGame->getTile(node->getPosition());
+				auto* tileToCheck = _battleGame->getTile(node->getPosition());
 				if (tileToCheck && tileToCheck->getUnit())
 				{
 					continue;
@@ -787,7 +787,7 @@ bool NextTurnState::determineReinforcements()
 				if (wave.minDistanceFromXcomUnits > 1)
 				{
 					bool foundXcomUnitNearby = false;
-					for (auto xcomUnit : *_battleGame->getUnits())
+					for (auto* xcomUnit : *_battleGame->getUnits())
 					{
 						if (xcomUnit->getOriginalFaction() == FACTION_PLAYER &&
 							!xcomUnit->isOut() &&
@@ -910,7 +910,7 @@ bool NextTurnState::deployReinforcements(const ReinforcementsData &wave)
 					{
 						if (iset.items.empty())
 							continue;
-						auto pick = RNG::generate(0, iset.items.size() - 1);
+						int pick = RNG::generate(0, iset.items.size() - 1);
 						RuleItem* ruleItem = _game->getMod()->getItem(iset.items[pick]);
 						if (ruleItem)
 						{
@@ -941,7 +941,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 	bool unitPlaced = false;
 	if (wave.useSpawnNodes && !_compliantNodesList.empty())
 	{
-		for (auto node : _compliantNodesList)
+		for (auto* node : _compliantNodesList)
 		{
 			if (_battleGame->setUnitPosition(unit, node->getPosition()))
 			{
@@ -958,7 +958,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 	// 2. then try random positions on compliant blocks
 	if (!unitPlaced && !_compliantBlocksList.empty())
 	{
-		auto tmpZList = wave.spawnZLevels;
+		std::vector<int> tmpZList = wave.spawnZLevels; // copy
 		if (tmpZList.empty())
 		{
 			tmpZList.reserve(_battleGame->getMapSizeZ());
@@ -1017,7 +1017,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 			bool foundXcomUnitNearby = false;
 			if (wave.minDistanceFromXcomUnits > 1)
 			{
-				for (auto xcomUnit : *_battleGame->getUnits())
+				for (auto* xcomUnit : *_battleGame->getUnits())
 				{
 					if (xcomUnit->getOriginalFaction() == FACTION_PLAYER &&
 						!xcomUnit->isOut() &&
@@ -1030,7 +1030,7 @@ BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit
 			}
 			if (!foundXcomUnitNearby)
 			{
-				for (auto tryZ : tmpZList)
+				for (int tryZ : tmpZList)
 				{
 					Position finalPos = randomPos + Position(0, 0, tryZ);
 					if (unit->getMovementType() != MT_FLY)

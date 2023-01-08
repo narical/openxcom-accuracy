@@ -479,7 +479,7 @@ void AllocateTrainingState::lstSoldiersClick(Action *action)
 	_sel = _lstSoldiers->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
-		auto soldier = _base->getSoldiers()->at(_sel);
+		auto* soldier = _base->getSoldiers()->at(_sel);
 
 		// can't put fully trained soldiers back into training
 		if (soldier->isFullyTrained()) return;

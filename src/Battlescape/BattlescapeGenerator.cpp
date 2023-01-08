@@ -281,7 +281,7 @@ void BattlescapeGenerator::nextStage()
 			//spawn corpse/body for unit to recover
 			for (int i = (*unit)->getArmor()->getTotalSize() - 1; i >= 0; --i)
 			{
-				auto corpse = _save->createItemForTile((*unit)->getArmor()->getCorpseBattlescape()[i], nullptr);
+				auto* corpse = _save->createItemForTile((*unit)->getArmor()->getCorpseBattlescape()[i], nullptr);
 				corpse->setUnit((*unit));
 				_save->getTileEngine()->itemDrop((*unit)->getTile(), corpse, false);
 			}
@@ -560,7 +560,7 @@ void BattlescapeGenerator::nextStage()
 		{
 			if ((*j)->getOriginalFaction() == FACTION_PLAYER && (*j)->getGeoscapeSoldier())
 			{
-				auto transformedArmor = enviro->getArmorTransformation((*j)->getArmor());
+				Armor* transformedArmor = enviro->getArmorTransformation((*j)->getArmor());
 				if (transformedArmor)
 				{
 					// remember the original armor (i.e. only if there were no transformations in earlier stage(s)!)
@@ -581,7 +581,7 @@ void BattlescapeGenerator::nextStage()
 			else if ((*j)->getOriginalFaction() == FACTION_PLAYER)
 			{
 				// HWPs
-				auto transformedArmor = enviro->getArmorTransformation((*j)->getArmor());
+				Armor* transformedArmor = enviro->getArmorTransformation((*j)->getArmor());
 				if (transformedArmor)
 				{
 					// change battleunit's armor
@@ -611,7 +611,7 @@ void BattlescapeGenerator::nextStage()
 	}
 
 	// cleanup before map old map is destroyed
-	for (auto unit : *_save->getUnits())
+	for (auto* unit : *_save->getUnits())
 	{
 		unit->clearVisibleTiles();
 		unit->clearVisibleUnits();
@@ -1584,7 +1584,7 @@ bool BattlescapeGenerator::canPlaceXCOMUnit(Tile *tile)
 void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 {
 	// race defined by deployment if there is one.
-	auto tmpRace = deployment->getRace();
+	std::string tmpRace = deployment->getRace();
 	if (!tmpRace.empty() && _game->getSavedGame()->getMonthsPassed() > -1)
 	{
 		_alienRace = tmpRace;
@@ -1691,7 +1691,7 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 					{
 						if (iset.items.empty())
 							continue;
-						auto pick = RNG::generate(0, iset.items.size() - 1);
+						int pick = RNG::generate(0, iset.items.size() - 1);
 						RuleItem *ruleItem = _game->getMod()->getItem(iset.items[pick]);
 						if (ruleItem)
 						{
@@ -1831,7 +1831,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 		auto& itemType = item->getRules()->getType();
 
 		// find the first soldier with a matching layout-slot
-		for (auto unit : *_save->getUnits())
+		for (auto* unit : *_save->getUnits())
 		{
 			// skip the vehicles, we need only X-Com soldiers WITH equipment-layout
 			if (!unit->getGeoscapeSoldier() || unit->getGeoscapeSoldier()->getEquipmentLayout()->empty())
@@ -1840,14 +1840,14 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 			}
 
 			// find the first matching layout-slot which is not already occupied
-			for (auto layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
+			for (auto* layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
 			{
 				// fixed items will be handled elsewhere
 				if (layoutItem->isFixed()) continue;
 
 				if (itemType != layoutItem->getItemType()) continue;
 
-				auto inventorySlot = _game->getMod()->getInventory(layoutItem->getSlot(), true);
+				auto* inventorySlot = _game->getMod()->getInventory(layoutItem->getSlot(), true);
 
 				// we need to check all "slot boxes" for overlap (not just top left)
 				bool overlaps = false;
@@ -1863,7 +1863,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				}
 				if (overlaps) continue;
 
-				auto toLoad = 0;
+				int toLoad = 0;
 				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 				{
 					if (layoutItem->getAmmoItemForSlot(slot) != "NONE")
@@ -1875,7 +1875,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				if (toLoad)
 				{
 					// maybe we find the layout-ammo on the ground to load it with
-					for (auto ammo : itemList)
+					for (auto* ammo : itemList)
 					{
 						if (ammo->getSlot() == _inventorySlotGround)
 						{
@@ -1925,7 +1925,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 {
 	// go through all soldiers
-	for (auto unit : *_save->getUnits())
+	for (auto* unit : *_save->getUnits())
 	{
 		// skip the vehicles, we need only X-Com soldiers WITH equipment-layout
 		if (!unit->getGeoscapeSoldier() || unit->getGeoscapeSoldier()->getEquipmentLayout()->empty())
@@ -1934,13 +1934,13 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 		}
 
 		// find fixed weapons in the layout
-		for (auto layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
+		for (auto* layoutItem : *unit->getGeoscapeSoldier()->getEquipmentLayout())
 		{
 			if (layoutItem->isFixed() == false) continue;
 
 			// find matching fixed weapon in the inventory
 			BattleItem* fixedItem = nullptr;
-			for (auto item : *unit->getInventory())
+			for (auto* item : *unit->getInventory())
 			{
 				if (item->getSlot()->getId() == layoutItem->getSlot() &&
 					item->getSlotX() == layoutItem->getSlotX() &&
@@ -1953,7 +1953,7 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 			}
 			if (!fixedItem) continue;
 
-			auto toLoad = 0;
+			int toLoad = 0;
 			for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 			{
 				if (layoutItem->getAmmoItemForSlot(slot) != "NONE")
@@ -1965,7 +1965,7 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 			if (toLoad)
 			{
 				// maybe we find the layout-ammo on the ground to load it with
-				for (auto ammo : *_craftInventoryTile->getInventory())
+				for (auto* ammo : *_craftInventoryTile->getInventory())
 				{
 					if (ammo->getSlot() == _inventorySlotGround)
 					{
@@ -2570,7 +2570,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 	if (_globeTexture && _craft)
 	{
 		// TODO (cosmetic): multiple attempts (e.g. several attacks on the same alien base) may generate different terrains from the same globe texture
-		auto tmpTerrain  = _game->getMod()->getTerrain(_globeTexture->getRandomTerrain(_craft), false);
+		auto* tmpTerrain  = _game->getMod()->getTerrain(_globeTexture->getRandomTerrain(_craft), false);
 		if (tmpTerrain)
 		{
 			_globeTerrain = tmpTerrain;
@@ -2824,7 +2824,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 					}
 					else if (!customUfoName.empty())
 					{
-						auto customUfoRule = _game->getMod()->getUfo(customUfoName, true); // crash if it doesn't exist, let the modder know what's going on
+						auto* customUfoRule = _game->getMod()->getUfo(customUfoName, true); // crash if it doesn't exist, let the modder know what's going on
 						ufoTerrain = customUfoRule->getBattlescapeTerrainData();
 						consolidatedUfoType = customUfoName;
 					}
@@ -3160,7 +3160,7 @@ void BattlescapeGenerator::generateBaseMap()
 						mapnum += num;
 						if (mapnum < 10) newname << 0;
 						newname << mapnum;
-						auto block = _terrain->getMapBlock(newname.str());
+						auto* block = _terrain->getMapBlock(newname.str());
 						if (!block)
 						{
 							throw Exception("Map generator encountered an error: map block "
@@ -3286,7 +3286,7 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 
 	// First check for ground level
 	bool levelFound = false;
-	for (auto &i : command->getVerticalLevels())
+	for (auto& i : command->getVerticalLevels())
 	{
 		if (i.levelType == VLT_GROUND)
 		{
@@ -3309,7 +3309,7 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 
 	// Next, find the "filler" levels
 	levelFound = false;
-	for (auto &i : command->getVerticalLevels())
+	for (auto& i : command->getVerticalLevels())
 	{
 		switch (i.levelType)
 		{
@@ -3363,7 +3363,7 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 
 	// Finally, add the "ceiling" level
 	levelFound = false;
-	for (auto &i : command->getVerticalLevels())
+	for (auto& i : command->getVerticalLevels())
 	{
 		if (i.levelType == VLT_CEILING)
 		{

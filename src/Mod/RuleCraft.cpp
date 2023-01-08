@@ -482,8 +482,8 @@ bool RuleCraft::notifyWhenRefueled() const
 }
 
 /**
-* Checks if the craft supports auto patrol feature.
-* @return True if auto patrol is supported.
+* Checks if the craft supports auto-patrol feature.
+* @return True if auto-patrol is supported.
 */
 bool RuleCraft::canAutoPatrol() const
 {

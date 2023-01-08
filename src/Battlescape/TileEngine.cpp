@@ -513,7 +513,7 @@ struct ConfigSide
 
 		constexpr void fill(BoxVertex from, BoxVertex to)
 		{
-			const auto asc = from < to;
+			const bool asc = from < to;
 			axis = diffToAxis[from ^ to];
 			dir = asc ? +1 : -1;
 			first = BoxAxis(axis + (asc ? 0 : AxisMax));
@@ -637,12 +637,12 @@ void iterateSide(int k, const Box& b, const Box& e, const ConfigSide c, F&& f)
 template<typename F>
 void iterateSurface(Box& box, const Box& limit, F&& f)
 {
-	auto beginBox = box;
+	Box beginBox = box;
 
 	expand(box);
 
-	auto crop = box;
-	auto endBox = box;
+	Box crop = box;
+	Box endBox = box;
 
 	expand(endBox);
 
@@ -760,7 +760,7 @@ constexpr int getAbs(int a)
 
 constexpr int getChebyshevDistance(Pos a, Pos b)
 {
-	auto dis = 0;
+	int dis = 0;
 	for (int i = 0; i < AxisMax; ++i)
 	{
 		dis = getMax(getAbs(a[i]-b[i]), dis);
@@ -936,7 +936,7 @@ void TileEngine::calculateSunShading(MapSubset gs)
 		gs,
 		[&](Tile* tile)
 		{
-			auto currLight = power;
+			int currLight = power;
 
 			// At night/dusk sun isn't dropping shades blocked by roofs
 			if (_save->getGlobalShade() <= 4)
@@ -979,7 +979,7 @@ void TileEngine::calculateTerrainBackground(MapSubset gs)
 		mapAreaExpand(gs, getMaxStaticLightDistance() - 1),
 		[&](Tile* tile)
 		{
-			auto currLight = 0;
+			int currLight = 0;
 
 			if (tile->getMapData(O_FLOOR))
 			{
@@ -1024,7 +1024,7 @@ void TileEngine::calculateTerrainItems(MapSubset gs)
 		mapAreaExpand(gs, getMaxDynamicLightDistance() - 1),
 		[&](Tile* tile)
 		{
-			auto currLight = 0;
+			int currLight = 0;
 
 			for (const BattleItem *it : *tile->getInventory())
 			{
@@ -1033,7 +1033,7 @@ void TileEngine::calculateTerrainItems(MapSubset gs)
 					currLight = std::max(currLight, it->getGlowRange());
 				}
 
-				auto u = it->getUnit();
+				auto* u = it->getUnit();
 				if (u && u->getFire())
 				{
 					currLight = std::max(currLight, unitFireLightPowerStunned);
@@ -1061,7 +1061,7 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 			continue;
 		}
 
-		auto currLight = 0;
+		int currLight = 0;
 		// add lighting of soldiers
 		if (_personalLighting && unit->getFaction() == FACTION_PLAYER)
 		{
@@ -1077,7 +1077,7 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 				currLight = std::max(currLight, w->getGlowRange());
 			}
 
-			auto u = w->getUnit();
+			auto* u = w->getUnit();
 			if (u && u->getFire())
 			{
 				currLight = std::max(currLight, unitFireLightPowerStunned);
@@ -1126,8 +1126,8 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 			{
 				const auto currPos = tile->getPosition();
 				const auto index = _save->getTileIndex(currPos);
-				const auto mapData = tile->getMapData(O_OBJECT);
-				auto &cache = _blockVisibility[index];
+				const auto* mapData = tile->getMapData(O_OBJECT);
+				auto& cache = _blockVisibility[index];
 
 				cache = {};
 				cache.height = -tile->getTerrainLevel();
@@ -1146,7 +1146,7 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 				{
 					Position pos = {};
 					Pathfinding::directionToVector(dir, &pos);
-					auto tileNext = _save->getTile(currPos + pos);
+					auto* tileNext = _save->getTile(currPos + pos);
 					auto result = 0;
 
 					result = horizontalBlockage(tile, tileNext, DT_NONE, true);
@@ -1172,7 +1172,7 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 					{
 						Position pos = {};
 						Pathfinding::directionToVector(dir, &pos);
-						auto tileNext = _save->getTile(currPos + pos);
+						auto* tileNext = _save->getTile(currPos + pos);
 						auto result = 0;
 
 						result = horizontalBlockage(tile, tileNext, DT_NONE, true);
@@ -1665,7 +1665,7 @@ bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRe
  */
 Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 {
-	const auto pos = currentUnit->getPosition();
+	const Position pos = currentUnit->getPosition();
 	auto* tile = currentUnit->getTile();
 
 	// determine the origin and target voxels for the raytrace
@@ -1800,7 +1800,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 			}
 		}
 		visibleDistanceMaxVoxel = getMaxVoxelViewDistance(); // reset again (because of smoke formula)
-		auto visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * smokeDensityFactor * getMaxViewDistance()/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * smokeDensityFactor * getMaxViewDistance()/(3 * 20 * 100);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke * smokeDensityFactor / 100, densityOfFire };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
@@ -2013,7 +2013,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
 			}
 		}
 		visibleDistanceMaxVoxel = getMaxVoxelViewDistance(); // reset again (because of smoke formula)
-		auto visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * getMaxViewDistance()/(3 * 20);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * getMaxViewDistance()/(3 * 20);
 		seen = 0 < visibilityQuality;
 	}
 	return seen;
@@ -2397,7 +2397,7 @@ void TileEngine::calculateFOV(Position position, int eventRadius, const bool upd
 	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		const auto posUnit = (*i)->getPosition();
+		const Position posUnit = (*i)->getPosition();
 
 		if (Position::distance2dSq(position, posUnit) <= updateRadius) //could this unit have observed the event?
 		{
@@ -2721,8 +2721,8 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 	action.target = target->getPosition();
 	action.updateTU();
 
-	auto unit = action.actor;
-	auto ammo = action.weapon->getAmmoForAction(action.type);
+	auto* unit = action.actor;
+	auto* ammo = action.weapon->getAmmoForAction(action.type);
 	if (ammo && action.haveTU())
 	{
 		action.targeting = true;
@@ -2753,7 +2753,7 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 			int reactionChance = BA_HIT != originalAction.type ? 100 : meleeReactionChance;
 			int dist = Position::distance2d(unit->getPositionVexels(), target->getPositionVexels());
 			int arc = getArcDirection(getDirectionTo(unit->getPositionVexels(), target->getPositionVexels()), unit->getDirection());
-			auto *origTarg = _save->getTile(originalAction.target) ? _save->getTile(originalAction.target)->getUnit() : nullptr;
+			auto* origTarg = _save->getTile(originalAction.target) ? _save->getTile(originalAction.target)->getUnit() : nullptr;
 
 			ModScript::ReactionCommon::Output arg{ reactionChance, dist };
 			ModScript::ReactionCommon::Worker worker{ target, unit, action.weapon, action.type, reaction->count, originalAction.weapon, originalAction.skillRules, originalAction.type, origTarg, moveType, arc, _save };
@@ -2840,8 +2840,8 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
 		return false;
 	}
 
-	auto unit = attack.attacker;
-	auto weapon = attack.weapon_item;
+	auto* unit = attack.attacker;
+	auto* weapon = attack.weapon_item;
 
 	if (!target)
 	{
@@ -3107,9 +3107,9 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 	}
 
 	voxelCheckFlush();
-	const auto part = (terrainMeleeTilePart > 0) ? (VoxelType)terrainMeleeTilePart : voxelCheck(center, attack.attacker);
-	const auto damage = type->getRandomDamage(power);
-	const auto tileFinalDamage = type->getTileFinalDamage(type->getRandomDamageForTile(power, damage));
+	const VoxelType part = (terrainMeleeTilePart > 0) ? (VoxelType)terrainMeleeTilePart : voxelCheck(center, attack.attacker);
+	const int damage = type->getRandomDamage(power);
+	const int tileFinalDamage = type->getTileFinalDamage(type->getRandomDamageForTile(power, damage));
 	if (part >= V_FLOOR && part <= V_OBJECT)
 	{
 		bool nothing = true;
@@ -3127,7 +3127,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 		}
 		if (nothing)
 		{
-			const auto tp = static_cast<TilePart>(part);
+			const TilePart tp = static_cast<TilePart>(part);
 			//Do we need to update the visibility of units due to smoke/fire?
 			effectGenerated = hitTile(tile, damage, type);
 			//If a tile was destroyed we may have revealed new areas for one or more observers
@@ -3171,7 +3171,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 	if (terrainChanged || effectGenerated)
 	{
 		applyGravity(tile);
-		auto layer = LL_ITEMS;
+		LightLayers layer = LL_ITEMS;
 		if (part == V_FLOOR && _save->getTile(tilePos - Position(0, 0, 1)))
 		{
 			layer = LL_AMBIENT; // roof destroyed, update sunlight in this tile column
@@ -3562,8 +3562,8 @@ int TileEngine::verticalBlockage(Tile *startTile, Tile *endTile, ItemDamageType 
 	// safety check
 	if (startTile == 0 || endTile == 0) return 255;
 
-	auto startPos = startTile->getPosition();
-	auto endPos = endTile->getPosition();
+	Position startPos = startTile->getPosition();
+	Position endPos = endTile->getPosition();
 	int direction = endPos.z - startPos.z;
 
 	if (direction == 0 ) return 0;
@@ -3620,8 +3620,8 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 	// safety check
 	if (startTile == 0 || endTile == 0) return 255;
 
-	auto startPos = startTile->getPosition();
-	auto endPos = endTile->getPosition();
+	Position startPos = startTile->getPosition();
+	Position endPos = endTile->getPosition();
 	if (startPos.z != endPos.z) return 0;
 	Tile *tmpTile = nullptr;
 
@@ -4187,11 +4187,11 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 		{
 			trajectory.push_back(point);
 
-			const auto difference = point - lastPoint;
-			const auto dir = Pathfinding::vectorToDirection(difference);
+			const Position difference = point - lastPoint;
+			const int dir = Pathfinding::vectorToDirection(difference);
 			const auto& cache = _blockVisibility[_save->getTileIndex(lastPoint)];
 
-			auto result = getBlockDir(cache, dir, difference.z);
+			bool result = getBlockDir(cache, dir, difference.z);
 			if (result && difference.z == 0 && getBigWallDir(cache, dir))
 			{
 				if (steps<2)
@@ -4546,14 +4546,14 @@ int TileEngine::psiAttackCalculate(BattleActionAttack::ReadOnly attack, const Ba
 	if (!victim)
 		return 0;
 
-	auto type = attack.type;
-	auto attacker = attack.attacker;
-	auto weapon = attack.weapon_item;
+	BattleActionType type = attack.type;
+	auto* attacker = attack.attacker;
+	auto* weapon = attack.weapon_item;
 
 	int attackStrength = BattleUnit::getPsiAccuracy(attack);
 	int defenseStrength = 30 + victim->getArmor()->getPsiDefence(victim);
 
-	auto dis = Position::distance(attacker->getPosition().toVoxel(), victim->getPosition().toVoxel());
+	float dis = Position::distance(attacker->getPosition().toVoxel(), victim->getPosition().toVoxel());
 
 	auto rng = RNG::globalRandomState().subSequence();
 	int psiAttackResult = 0;
@@ -4704,9 +4704,9 @@ int TileEngine::meleeAttackCalculate(BattleActionAttack::ReadOnly attack, const 
 	int arc = getArcDirection(getDirectionTo(victim->getPositionVexels(), attack.attacker->getPositionVexels()), victim->getDirection());
 	int defenseStrengthPenalty = Clamp((int)(defenseStrength * (arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f)), 0, std::max(0, defenseStrength));
 
-	auto type = attack.type;
-	auto attacker = attack.attacker;
-	auto weapon = attack.weapon_item;
+	BattleActionType type = attack.type;
+	auto* attacker = attack.attacker;
+	auto* weapon = attack.weapon_item;
 
 	auto rng = RNG::globalRandomState().subSequence();
 
@@ -5299,7 +5299,7 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 
 	if (action->weapon)
 	{
-		auto wRule = action->weapon->getRules();
+		auto* wRule = action->weapon->getRules();
 		if (wRule->getBattleType() == BT_MELEE)
 		{
 			// check primary damage type
@@ -5379,7 +5379,7 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 			{
 				if (dir > -1 && tp == O_OBJECT)
 				{
-					auto bigWall = obj->getBigWall();
+					int bigWall = obj->getBigWall();
 					if (dir == 0 /*north*/ && bigWall != Pathfinding::BIGWALLNORTH && bigWall != Pathfinding::BIGWALLWESTANDNORTH) return false;
 					if (dir == 2 /*east */ && bigWall != Pathfinding::BIGWALLEAST  && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;
 					if (dir == 4 /*south*/ && bigWall != Pathfinding::BIGWALLSOUTH && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;

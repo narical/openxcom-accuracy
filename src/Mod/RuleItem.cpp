@@ -46,10 +46,10 @@ void UpdateAttacker(BattleActionAttack& attack)
 {
 	if (attack.weapon_item && !attack.attacker)
 	{
-		const auto battleType = attack.weapon_item->getRules()->getBattleType();
+		const BattleType battleType = attack.weapon_item->getRules()->getBattleType();
 		if (battleType == BT_PROXIMITYGRENADE || battleType == BT_GRENADE)
 		{
-			auto owner = attack.weapon_item->getPreviousOwner();
+			BattleUnit* owner = attack.weapon_item->getPreviousOwner();
 			if (owner)
 			{
 				attack.attacker = owner;
@@ -65,7 +65,7 @@ void UpdateAmmo(BattleActionAttack& attack)
 {
 	if (attack.weapon_item && !attack.damage_item)
 	{
-		const auto battleType = attack.weapon_item->getRules()->getBattleType();
+		const BattleType battleType = attack.weapon_item->getRules()->getBattleType();
 		if (battleType == BT_PROXIMITYGRENADE || battleType == BT_GRENADE || battleType == BT_PSIAMP)
 		{
 			attack.damage_item = attack.weapon_item;
@@ -84,7 +84,7 @@ void UpdateGrenade(BattleActionAttack& attack)
 {
 	if (attack.weapon_item && !attack.damage_item)
 	{
-		const auto battleType = attack.weapon_item->getRules()->getBattleType();
+		const BattleType battleType = attack.weapon_item->getRules()->getBattleType();
 		if (battleType == BT_PROXIMITYGRENADE || battleType == BT_GRENADE)
 		{
 			attack.damage_item = attack.weapon_item;
@@ -250,7 +250,7 @@ void RuleItem::loadAmmoSlotChecked(int& result, const YAML::Node& node, const st
 {
 	if (node)
 	{
-		auto s = node.as<int>(result);
+		int s = node.as<int>(result);
 		if (s < AmmoSlotSelfUse || s >= AmmoSlotMax)
 		{
 			Log(LOG_ERROR) << "ammoSlot outside of allowed range in '" << parentName << "'";
@@ -772,7 +772,7 @@ void RuleItem::afterLoad(const Mod* mod)
 
 	for (auto& pair : _recoveryTransformationsName)
 	{
-		auto item = mod->getItem(pair.first, true);
+		auto* item = mod->getItem(pair.first, true);
 		if (!item->isAlien())
 		{
 			if (!pair.second.empty())
@@ -799,7 +799,7 @@ void RuleItem::afterLoad(const Mod* mod)
 	for (int i = 0; i < AmmoSlotMax; ++i)
 	{
 		mod->linkRule(_compatibleAmmo[i], _compatibleAmmoNames[i]);
-		for (auto a : _compatibleAmmo[i])
+		for (auto* a : _compatibleAmmo[i])
 		{
 			if (_compatibleAmmoSlots.count(a) == 0)
 			{
@@ -815,7 +815,7 @@ void RuleItem::afterLoad(const Mod* mod)
 		}
 		if (_compatibleAmmo[0].size() == 1)
 		{
-			auto ammo = _compatibleAmmo[0][0];
+			auto* ammo = _compatibleAmmo[0][0];
 			if (ammo->getClipSize() > 0 && getClipSize() > 0)
 			{
 				if (getClipSize() % ammo->getClipSize())
@@ -1554,7 +1554,7 @@ const RuleItem* RuleItem::getVehicleClipAmmo() const
  */
 int RuleItem::getVehicleClipSize() const
 {
-	auto ammo = getVehicleClipAmmo();
+	auto* ammo = getVehicleClipAmmo();
 	if (ammo)
 	{
 		if (ammo->getClipSize() > 0 && getClipSize() > 0)
@@ -1577,7 +1577,7 @@ int RuleItem::getVehicleClipSize() const
  */
 int RuleItem::getVehicleClipsLoaded() const
 {
-	auto ammo = getVehicleClipAmmo();
+	auto* ammo = getVehicleClipAmmo();
 	if (ammo)
 	{
 		if (ammo->getClipSize() > 0 && getClipSize() > 0)

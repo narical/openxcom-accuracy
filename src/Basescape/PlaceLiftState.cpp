@@ -71,9 +71,9 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 	_view->setBase(_base);
 
 	_lift = nullptr;
-	for (auto facilityName : _game->getMod()->getBaseFacilitiesList())
+	for (auto& facilityName : _game->getMod()->getBaseFacilitiesList())
 	{
-		auto facilityRule = _game->getMod()->getBaseFacility(facilityName);
+		auto* facilityRule = _game->getMod()->getBaseFacility(facilityName);
 		if (facilityRule->isLift() && facilityRule->isAllowedForBaseType(_base->isFakeUnderwater()) && _game->getSavedGame()->isResearched(facilityRule->getRequirements()))
 		{
 			_accessLifts.push_back(facilityRule);
@@ -97,7 +97,7 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 	_lstAccessLifts->onMouseClick((ActionHandler)&PlaceLiftState::lstAccessLiftsClick);
 	_lstAccessLifts->onMouseClick((ActionHandler)&PlaceLiftState::lstAccessLiftsClick, SDL_BUTTON_MIDDLE);
 
-	for (auto fac : _accessLifts)
+	for (auto* fac : _accessLifts)
 	{
 		_lstAccessLifts->addRow(1, tr(fac->getType()).c_str());
 	}

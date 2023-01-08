@@ -276,7 +276,7 @@ void CraftInfoState::init()
 		{
 			if ((*i)->getCraft() == _craft)
 			{
-				for (auto index : (*i)->getArmor()->getCustomArmorPreviewIndex())
+				for (int index : (*i)->getArmor()->getCustomArmorPreviewIndex())
 				{
 					Surface *customFrame1 = customArmorPreviews->getFrame(index);
 					if (customFrame1)
@@ -300,7 +300,7 @@ void CraftInfoState::init()
 		x = 0;
 		for (std::vector<Vehicle*>::iterator i = _craft->getVehicles()->begin(); i != _craft->getVehicles()->end(); ++i)
 		{
-			for (auto index : (*i)->getRules()->getCustomItemPreviewIndex())
+			for (int index : (*i)->getRules()->getCustomItemPreviewIndex())
 			{
 				Surface *customFrame2 = customItemPreviews->getFrame(index);
 				if (customFrame2)

@@ -134,17 +134,17 @@ public:
 	std::string getAltitude() const;
 	/// Sets the craft's destination.
 	void setDestination(Target *dest) override;
-	/// Gets whether the craft is on auto patrol.
+	/// Gets whether the craft is on auto-patrol.
 	bool getIsAutoPatrolling() const;
-	/// Sets whether the craft is on auto patrol.
+	/// Sets whether the craft is on auto-patrol.
 	void setIsAutoPatrolling(bool isAuto);
-	/// Gets the auto patrol longitude.
+	/// Gets the auto-patrol longitude.
 	double getLongitudeAuto() const;
-	/// Sets the auto patrol longitude.
+	/// Sets the auto-patrol longitude.
 	void setLongitudeAuto(double lon);
-	/// Gets the auto patrol latitude.
+	/// Gets the auto-patrol latitude.
 	double getLatitudeAuto() const;
-	/// Sets the auto patrol latitude.
+	/// Sets the auto-patrol latitude.
 	void setLatitudeAuto(double lat);
 	/// Gets the craft's amount of weapons.
 	int getNumWeapons(bool onlyLoaded = false) const;

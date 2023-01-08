@@ -117,7 +117,7 @@ MonthlyCostsState::MonthlyCostsState(Base *base) : _base(base)
 		RuleCraft *craft = _game->getMod()->getCraft(*i);
 		if (craft->getRentCost() != 0 && _game->getSavedGame()->isResearched(craft->getRequirements()))
 		{
-			auto count = _base->getCraftCount(craft);
+			int count = _base->getCraftCount(craft);
 			if (count > 0 || craft->forceShowInMonthlyCosts())
 			{
 				std::ostringstream ss3;

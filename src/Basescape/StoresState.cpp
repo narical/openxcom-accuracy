@@ -275,7 +275,7 @@ void StoresState::initList(bool grandTotal)
 		}
 
 		int qty = 0;
-		auto rule = _game->getMod()->getItem(item, true);
+		auto* rule = _game->getMod()->getItem(item, true);
 		if (!grandTotal)
 		{
 			// items in stores from this base only

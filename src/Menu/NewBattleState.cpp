@@ -190,9 +190,9 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 	else
 	{
 		_missionTypes.reserve(_game->getMod()->getDeploymentsList().size());
-		for (auto &deploymentName : _game->getMod()->getDeploymentsList())
+		for (auto& deploymentName : _game->getMod()->getDeploymentsList())
 		{
-			auto depl = _game->getMod()->getDeployment(deploymentName);
+			auto* depl = _game->getMod()->getDeployment(deploymentName);
 			if (depl && !depl->isHidden())
 			{
 				_missionTypes.push_back(deploymentName);
@@ -496,7 +496,7 @@ void NewBattleState::initSave()
 
 		base->getSoldiers()->push_back(soldier);
 
-		auto space = _craft->getSpaceAvailable();
+		int space = _craft->getSpaceAvailable();
 		if (_craft->validateAddingSoldier(space, soldier))
 		{
 			soldier->setCraft(_craft);
@@ -749,7 +749,7 @@ void NewBattleState::cbxCraftChange(Action *)
 		if (soldier->getCraft() == tmpCraft)
 		{
 			count--;
-			auto space = _craft->getSpaceAvailable();
+			int space = _craft->getSpaceAvailable();
 			if (_craft->validateAddingSoldier(space, soldier))
 			{
 				soldier->setCraft(_craft);
@@ -797,7 +797,7 @@ void NewBattleState::cbxTerrainChange(Action *)
 		else
 		{
 			std::string raceName = (minDepth != maxDepth) ? (*i) + "_UNDERWATER" : (*i);
-			auto raceRules = _game->getMod()->getAlienRace(raceName);
+			auto* raceRules = _game->getMod()->getAlienRace(raceName);
 			if (!raceRules || maxAlienRank >= raceRules->getMembers())
 			{
 				// not enough members or race doesn't exist
@@ -848,7 +848,7 @@ void NewBattleState::fillList(NewBattleSelectType selectType, bool isRightClick)
 	if (_surfaceBackup.empty())
 	{
 		firstRun = true;
-		for (auto surface : _surfaces)
+		for (auto* surface : _surfaces)
 		{
 			_surfaceBackup[surface] = surface->getVisible();
 			surface->setVisible(false);

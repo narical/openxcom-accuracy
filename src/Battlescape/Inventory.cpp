@@ -90,7 +90,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 	const SavedBattleGame *battleSave = _game->getSavedGame()->getSavedBattle();
 	if (battleSave)
 	{
-		auto enviro = battleSave->getEnviroEffects();
+		auto* enviro = battleSave->getEnviroEffects();
 		if (enviro)
 		{
 			if (!enviro->getInventoryShockIndicator().empty())
@@ -271,7 +271,7 @@ void Inventory::drawGridLabels(bool showTuCost)
 	// Note: iterating over the (sorted) invs vector instead of invs map, because we want to consider listOrder here
 	for (auto& invName : _game->getMod()->getInvsList())
 	{
-		auto i = _game->getMod()->getInventory(invName, true);
+		auto* i = _game->getMod()->getInventory(invName, true);
 		// Draw label
 		text.setX(i->getX());
 		text.setY(i->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
@@ -902,7 +902,7 @@ void Inventory::mouseClick(Action *action, State *state)
 						BattleItem *weaponRightHand = _selUnit->getRightHandWeapon();
 						BattleItem *weaponLeftHand = _selUnit->getLeftHandWeapon();
 
-						auto oldAmmoGoesTo = _inventorySlotGround;
+						auto* oldAmmoGoesTo = _inventorySlotGround;
 						if (!weaponRightHand || _selItem == weaponRightHand)
 						{
 							oldAmmoGoesTo = _inventorySlotRightHand;
@@ -912,10 +912,10 @@ void Inventory::mouseClick(Action *action, State *state)
 							oldAmmoGoesTo = _inventorySlotLeftHand;
 						}
 
-						auto canLoad = true;
+						bool canLoad = true;
 						if (item->getAmmoForSlot(slotAmmo) != 0)
 						{
-							auto tuUnload = item->getRules()->getTUUnload(slotAmmo);
+							int tuUnload = item->getRules()->getTUUnload(slotAmmo);
 							if (_game->isShiftPressed() && (!_tu || tuUnload))
 							{
 								// Quick-swap check
@@ -952,8 +952,8 @@ void Inventory::mouseClick(Action *action, State *state)
 						{
 							if (!_tu || _selUnit->spendTimeUnits(tuCost))
 							{
-								auto arrangeFloor = false;
-								auto oldAmmo = item->setAmmoForSlot(slotAmmo, _selItem);
+								bool arrangeFloor = false;
+								auto* oldAmmo = item->setAmmoForSlot(slotAmmo, _selItem);
 								if (oldAmmo)
 								{
 									moveItem(oldAmmo, oldAmmoGoesTo, 0, 0);
@@ -963,7 +963,7 @@ void Inventory::mouseClick(Action *action, State *state)
 									}
 								}
 
-								auto sound = _selItem->getRules()->getReloadSound();
+								int sound = _selItem->getRules()->getReloadSound();
 								if (sound == Mod::NO_SOUND)
 								{
 									sound = item->getRules()->getReloadSound();
@@ -1123,7 +1123,7 @@ bool Inventory::unload(bool quickUnload)
 		return false;
 	}
 
-	const auto type = _selItem->getRules()->getBattleType();
+	const BattleType type = _selItem->getRules()->getBattleType();
 	const bool grenade = type == BT_GRENADE || type == BT_PROXIMITYGRENADE;
 	const bool weapon = type == BT_FIREARM || type == BT_MELEE;
 	int slotForAmmoUnload = -1;
@@ -1153,13 +1153,13 @@ bool Inventory::unload(bool quickUnload)
 				return false;
 			}
 
-			auto tu = _selItem->getRules()->getTUUnload(slot);
+			int tu = _selItem->getRules()->getTUUnload(slot);
 			if (tu == 0 && !_tu)
 			{
 				return false;
 			}
 
-			auto ammo = _selItem->getAmmoForSlot(slot);
+			auto* ammo = _selItem->getAmmoForSlot(slot);
 			if (ammo)
 			{
 				toForAmmoUnload = tu;
@@ -1211,7 +1211,7 @@ bool Inventory::unload(bool quickUnload)
 		}
 		else
 		{
-			auto oldAmmo = _selItem->setAmmoForSlot(slotForAmmoUnload, nullptr);
+			auto* oldAmmo = _selItem->setAmmoForSlot(slotForAmmoUnload, nullptr);
 			moveItem(oldAmmo, _inventorySlotGround, 0, 0); // 2. + 3. always drop the ammo on the ground
 			arrangeGround();
 		}
@@ -1285,7 +1285,7 @@ bool Inventory::unload(bool quickUnload)
 		}
 		else
 		{
-			auto oldAmmo = _selItem->setAmmoForSlot(slotForAmmoUnload, nullptr);
+			auto* oldAmmo = _selItem->setAmmoForSlot(slotForAmmoUnload, nullptr);
 			if (SecondFreeHand != nullptr)
 			{
 				moveItem(oldAmmo, SecondFreeHand, 0, 0); // 2.
@@ -1634,8 +1634,8 @@ bool Inventory::canBeStacked(BattleItem *itemA, BattleItem *itemB)
 
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 	{
-		auto ammoA = itemA->getAmmoForSlot(slot);
-		auto ammoB = itemB->getAmmoForSlot(slot);
+		auto* ammoA = itemA->getAmmoForSlot(slot);
+		auto* ammoB = itemB->getAmmoForSlot(slot);
 		// or they both have ammo
 		if (ammoA && ammoB)
 		{

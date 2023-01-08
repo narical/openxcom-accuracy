@@ -180,7 +180,7 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	// Checking if _crafts.size() != 1 will disallow the escorting scenario
 
 	// check required item(s)
-	auto requiredItems = rule->getRequiredItems();
+	auto& requiredItems = rule->getRequiredItems();
 	if (!_crafts.front()->areRequiredItemsOnboard(requiredItems))
 	{
 		std::ostringstream ss2;
@@ -199,13 +199,8 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	// check permitted soldiers
 	if (!_crafts.front()->areOnlyPermittedSoldierTypesOnboard(rule))
 	{
-		auto list = rule->getForbiddenSoldierTypes();
-		std::string messageCode = "STR_STARTING_CONDITION_SOLDIER_TYPE_FORBIDDEN";
-		if (list.empty())
-		{
-			list = rule->getAllowedSoldierTypes();
-			messageCode = "STR_STARTING_CONDITION_SOLDIER_TYPE_ALLOWED";
-		}
+		auto& list = rule->getForbiddenSoldierTypes().empty() ? rule->getAllowedSoldierTypes() : rule->getForbiddenSoldierTypes();
+		const std::string messageCode = rule->getForbiddenSoldierTypes().empty() ? "STR_STARTING_CONDITION_SOLDIER_TYPE_ALLOWED" : "STR_STARTING_CONDITION_SOLDIER_TYPE_FORBIDDEN";
 
 		std::ostringstream ss;
 		int i = 0;
@@ -236,13 +231,8 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	}
 
 	// craft is not permitted (= either forbidden or not allowed)
-	auto list = rule->getForbiddenCraft();
-	std::string messageCode = "STR_STARTING_CONDITION_CRAFT_FORBIDDEN";
-	if (list.empty())
-	{
-		list = rule->getAllowedCraft();
-		messageCode = "STR_STARTING_CONDITION_CRAFT_ALLOWED";
-	}
+	auto& list = rule->getForbiddenCraft().empty() ? rule->getAllowedCraft() : rule->getForbiddenCraft();
+	const std::string messageCode = rule->getForbiddenCraft().empty() ? "STR_STARTING_CONDITION_CRAFT_ALLOWED" : "STR_STARTING_CONDITION_CRAFT_FORBIDDEN";
 
 	std::ostringstream ss;
 	int i = 0;

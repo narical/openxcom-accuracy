@@ -101,9 +101,9 @@ void BuildFacilitiesState::populateBuildList()
 	_disabledFacilities.clear();
 	_lstFacilities->clearList();
 
-	auto providedBaseFunc = _base->getProvidedBaseFunc({});
-	auto forbiddenBaseFunc = _base->getForbiddenBaseFunc({});
-	auto futureBaseFunc = _base->getFutureBaseFunc({});
+	RuleBaseFacilityFunctions providedBaseFunc = _base->getProvidedBaseFunc({});
+	RuleBaseFacilityFunctions forbiddenBaseFunc = _base->getForbiddenBaseFunc({});
+	RuleBaseFacilityFunctions futureBaseFunc = _base->getFutureBaseFunc({});
 
 	const std::vector<std::string> &facilities = _game->getMod()->getBaseFacilitiesList();
 	for (std::vector<std::string>::const_iterator i = facilities.begin(); i != facilities.end(); ++i)
@@ -122,9 +122,9 @@ void BuildFacilitiesState::populateBuildList()
 			_disabledFacilities.push_back(rule);
 			continue;
 		}
-		auto req = rule->getRequireBaseFunc();
-		auto forb = rule->getForbiddenBaseFunc();
-		auto prov = rule->getProvidedBaseFunc();
+		RuleBaseFacilityFunctions req = rule->getRequireBaseFunc();
+		RuleBaseFacilityFunctions forb = rule->getForbiddenBaseFunc();
+		RuleBaseFacilityFunctions prov = rule->getProvidedBaseFunc();
 		if ((~providedBaseFunc & req).any())
 		{
 			_disabledFacilities.push_back(rule);
@@ -157,7 +157,7 @@ void BuildFacilitiesState::populateBuildList()
 
 	if (!_disabledFacilities.empty())
 	{
-		auto disabledColor = _lstFacilities->getSecondaryColor();
+		Uint8 disabledColor = _lstFacilities->getSecondaryColor();
 		for (std::vector<RuleBaseFacility*>::iterator i = _disabledFacilities.begin(); i != _disabledFacilities.end(); ++i)
 		{
 			_lstFacilities->addRow(1, tr((*i)->getType()).c_str());

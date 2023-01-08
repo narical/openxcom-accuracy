@@ -610,7 +610,7 @@ std::string Soldier::getCraftString(Language *lang, const BaseSumDailyRecovery& 
 		std::ostringstream ss;
 		ss << lang->getString("STR_WOUNDED");
 		ss << ">";
-		auto days = getNeededRecoveryTime(recovery);
+		int days = getNeededRecoveryTime(recovery);
 		if (days < 0)
 		{
 			ss << "∞";
@@ -1263,12 +1263,12 @@ void Soldier::replenishStats(const BaseSumDailyRecovery& recovery)
  */
 int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 {
-	auto time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
+	int time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
 
-	auto bonusTime = 0;
+	int bonusTime = 0;
 	if (_healthMissing > 0)
 	{
-		auto t = recoveryTime(
+		int t = recoveryTime(
 			valueOverThreshold(_healthMissing, _currentStats.health, _rules->getHealthWoundThreshold()),
 			recovery.HealthRecovery
 		);
@@ -1282,7 +1282,7 @@ int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 	}
 	if (_manaMissing > 0)
 	{
-		auto t = recoveryTime(
+		int t = recoveryTime(
 			valueOverThreshold(_manaMissing, _currentStats.mana, _rules->getManaWoundThreshold()),
 			recovery.ManaRecovery
 		);
@@ -1651,13 +1651,13 @@ bool Soldier::isEligibleForTransformation(RuleSoldierTransformation *transformat
 	// Does this soldier's transformation history preclude this new project?
 	const std::vector<std::string> &requiredTransformations = transformationRule->getRequiredPreviousTransformations();
 	const std::vector<std::string> &forbiddenTransformations = transformationRule->getForbiddenPreviousTransformations();
-	for (auto reqd_trans : requiredTransformations)
+	for (auto& reqd_trans : requiredTransformations)
 	{
 		if (_previousTransformations.find(reqd_trans) == _previousTransformations.end())
 			return false;
 	}
 
-	for (auto forb_trans : forbiddenTransformations)
+	for (auto& forb_trans : forbiddenTransformations)
 	{
 		if (_previousTransformations.find(forb_trans) != _previousTransformations.end())
 			return false;
@@ -1681,10 +1681,10 @@ bool Soldier::isEligibleForTransformation(RuleSoldierTransformation *transformat
 		return false;
 
 	// Does the soldier have the required commendations?
-	for (auto reqd_comm : transformationRule->getRequiredCommendations())
+	for (auto& reqd_comm : transformationRule->getRequiredCommendations())
 	{
 		bool found = false;
-		for (auto comm : *_diary->getSoldierCommendations())
+		for (auto* comm : *_diary->getSoldierCommendations())
 		{
 			if (comm->getDecorationLevelInt() >= reqd_comm.second && comm->getType() == reqd_comm.first)
 			{
@@ -1974,15 +1974,15 @@ const std::vector<const RuleSoldierBonus*> *Soldier::getBonuses(const Mod *mod)
 			}
 		};
 
-		for (auto bonusName : _transformationBonuses)
+		for (auto& bonusName : _transformationBonuses)
 		{
-			auto bonusRule = mod->getSoldierBonus(bonusName.first, false);
+			auto* bonusRule = mod->getSoldierBonus(bonusName.first, false);
 
 			addSorted(bonusRule);
 		}
-		for (auto commendation : *_diary->getSoldierCommendations())
+		for (auto* commendation : *_diary->getSoldierCommendations())
 		{
-			auto bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
+			auto* bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
 
 			addSorted(bonusRule);
 		}
@@ -2019,10 +2019,10 @@ bool Soldier::prepareStatsWithBonuses(const Mod *mod)
 	auto basePsiSkill = _currentStats.psiSkill;
 
 	// 2. refresh soldier bonuses
-	auto bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
+	auto* bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
 
 	// 3. apply soldier bonuses
-	for (auto bonusRule : *bonuses)
+	for (auto* bonusRule : *bonuses)
 	{
 		hasSoldierBonus = true;
 		tmp += *(bonusRule->getStats());

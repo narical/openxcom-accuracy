@@ -625,7 +625,7 @@ void BattlescapeGame::endTurn()
 	_save->getTileEngine()->recalculateFOV();
 
 	// Calculate values
-	auto tally = _save->getBattleGame()->tallyUnits();
+	BattlescapeTally tally = _save->getBattleGame()->tallyUnits();
 
 	// if all units from either faction are killed - the mission is over.
 	if (_save->allObjectivesDestroyed() && _save->getObjectiveType() == MUST_DESTROY)
@@ -691,7 +691,7 @@ void BattlescapeGame::endTurn()
  */
 void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, BattleActionAttack attack, bool hiddenExplosion, bool terrainExplosion)
 {
-	auto origMurderer = attack.attacker;
+	auto* origMurderer = attack.attacker;
 	// If the victim was killed by the murderer's death explosion, fetch who killed the murderer and make HIM the murderer!
 	if (origMurderer && (origMurderer->getSpecialAbility() == SPECAB_EXPLODEONDEATH || origMurderer->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
 		&& origMurderer->getStatus() == STATUS_DEAD && origMurderer->getMurdererId() != 0)
@@ -928,7 +928,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 						// the murderer gets a morale bonus if he is of a different faction (excluding neutrals)
 						murderer->moraleChange(20);
 
-						for (auto winner : *_save->getUnits())
+						for (auto* winner : *_save->getUnits())
 						{
 							if (!winner->isOut() && winner->isSmallUnit() && winner->getOriginalFaction() == murderer->getOriginalFaction())
 							{
@@ -1206,7 +1206,7 @@ void BattlescapeGame::popState()
 
 	if (_states.empty()) return;
 
-	auto first = _states.front();
+	auto* first = _states.front();
 	BattleAction action = first->getAction();
 
 	if (action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_PLAYER
@@ -1711,7 +1711,7 @@ void BattlescapeGame::primaryAction(Position pos)
 				getMap()->getWaypoints()->push_back(pos);
 			}
 		}
-		else if (_currentAction.sprayTargeting) // Special "spray" auto shot that allows placing shots between waypoints
+		else if (_currentAction.sprayTargeting) // Special "spray" autoshot that allows placing shots between waypoints
 		{
 			int maxWaypoints = _currentAction.weapon->getRules()->getSprayWaypoints();
 			if ((int)_currentAction.waypoints.size() >= maxWaypoints ||
@@ -1776,7 +1776,7 @@ void BattlescapeGame::primaryAction(Position pos)
 		}
 		else if (_currentAction.type == BA_USE && _currentAction.weapon->getRules()->getBattleType() == BT_MINDPROBE)
 		{
-			auto targetUnit = _save->selectUnit(pos);
+			auto* targetUnit = _save->selectUnit(pos);
 			if (targetUnit && targetUnit->getFaction() != _save->getSelectedUnit()->getFaction() && targetUnit->getVisible())
 			{
 				if (!_currentAction.weapon->getRules()->isLOSRequired() ||
@@ -1803,10 +1803,10 @@ void BattlescapeGame::primaryAction(Position pos)
 		}
 		else if ((_currentAction.type == BA_PANIC || _currentAction.type == BA_MINDCONTROL || _currentAction.type == BA_USE) && _currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP)
 		{
-			auto targetUnit = _save->selectUnit(pos);
+			auto* targetUnit = _save->selectUnit(pos);
 			if (targetUnit && targetUnit->getVisible())
 			{
-				auto targetFaction = targetUnit->getFaction();
+				UnitFaction targetFaction = targetUnit->getFaction();
 				bool psiTargetAllowed = _currentAction.weapon->getRules()->isTargetAllowed(targetFaction);
 				if (_currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
 				{
@@ -2213,8 +2213,8 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		}
 
 		// Pick the item sets if the unit has builtInWeaponSets
-		auto monthsPassed = _parentState->getGame()->getSavedGame()->getMonthsPassed();
-		auto alienItemLevels = getMod()->getAlienItemLevels().size();
+		int monthsPassed = _parentState->getGame()->getSavedGame()->getMonthsPassed();
+		size_t alienItemLevels = getMod()->getAlienItemLevels().size();
 		int month;
 		if (monthsPassed != -1)
 		{
@@ -2309,10 +2309,10 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 			if ((*unit)->getStatus() == STATUS_UNCONSCIOUS || (*unit)->getStatus() == STATUS_DEAD)
 				_save->removeUnconsciousBodyItem((*unit));
 
-			//remove all items form unit
+			//remove all items from unit
 			(*unit)->removeSpecialWeapons(_save);
-			auto inv = *(*unit)->getInventory();
-			for (auto* bi : inv)
+			auto invCopy = *(*unit)->getInventory();
+			for (auto* bi : invCopy)
 			{
 				_save->removeItem(bi);
 			}
@@ -2349,7 +2349,7 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 void BattlescapeGame::tallySummonedVIPs()
 {
 	EscapeType escapeType = _save->getVIPEscapeType();
-	for (auto unit : *_save->getUnits())
+	for (auto* unit : *_save->getUnits())
 	{
 		if (unit->isVIP() && unit->isSummonedPlayerUnit())
 		{
@@ -2702,15 +2702,15 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 {
 	bool placed = false;
 	Mod *mod = _parentState->getGame()->getMod();
-	auto rightWeapon = action->actor->getRightHandWeapon();
-	auto leftWeapon = action->actor->getLeftHandWeapon();
-	auto unit = action->actor;
+	auto* rightWeapon = action->actor->getRightHandWeapon();
+	auto* leftWeapon = action->actor->getLeftHandWeapon();
+	auto* unit = action->actor;
 
 	auto reloadWeapon = [&unit](BattleItem* weapon, BattleItem* i)
 	{
 		if (weapon && weapon->isWeaponWithAmmo() && !weapon->haveAllAmmo())
 		{
-			auto slot = weapon->getRules()->getSlotForAmmo(i->getRules());
+			int slot = weapon->getRules()->getSlotForAmmo(i->getRules());
 			if (slot != -1)
 			{
 				BattleActionCost cost{ unit };
@@ -3012,13 +3012,13 @@ int BattlescapeGame::checkForProximityGrenades(BattleUnit *unit)
 	{
 		std::ostringstream ss;
 		ss << "STR_DEATH_TRAP_" << deathTrapTile->getFloorSpecialTileType();
-		auto deathTrapRule = getMod()->getItem(ss.str());
+		auto* deathTrapRule = getMod()->getItem(ss.str());
 		if (deathTrapRule &&
 			deathTrapRule->isTargetAllowed(unit->getOriginalFaction()) &&
 			(deathTrapRule->getBattleType() == BT_PROXIMITYGRENADE || deathTrapRule->getBattleType() == BT_MELEE))
 		{
 			BattleItem* deathTrapItem = nullptr;
-			for (auto item : *deathTrapTile->getInventory())
+			for (auto* item : *deathTrapTile->getInventory())
 			{
 				if (item->getRules() == deathTrapRule)
 				{
@@ -3219,7 +3219,7 @@ void BattlescapeGame::autoEndBattle()
 		}
 		else
 		{
-			auto tally = tallyUnits();
+			BattlescapeTally tally = tallyUnits();
 			end = (tally.liveAliens == 0 || tally.liveSoldiers == 0);
 			if (tally.liveAliens == 0)
 			{

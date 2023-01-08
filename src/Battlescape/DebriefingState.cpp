@@ -999,7 +999,7 @@ void DebriefingState::prepareDebriefing()
 
 	AlienDeployment *ruleDeploy = _game->getMod()->getDeployment(battle->getMissionType());
 	// OXCE: Don't forget custom mission overrides
-	auto alienCustomMission = _game->getMod()->getDeployment(battle->getAlienCustomMission());
+	AlienDeployment* alienCustomMission = _game->getMod()->getDeployment(battle->getAlienCustomMission());
 	if (alienCustomMission)
 	{
 		ruleDeploy = alienCustomMission;
@@ -1191,7 +1191,7 @@ void DebriefingState::prepareDebriefing()
 					toBeDamaged.push_back((*k));
 				}
 			}
-			for (auto fac : toBeDamaged)
+			for (auto* fac : toBeDamaged)
 			{
 				base->damageFacility(fac);
 			}
@@ -1220,7 +1220,7 @@ void DebriefingState::prepareDebriefing()
 	// lets see what happens with units
 
 	// manual update state of all units
-	for (auto unit : *battle->getUnits())
+	for (auto* unit : *battle->getUnits())
 	{
 		// scripts (or some bugs in the game) could make aliens or soldiers that have "unresolved" stun or death state.
 		// Note: resolves the "last bleeding alien" too
@@ -1235,7 +1235,7 @@ void DebriefingState::prepareDebriefing()
 			//spawn corpse/body for unit to recover
 			for (int i = unit->getArmor()->getTotalSize() - 1; i >= 0; --i)
 			{
-				auto corpse = battle->createItemForTile(unit->getArmor()->getCorpseBattlescape()[i], nullptr);
+				auto* corpse = battle->createItemForTile(unit->getArmor()->getCorpseBattlescape()[i], nullptr);
 				corpse->setUnit(unit);
 				battle->getTileEngine()->itemDrop(unit->getTile(), corpse, false);
 			}
@@ -1426,8 +1426,8 @@ void DebriefingState::prepareDebriefing()
 	}
 	for (auto* u : waitingTransformations)
 	{
-		auto ignore = u->isIgnored();
-		auto faction = u->getFaction();
+		bool ignore = u->isIgnored();
+		UnitFaction faction = u->getFaction();
 		// convert it, and mind control the resulting unit.
 		// reason: zombies don't create unconscious bodies... ever.
 		// the only way we can get into this situation is if psi-capture is enabled.
@@ -1563,7 +1563,7 @@ void DebriefingState::prepareDebriefing()
 							{
 								const RuleItem *primaryRule = weapon->getRules();
 								const BattleItem *ammoItem = weapon->getAmmoForSlot(0);
-								const auto *compatible = primaryRule->getVehicleClipAmmo();
+								const RuleItem *compatible = primaryRule->getVehicleClipAmmo();
 								if (primaryRule->getVehicleUnit() && compatible && ammoItem != 0 && ammoItem->getAmmoQuantity() > 0)
 								{
 									int total = ammoItem->getAmmoQuantity();
@@ -1617,7 +1617,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				if (!(*j)->getArmor()->getCorpseBattlescape().empty())
 				{
-					auto corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
+					auto* corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
 					if (corpseRule && corpseRule->isRecoverable())
 					{
 						recoverAlien(*j, base);
@@ -1635,7 +1635,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				if (!(*j)->getArmor()->getCorpseBattlescape().empty())
 				{
-					auto corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
+					auto* corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
 					if (corpseRule && corpseRule->isRecoverable())
 					{
 						recoverAlien(*j, base);
@@ -1710,7 +1710,7 @@ void DebriefingState::prepareDebriefing()
 		int vipSubtotal = battle->getSavedVIPs() + battle->getLostVIPs();
 
 		// 2. add non-fake civilian VIPs, no scoring
-		for (auto unit : *battle->getUnits())
+		for (auto* unit : *battle->getUnits())
 		{
 			if (unit->isVIP() && unit->getOriginalFaction() == FACTION_NEUTRAL && !unit->isResummonedFakeCivilian())
 			{
@@ -2108,7 +2108,7 @@ void DebriefingState::prepareDebriefing()
 		{
 			int bountyQty = std::max(1, ruleDeploy->getMissionBountyItemCount());
 			addItemsToBaseStores(bountyItem, base, bountyQty, true);
-			auto specialType = bountyItem->getSpecialType();
+			int specialType = bountyItem->getSpecialType();
 			if (specialType > 1)
 			{
 				if (_recoveryStats.find(specialType) != _recoveryStats.end())
@@ -2245,7 +2245,7 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 	}
 	else
 	{
-		auto recoveryTransformations = ruleItem->getRecoveryTransformations();
+		auto& recoveryTransformations = ruleItem->getRecoveryTransformations();
 		if (!recoveryTransformations.empty())
 		{
 			for (auto& pair : recoveryTransformations)
@@ -2253,9 +2253,9 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 				if (pair.second.size() > 1)
 				{
 					int totalWeight = 0;
-					for (auto it = pair.second.begin(); it != pair.second.end(); ++it)
+					for (int it : pair.second)
 					{
-						totalWeight += (*it);
+						totalWeight += it;
 					}
 					// roll each item separately
 					for (int i = 0; i < quantity; ++i)
@@ -2263,9 +2263,9 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 						int roll = RNG::generate(1, totalWeight);
 						int runningTotal = 0;
 						int position = 0;
-						for (auto it = pair.second.begin(); it != pair.second.end(); ++it)
+						for (int it : pair.second)
 						{
-							runningTotal += (*it);
+							runningTotal += it;
 							if (runningTotal >= roll)
 							{
 								base->getStorageItems()->addItem(pair.first->getType(), position);
@@ -2635,13 +2635,13 @@ void DebriefingState::recoverAlien(BattleUnit *from, Base *base)
 
 		if (!from->getArmor()->getCorpseBattlescape().empty())
 		{
-			auto corpseRule = from->getArmor()->getCorpseBattlescape().front();
+			auto* corpseRule = from->getArmor()->getCorpseBattlescape().front();
 			if (corpseRule && corpseRule->isRecoverable())
 			{
 				if (corpseRule->isCorpseRecoverable())
 				{
 					addStat("STR_ALIEN_CORPSES_RECOVERED", 1, corpseRule->getRecoveryPoints());
-					auto corpseItem = from->getArmor()->getCorpseGeoscape();
+					auto* corpseItem = from->getArmor()->getCorpseGeoscape();
 					addItemsToBaseStores(corpseItem, base, 1, true);
 				}
 			}
@@ -2698,7 +2698,7 @@ int DebriefingState::getRecoveredItemCount(const RuleItem *rule)
 int DebriefingState::getTotalRecoveredItemCount()
 {
 	int total = 0;
-	for (auto item : _recoveredItems)
+	for (auto& item : _recoveredItems)
 	{
 		total += item.second;
 	}

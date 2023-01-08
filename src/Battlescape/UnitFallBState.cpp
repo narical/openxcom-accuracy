@@ -145,7 +145,7 @@ void UnitFallBState::think()
 					}
 				}
 				// move our personal lighting with us
-				auto change = _parent->checkForProximityGrenades(*unit);
+				int change = _parent->checkForProximityGrenades(*unit);
 				_terrain->calculateLighting(change ? LL_ITEMS : LL_UNITS, (*unit)->getPosition(), 2);
 				_terrain->calculateFOV((*unit)->getPosition(), 2, false); //update everyone else to see this unit, as well as all this unit's visible units.
 				_terrain->calculateFOV((*unit), true, false); //update tiles
@@ -202,7 +202,7 @@ void UnitFallBState::think()
 					bool alreadyTaken = t && std::find(escapeTiles.begin(), escapeTiles.end(), t) != escapeTiles.end();
 					bool alreadyOccupied = t && t->getUnit() && (t->getUnit() != unitBelow);
 					_parent->getSave()->getPathfinding()->setUnit(*ub); //TODO: remove as was done by `getTUCost`
-					auto r = _parent->getSave()->getPathfinding()->getTUCost(originalPosition, dir, *ub, 0, BAM_NORMAL);
+					PathfindingStep r = _parent->getSave()->getPathfinding()->getTUCost(originalPosition, dir, *ub, 0, BAM_NORMAL);
 					bool movementBlocked = r.cost.time == Pathfinding::INVALID_MOVE_COST;
 					endPosition = r.pos;
 					bool hasFloor = t && !t->hasNoFloor(_parent->getSave());

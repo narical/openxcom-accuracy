@@ -97,7 +97,7 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 	// priming
 	if (weapon->getFuseTimerType() != BFT_NONE)
 	{
-		auto normalWeapon = weapon->getBattleType() != BT_GRENADE && weapon->getBattleType() != BT_FLARE && weapon->getBattleType() != BT_PROXIMITYGRENADE;
+		bool normalWeapon = weapon->getBattleType() != BT_GRENADE && weapon->getBattleType() != BT_FLARE && weapon->getBattleType() != BT_PROXIMITYGRENADE;
 		if (_action->weapon->getFuseTimer() == -1)
 		{
 			if (weapon->getCostPrime().Time > 0)
@@ -116,10 +116,10 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 
 	if (weapon->getBattleType() == BT_FIREARM)
 	{
-		auto isLauncher = _action->weapon->getCurrentWaypoints() != 0;
-		auto slotLauncher = _action->weapon->getActionConf(BA_LAUNCH)->ammoSlot;
-		auto slotSnap = _action->weapon->getActionConf(BA_SNAPSHOT)->ammoSlot;
-		auto slotAuto = _action->weapon->getActionConf(BA_AUTOSHOT)->ammoSlot;
+		bool isLauncher = _action->weapon->getCurrentWaypoints() != 0;
+		int slotLauncher = _action->weapon->getActionConf(BA_LAUNCH)->ammoSlot;
+		int slotSnap = _action->weapon->getActionConf(BA_SNAPSHOT)->ammoSlot;
+		int slotAuto = _action->weapon->getActionConf(BA_AUTOSHOT)->ammoSlot;
 
 		if ((!isLauncher || slotLauncher != slotAuto) && weapon->getCostAuto().Time > 0)
 		{

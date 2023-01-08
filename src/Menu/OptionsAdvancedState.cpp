@@ -155,7 +155,7 @@ void OptionsAdvancedState::init()
  */
 void OptionsAdvancedState::addSettings(const std::vector<OptionInfo> &settings)
 {
-	auto fixeduserOptions = _game->getMod()->getFixedUserOptions();
+	auto& fixeduserOptions = _game->getMod()->getFixedUserOptions();
 	for (std::vector<OptionInfo>::const_iterator i = settings.begin(); i != settings.end(); ++i)
 	{
 		std::string name = tr(i->description());
@@ -229,7 +229,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 	if (!setting) return;
 
 	// greyed out options are fixed, cannot be changed by the user
-	auto fixeduserOptions = _game->getMod()->getFixedUserOptions();
+	auto& fixeduserOptions = _game->getMod()->getFixedUserOptions();
 	std::map<std::string, std::string>::const_iterator it = fixeduserOptions.find(setting->id());
 	if (it != fixeduserOptions.end())
 	{

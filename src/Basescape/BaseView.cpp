@@ -230,7 +230,7 @@ BasePlacementErrors BaseView::getPlacementError(const RuleBaseFacility *rule, Ba
 	// Check usage of facilites in the area that will be replaced by a new building
 	if (facilityBeingMoved == nullptr)
 	{
-		auto areaUseError = _base->isAreaInUse(placementArea, rule);
+		BasePlacementErrors areaUseError = _base->isAreaInUse(placementArea, rule);
 		if (areaUseError != BPE_None)
 		{
 			return areaUseError;
@@ -242,7 +242,7 @@ BasePlacementErrors BaseView::getPlacementError(const RuleBaseFacility *rule, Ba
 	{
 		for (int x = placementArea.beg_x; x < placementArea.end_x; ++x)
 		{
-			auto facility = _facilities[x][y];
+			BaseFacility* facility = _facilities[x][y];
 			if (facility != 0)
 			{
 				if (isStartFacility)
@@ -253,14 +253,14 @@ BasePlacementErrors BaseView::getPlacementError(const RuleBaseFacility *rule, Ba
 				if (facilityBeingMoved == nullptr)
 				{
 					// Further check to see if the facility already there can be built over and we're not removing an important base function
-					auto canBuildOverError = rule->getCanBuildOverOtherFacility(facility->getRules());
+					BasePlacementErrors canBuildOverError = rule->getCanBuildOverOtherFacility(facility->getRules());
 					if (canBuildOverError != BPE_None)
 					{
 						return canBuildOverError;
 					}
 
 					// Make sure the facility we're building over is entirely within the size of the one we're checking
-					const auto removedArea = facility->getPlacement();
+					const BaseAreaSubset removedArea = facility->getPlacement();
 					if (BaseAreaSubset::intersection(placementArea, removedArea) != removedArea)
 					{
 						return BPE_UpgradeSizeMismatch;
@@ -448,8 +448,8 @@ void BaseView::draw()
 		for (int y = 0; y < BASE_SIZE; ++y)
 		{
 			Surface *frame = _texture->getFrame(0);
-			auto fx = (x * GRID_SIZE);
-			auto fy = (y * GRID_SIZE);
+			int fx = (x * GRID_SIZE);
+			int fy = (y * GRID_SIZE);
 			frame->blitNShade(this, fx, fy);
 		}
 	}
@@ -472,8 +472,8 @@ void BaseView::draw()
 				else
 					frame = _texture->getFrame((*i)->getRules()->getSpriteShape() + num + outline);
 
-				auto fx = (x * GRID_SIZE);
-				auto fy = (y * GRID_SIZE);
+				int fx = (x * GRID_SIZE);
+				int fy = (y * GRID_SIZE);
 				frame->blitNShade(this, fx, fy);
 
 				num++;
@@ -495,8 +495,8 @@ void BaseView::draw()
 					if (_facilities[x][y] != 0 && _facilities[x][y]->isBuiltOrHadPreviousFacility() && !_facilities[x][y]->getRules()->connectorsDisabled())
 					{
 						Surface *frame = _texture->getFrame(7);
-						auto fx = (x * GRID_SIZE - GRID_SIZE / 2);
-						auto fy = (y * GRID_SIZE);
+						int fx = (x * GRID_SIZE - GRID_SIZE / 2);
+						int fy = (y * GRID_SIZE);
 						frame->blitNShade(this, fx, fy);
 					}
 				}
@@ -511,8 +511,8 @@ void BaseView::draw()
 					if (_facilities[subX][y] != 0 && _facilities[subX][y]->isBuiltOrHadPreviousFacility() && !_facilities[subX][y]->getRules()->connectorsDisabled())
 					{
 						Surface *frame = _texture->getFrame(8);
-						auto fx = (subX * GRID_SIZE);
-						auto fy = (y * GRID_SIZE - GRID_SIZE / 2);
+						int fx = (subX * GRID_SIZE);
+						int fy = (y * GRID_SIZE - GRID_SIZE / 2);
 						frame->blitNShade(this, fx, fy);
 					}
 				}
@@ -531,8 +531,8 @@ void BaseView::draw()
 				if ((*i)->getRules()->getSize() == 1)
 				{
 					Surface *frame = _texture->getFrame((*i)->getRules()->getSpriteFacility() + num);
-					auto fx = (x * GRID_SIZE);
-					auto fy = (y * GRID_SIZE);
+					int fx = (x * GRID_SIZE);
+					int fy = (y * GRID_SIZE);
 					frame->blitNShade(this, fx, fy);
 				}
 
@@ -549,8 +549,8 @@ void BaseView::draw()
 				if ((*craft)->getStatus() != "STR_OUT")
 				{
 					Surface *frame = _texture->getFrame((*craft)->getSkinSprite() + 33);
-					auto fx = ((*i)->getX() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 + 2);
-					auto fy = ((*i)->getY() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 - 4);
+					int fx = ((*i)->getX() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 + 2);
+					int fy = ((*i)->getY() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 - 4);
 					frame->blitNShade(this, fx, fy);
 					(*i)->setCraftForDrawing(*craft);
 				}
