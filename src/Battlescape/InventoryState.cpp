@@ -73,9 +73,24 @@ static const int _applyTemplateBtnY  = 113;
  * @param tu Does Inventory use up Time Units?
  * @param parent Pointer to parent Battlescape.
  */
-InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bool noCraft) : _tu(tu), _noCraft(noCraft), _parent(parent), _base(base), _reloadUnit(false), _globalLayoutIndex(-1)
+InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bool noCraft) :
+	_tu(tu), _noCraft(noCraft), _parent(parent), _base(base),
+	_resetCustomDeploymentBackup(false), _reloadUnit(false), _globalLayoutIndex(-1)
 {
 	_battleGame = _game->getSavedGame()->getSavedBattle();
+
+	if (Options::oxceAlternateCraftEquipmentManagement && !_tu && _base && _noCraft)
+	{
+		// deassign all soldiers
+		for (auto* soldier : *_base->getSoldiers())
+		{
+			_backup[soldier] = soldier->getCraft();
+			if (soldier->getCraft() && soldier->getCraft()->getStatus() != "STR_OUT")
+			{
+				soldier->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
+			}
+		}
+	}
 
 	if (Options::maximizeInfoScreens)
 	{
@@ -416,6 +431,11 @@ void InventoryState::init()
 		// reload necessary after the change of armor
 		if (_reloadUnit)
 		{
+			if (Options::oxceAlternateCraftEquipmentManagement && s->getArmor() && unit->getArmor() && s->getArmor()->getSize() > unit->getArmor()->getSize())
+			{
+				_resetCustomDeploymentBackup = true;
+			}
+
 			// Step 0: update unit's armor
 			unit->updateArmorFromSoldier(_game->getMod(), s, s->getArmor(), _battleGame->getDepth(), false, nullptr);
 
@@ -900,6 +920,10 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 				_base->getStorageItems()->removeItem(next->getStoreItem());
 			}
 		}
+		if (Options::oxceAlternateCraftEquipmentManagement && next->getSize() > prev->getSize())
+		{
+			_resetCustomDeploymentBackup = true;
+		}
 		soldier->setArmor(next, true);
 		armorChanged = true;
 	}
@@ -1036,6 +1060,22 @@ void InventoryState::btnOkClick(Action *)
 		if (_base || !Options::oxceAlternateCraftEquipmentManagement)
 		{
 			saveEquipmentLayout();
+		}
+		if (Options::oxceAlternateCraftEquipmentManagement && !_tu && _base && _noCraft)
+		{
+			// assign all soldiers back, if possible
+			for (auto* soldier : *_base->getSoldiers())
+			{
+				Craft* c = _backup[soldier];
+				if (!soldier->getCraft() && c && c->getStatus() != "STR_OUT")
+				{
+					auto space = c->getSpaceAvailable();
+					if (c->validateAddingSoldier(space, soldier))
+					{
+						soldier->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, _resetCustomDeploymentBackup);
+					}
+				}
+			}
 		}
 		if (_parent)
 		{

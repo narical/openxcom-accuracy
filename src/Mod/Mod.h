@@ -801,8 +801,8 @@ public:
 	bool getAIPickUpWeaponsMoreActively() const { return _aiPickUpWeaponsMoreActively; }
 	/// Gets whether or not the civilian AI should pick up weapons more actively.
 	bool getAIPickUpWeaponsMoreActivelyCiv() const { return _aiPickUpWeaponsMoreActivelyCiv; }
-	/// Gets maximum supported lookVariant (0-15)
-	int getMaxLookVariant() const  {return abs(_maxLookVariant) % 16;}
+	/// Gets maximum supported lookVariant.
+	int getMaxLookVariant() const;
 	/// Gets the threshold for too much smoke (vanilla default = 10).
 	int getTooMuchSmokeThreshold() const  {return _tooMuchSmokeThreshold;}
 	/// Gets the custom physical training factor in percent (default = 100).

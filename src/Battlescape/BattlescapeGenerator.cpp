@@ -919,16 +919,16 @@ void BattlescapeGenerator::run()
 		fuelPowerSources();
 	}
 
-	if (!isPreview && _ufo && _ufo->getStatus() == Ufo::CRASHED)
-	{
-		explodePowerSources();
-	}
-
 	setMusic(ruleDeploy, false);
 	// set shade (alien bases are a little darker, sites depend on world shade)
 	_save->setGlobalShade(_worldShade);
 
 	_save->getTileEngine()->calculateLighting(LL_AMBIENT, TileEngine::invalid, 0, true);
+
+	if (!isPreview && _ufo && _ufo->getStatus() == Ufo::CRASHED)
+	{
+		explodePowerSources();
+	}
 }
 
 /**
