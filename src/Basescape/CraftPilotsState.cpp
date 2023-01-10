@@ -209,7 +209,7 @@ void CraftPilotsState::updateUI()
 	_btnAdd->setVisible((int)(_lstPilots->getTexts()) < c->getRules()->getPilots());
 
 	int availablePilots = 0;
-	for (auto soldier : *_base->getSoldiers())
+	for (auto* soldier : *_base->getSoldiers())
 	{
 		// must be on board & able to drive
 		if (soldier->getCraft() == c && soldier->getRules()->getAllowPiloting())

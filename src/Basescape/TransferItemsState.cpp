@@ -845,7 +845,7 @@ void TransferItemsState::increaseByValue(int change)
 		}
 		else if (Options::storageLimitsEnforced)
 		{
-			auto used = craft->getTotalItemStorageSize(_game->getMod());
+			double used = craft->getTotalItemStorageSize(_game->getMod());
 			if (used > 0.0 && _baseTo->storesOverfull(_iQty + used))
 			{
 				errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE_FOR_CRAFT");

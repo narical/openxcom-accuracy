@@ -140,7 +140,7 @@ void RuleTerrain::refreshMapDataSets(int craftSkinIndex, Mod *mod)
 	}
 
 	std::vector<std::string> newNames;
-	for (auto item : _mapDataSets)
+	for (auto* item : _mapDataSets)
 	{
 		if (item->getName() == "BLANKS")
 		{

@@ -192,10 +192,10 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 	for (YAML::const_iterator i = node["vehicles"].begin(); i != node["vehicles"].end(); ++i)
 	{
 		std::string type = (*i)["type"].as<std::string>();
-		auto ruleItem = mod->getItem(type);
+		auto* ruleItem = mod->getItem(type);
 		if (ruleItem)
 		{
-			auto ruleUnit = ruleItem->getVehicleUnit();
+			auto* ruleUnit = ruleItem->getVehicleUnit();
 			if (ruleUnit)
 			{
 				int size = ruleUnit->getArmor()->getTotalSize();
@@ -730,7 +730,7 @@ double Craft::getTotalItemStorageSize(const Mod* mod) const
  */
 int Craft::getTotalItemCount(const RuleItem* item) const
 {
-	auto qty = _items->getItem(item);
+	int qty = _items->getItem(item);
 
 	for (const auto* v : _vehicles)
 	{
@@ -1158,10 +1158,10 @@ void Craft::checkup()
  */
 UfoDetection Craft::detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const
 {
-	auto distance = XcomDistance(getDistance(target));
+	int distance = XcomDistance(getDistance(target));
 
-	auto detectionChance = 0;
-	auto detectionType = DETECTION_NONE;
+	int detectionChance = 0;
+	UfoDetection detectionType = DETECTION_NONE;
 
 	if (distance < _stats.radarRange)
 	{

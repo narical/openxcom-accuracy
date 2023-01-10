@@ -190,7 +190,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	if (_leavesBehindOnSellNames.size())
 	{
 		_leavesBehindOnSell.reserve(_leavesBehindOnSellNames.size());
-		auto first = mod->getBaseFacility(_leavesBehindOnSellNames.at(0), true);
+		auto* first = mod->getBaseFacility(_leavesBehindOnSellNames.at(0), true);
 		if (first->getSize() == _size)
 		{
 			if (_leavesBehindOnSellNames.size() != 1)
@@ -203,7 +203,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 		{
 			for (const auto& n : _leavesBehindOnSellNames)
 			{
-				auto r = mod->getBaseFacility(n, true);
+				auto* r = mod->getBaseFacility(n, true);
 				if (r->getSize() != 1)
 				{
 					throw Exception("All replacement facilities must have size=1 (when using different size as the original facility).");
@@ -225,7 +225,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	{
 		if (_storageTiles.size() != 1 || _storageTiles[0] != TileEngine::invalid)
 		{
-			const auto size = 10 * _size;
+			const int size = 10 * _size;
 			for (const auto& p : _storageTiles)
 			{
 				if (p.x < 0 || p.x > size ||

@@ -115,7 +115,7 @@ void ProjectileFlyBState::init()
 	// reaction fire
 	if (reactionShoot)
 	{
-		auto target = _parent->getSave()->getTile(_action.target)->getUnit();
+		BattleUnit* target = _parent->getSave()->getTile(_action.target)->getUnit();
 		// target is dead: cancel the shot.
 		if (!target || target->isOut() || target->isOutThresholdExceed() || target != _parent->getSave()->getSelectedUnit())
 		{
@@ -393,7 +393,7 @@ void ProjectileFlyBState::init()
 
 	if (createNewProjectile())
 	{
-		auto conf = weapon->getActionConf(_action.type);
+		auto* conf = weapon->getActionConf(_action.type);
 		if (_parent->getMap()->isAltPressed() || (conf && !conf->followProjectiles))
 		{
 			// temporarily turn off camera following projectiles to prevent annoying flashing effects (e.g. on minigun-like weapons)
@@ -419,7 +419,7 @@ bool ProjectileFlyBState::createNewProjectile()
 {
 	++_action.autoShotCounter;
 
-	// Special handling for "spray" auto attack, get target positions from the action's waypoints, starting from the back
+	// Special handling for "spray" auto-attack, get target positions from the action's waypoints, starting from the back
 	if (_action.sprayTargeting)
 	{
 		// Since we're just spraying, target the middle of the tile
@@ -466,7 +466,7 @@ bool ProjectileFlyBState::createNewProjectile()
 		accuracyDivider = 200.0;
 	}
 
-	auto attack = BattleActionAttack::GetAferShoot(_action, _ammo);
+	BattleActionAttack attack = BattleActionAttack::GetAferShoot(_action, _ammo);
 	if (_action.type == BA_THROW)
 	{
 		_projectileImpact = projectile->calculateThrow(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider);
@@ -642,7 +642,7 @@ void ProjectileFlyBState::think()
 	}
 	else
 	{
-		auto attack = BattleActionAttack::GetAferShoot(_action, _ammo);
+		BattleActionAttack attack = BattleActionAttack::GetAferShoot(_action, _ammo);
 		if (_action.type != BA_THROW && _ammo && _ammo->getRules()->getShotgunPellets() != 0)
 		{
 			// shotgun pellets move to their terminal location instantly as fast as possible
@@ -703,7 +703,7 @@ void ProjectileFlyBState::think()
 			}
 			else
 			{
-				auto tmpUnit = _parent->getSave()->getTile(_action.target)->getUnit();
+				auto* tmpUnit = _parent->getSave()->getTile(_action.target)->getUnit();
 				if (tmpUnit && tmpUnit != _unit)
 				{
 					tmpUnit->getStatistics()->shotAtCounter++; // Only counts for guns, not throws or launches

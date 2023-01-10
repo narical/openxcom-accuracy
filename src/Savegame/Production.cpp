@@ -143,7 +143,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 		int count = 0;
 		do
 		{
-			auto ruleCraft = _rules->getProducedCraft();
+			auto* ruleCraft = _rules->getProducedCraft();
 			if (ruleCraft)
 			{
 				Craft *craft = new Craft(ruleCraft, b, g->getId(ruleCraft->getType()));

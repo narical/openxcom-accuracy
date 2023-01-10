@@ -195,7 +195,7 @@ void UnitWalkBState::think()
 				_unit->setVisible(false);
 			}
 
-			auto change = _parent->checkForProximityGrenades(_unit);
+			int change = _parent->checkForProximityGrenades(_unit);
 			// move our personal lighting with us
 			_terrain->calculateLighting(change ? LL_ITEMS : LL_UNITS, _unit->getPosition(), 2);
 			_terrain->calculateFOV(_unit->getPosition(), 2, false); //update unit visibility for all units which can see last and current position.
@@ -273,11 +273,11 @@ void UnitWalkBState::think()
 			}
 
 			_pf->setUnit(_unit); //TODO: remove as was done by `getTUCost`
-			auto r = _pf->getTUCost(_unit->getPosition(), dir, _unit, 0, _action.getMoveType());
+			PathfindingStep r = _pf->getTUCost(_unit->getPosition(), dir, _unit, 0, _action.getMoveType());
 
-			auto tu = r.cost.time;
+			int tu = r.cost.time;
 			int energy = r.cost.energy;
-			auto destination = r.pos;
+			Position destination = r.pos;
 
 			if (tu == Pathfinding::INVALID_MOVE_COST)
 			{

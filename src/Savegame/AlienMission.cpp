@@ -719,8 +719,8 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 			if (_rule.getOperationType() == AMOT_REGION_EXISTING_BASE || _rule.getOperationType() == AMOT_REGION_NEW_BASE_IF_NECESSARY)
 			{
 				// region only
-				auto missionRegion = mod.getRegion(_region, true);
-				for (auto ab : *game.getAlienBases())
+				auto* missionRegion = mod.getRegion(_region, true);
+				for (auto* ab : *game.getAlienBases())
 				{
 					if (missionRegion->insideRegion(ab->getLongitude(), ab->getLatitude()))
 					{
@@ -754,7 +754,7 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 				std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getOperationSpawnZone()).areas;
 				std::pair<double, double> pos;
 				int tries = 0;
-				auto operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
+				AlienDeployment* operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
 				bool wantsToSpawnFakeUnderwater = RNG::percent(operationBaseType->getFakeUnderwaterSpawnChance());
 				bool found = false;
 				while (!found)

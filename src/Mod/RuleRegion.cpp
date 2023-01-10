@@ -81,7 +81,7 @@ void RuleRegion::load(const YAML::Node &node)
 	_missionZones = node["missionZones"].as< std::vector<MissionZone> >(_missionZones);
 	{
 		int zn = 0;
-		for (auto &z : _missionZones)
+		for (auto& z : _missionZones)
 		{
 			if (z.areas.size() < 1)
 			{
@@ -90,7 +90,7 @@ void RuleRegion::load(const YAML::Node &node)
 			}
 			int an = 0;
 			bool firstAreaType = z.areas.at(0).isPoint();
-			for (auto &a : z.areas)
+			for (auto& a : z.areas)
 			{
 				if (a.isPoint() != firstAreaType)
 				{

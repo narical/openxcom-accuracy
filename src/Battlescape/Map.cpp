@@ -187,7 +187,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_fadeTimer->onTimer((SurfaceHandler)&Map::fadeShade);
 	_fadeTimer->start();
 
-	auto enviro = _save->getEnviroEffects();
+	auto* enviro = _save->getEnviroEffects();
 	if (enviro)
 	{
 		_bgColor = enviro->getMapBackgroundColor();
@@ -455,7 +455,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	}
 	else if (movingUnit && unitTile == currTile)
 	{
-		auto upperTile = _save->getAboveTile(unitTile);
+		auto* upperTile = _save->getAboveTile(unitTile);
 		if (upperTile && upperTile->hasNoFloor(_save))
 		{
 			bu = upperTile->getUnit();
@@ -649,15 +649,15 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	};
 
 	// draw unit
-	auto shade = 0;
-	auto offsets = calculateWalkingOffset(bu);
+	int shade = 0;
+	UnitWalkingOffset offsets = calculateWalkingOffset(bu);
 	if (moving)
 	{
-		const auto start = bu->getPosition();
-		const auto end = bu->getDestination();
-		const auto minLevel = std::min(start.z, end.z);
-		const auto startShade = getMixedTileShade(_save->getTile(start), start.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
-		const auto endShade = getMixedTileShade(_save->getTile(end), end.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
+		const Position start = bu->getPosition();
+		const Position end = bu->getDestination();
+		const auto minLevel = std::min(start.z, end.z); // Sint16
+		const int startShade = getMixedTileShade(_save->getTile(start), start.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
+		const int endShade = getMixedTileShade(_save->getTile(end), end.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
 		shade = Interpolate(startShade, endShade, offsets.NormalizedMovePhase, 16);
 	}
 	else
@@ -835,7 +835,7 @@ void Map::drawTerrain(Surface *surface)
 	}
 
 	surface->lock();
-	const auto cameraPos = _camera->getMapOffset();
+	const Position cameraPos = _camera->getMapOffset();
 	for (int itZ = beginZ; itZ <= endZ; itZ++)
 	{
 		bool topLayer = itZ == endZ;
@@ -852,7 +852,7 @@ void Map::drawTerrain(Surface *surface)
 				if (screenPosition.x > -_spriteWidth && screenPosition.x < surface->getWidth() + _spriteWidth &&
 					screenPosition.y > -_spriteHeight && screenPosition.y < surface->getHeight() + _spriteHeight )
 				{
-					auto isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
+					bool isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
 
 					if (tile->isDiscovered(O_FLOOR))
 					{
@@ -884,7 +884,7 @@ void Map::drawTerrain(Surface *surface)
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_FLOOR), tileShade, false, _nvColor);
 					}
 
-					auto unit = tile->getUnit();
+					auto* unit = tile->getUnit();
 
 					// Draw cursor back
 					if (_cursorType != CT_NONE && _selectorX > itX - _cursorSize && _selectorY > itY - _cursorSize && _selectorX < itX+1 && _selectorY < itY+1 && !_save->getBattleState()->getMouseOverIcons())
@@ -938,7 +938,7 @@ void Map::drawTerrain(Surface *surface)
 						tmpSurface = tile->getSprite(O_WESTWALL);
 						if (tmpSurface)
 						{
-							auto wallShade = getWallShade(O_WESTWALL, tile);
+							int wallShade = getWallShade(O_WESTWALL, tile);
 							if (tile->getObstacle(O_WESTWALL))
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), obstacleShade, false, _nvColor);
 							else
@@ -948,7 +948,7 @@ void Map::drawTerrain(Surface *surface)
 						tmpSurface = tile->getSprite(O_NORTHWALL);
 						if (tmpSurface)
 						{
-							auto wallShade = getWallShade(O_NORTHWALL, tile);
+							int wallShade = getWallShade(O_NORTHWALL, tile);
 							if (tile->getObstacle(O_NORTHWALL))
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_NORTHWALL), obstacleShade, bool(tile->getSprite(O_WESTWALL)), _nvColor);
 							else
@@ -1167,8 +1167,8 @@ void Map::drawTerrain(Surface *surface)
 					{
 						if ((int)(_transparencies->size()) >= (p.getColor() + 1) * 1024)
 						{
-							auto vaporX = p.getX() + cameraPos.x;
-							auto vaporY = p.getY() + cameraPos.y;
+							float vaporX = p.getX() + cameraPos.x;
+							float vaporY = p.getY() + cameraPos.y;
 							auto transparetOffsets = _transparencies->data() + (p.getColor() * 1024) + (p.getOpacity() * 256);
 
 							ShaderDrawFunc(
@@ -1245,7 +1245,7 @@ void Map::drawTerrain(Surface *surface)
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
 								std::ostringstream ss;
-								auto attack = BattleActionAttack::GetBeforeShoot(*action);
+								BattleActionAttack attack = BattleActionAttack::GetBeforeShoot(*action);
 								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
 								int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
@@ -1344,7 +1344,7 @@ void Map::drawTerrain(Surface *surface)
 									}
 									else if (action->weapon->needsAmmoForAction(action->type))
 									{
-										auto ammo = attack.damage_item;
+										auto* ammo = attack.damage_item;
 										if (ammo != nullptr)
 										{
 											rule = ammo->getRules();
@@ -1594,7 +1594,7 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 
-	auto selectedUnit = _save->getSelectedUnit();
+	auto* selectedUnit = _save->getSelectedUnit();
 	if (selectedUnit && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode()) && selectedUnit->getPosition().z <= _camera->getViewLevel())
 	{
 		_camera->convertMapToScreen(selectedUnit->getPosition(), &screenPosition);
@@ -1618,7 +1618,7 @@ void Map::drawTerrain(Surface *surface)
 	// Draw motion scanner arrows
 	if (_isAltPressed && _save->getSide() == FACTION_PLAYER && this->getCursorType() != CT_NONE)
 	{
-		for (auto myUnit : *_save->getUnits())
+		for (auto* myUnit : *_save->getUnits())
 		{
 			if (myUnit->getScannedTurn() == _save->getTurn() && myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
 			{
@@ -1966,7 +1966,7 @@ void Map::animate(bool redraw)
 	// animate certain units (large flying units have a propulsion animation)
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		const auto pos = (*i)->getPosition();
+		const Position pos = (*i)->getPosition();
 
 		// skip units that do not have position
 		if (pos == TileEngine::invalid)
@@ -2064,9 +2064,9 @@ UnitWalkingOffset Map::calculateWalkingOffset(const BattleUnit *unit) const
 	// If we are walking in between tiles, interpolate it's terrain level.
 	if (unit->getStatus() == STATUS_WALKING || unit->getStatus() == STATUS_FLYING)
 	{
-		const auto posCurr = unit->getPosition();
-		const auto posDest = unit->getDestination();
-		const auto posLast = unit->getLastPosition();
+		const Position posCurr = unit->getPosition();
+		const Position posDest = unit->getDestination();
+		const Position posLast = unit->getLastPosition();
 		if (phase < midphase)
 		{
 			int fromLevel = getTerrainLevel(posCurr, size);
@@ -2202,12 +2202,12 @@ void Map::addVaporParticle(const Tile* tile, Particle particle)
  */
 Collections::Range<const Particle*> Map::getVaporParticle(const Tile* tile, bool topLayer) const
 {
-	auto pos = tile->getPosition();
+	Position pos = tile->getPosition();
 	auto& v = _vaporParticles[_camera->getMapSizeX() * pos.y + pos.x];
-	auto startZ = pos.z * Position::TileZ;
-	auto endZ = startZ + Position::TileZ;
-	auto s = std::partition_point(v.data(), v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < startZ; });
-	auto e = topLayer ? v.data() + v.size() : std::partition_point(s, v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < endZ; });
+	int startZ = pos.z * Position::TileZ;
+	int endZ = startZ + Position::TileZ;
+	auto* s = std::partition_point(v.data(), v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < startZ; });
+	auto* e = topLayer ? v.data() + v.size() : std::partition_point(s, v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < endZ; });
 	return Collections::Range{ s, e };
 }
 

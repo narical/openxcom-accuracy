@@ -255,7 +255,7 @@ namespace OpenXcom
 	void Ufopaedia::list(SavedGame *save, Mod *mod, const std::string &section, ArticleDefinitionList &data)
 	{
 		auto state = createCommonArticleState(save, mod);
-		for (auto a : state->articleList)
+		for (auto* a : state->articleList)
 		{
 			if (a->section == section)
 			{

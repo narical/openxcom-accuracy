@@ -142,7 +142,7 @@ const std::map<std::string, std::string> StatsForNerdsState::shortTranslationMap
  */
 StatsForNerdsState::StatsForNerdsState(std::shared_ptr<ArticleCommonState> state, bool debug, bool ids, bool defaults) : _state{ std::move(state) }, _counter(0), _indent(false)
 {
-	auto article = _state->getCurrentArticle();
+	auto* article = _state->getCurrentArticle();
 	_typeId = article->getType();
 	_topicId = article->id;
 	_mainArticle = true;
@@ -346,22 +346,22 @@ void StatsForNerdsState::cbxAmmoSelect(Action *)
 		if (_typeId == UFOPAEDIA_TYPE_ITEM || _typeId == UFOPAEDIA_TYPE_TFTD_ITEM)
 		{
 			// perform same checks as in ArticleStateItem.cpp
-			auto ammoId = _filterOptions.at(selIdx);
-			auto ammo_article = _game->getMod()->getUfopaediaArticle(ammoId, true);
+			const auto& ammoId = _filterOptions.at(selIdx);
+			auto* ammo_article = _game->getMod()->getUfopaediaArticle(ammoId, true);
 			if (Ufopaedia::isArticleAvailable(_game->getSavedGame(), ammo_article))
 			{
-				auto ammo_rule = _game->getMod()->getItem(ammoId, true);
+				auto* ammo_rule = _game->getMod()->getItem(ammoId, true);
 				_game->pushState(new StatsForNerdsState(UFOPAEDIA_TYPE_ITEM, ammo_rule->getType(), _btnIncludeDebug->getPressed(), _btnIncludeIds->getPressed(), _btnIncludeDefaults->getPressed()));
 			}
 		}
 		else if(_typeId == UFOPAEDIA_TYPE_ARMOR || _typeId == UFOPAEDIA_TYPE_TFTD_ARMOR)
 		{
 			// perform similar checks as above, but don't crash if article is not found
-			auto builtInItemId = _filterOptions.at(selIdx);
-			auto builtInItem_article = _game->getMod()->getUfopaediaArticle(builtInItemId, false);
+			const auto& builtInItemId = _filterOptions.at(selIdx);
+			auto* builtInItem_article = _game->getMod()->getUfopaediaArticle(builtInItemId, false);
 			if (builtInItem_article && Ufopaedia::isArticleAvailable(_game->getSavedGame(), builtInItem_article))
 			{
-				auto builtInItem_rule = _game->getMod()->getItem(builtInItemId, true);
+				auto* builtInItem_rule = _game->getMod()->getItem(builtInItemId, true);
 				_game->pushState(new StatsForNerdsState(UFOPAEDIA_TYPE_ITEM, builtInItem_rule->getType(), _btnIncludeDebug->getPressed(), _btnIncludeIds->getPressed(), _btnIncludeDefaults->getPressed()));
 			}
 		}
@@ -699,7 +699,7 @@ void StatsForNerdsState::addVectorOfGeneric(std::ostringstream &ss, const std::v
 	resetStream(ss);
 	int i = 0;
 	ss << "{";
-	for (auto &item : vec)
+	for (auto& item : vec)
 	{
 		if (i > 0)
 		{
@@ -827,7 +827,7 @@ void StatsForNerdsState::addScriptTags(std::ostringstream &ss, const ScriptValue
 {
 	auto& tagValues = values.getValuesRaw();
 	ArgEnum index = ScriptParserBase::getArgType<ScriptTag<T, I>>();
-	auto tagNames = _game->getMod()->getScriptGlobal()->getTagNames().at(index);
+	auto& tagNames = _game->getMod()->getScriptGlobal()->getTagNames().at(index);
 	for (size_t i = 0; i < tagValues.size(); ++i)
 	{
 		auto nameAsString = tagNames.values[i].name.toString().substr(4);
@@ -844,7 +844,7 @@ void StatsForNerdsState::addIntegerScript(const std::string &propertyName, const
 
 void StatsForNerdsState::addTextScript(const std::string &propertyName, const std::string &value)
 {
-	auto text = _showDebug ? value : std::string(tr(value));
+	std::string text = _showDebug ? value : std::string(tr(value));
 	_lstRawData->addRow(2, trp(propertyName).c_str(), text.c_str());
 	_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
 	++_counter;
@@ -852,7 +852,7 @@ void StatsForNerdsState::addTextScript(const std::string &propertyName, const st
 
 void StatsForNerdsState::addTextFormat1Script(const std::string &propertyName, const std::string &format, const int &value1)
 {
-	auto text = tr(format).arg(value1);
+	std::string text = tr(format).arg(value1);
 	_lstRawData->addRow(2, trp(propertyName).c_str(), text.c_str());
 	_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
 	++_counter;
@@ -860,7 +860,7 @@ void StatsForNerdsState::addTextFormat1Script(const std::string &propertyName, c
 
 void StatsForNerdsState::addTextFormat2Script(const std::string &propertyName, const std::string &format, const int &value1, const int &value2)
 {
-	auto text = tr(format).arg(value1).arg(value2);
+	std::string text = tr(format).arg(value1).arg(value2);
 	_lstRawData->addRow(2, trp(propertyName).c_str(), text.c_str());
 	_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
 	++_counter;
@@ -1140,7 +1140,7 @@ void StatsForNerdsState::addVectorOfIntegers(std::ostringstream &ss, const std::
 	resetStream(ss);
 	int i = 0;
 	ss << "{";
-	for (auto &item : vec)
+	for (auto& item : vec)
 	{
 		if (i > 0)
 		{
@@ -1708,12 +1708,12 @@ void StatsForNerdsState::addSpriteResourcePath(std::ostringstream &ss, Mod *mod,
 	std::map<std::string, std::vector<ExtraSprites *> >::const_iterator i = mod->getExtraSprites().find(resourceSetName);
 	if (i != mod->getExtraSprites().end())
 	{
-		for (auto extraSprite : i->second)
+		for (auto* extraSprite : i->second)
 		{
 			// strip mod offset from the in-game ID
 			int originalSpriteId = resourceId - (extraSprite->getModOwner()->offset);
 
-			auto mapOfSprites = extraSprite->getSprites();
+			auto* mapOfSprites = extraSprite->getSprites();
 			auto individualSprite = mapOfSprites->find(originalSpriteId);
 			if (individualSprite != mapOfSprites->end())
 			{
@@ -1744,17 +1744,17 @@ void StatsForNerdsState::addSoundVectorResourcePaths(std::ostringstream &ss, Mod
 	}
 
 	// go through all extra sounds from all mods
-	for (auto resourceSet : mod->getExtraSounds())
+	for (auto& resourceSet : mod->getExtraSounds())
 	{
 		// only check the relevant ones (e.g. "BATTLE.CAT")
 		if (resourceSet.first == resourceSetName)
 		{
-			for (auto resourceId : resourceIds)
+			for (int resourceId : resourceIds)
 			{
 				// strip mod offset from the in-game ID
 				int originalSoundId = resourceId - (resourceSet.second->getModOwner()->offset);
 
-				auto mapOfSounds = resourceSet.second->getSounds();
+				auto* mapOfSounds = resourceSet.second->getSounds();
 				auto individualSound = mapOfSounds->find(originalSoundId);
 				if (individualSound != mapOfSounds->end())
 				{
@@ -1800,7 +1800,7 @@ void StatsForNerdsState::initItemList()
 	_filterOptions.push_back("STR_COMPATIBLE_AMMO");
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 	{
-		for (auto ammo : *itemRule->getCompatibleAmmoForSlot(slot))
+		for (auto* ammo : *itemRule->getCompatibleAmmoForSlot(slot))
 		{
 			_filterOptions.push_back(ammo->getType());
 		}
@@ -2419,7 +2419,7 @@ void StatsForNerdsState::addUnitStatBonus(std::ostringstream &ss, const UnitStat
 void StatsForNerdsState::addArmorDamageModifiers(std::ostringstream &ss, const std::vector<float> &vec, const std::string &propertyName)
 {
 	bool isDefault = true;
-	for (auto &item : vec)
+	for (auto& item : vec)
 	{
 		if (!AreSame(item, 1.0f))
 		{
@@ -2434,7 +2434,7 @@ void StatsForNerdsState::addArmorDamageModifiers(std::ostringstream &ss, const s
 	int index = 0;
 	bool isFirst = true;
 	ss << "{";
-	for (auto &item : vec)
+	for (auto& item : vec)
 	{
 		if (!AreSame(item, 1.0f) || _showDefaults)
 		{
@@ -2686,7 +2686,7 @@ void StatsForNerdsState::initArmorList()
 	addBoolean(ss, armorRule->getCreatesMeleeThreat(), "createsMeleeThreat", createsMeleeThreatDefault);
 
 	_filterOptions.clear();
-	for (auto biw : armorRule->getBuiltInWeapons())
+	for (auto* biw : armorRule->getBuiltInWeapons())
 	{
 		// ignore dummy inventory padding
 		if (biw->getType().find("INV_NULL") == std::string::npos || _showDebug)
@@ -2927,7 +2927,7 @@ void StatsForNerdsState::addVectorOfPositions(std::ostringstream &ss, const std:
 	resetStream(ss);
 	int i = 0;
 	ss << "{";
-	for (auto &item : vec)
+	for (auto& item : vec)
 	{
 		if (i > 0)
 		{
@@ -3244,7 +3244,7 @@ void StatsForNerdsState::initCraftList()
 		for (int i = 0; i < RuleCraft::WeaponMax; ++i)
 		{
 			std::ostringstream ss2;
-			auto weaponType = craftRule->getWeaponTypesRaw(i, 0);
+			int weaponType = craftRule->getWeaponTypesRaw(i, 0);
 			ss2 << "{" << weaponType;
 			for (int j = 1; j < RuleCraft::WeaponTypeMax; ++j)
 			{
@@ -3353,7 +3353,7 @@ void StatsForNerdsState::initCraftList()
 		{
 			addHeading("deployment");
 			{
-				for (auto &d : craftRule->getDeployment())
+				for (auto& d : craftRule->getDeployment())
 				{
 					addVectorOfIntegers(ss, d, "");
 				}
@@ -3531,7 +3531,7 @@ void StatsForNerdsState::initUfoList()
 		endHeading();
 	}
 
-	for (auto raceBonus : ufoRule->getRaceBonusRaw())
+	for (auto& raceBonus : ufoRule->getRaceBonusRaw())
 	{
 		if (!raceBonus.first.empty())
 		{

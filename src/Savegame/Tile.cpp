@@ -97,7 +97,7 @@ void Tile::load(const YAML::Node &node)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			auto realTilePart = (i == 2 ? 0 : i - 1); //convert old convention to new one
+			int realTilePart = (i == 2 ? 0 : i - 1); //convert old convention to new one
 			_objectsCache[realTilePart].discovered = (Uint8)node["discovered"][i].as<bool>();
 		}
 	}
@@ -722,10 +722,10 @@ void Tile::updateSprite(TilePart part)
  */
 BattleUnit *Tile::getOverlappingUnit(const SavedBattleGame *saveBattleGame, TileUnitOverlapping range) const
 {
-	auto bu = getUnit();
+	auto* bu = getUnit();
 	if (!bu && _pos.z > 0 && hasNoFloor(saveBattleGame) && _objects[O_OBJECT] == nullptr)
 	{
-		auto tileBelow = saveBattleGame->getBelowTile(this);
+		auto* tileBelow = saveBattleGame->getBelowTile(this);
 		bu = tileBelow->getUnit();
 		if (bu && bu->getHeight() + bu->getFloatHeight() - tileBelow->getTerrainLevel() <= static_cast<int>(range))
 		{

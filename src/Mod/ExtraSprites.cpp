@@ -205,8 +205,8 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 	_loaded = true;
 
 	bool subdivision = (_subX != 0 && _subY != 0);
-	auto surfaceSetX = subdivision ? _subX : _width;
-	auto surfaceSetY = subdivision ? _subY : _height;
+	int surfaceSetX = subdivision ? _subX : _width;
+	int surfaceSetY = subdivision ? _subY : _height;
 	if (set == 0)
 	{
 		Log(LOG_VERBOSE) << "Creating new surface set: " << _type;
@@ -218,7 +218,7 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 		if (set->getTotalFrames() == 0 && (set->getWidth() != surfaceSetX || set->getHeight() != surfaceSetY))
 		{
 			Log(LOG_VERBOSE) << "Resize empty set to: " << surfaceSetX << " x " << surfaceSetY;
-			auto shared = set->getMaxSharedFrames();
+			int shared = set->getMaxSharedFrames();
 			*set = SurfaceSet(surfaceSetX, surfaceSetY);
 			set->setMaxSharedFrames(shared);
 		}

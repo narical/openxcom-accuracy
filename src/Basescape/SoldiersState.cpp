@@ -152,7 +152,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 			_availableOptions.push_back("STR_TRANSFORMATIONS_OVERVIEW");
 
 		bool refreshDeadSoldierStats = false;
-		for (auto transformationRule : availableTransformations)
+		for (auto* transformationRule : availableTransformations)
 		{
 			_availableOptions.push_back(transformationRule->getName());
 			if (transformationRule->isAllowingDeadSoldiers())
@@ -397,7 +397,7 @@ void SoldiersState::initList(size_t scrl)
 	}
 	_txtCraft->setX(_txtRank->getX() + 98 - offset);
 
-	auto recovery = _base->getSumRecoveryPerDay();
+	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
 	unsigned int row = 0;
 	for (std::vector<Soldier*>::iterator i = _filteredListOfSoldiers.begin(); i != _filteredListOfSoldiers.end(); ++i)
 	{

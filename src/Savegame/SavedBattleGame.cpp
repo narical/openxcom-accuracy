@@ -1203,7 +1203,7 @@ void SavedBattleGame::startFirstTurn()
 
 
 	// initialize xcom units for battle
-	for (auto u : *getUnits())
+	for (auto* u : *getUnits())
 	{
 		if (u->getOriginalFaction() != FACTION_PLAYER || u->isOut())
 		{
@@ -1502,7 +1502,7 @@ void SavedBattleGame::endTurn()
 			selectNextPlayerUnit();
 	}
 
-	auto tally = _battleState->getBattleGame()->tallyUnits();
+	BattlescapeTally tally = _battleState->getBattleGame()->tallyUnits();
 
 	if ((_turn > _cheatTurn / 2 && tally.liveAliens <= 2) || _turn > _cheatTurn)
 	{
@@ -1797,9 +1797,8 @@ void SavedBattleGame::removeItem(BattleItem *item)
 {
 	auto purge = [](std::vector<BattleItem*> &inventory, BattleItem* forDelete)
 	{
-		auto begin = inventory.begin();
 		auto end = inventory.end();
-		for (auto i = begin; i != end; ++i)
+		for (auto i = inventory.begin(); i != end; ++i)
 		{
 			if (*i == forDelete)
 			{
@@ -1829,7 +1828,7 @@ void SavedBattleGame::removeItem(BattleItem *item)
 
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 	{
-		auto ammo = item->getAmmoForSlot(slot);
+		auto* ammo = item->getAmmoForSlot(slot);
 		if (ammo && ammo != item)
 		{
 			if (purge(_items, ammo))
@@ -1889,7 +1888,7 @@ void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 	// For aliens and HWP
 	if (rule)
 	{
-		auto &buildin = rule->getBuiltInWeapons();
+		auto& buildin = rule->getBuiltInWeapons();
 		if (!buildin.empty())
 		{
 			if (itemLevel >= buildin.size())
@@ -1919,9 +1918,9 @@ void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 
 	ModScript::scriptCallback<ModScript::CreateUnit>(armor, unit, this, this->getTurn());
 
-	if (auto solder = unit->getGeoscapeSoldier())
+	if (auto* solder = unit->getGeoscapeSoldier())
 	{
-		for (auto bonus : *solder->getBonuses(nullptr))
+		for (auto* bonus : *solder->getBonuses(nullptr))
 		{
 			ModScript::scriptCallback<ModScript::ApplySoldierBonuses>(bonus, unit, this, bonus);
 		}
@@ -2067,10 +2066,10 @@ BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
 
 	unit->instaKill();
 
-	auto tile = unit->getTile();
+	auto* tile = unit->getTile();
 	if (tile == nullptr)
 	{
-		auto pos = unit->getPosition();
+		Position pos = unit->getPosition();
 		if (pos != TileEngine::invalid)
 		{
 			tile = getTile(pos);

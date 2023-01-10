@@ -146,7 +146,7 @@ void DismantleFacilityState::btnOkClick(Action *)
 				// Determine if we leave behind any facilities when this one is removed
 				if (_fac->getBuildTime() == 0 && _fac->getRules()->getLeavesBehindOnSell().size() != 0)
 				{
-					const auto &facList = _fac->getRules()->getLeavesBehindOnSell();
+					const auto& facList = _fac->getRules()->getLeavesBehindOnSell();
 					if (facList.at(0)->getPlaceSound() != Mod::NO_SOUND)
 					{
 						_game->getMod()->getSound("GEO.CAT", facList.at(0)->getPlaceSound())->play();

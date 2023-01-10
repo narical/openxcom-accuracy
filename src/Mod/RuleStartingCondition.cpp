@@ -89,8 +89,8 @@ void RuleStartingCondition::afterLoad(const Mod* mod)
 
 	for (auto& pair : _craftTransformationsName)
 	{
-		auto src = mod->getCraft(pair.first, true);
-		auto dest = mod->getCraft(pair.second, true);
+		auto* src = mod->getCraft(pair.first, true);
+		auto* dest = mod->getCraft(pair.second, true);
 		_craftTransformations[src] = dest;
 	}
 
