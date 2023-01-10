@@ -573,7 +573,7 @@ void SellState::btnOkClick(Action *)
 
 	auto cleanUpContainer = [&](ItemContainer* container, const RuleItem* rule, int toRemove) -> int
 	{
-		int curr = container->getItem(rule);
+		auto curr = container->getItem(rule);
 		if (curr >= toRemove)
 		{
 			container->removeItem(rule, toRemove);
@@ -598,7 +598,7 @@ void SellState::btnOkClick(Action *)
 		{
 			if (i == rule)
 			{
-				int r = std::min(toRemove, curr);
+				auto r = std::min(toRemove, curr);
 				toRemove -= r;
 				curr -= r;
 				return S{ r, curr, i };
@@ -639,7 +639,7 @@ void SellState::btnOkClick(Action *)
 			*craft2->getVehicles(),
 			[&](Vehicle* v)
 			{
-				auto* clipType = v->getRules()->getVehicleClipAmmo();
+				auto clipType = v->getRules()->getVehicleClipAmmo();
 
 				auto launcher = tryRemove(1, v->getRules());
 				auto clip = tryRemove(v->getRules()->getVehicleClipsLoaded(), clipType);

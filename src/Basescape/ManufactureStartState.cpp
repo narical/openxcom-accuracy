@@ -124,7 +124,7 @@ ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) 
 	int row = 0;
 	for (auto& iter : _item->getRequiredCrafts())
 	{
-		int count = base->getCraftCountForProduction(iter.first);
+		auto count = base->getCraftCountForProduction(iter.first);
 
 		std::ostringstream s1, s2;
 		s1 << iter.second;
@@ -137,7 +137,7 @@ ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) 
 	}
 	for (auto& iter : _item->getRequiredItems())
 	{
-		int count = base->getStorageItems()->getItem(iter.first);
+		auto count = base->getStorageItems()->getItem(iter.first);
 
 		std::ostringstream s1, s2;
 		s1 << iter.second;

@@ -69,7 +69,7 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 	_txtBriefing = new Text(274, 94, 16, 72);
 
 	// set random hidden movement/next turn background for this mission
-	auto* battleSave = _game->getSavedGame()->getSavedBattle();
+	auto battleSave = _game->getSavedGame()->getSavedBattle();
 	battleSave->setRandomHiddenMovementBackground(_game->getMod());
 
 	std::string mission = battleSave->getMissionType();
@@ -265,7 +265,7 @@ void BriefingState::btnOkClick(Action *)
 
 	BattlescapeState *bs = new BattlescapeState;
 	bs->getBattleGame()->spawnFromPrimedItems();
-	BattlescapeTally tally = bs->getBattleGame()->tallyUnits();
+	auto tally = bs->getBattleGame()->tallyUnits();
 	bool isPreview = _game->getSavedGame()->getSavedBattle()->isPreview();
 	if (tally.liveAliens > 0 || isPreview)
 	{

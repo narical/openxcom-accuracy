@@ -159,7 +159,7 @@ void AIModule::dont_think(BattleAction *action)
 		}
 	}
 
-	bool canRun = _melee && _unit->getArmor()->allowsRunning(false) && _unit->getEnergy() > _unit->getBaseStats()->stamina * 0.4f;
+	auto canRun = _melee && _unit->getArmor()->allowsRunning(false) && _unit->getEnergy() > _unit->getBaseStats()->stamina * 0.4f;
 	int visibleEnemiesToAttack = selectNearestTargetLeeroy(canRun);
 	if (_traceAI)
 	{
@@ -2141,7 +2141,7 @@ void AIModule::wayPointAction()
 		if (!validTarget(*i, true, _unit->getFaction() == FACTION_HOSTILE))
 			continue;
 		_save->getPathfinding()->calculate(_unit, (*i)->getPosition(), BAM_MISSILE, *i, -1);
-		BattleItem* ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
+		auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
 		if (_save->getPathfinding()->getStartDirection() != -1 &&
 			explosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({ BA_LAUNCH, _unit, _attackAction.weapon, ammo }), _attackAction.diff))
 		{
@@ -2239,7 +2239,7 @@ void AIModule::projectileAction()
 	{
 		if (cost.haveTU())
 		{
-			BattleActionAttack attack = BattleActionAttack::GetBeforeShoot(cost);
+			auto attack = BattleActionAttack::GetBeforeShoot(cost);
 			if (attack.damage_item == nullptr)
 			{
 				cost.clearTU();
@@ -2365,7 +2365,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 	BattleActionType chosenAction = BA_RETHINK;
 	BattleAction testAction = _attackAction;
 	int score = 0;
-	for (auto& i : attackOptions)
+	for (auto &i : attackOptions)
 	{
 		testAction.type = i;
 		if (i == BA_THROW)
@@ -2391,7 +2391,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		int intelligenceModifier = _save->getBattleGame()->getMod()->getAIFireChoiceIntelCoeff() * std::max(10 - _unit->getIntelligence(), 0);
 		newScore = newScore * (100 + RNG::generate(-intelligenceModifier, intelligenceModifier)) / 100;
 
-		// More aggressive units get a modifier to the score for autoshots
+		// More aggressive units get a modifier to the score for auto shots
 		// Aggression = 0 lowers the score, aggro = 1 is no modifier, aggro > 1 bumps up the score by 5% (configurable) for each increment over 1
 		if (i == BA_AUTOSHOT)
 		{
@@ -2437,7 +2437,7 @@ void AIModule::grenadeAction()
 	// do we have enough TUs to prime and throw the grenade?
 	if (action.haveTU())
 	{
-		int radius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
+		auto radius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
 		if (explosiveEfficacy(_aggroTarget->getPosition(), _unit, radius, _attackAction.diff, true))
 		{
 			action.target = _aggroTarget->getPosition();
@@ -2578,7 +2578,7 @@ bool AIModule::psiAction()
 						{
 							continue;
 						}
-						BattleActionAttack attack = BattleActionAttack{ BA_USE, _unit, item, item };
+						auto attack = BattleActionAttack{ BA_USE, _unit, item, item };
 						int radius = item->getRules()->getExplosionRadius(attack);
 						if (radius > 0)
 						{
@@ -2625,9 +2625,9 @@ bool AIModule::psiAction()
 				BA_SNAPSHOT,
 				BA_HIT,
 			};
-			for (BattleActionType action : actions)
+			for (auto action : actions)
 			{
-				auto* ammo = _attackAction.weapon->getAmmoForAction(action);
+				auto ammo = _attackAction.weapon->getAmmoForAction(action);
 				if (!ammo)
 				{
 					continue;

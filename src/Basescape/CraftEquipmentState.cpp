@@ -151,7 +151,7 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
 	{
 		RuleItem *rule = _game->getMod()->getItem(*i);
-		Unit* isVehicle = rule->getVehicleUnit();
+		auto isVehicle = rule->getVehicleUnit();
 		int cQty = isVehicle ? c->getVehicleCount(*i) : c->getItems()->getItem(*i);
 
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
@@ -327,7 +327,7 @@ void CraftEquipmentState::initList()
 	{
 		RuleItem *rule = _game->getMod()->getItem(*i);
 
-		Unit* isVehicle = rule->getVehicleUnit();
+		auto isVehicle = rule->getVehicleUnit();
 		int cQty = 0;
 		if (isVehicle)
 		{
