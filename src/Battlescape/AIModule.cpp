@@ -3304,10 +3304,8 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (unit->isOut())
 					continue;
-				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted() == -1)
-					continue;
 				Position unitPosition = unit->getPosition();
-				if (!_unit->isCheatOnMovement())
+				if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
 					unitPosition = _save->getTileCoords(unit->getTileLastSpotted());
 				float unitDist = Position::distance(pos, unitPosition);
 				if (unit->getFaction() == _unit->getFaction() && unit != _unit && unitPosition.z == pos.z)
@@ -3316,6 +3314,8 @@ void AIModule::brutalThink(BattleAction* action)
 						cuddleAvoidModifier += 5 - unitDist;
 				}
 				if (unit->getOriginalFaction() == _unit->getFaction())
+					continue;
+				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted() == -1)
 					continue;
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;
