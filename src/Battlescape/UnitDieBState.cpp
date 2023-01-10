@@ -228,6 +228,10 @@ void UnitDieBState::think()
 		{
 			_unit->setTileLastSpotted(-1);
 		}
+		if (_unit->getTileLastSpotted(true) >= 0)
+		{
+			_unit->setTileLastSpotted(-1, true);
+		}
 		if (_unit->getTurnsLeftSpottedForSnipers() != 0)
 		{
 			_unit->setTurnsLeftSpottedForSnipers(0);

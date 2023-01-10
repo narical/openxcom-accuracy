@@ -908,6 +908,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 								{
 									murderer->setTurnsSinceSpotted(0);
 									murderer->setTileLastSpotted(getSave()->getTileIndex(murderer->getPosition()));
+									murderer->setTileLastSpotted(getSave()->getTileIndex(murderer->getPosition()), true);
 								}
 							}
 							// the winning squad all get a morale increase

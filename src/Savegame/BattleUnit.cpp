@@ -4677,17 +4677,22 @@ int BattleUnit::getTurnsSinceSeen() const
  * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
  * @param turns number of turns
  */
-void BattleUnit::setTileLastSpotted(int index)
+void BattleUnit::setTileLastSpotted(int index, bool forBlindShot)
 {
-	_tileLastSpotted = index;
+	if (forBlindShot)
+		_tileLastSpottedForBlindShot = index;
+	else
+		_tileLastSpotted = index;
 }
 
 /**
  * Get how long since this unit was seen.
  * @return number of turns
  */
-int BattleUnit::getTileLastSpotted() const
+int BattleUnit::getTileLastSpotted(bool forBlindShot) const
 {
+	if (forBlindShot)
+		return _tileLastSpottedForBlindShot;
 	return _tileLastSpotted;
 }
 

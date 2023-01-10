@@ -188,6 +188,8 @@ public:
 	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
 	/// returns how far a unit can shoot while extender-accuracy is enabled with the given amount of time-units left 
 	int maxExtenderRangeWith(BattleUnit *unit, int tus);
+	/// Determines a new tile where to look for an enemy who's position is unknown
+	int getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit *unit);
 };
 
 }
