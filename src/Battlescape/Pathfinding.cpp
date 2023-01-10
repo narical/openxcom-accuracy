@@ -1397,7 +1397,7 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(const 
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 			PathfindingCost totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
-			if (!(totalTuCost <= costMax)) // Run out of TUs/Energy
+			if (!(totalTuCost <= costMax) && !entireMap) // Run out of TUs/Energy
 				continue;
 			PathfindingNode *nextNode = getNode(r.pos, alternateStart);
 			if (nextNode->isChecked()) // Our algorithm means this node is already at minimum cost.
