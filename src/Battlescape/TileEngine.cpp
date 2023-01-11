@@ -1065,14 +1065,19 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 										if (!unit->hasVisibleTile(_save->getTile(posVisited)) && x <= getMaxViewDistance() && y <= getMaxViewDistance() && distanceSqr <= getMaxViewDistanceSq())
 										{
 											unit->addToVisibleTiles(_save->getTile(posVisited));
-											_save->getTile(posVisited)->setVisible(+1);
-											_save->getTile(posVisited)->setDiscovered(true, O_FLOOR);
+											if (unit->getFaction() == FACTION_PLAYER)
+											{
+												_save->getTile(posVisited)->setVisible(+1);
+												_save->getTile(posVisited)->setDiscovered(true, O_FLOOR);
 
-											// walls to the east or south of a visible tile, we see that too
-											Tile* t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
-											if (t) t->setDiscovered(true, O_WESTWALL);
-											t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
-											if (t) t->setDiscovered(true, O_NORTHWALL);
+												// walls to the east or south of a visible tile, we see that too
+												Tile *t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
+												if (t)
+													t->setDiscovered(true, O_WESTWALL);
+												t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
+												if (t)
+													t->setDiscovered(true, O_NORTHWALL);
+											}
 										}
 										if (!unit->hasLofTile(_save->getTile(posVisited)))
 										{
