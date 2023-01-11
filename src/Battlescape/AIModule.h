@@ -190,6 +190,10 @@ public:
 	int maxExtenderRangeWith(BattleUnit *unit, int tus);
 	/// Determines a new tile where to look for an enemy who's position is unknown
 	int getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit *unit);
+	/// Calculates how much TU this unit can have at most considering it's carrying capacity and leg-damage
+	int getMaxTU(BattleUnit *unit);
+	/// Get the ID of the closest tile which is an entry-point for the player
+	int getClosestSpawnTileId();
 };
 
 }

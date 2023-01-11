@@ -3044,14 +3044,18 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		}
 		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == -1)
-			continue;
+		{
+			if (target->getFaction() == FACTION_PLAYER)
+				target->setTileLastSpotted(getClosestSpawnTileId());
+			if (target->getTileLastSpotted() == -1)
+				continue;
+		}
 		if (primeDist <= explosionRadius)
 			primeScore++;
 		// Seems redundant but isn't. This is necessary because we also don't want to attack the units that we have mind-controlled
 		if (target->getFaction() == _unit->getFaction())
 			continue;
 		Position targetPosition = target->getPosition();
-		float currentDist = Position::distance(_unit->getPosition(), targetPosition);
 		if (!_unit->isCheatOnMovement())
 		{
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted());
@@ -3061,12 +3065,13 @@ void AIModule::brutalThink(BattleAction* action)
 				tileChecked = true;
 			else if (_unit->getPosition() == targetPosition)
 				tileChecked = true;
+			if (_traceAI)
+				Log(LOG_INFO) << "Assuming unit at " << target->getPosition() << " to be at " << targetPosition << " checked: " << tileChecked;
 			if (tileChecked)
 			{
 				int newIndex = getNewTileIDToLookForEnemy(targetPosition, target);
 				if (_traceAI)
 					Log(LOG_INFO) << "Target " << target->getPosition() << " is no longer where it is suspected at: " << targetPosition << " Guess for new position is: " << _save->getTileCoords(newIndex);
-				;
 				target->setTileLastSpotted(newIndex);
 				// We clear it for blind-shot in this case, as it makes no sense to still try and shoot there
 				target->setTileLastSpotted(-1, true);
@@ -3253,7 +3258,7 @@ void AIModule::brutalThink(BattleAction* action)
 	Position bestPrio3Position = _unit->getPosition();
 	if (iHaveLof && _blaster)
 		needToFlee = true;
-	if (_unit->getTimeUnits() == _unit->getBaseStats()->tu)
+	if (_unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	else if (!IAmPureMelee && !canReachTargetTileWithAttack && !sweepMode && !brutalValidTarget(unitToWalkTo, true))
 		needToFlee = true;
@@ -3412,7 +3417,7 @@ void AIModule::brutalThink(BattleAction* action)
 			prio1Score /= cuddleAvoidModifier;
 			prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
-			if (_traceAI)
+			/*if (_traceAI)
 			{
 				if (prio1Score > 0)
 				{
@@ -3432,7 +3437,7 @@ void AIModule::brutalThink(BattleAction* action)
 					tile->setPreview(10);
 					tile->setTUMarker(walkToDist);
 				}
-			 }
+			}*/
 			if (prio1Score > bestPrio1Score)
 			{
 				bestPrio1Score = prio1Score;
@@ -4908,8 +4913,8 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* unit)
 {
 	std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), true, NULL, &previousPosition);
-	Tile *closestNonVisibleTileToPreviousPosition = NULL;
-	int MinTuCost = INT_MAX;
+	Tile *furthestNonVisibleTileToPreviousPosition = NULL;
+	int HighestTuCost = 0;
 	for (auto pn : targetNodes)
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
@@ -4918,7 +4923,7 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 		{
 			if (ally->getFaction() != _unit->getFaction())
 				continue;
-			if (ally->hasVisibleTile(tile))
+			if (ally->hasVisibleTile(tile) || ally->getPosition() == tile->getPosition())
 			{
 				skip = true;
 				break;
@@ -4926,18 +4931,53 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 		}
 		if (skip)
 			continue;
-		int TUCost = pn->getTUCost(false).time;
-		if (TUCost < MinTuCost)
-		{
-			MinTuCost = TUCost;
-			closestNonVisibleTileToPreviousPosition = tile;
-			//Since our list is sorted by TU-cost we can actually break on the first one we find as we won't find any that is closer
+		if (pn->getTUCost(false).time > getMaxTU(unit))
 			break;
+		int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
+		if (TUCost > HighestTuCost)
+		{
+			HighestTuCost = TUCost;
+			furthestNonVisibleTileToPreviousPosition = tile;
 		}
 	}
-	if (closestNonVisibleTileToPreviousPosition)
-		return _save->getTileIndex(closestNonVisibleTileToPreviousPosition->getPosition());
+	if (furthestNonVisibleTileToPreviousPosition)
+		return _save->getTileIndex(furthestNonVisibleTileToPreviousPosition->getPosition());
 	return -1;
+}
+
+int AIModule::getMaxTU(BattleUnit *unit)
+{
+	int maxTU = 0;
+	if (!unit->isOut())
+	{
+		// Add to previous turn TU, if regen is less than normal unit need couple of turns to regen full bar
+		maxTU = unit->getBaseStats()->tu;
+		float encumbrance = (float)unit->getBaseStats()->strength / (float)unit->getCarriedWeight();
+		if (encumbrance < 1)
+		{
+			maxTU = int(encumbrance * maxTU);
+		}
+		// Each fatal wound to the left or right leg reduces the soldier's TUs by 10%.
+		maxTU -= (maxTU * ((unit->getFatalWound(BODYPART_LEFTLEG) + unit->getFatalWound(BODYPART_LEFTLEG)) * 10)) / 100;
+	}
+	return maxTU;
+}
+
+int AIModule::getClosestSpawnTileId()
+{
+	int id = -1;
+	for (auto pn : _allPathFindingNodes)
+	{
+		Position tilePositon = pn->getPosition();
+		Tile *tile = _save->getTile(tilePositon);
+		if (tile->getFloorSpecialTileType() == START_POINT)
+		{
+			if (_traceAI)
+				Log(LOG_INFO) << "Assuming a target to be at " << tilePositon;
+			return _save->getTileIndex(tilePositon);
+		}
+	}
+	return id;
 }
 
 }
