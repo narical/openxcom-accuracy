@@ -975,7 +975,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	{
 		direction = unit->getDirection();
 	}
-	if (unit->getFaction() != FACTION_PLAYER || (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection)))
+	if (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection))
 	{
 		//The event wasn't meant for us and/or visible for us.
 		return;
