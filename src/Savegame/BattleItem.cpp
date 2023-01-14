@@ -929,7 +929,7 @@ BattleItem *BattleItem::getAmmoForAction(BattleActionType action, std::string* m
  */
 void BattleItem::spendAmmoForAction(BattleActionType action, SavedBattleGame* save)
 {
-	if (save->getDebugMode() || getActionConf(action)->ammoSlot == RuleItem::AmmoSlotSelfUse)
+	if (getActionConf(action)->ammoSlot == RuleItem::AmmoSlotSelfUse)
 	{
 		return;
 	}
