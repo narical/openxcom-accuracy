@@ -75,10 +75,10 @@ void UnitTurnBState::init()
 		if (_action.type == BA_NONE)
 		{
 			// try to open a door
-			int tuBefore = _unit->getTimeUnits();
+			int visibleTilesBefore = _unit->getVisibleTiles()->size();
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
-			// when the tus changed it means a door was opened, in this case tell the unit that it shouldn't end their turn just yet
-			if (_unit->getTimeUnits() != tuBefore)
+			// when unit sees more tiles than it did before, the door was opened and it shall proceed. When tiles are same or lower it is done.
+			if (_unit->getAIModule() != NULL && _unit->getVisibleTiles()->size() > visibleTilesBefore)
 			{
 				if (Options::traceAI)
 				{
