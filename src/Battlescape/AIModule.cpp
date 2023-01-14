@@ -3085,7 +3085,10 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			sweepMode = true;
 		}
-		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes);
+		BattleUnit *LoFCheckUnitForPath = NULL;
+		if (_unit->isCheatOnMovement())
+			LoFCheckUnitForPath = target;
+		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes, LoFCheckUnitForPath);
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
 		float distToPosUnitCouldReach = Position::distance(_unit->getPosition(), posUnitCouldReach);
 		if (distToPosUnitCouldReach < closestDistanceofFurthestPosition)
@@ -3285,7 +3288,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition <<" need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3295,12 +3298,12 @@ void AIModule::brutalThink(BattleAction* action)
 				continue;
 			if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 				continue;
-			if (tile->getDangerous())
+			if (tile->getDangerous() && !_unit->getTile()->getDangerous())
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
 				continue;
 			float closestEnemyDist = FLT_MAX;
-			float targetDist = FLT_MAX;
+			float targetDist = Position::distance(pos, targetPosition);
 			bool visibleToEnemy = false;
 			bool saveFromGrenades = false;
 			float cuddleAvoidModifier = 1;
@@ -3342,8 +3345,6 @@ void AIModule::brutalThink(BattleAction* action)
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
-				haveTUToAttack = true;
 			if (pos != _unit->getPosition() || _unit->getTimeUnits() < attackTU) // If I am at a position and think I should be able to attack, it's a false-positive. Otherwise I wouldn't be here and instead be attacking
 			{
 				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true) || (shouldPeak && unitToWalkTo)))
@@ -3351,7 +3352,6 @@ void AIModule::brutalThink(BattleAction* action)
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
 						lineOfFire = lineOfFire || clearSight(pos, targetPosition);
-					targetDist = Position::distance(pos, targetPosition);
 				}
 				if (lineOfFire == false || IAmPureMelee)
 				{
@@ -3361,6 +3361,21 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
+			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
+			if (!lineOfFire)
+			{
+				if (_save->getTileEngine()->isNextToDoor(tile) && targetDist < 2)
+				{
+					Tile *targetTile = _save->getTile(targetPosition);
+					if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+					{
+						lineOfFire = true;
+						attackTU += 4;
+					}
+				}
+			}
+			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
+				haveTUToAttack = true;
 			float prio1Score = 0;
 			float prio2Score = 0;
 			float prio3Score = 0;
@@ -3691,11 +3706,12 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	return _aggroTarget != 0;
 }
 
-int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode*> nodeVector)
+int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *LoFUnit)
 {
 	float closestDistToTarget = 255;
 	int tuCostToClosestNode = 10000;
 	Tile *posTile = _save->getTile(pos);
+	bool isAtDoor = _save->getTileEngine()->isNextToDoor(posTile);
 	for (auto pn : nodeVector)
 	{
 		if (pos == pn->getPosition())
@@ -3704,6 +3720,8 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 		if (pos.z != pn->getPosition().z)
 			continue;
 		if (!posTile->hasNoFloor() && tile->hasNoFloor())
+			continue;
+		if (LoFUnit != NULL && !isAtDoor && !LoFUnit->hasLofTile(tile))
 			continue;
 		float currDist = Position::distance(pos, pn->getPosition());
 		if (currDist < closestDistToTarget)
@@ -4270,13 +4288,10 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 	{
 		if (_unit->getFaction() == _unit->getOriginalFaction())
 		{
-			if (!_blaster)
-				enemiesAffected--;
-			else // If we use a blaster we are more willing to take our own death than giving the enemy the kill. So we only subtract part of our value in order to still prefer if we don't die but that should tip it over 0 and make us take the shot anyways.
-				enemiesAffected -= float(radius - distance / 2) / float(radius);
+			enemiesAffected -= float(radius - distance / 2.0) / float(radius);
 		}
 		else
-			enemiesAffected += float(radius - distance / 2) / float(radius);
+			enemiesAffected += float(radius - distance / 2.0) / float(radius);
 	}
 
 	// account for the unit we're targetting
@@ -4312,7 +4327,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 			int collidesWith = _save->getTileEngine()->calculateLineVoxel(voxelPosA, voxelPosB, false, &traj, target, *i);
 
 			float dist = Position::distance2d(targetPos, (*i)->getPosition());
-			float distMod = float(radius - dist / 2) / float(radius);
+			float distMod = float(radius - dist / 2.0) / float(radius);
 			if (collidesWith == V_UNIT && traj.front().toTile() == (*i)->getPosition())
 			{
 				if ((*i)->getFaction() == _targetFaction)
@@ -4323,6 +4338,10 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 					enemiesAffected--;
 			}
 		}
+	}
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << "Explosion will hit " << enemiesAffected;
 	}
 	return enemiesAffected;
 }

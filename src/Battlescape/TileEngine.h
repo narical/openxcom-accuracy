@@ -272,6 +272,8 @@ public:
 	/// Update game state after script hook execution.
 	void updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos);
 
+	/// Checks if a tile either has a door is next to a door
+	bool isNextToDoor(Tile *tile);
 };
 
 }

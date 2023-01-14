@@ -151,7 +151,7 @@ public:
 	/// Like selectSpottedUnitForSniper but works for everyone
 	bool brutalSelectSpottedUnitForSniper();
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
-	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector);
+	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* LoFUnit = NULL);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, bool encircleTileMode = false, Tile* encircleTile = NULL);
 	/// checks if the path to a position is save

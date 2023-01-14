@@ -5356,4 +5356,23 @@ void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttac
 	}
 }
 
+bool TileEngine::isNextToDoor(Tile* tile)
+{
+	if (tile == NULL)
+		return false;
+	if (tile->isDoor(O_NORTHWALL) || tile->isDoor(O_WESTWALL) || tile->isUfoDoor(O_NORTHWALL) || tile->isUfoDoor(O_WESTWALL))
+		return true;
+	Position neighbourSouth = tile->getPosition();
+	neighbourSouth += Position(0, 1, 0);
+	Tile* tileSouth = _save->getTile(neighbourSouth);
+	if (tileSouth != NULL && (tileSouth->isDoor(O_NORTHWALL) || tileSouth->isUfoDoor(O_NORTHWALL)))
+		return true;
+	Position neighbourEast = tile->getPosition();
+	neighbourEast += Position(1, 0, 0);
+	Tile *tileEast = _save->getTile(neighbourEast);
+	if (tileEast != NULL && (tileEast->isDoor(O_WESTWALL) || tileEast->isUfoDoor(O_WESTWALL)))
+		return true;
+	return false;
+}
+
 }
