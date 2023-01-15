@@ -2748,6 +2748,13 @@ inline void BattlescapeState::handle(Action *action)
 						}
 					}
 				}
+				if (key == SDLK_a && ctrlPressed)
+				{
+					if (Options::autoCombat)
+						Options::autoCombat = false;
+					else
+						Options::autoCombat = true;
+				}
 				if (Options::debug)
 				{
 					// "ctrl-d" - enable debug mode

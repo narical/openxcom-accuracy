@@ -454,7 +454,7 @@ public:
 	/// Gets the item in the main hand.
 	BattleItem *getMainHandWeapon(bool quickest = true, bool needammo = true) const;
 	/// Gets a grenade from the belt, if any.
-	BattleItem *getGrenadeFromBelt(bool brutal = false) const;
+	BattleItem *getGrenadeFromBelt() const;
 	/// Gets the item from right hand.
 	BattleItem *getRightHandWeapon() const;
 	/// Gets the item from left hand.
@@ -831,7 +831,7 @@ public:
 	/// Disable showing indicators for this unit.
 	void disableIndicators();
 	/// Returns whether this unit uses brutal-AI
-	bool isBrutal();
+	bool isBrutal() const;
 	/// Returns whether this unit is allowed to cheat with knowledge it cannot have
 	bool isCheatOnMovement();
 	/// Returns the targetting mode the unit is allowed to use

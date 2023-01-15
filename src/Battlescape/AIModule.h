@@ -57,6 +57,7 @@ private:
 	std::vector<PathfindingNode*> _allPathFindingNodes;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
+	UnitFaction _myFaction;
 
 	BattleAction _escapeAction, _ambushAction, _attackAction, _patrolAction, _psiAction;
 
@@ -145,7 +146,7 @@ public:
 
 	/// Everything below belongs tu Brutal-AI
 	/// Checks whether anyone on our team can see the target
-	bool visibleToAnyFriend(BattleUnit *target);
+	bool visibleToAnyFriend(BattleUnit *target) const;
 	/// Handles behavior of brutalAI
 	void brutalThink(BattleAction *action);
 	/// Like selectSpottedUnitForSniper but works for everyone
@@ -183,7 +184,7 @@ public:
 	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
 	bool validateArcingShot(BattleAction *action);
 	/// check if a unit is targetable according to aiTargetMode
-	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false);
+	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false) const;
 	/// check the path to an enemy and then subtracts their movement from the cost
 	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
 	/// returns how far a unit can shoot while extender-accuracy is enabled with the given amount of time-units left 
@@ -194,6 +195,10 @@ public:
 	int getMaxTU(BattleUnit *unit);
 	/// Get the ID of the closest tile which is an entry-point for the player
 	int getClosestSpawnTileId();
+	/// Tells us whether a unit is an enemy
+	bool isEnemy(BattleUnit* unit, bool ignoreSameOriginalFaction = false) const;
+	/// Tells us whether a unit is an ally
+	bool isAlly(BattleUnit *unit) const;
 };
 
 }

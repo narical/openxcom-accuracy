@@ -224,8 +224,17 @@ void BattlescapeGame::think()
 			return;
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
-		if (_save->getSide() != FACTION_PLAYER)
+		if (_save->getSide() != FACTION_PLAYER || Options::autoCombat)
 		{
+			if (_save->getSide() == FACTION_PLAYER)
+			{
+				// it's a player side && we have not handled all panicking units
+				if (!_playerPanicHandled)
+				{
+					_playerPanicHandled = handlePanickingPlayer();
+					_save->getBattleState()->updateSoldierInfo();
+				}
+			}
 			_save->resetUnitHitStates();
 			if (!_debugPlay)
 			{
@@ -367,7 +376,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
 		}
-		if (unit->getOriginalFaction() != FACTION_PLAYER)
+		if (unit->getOriginalFaction() != FACTION_PLAYER || Options::autoCombat)
 		{
 			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
 			{

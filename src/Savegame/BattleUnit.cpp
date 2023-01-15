@@ -3512,17 +3512,17 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
  * Get a grenade from the belt (used for AI)
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getGrenadeFromBelt(bool brutal) const
+BattleItem *BattleUnit::getGrenadeFromBelt() const
 {
 	for (std::vector<BattleItem*>::const_iterator i = _inventory.begin(); i != _inventory.end(); ++i)
 	{
-		if (brutal && (*i)->getRules()->getDamageType()->RandomType == DRT_NONE)
+		if (isBrutal() && (*i)->getRules()->getDamageType()->RandomType == DRT_NONE)
 			continue;
 		if ((*i)->getRules()->getBattleType() == BT_GRENADE)
 		{
 			return *i;
 		}
-		else if (brutal && (*i)->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
+		else if (isBrutal() && (*i)->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
 			return *i;
 		}
@@ -5470,9 +5470,15 @@ void BattleUnit::disableIndicators()
 /**
  * Returns whether the unit should be controlled by brutalAI
  */
-bool BattleUnit::isBrutal()
+bool BattleUnit::isBrutal() const
 {
-	bool brutal = Options::brutalAI;
+	bool brutal = false;
+	if (getFaction() == FACTION_HOSTILE)
+		brutal = Options::brutalAI;
+	else if (getFaction() == FACTION_NEUTRAL)
+		brutal = Options::brutalCivilians;
+	else if (getFaction() == FACTION_PLAYER)
+		brutal = Options::autoCombat;
 	if (_unitRules && _unitRules->isBrutal())
 		brutal = true;
 	return brutal;

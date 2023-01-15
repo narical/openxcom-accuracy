@@ -681,7 +681,7 @@ void ProjectileFlyBState::think()
 				else
 				{
 					_parent->dropItem(pos, _action.weapon);
-					if (_unit->getFaction() != FACTION_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
+					if ((_unit->getFaction() != FACTION_PLAYER || Options::autoCombat) && ruleItem->getBattleType() == BT_GRENADE)
 					{
 						_parent->getTileEngine()->setDangerZone(pos, ruleItem->getExplosionRadius(attack), _action.actor);
 					}

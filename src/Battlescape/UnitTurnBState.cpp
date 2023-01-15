@@ -78,7 +78,7 @@ void UnitTurnBState::init()
 			int visibleTilesBefore = _unit->getVisibleTiles()->size();
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
 			// when unit sees more tiles than it did before, the door was opened and it shall proceed. When tiles are same or lower it is done.
-			if (_unit->getAIModule() != NULL && _unit->getVisibleTiles()->size() > visibleTilesBefore)
+			if ((_unit->getFaction() != FACTION_PLAYER || Options::autoCombat) && _unit->getVisibleTiles()->size() > visibleTilesBefore)
 			{
 				if (Options::traceAI)
 				{
