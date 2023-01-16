@@ -220,7 +220,7 @@ void create()
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
-	_info.push_back(OptionInfo("autoAggression", &autoAggression, true, "STR_AUTOAGGRSSION", "STR_AI"));
+	_info.push_back(OptionInfo("autoAggression", &autoAggression, true, "STR_AUTOAGGRESSION", "STR_AI"));
 
 	// OXCE GUI
 #ifdef __MOBILE__

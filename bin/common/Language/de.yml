@@ -139,6 +139,8 @@ de:
   STR_BRUTALCIVILIANS_DESC: "Neutrale Truppen werden von der brutalen KI kontrolliert."
   STR_AUTOCOMBAT: "Automatischer Kampf"
   STR_AUTOCOMBAT_DESC: "Kontrolle über Spieler-Einheiten wird der KI übergeben. Umschalten mit Strg+a während deiner Runde."
+  STR_AUTOAGGRESSION: "Suchende Spieler-KI"
+  STR_AUTOAGGRESSION_DESC: "Zwingt Spieler-Einheiten im automatischen Kampf stets nach Feinden zu suchen. Wenn deaktiviert könnten sie dazu neigen stattdessen an geeigneten Orten zu kampieren."
   STR_STRAFE: "Alternative Bewegungsart"
   STR_STRAFE_DESC: "Befähigt zum seitlichen Gehen, Rennen, unabhängiger Bewegung der Panzer-Waffe, wenn CTRL gedrückt wird."
   STR_BATTLEEXPLOSIONHEIGHT: "Explosionshöhe"
