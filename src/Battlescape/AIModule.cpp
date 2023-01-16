@@ -2866,12 +2866,16 @@ void AIModule::brutalThink(BattleAction* action)
 	// Step 1: Check whether we wait for someone else on our team to move first
 	int visibleToMe = 0;
 	int myDist = 0;
+	bool weKnowRealPosition = false;
 	for (BattleUnit *seenByMe : *(_unit->getVisibleUnits()))
 	{
 		if (seenByMe->getMainHandWeapon() == NULL)
 			continue;
 		if (!seenByMe->isOut() && isEnemy(seenByMe))
+		{
 			++visibleToMe;
+			weKnowRealPosition = true;
+		}
 	}
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
@@ -2898,7 +2902,10 @@ void AIModule::brutalThink(BattleAction* action)
 			if (seenByAlly->getMainHandWeapon() == NULL)
 				continue;
 			if (!seenByAlly->isOut() && isEnemy(seenByAlly))
+			{
 				++visibleToAlly;
+				weKnowRealPosition = true;
+			}
 		}
 		if (visibleToAlly < visibleToMe)
 		{
@@ -3046,6 +3053,9 @@ void AIModule::brutalThink(BattleAction* action)
 				primeScore -= 2;
 			continue;
 		}
+		// When we see some actual enemies we ignore imaginary ones
+		if (weKnowRealPosition && !brutalValidTarget(target, true))
+			continue;
 		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == -1)
 		{
 			if (target->getFaction() == _targetFaction)
@@ -3087,6 +3097,7 @@ void AIModule::brutalThink(BattleAction* action)
 		if (brutalValidTarget(target, true))
 		{
 			sweepMode = true;
+			weKnowRealPosition = true;
 		}
 		BattleUnit *LoFCheckUnitForPath = NULL;
 		if (_unit->isCheatOnMovement())
@@ -3538,6 +3549,8 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!isEnemy(target, true) || target->isOut())
 			continue;
 		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted() == -1)
+			continue;
+		if (!_unit->isCheatOnMovement() && weKnowRealPosition && !brutalValidTarget(target, true))
 			continue;
 		float currentDist = Position::distance(action->target, target->getPosition());
 		if (currentDist < shortestDist)
