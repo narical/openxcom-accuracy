@@ -3019,7 +3019,10 @@ void AIModule::brutalThink(BattleAction* action)
 	bool needToFlee = false;
 
 	BattleActionCost costSnap(BA_SNAPSHOT, _unit, action->weapon);
-	if (_unit->getTimeUnits() < costSnap.Time && !IAmPureMelee || action->weapon == NULL)
+	bool unarmed = false;
+	if (action->weapon == NULL && _grenade == NULL && _unit->getUtilityWeapon(BT_PSIAMP) == NULL)
+		unarmed = true;
+	if (_unit->getTimeUnits() < costSnap.Time && !IAmPureMelee || unarmed)
 		needToFlee = true;
 
 	if (_unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
@@ -4361,14 +4364,14 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 				{
 					enemiesAffected += distMod;
 				}
-				else
+				else if (isAlly(*i))
 					enemiesAffected--;
 			}
 		}
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "Explosion will hit " << enemiesAffected;
+		Log(LOG_INFO) << "Explosion at " << targetPos << " will hit " << enemiesAffected;
 	}
 	return enemiesAffected;
 }
