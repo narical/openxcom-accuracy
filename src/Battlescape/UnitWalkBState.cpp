@@ -209,20 +209,6 @@ void UnitWalkBState::think()
 			}
 			if (unitSpotted)
 			{
-				if ((_unit->getFaction() != FACTION_PLAYER || Options::autoCombat))
-				{
-					if (Options::traceAI)
-					{
-						Log(LOG_INFO) << _unit->getId() << " spotted an enemy, waking up units that may already have skipped their turn.";
-					}
-					for (BattleUnit *bu : *(_parent->getSave()->getUnits()))
-					{
-						if (bu->getFaction() != _unit->getFaction())
-							continue;
-						bu->setWantToEndTurn(false);
-						bu->allowReselect();
-					}
-				}
 				_pf->abortPath();
 				_parent->popState();
 				return;
