@@ -135,6 +135,8 @@ de:
   STR_IGNOREDELAY_DESC: "Normalerweise darf die KI bestimmte Gegnstände erst ab einer bestimmten Runde verwenden. Diese Option erlaubt der KI diese Einschränkung zu ignorieren."
   STR_AITARGETMODE: "Zielverhalten für Brutale KI"
   STR_AITARGETMODE_DESC: "1> Nur was Einheiten selbst sehen. 2> Auch was andere Einheiten im selben Team sehen. 3> Auch Orte von denen sie oder ihre Kameraden angegriffen worden. 4> Keine Einschränkungen."
+  STR_AILEEROYMODE: "Vorrückverhalten for Brutal AI"
+  STR_AILEEROYMODE_DESC: "0> Einheiten rücken situativ vor. 1> Einheiten rücken entsprechend ihres Leeroy-flags vor. 2> Einheiten rücken immer vor."
   STR_BRUTALCIVILIANS: "Brutale KI für neutrale Truppen"
   STR_BRUTALCIVILIANS_DESC: "Neutrale Truppen werden von der brutalen KI kontrolliert."
   STR_AUTOCOMBAT: "Automatischer Kampf"

@@ -135,6 +135,8 @@ en-US:
   STR_ALLOWPREPRIME_DESC: "If enabled units controlled by Brutal AI may decide to prime their grenades when they don't have anything more urgent to do and feel it's reasonably safe to do so."
   STR_AITARGETMODE: "Targeting behavior for Brutal AI"
   STR_AITARGETMODE_DESC: "1> Units can only target what they see. 2> Units can also target what others on their team see. 3> Units can also target locations they or their comrades were attacked from. 4> No limitations."
+  STR_AILEEROYMODE: "Charging behavior for Brutal AI"
+  STR_AILEEROYMODE_DESC: "0> Units only charge situationally. 1> Units charge according to their Leeroy-flag. 2> Units always charge."
   STR_BRUTALCIVILIANS: "Brutal AI for neutral forces"
   STR_BRUTALCIVILIANS_DESC: "Neutral forces will be controlled by Brutal AI."
   STR_AUTOCOMBAT: "Automated combat"
