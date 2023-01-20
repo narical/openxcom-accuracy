@@ -154,7 +154,7 @@ public:
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
 	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* LoFUnit = NULL);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
-	Position furthestToGoTowards(Position target, BattleActionCost reserve, bool encircleTileMode = false, Tile* encircleTile = NULL);
+	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
 	/// checks if the path to a position is save
 	bool isPathToPositionSave(Position target, bool checkForComplicated = false);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration

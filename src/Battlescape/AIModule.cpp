@@ -3107,7 +3107,7 @@ void AIModule::brutalThink(BattleAction* action)
 		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes, LoFCheckUnitForPath);
 		if (brutalValidTarget(target, true))
 		{
-			Position furthestAttackPositon = furthestToGoTowards(targetPosition, BattleActionCost(_unit), true);
+			Position furthestAttackPositon = furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true);
 			if (Position::distance(furthestAttackPositon, targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes, NULL)))
 				sweepMode = true;
 			weKnowRealPosition = true;
@@ -3150,7 +3150,7 @@ void AIModule::brutalThink(BattleAction* action)
 		Position targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
-		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), true));
+		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true));
 		if (Position::distance(encircleTile->getPosition(), targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(encircleTile->getPosition(), _allPathFindingNodes, unitToWalkTo)))
 			hideAfterPeaking = false;
 	}
@@ -3312,10 +3312,10 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
-		Position travelTarget = furthestToGoTowards(targetPosition, reserved);
+		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
 		if (!randomScouting && (!sweepMode || _blaster))
 		{
-			Position newTarget = furthestToGoTowards(furthestPositionEnemyCanReach, reserved);
+			Position newTarget = furthestToGoTowards(furthestPositionEnemyCanReach, reserved, _allPathFindingNodes);
 			if (newTarget != _unit->getPosition())
 				travelTarget = newTarget;
 		}
@@ -3552,7 +3552,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (travelTarget != _unit->getPosition())
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
-		action->target = furthestToGoTowards(travelTarget, reserved);
+		action->target = furthestToGoTowards(travelTarget, reserved, _allPathFindingNodes);
 	} else
 	{
 		action->target = _unit->getPosition();
@@ -3592,11 +3592,31 @@ void AIModule::brutalThink(BattleAction* action)
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, targetPosition);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing;
+			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing << " should have Lof after move: " << shouldHaveLofAfterMove;
 		}
 	}
-	if (!shouldHaveLofAfterMove && encircleTile && encircleTile->getPosition() != _unit->getPosition() && !IAmPureMelee)
-		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, encircleTile->getPosition());
+	if (!shouldHaveLofAfterMove)
+	{
+		if (unitToWalkTo != NULL)
+		{
+			if (_traceAI)
+				Log(LOG_INFO) << "Should look at path towards " << unitToWalkTo->getPosition();
+			Position targetPosition = unitToWalkTo->getPosition();
+			if (!_unit->isCheatOnMovement())
+				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted());
+			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &action->target);
+			Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes));
+			if (lookAtTile && _traceAI)
+				Log(LOG_INFO) << "lookAtTile " << lookAtTile->getPosition() << " action->target: " << action->target;
+			if (lookAtTile && lookAtTile->getPosition() != action->target)
+			{
+				action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, lookAtTile->getPosition());
+				if (_traceAI)
+					Log(LOG_INFO) << "Facing corrected towards " << lookAtTile->getPosition() << " which is " << action->finalFacing;
+			}
+		}
+	}
+
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "My facing now is " << action->finalFacing;
@@ -3806,7 +3826,7 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 	return tuCostToClosestNode;
 }
 
-Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserved, bool encircleTileMode, Tile* encircleTile)
+Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserved, std::vector<PathfindingNode *> nodeVector, bool encircleTileMode, Tile *encircleTile)
 {
 	//consider time-units we already spent
 	reserved.Time = _unit->getTimeUnits() - reserved.Time;
@@ -3818,7 +3838,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	}
 	PathfindingNode *targetNode = NULL;
 	float closestDistToTarget = 255;
-	for (auto pn : _allPathFindingNodes)
+	for (auto pn : nodeVector)
 	{
 		if (target == pn->getPosition())
 		{
