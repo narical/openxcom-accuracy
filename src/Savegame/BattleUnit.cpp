@@ -2387,7 +2387,7 @@ const std::vector<Tile*> *BattleUnit::getVisibleTiles()
 }
 
 /**
- * Add this unit to the list of lof tiles.
+ * Add this tile to the list of lof tiles.
  * @param tile that we now have a lof to.
  * @return true if a new tile.
  */
@@ -2402,12 +2402,36 @@ bool BattleUnit::addToLofTiles(Tile *tile)
 }
 
 /**
+ * Add this tile to the list of no lof tiles.
+ * @param tile that we don't have a lof to.
+ * @return true if a new tile.
+ */
+bool BattleUnit::addToNoLofTiles(Tile *tile)
+{
+	if (_noLofTilesLookup.insert(tile).second)
+	{
+		_noLofTiles.push_back(tile);
+		return true;
+	}
+	return false;
+}
+
+/**
  * Get the pointer to the vector of lof tiles.
  * @return pointer to vector.
  */
 const std::vector<Tile *> *BattleUnit::getLofTiles()
 {
 	return &_lofTiles;
+}
+
+/**
+ * Get the pointer to the vector of nolof tiles.
+ * @return pointer to vector.
+ */
+const std::vector<Tile *> *BattleUnit::getNoLofTiles()
+{
+	return &_noLofTiles;
 }
 
 /**
@@ -2431,6 +2455,8 @@ void BattleUnit::clearLofTiles()
 {
 	_lofTilesLookup.clear();
 	_lofTiles.clear();
+	_noLofTiles.clear();
+	_noLofTilesLookup.clear();
 }
 
 /**
@@ -5505,6 +5531,23 @@ int BattleUnit::aiTargetMode()
 		targetMode = std::max(targetMode, _unitRules->aiTargetMode());
 	targetMode = std::clamp(targetMode, 1, 4);
 	return targetMode;
+}
+
+bool BattleUnit::isLeeroyJenkins() const
+{
+	if (getFaction() == FACTION_PLAYER)
+	{
+		if (Options::autoAggression)
+			return true;
+		else
+			return false;
+	}
+	else if (Options::aiLeeroyMode == 0)
+		return false;
+	else if (Options::aiLeeroyMode == 1)
+		return _isLeeroyJenkins;
+	else if (Options::aiLeeroyMode == 2)
+		return true;
 }
 
 ////////////////////////////////////////////////////////////

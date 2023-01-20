@@ -277,6 +277,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 4;
 		}
+		if (i == &Options::aiLeeroyMode)
+		{
+			min = 0;
+			max = 2;
+		}
 		if (i == &Options::battleExplosionHeight)
 		{
 			min = 0;

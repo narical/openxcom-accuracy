@@ -218,6 +218,7 @@ void create()
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, true, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
+	_info.push_back(OptionInfo("aiLeeroyMode", &aiLeeroyMode, 1, "STR_AILEEROYMODE", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoAggression", &autoAggression, true, "STR_AUTOAGGRESSION", "STR_AI"));

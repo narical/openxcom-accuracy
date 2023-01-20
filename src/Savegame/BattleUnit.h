@@ -103,8 +103,10 @@ private:
 	std::vector<BattleUnit *> _visibleUnits, _unitsSpottedThisTurn;
 	std::vector<Tile *> _visibleTiles;
 	std::vector<Tile *> _lofTiles;
+	std::vector<Tile *> _noLofTiles;
 	std::unordered_set<Tile *> _visibleTilesLookup;
 	std::unordered_set<Tile *> _lofTilesLookup;
+	std::unordered_set<Tile *> _noLofTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel, _mana;
 	bool _kneeled, _floating, _dontReselect;
 	bool _haveNoFloorBelow = false;
@@ -371,6 +373,8 @@ public:
 	bool addToVisibleTiles(Tile *tile);
 	/// Add tile to units lof-tiles
 	bool addToLofTiles(Tile *tile);
+	/// Add tile to units no-lof-tiles
+	bool addToNoLofTiles(Tile *tile);
 	/// Has this unit marked this tile as within its view?
 	bool hasVisibleTile(Tile *tile) const
 	{
@@ -381,10 +385,17 @@ public:
 	{
 		return _lofTilesLookup.find(tile) != _lofTilesLookup.end(); // find?
 	}
+	/// Has this unit marked this tile as within its lof?
+	bool hasNoLofTile(Tile *tile) const
+	{
+		return _noLofTilesLookup.find(tile) != _noLofTilesLookup.end(); // find?
+	}
 	/// Get the list of visible tiles.
 	const std::vector<Tile*> *getVisibleTiles();
 	/// Get the list of lof tiles.
 	const std::vector<Tile *> *getLofTiles();
+	/// Get the list of no lof tiles.
+	const std::vector<Tile *> *getNoLofTiles();
 	/// Clear visible tiles.
 	void clearVisibleTiles();
 	/// Clear lof tiles
@@ -783,7 +794,7 @@ public:
 	/// Get the unit mind controller's id.
 	int getMindControllerId() const;
 	/// Get the unit leeroyJenkins flag
-	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
+	bool isLeeroyJenkins() const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
 	int getSpotterDuration() const;
 	/// Remembers the unit's XP (used for shotguns).
