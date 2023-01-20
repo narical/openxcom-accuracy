@@ -199,6 +199,8 @@ public:
 	bool isEnemy(BattleUnit* unit, bool ignoreSameOriginalFaction = false) const;
 	/// Tells us whether a unit is an ally
 	bool isAlly(BattleUnit *unit) const;
+	/// Checks whether the trajectory of a projectile visits tiles occupied by our allies
+	bool projectileMayHarmFriends(Position startPos, Position targetPos);
 };
 
 }
