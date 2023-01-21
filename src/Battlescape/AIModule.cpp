@@ -3466,7 +3466,8 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score *= 1.25;
 			}
 			prio3Score = 100 / walkToDist;
-			prio1Score /= cuddleAvoidModifier;
+			if (!IAmPureMelee)
+				prio1Score /= cuddleAvoidModifier;
 			prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
@@ -4267,8 +4268,6 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 			numberOfShots = brutalExplosiveEfficacy(target->getPosition(), _unit, radius, true);
 		else
 			numberOfShots = brutalExplosiveEfficacy(_save->getTileCoords(target->getTileLastSpotted(true)), _unit, radius, true);
-		// We assume that when we don't quite hit the target, it still will be within the range, which is the big advantage of grenades afterall
-		accuracy = std::max(100, accuracy);
 	}
 	else
 	{
