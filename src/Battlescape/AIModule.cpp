@@ -5086,6 +5086,8 @@ bool AIModule::isEnemy(BattleUnit* unit, bool ignoreSameOriginalFaction) const
 {
 	if (!unit)
 		return false;
+	if (_unit == unit)
+		return false;
 	UnitFaction faction = unit->getFaction();
 	bool unitIsMindControlled = false;
 	if (unit->getFaction() != unit->getOriginalFaction())
