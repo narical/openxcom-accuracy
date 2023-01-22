@@ -3184,10 +3184,13 @@ void AIModule::brutalThink(BattleAction* action)
 			//encircleTile->setTUMarker(_unit->getId() %100);
 		}
 	}
+	bool IAmMindControlled = false;
 	//When I'm mind-controlled I should definitely be reckless
 	if (_unit->getFaction() != _unit->getOriginalFaction())
 	{
 		sweepMode = true;
+		IAmMindControlled = true;
+		needToFlee = false;
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm mind-controlled.";
 	}
@@ -3348,7 +3351,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
 					unitPosition = _save->getTileCoords(unit->getTileLastSpotted());
 				float unitDist = Position::distance(pos, unitPosition);
-				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z)
+				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 				{
 					if (unitDist < 5)
 						cuddleAvoidModifier += 5 - unitDist;
@@ -3471,6 +3474,22 @@ void AIModule::brutalThink(BattleAction* action)
 			prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
+			{
+				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
+				{
+					prio1Score *= 2;
+					prio2Score *= 10;
+					prio3Score *= 10;
+				}
+				else
+				{
+					prio1Score /= 2;
+					prio2Score /= 10;
+					prio3Score /= 10;
+				}
+			}
+			// Avoid tiles from which the player can take me with them when retreating
+			if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
 			{
 				prio1Score /= 2;
 				prio2Score /= 10;
@@ -4395,7 +4414,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 	{
 		if (brutalValidTarget(target, true))
 			enemiesAffected++;
-		else
+		else if (isAlly(target))
 			enemiesAffected--;
 	}
 
