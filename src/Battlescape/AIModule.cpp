@@ -2894,6 +2894,8 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	for (BattleUnit *ally : *(_save->getUnits()))
 	{
+		if (ally == _unit)
+			continue;
 		if (ally->isOut())
 			continue;
 		if (ally->getFaction() != _unit->getFaction())
@@ -2927,7 +2929,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!target->isOut() && isEnemy(target))
 				{
-					int dist = tuCostToReachPosition(target->getPosition(), allyNodes, target);
+					int dist = tuCostToReachPosition(target->getPosition(), allyNodes, target, ally);
 					allyDist += dist;
 				}
 			}
@@ -3793,12 +3795,14 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	return _aggroTarget != 0;
 }
 
-int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *LoFUnit)
+int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *LoFUnit, BattleUnit *actor)
 {
 	float closestDistToTarget = 255;
 	int tuCostToClosestNode = 10000;
 	Tile *posTile = _save->getTile(pos);
 	bool isAtDoor = _save->getTileEngine()->isNextToDoor(posTile);
+	if (actor == NULL)
+		actor = _unit;
 	for (auto pn : nodeVector)
 	{
 		if (pos == pn->getPosition())
@@ -3806,7 +3810,7 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 		Tile *tile = _save->getTile(pn->getPosition());
 		if (pos.z != pn->getPosition().z)
 			continue;
-		if (!posTile->hasNoFloor() && tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
+		if (!posTile->hasNoFloor() && tile->hasNoFloor() && actor->getMovementType() != MT_FLY)
 			continue;
 		if (LoFUnit != NULL && !isAtDoor)
 		{
