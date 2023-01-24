@@ -3127,22 +3127,6 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
-	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0)
-	{
-		BattleItem *grenade = _unit->getGrenadeFromBelt();
-		int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
-		if (primeCost <= _unit->getTimeUnits())
-		{
-			_unit->spendTimeUnits(4);
-			_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
-			grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
-			if (_traceAI)
-				Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade because primescore was " << primeScore;
-			action->type = BA_RETHINK;
-			action->number -= 1;
-			return;
-		}
-	}
 
 	bool randomScouting = false;
 	Tile *encircleTile = NULL;
@@ -3195,6 +3179,22 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = false;
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm mind-controlled.";
+	}
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled)
+	{
+		BattleItem *grenade = _unit->getGrenadeFromBelt();
+		int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
+		if (primeCost <= _unit->getTimeUnits())
+		{
+			_unit->spendTimeUnits(4);
+			_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
+			grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
+			if (_traceAI)
+				Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade because primescore was " << primeScore;
+			action->type = BA_RETHINK;
+			action->number -= 1;
+			return;
+		}
 	}
 	//When the enemy is mindcontrolling our units, there's no time to be careful either, we have to find and kill whatever is spotting and mind-controlling our friends
 	if (haveMindControlled)
@@ -3471,8 +3471,6 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score *= 1.25;
 			}
 			prio3Score = 100 / walkToDist;
-			if (!IAmPureMelee)
-				prio1Score /= cuddleAvoidModifier;
 			prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
@@ -4184,7 +4182,7 @@ void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleAc
 			chosenAction = i;
 		}
 
-		if (_traceAI && score > 0)
+		if (_traceAI && newScore > 0)
 		{
 			Log(LOG_INFO) << "Evaluate option " << (int)i << " against " << _aggroTarget->getId() << " at " << _aggroTarget->getPosition() << " with weapon " << testAction.weapon->getRules()->getName() << ", score = " << newScore;
 		}
