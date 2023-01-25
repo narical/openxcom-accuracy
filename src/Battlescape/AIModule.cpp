@@ -215,8 +215,7 @@ void AIModule::think(BattleAction *action)
 	_melee = (_unit->getUtilityWeapon(BT_MELEE) != 0);
 	_rifle = false;
 	_blaster = false;
-	if (!_unit->isBrutal())
-		_reachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost());
+	_reachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost());
 	_wasHitBy.clear();
 	_foundBaseModuleToDestroy = false;
 
@@ -2869,7 +2868,7 @@ void AIModule::brutalThink(BattleAction* action)
 {
 	// Step 1: Check whether we wait for someone else on our team to move first
 	int visibleToMe = 0;
-	int myDist = 0;
+	int myReachable = 0;
 	bool weKnowRealPosition = false;
 	for (BattleUnit *seenByMe : *(_unit->getVisibleUnits()))
 	{
@@ -2881,17 +2880,7 @@ void AIModule::brutalThink(BattleAction* action)
 			weKnowRealPosition = true;
 		}
 	}
-	std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true);
-	for (BattleUnit *target : *(_save->getUnits()))
-	{
-		if (target->getMainHandWeapon() == NULL)
-			continue;
-		if (!target->isOut() && isEnemy(target))
-		{
-			int dist = tuCostToReachPosition(target->getPosition(), myNodes, target);
-			myDist+= dist;
-		}
-	}
+	myReachable += _reachable.size();
 	for (BattleUnit *ally : *(_save->getUnits()))
 	{
 		if (ally == _unit)
@@ -2903,7 +2892,7 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!ally->reselectAllowed() || !ally->isSelectable(_unit->getFaction(), false, false))
 			continue;
 		int visibleToAlly = 0;
-		int allyDist = 0;
+		int allyReachable = 0;
 		for (BattleUnit *seenByAlly : *(ally->getVisibleUnits()))
 		{
 			if (seenByAlly->getMainHandWeapon() == NULL)
@@ -2922,18 +2911,8 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		else if(visibleToAlly == visibleToMe)
 		{
-			std::vector<PathfindingNode *> allyNodes = _save->getPathfinding()->findReachablePathFindingNodes(ally, BattleActionCost(), true);
-			for (BattleUnit *target : *(_save->getUnits()))
-			{
-				if (target->getMainHandWeapon() == NULL)
-					continue;
-				if (!target->isOut() && isEnemy(target))
-				{
-					int dist = tuCostToReachPosition(target->getPosition(), allyNodes, target, ally);
-					allyDist += dist;
-				}
-			}
-			if (myDist > allyDist)
+			allyReachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost()).size();
+			if (myReachable < allyReachable)
 			{
 				action->type = BA_WAIT;
 				action->number -= 1;
@@ -3421,7 +3400,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float prio1Score = 0;
 			float prio2Score = 0;
 			float prio3Score = 0;
-			if (!_blaster && !needToFlee && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting)
+			if (!_blaster && !needToFlee && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && _unit->getPosition() != pos)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 					prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
@@ -4208,8 +4187,6 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 
 	// Get base accuracy for the action
 	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getBattleGame()->getMod());
-	if (_traceAI)
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " initial accuracy: " << accuracy;
 	int distanceSq = _unit->distance3dToUnitSq(target);
 	if (!checkLOF)
 		distanceSq = _unit->distance3dToPositionSq(_save->getTileCoords(target->getTileLastSpotted(true)));
