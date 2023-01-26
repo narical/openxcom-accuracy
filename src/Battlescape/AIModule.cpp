@@ -3123,18 +3123,31 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		if (!encircleTile)
 		{
-			int rand = RNG::generate(0, _allPathFindingNodes.size());
-			int i = 0;
+			int LowestTuCost = INT_MAX;
+			int lowestTurnExplored = INT_MAX;
 			for (auto pu : _allPathFindingNodes)
 			{
-				++i;
-				if (i == rand)
+				Tile *tile = _save->getTile(pu->getPosition());
+				if (!tile)
+					continue;
+				int lastExplored = tile->getLastExplored(_unit->getFaction());
+				if (lastExplored < lowestTurnExplored)
 				{
-					encircleTile = _save->getTile(pu->getPosition());
-					randomScouting = true;
-					break;
+					lowestTurnExplored = lastExplored;
+					encircleTile = tile;
+				}
+				else if (lastExplored == lowestTurnExplored)
+				{
+					int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
+					if (TUCost < LowestTuCost)
+					{
+						LowestTuCost = TUCost;
+						encircleTile = tile;
+					}
 				}
 			}
+			if (encircleTile)
+				randomScouting = true;
 		}
 	}
 	if (_traceAI)
@@ -3314,6 +3327,12 @@ void AIModule::brutalThink(BattleAction* action)
 			Tile *tile = _save->getTile(pos);
 			if (tile == NULL)
 				continue;
+			if (_traceAI)
+			{
+				tile->setMarkerColor(tile->getLastExplored(_unit->getFaction()));
+				tile->setPreview(10);
+				tile->setTUMarker(tile->getLastExplored(_unit->getFaction()));
+			}
 			if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
@@ -3474,27 +3493,6 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score /= 10;
 				prio3Score /= 10;
 			}
-			/*if (_traceAI)
-			{
-				if (prio1Score > 0)
-				{
-					tile->setMarkerColor(_unit->getId() % 100);
-					tile->setPreview(10);
-					tile->setTUMarker(walkToDist);
-				}
-				else if (prio2Score > 0)
-				{
-					tile->setMarkerColor(_unit->getId() % 100);
-					tile->setPreview(10);
-					tile->setTUMarker(walkToDist);
-				}
-				else if (prio3Score > 0)
-				{
-					tile->setMarkerColor(_unit->getId() % 100);
-					tile->setPreview(10);
-					tile->setTUMarker(walkToDist);
-				}
-			}*/
 			if (prio1Score > bestPrio1Score)
 			{
 				bestPrio1Score = prio1Score;
@@ -3951,26 +3949,25 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForComplicated)
 							continue;
 						if (isAlly(unit))
 							continue;
-						if (unit->hasVisibleTile(tile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
+						bool suspectReaction = unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu));
+						if (!_unit->isCheatOnMovement())
+						{
+							if (visibleToAnyFriend(unit))
+								suspectReaction = true;
+							else
+								suspectReaction = false;
+						}
+						if (unit->hasVisibleTile(tile) && suspectReaction)
 						{
 							if (unit->hasVisibleUnit(_unit))
 								return false;
 							else if (targetNode->getPrevNode())
 							{
 								Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
-								if (unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
+								if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
 									return false;
 							}
 						}
-					}
-				}
-				else
-				{
-					// When we are not cheating we determine the safety of a path by checking whether there's a corpse of a friend
-					for (BattleUnit *unit : *(_save->getUnits()))
-					{
-						if (unit->isOut() && isAlly(unit) && unit->getPosition() == targetNode->getPosition())
-							return false;
 					}
 				}
 			}
@@ -5013,35 +5010,30 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* unit)
 {
 	std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &previousPosition);
-	Tile *furthestNonVisibleTileToPreviousPosition = NULL;
-	int HighestTuCost = 0;
+	Tile *TileToCheckNext = NULL;
+	int LowestTuCost = INT_MAX;
+	int lowestTurnExplored = INT_MAX;
 	for (auto pn : targetNodes)
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
-		bool skip = false;
-		for (BattleUnit *ally : *(_save->getUnits()))
+		int lastExplored = tile->getLastExplored(_unit->getFaction());
+		if (lastExplored < lowestTurnExplored)
 		{
-			if (ally->getFaction() != _unit->getFaction())
-				continue;
-			if (ally->hasVisibleTile(tile) || ally->getPosition() == tile->getPosition())
+			lowestTurnExplored = lastExplored;
+			TileToCheckNext = tile;
+		}
+		else if (lastExplored == lowestTurnExplored)
+		{
+			int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
+			if (TUCost < LowestTuCost)
 			{
-				skip = true;
-				break;
+				LowestTuCost = TUCost;
+				TileToCheckNext = tile;
 			}
 		}
-		if (skip)
-			continue;
-		if (pn->getTUCost(false).time > getMaxTU(unit))
-			break;
-		int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
-		if (TUCost > HighestTuCost)
-		{
-			HighestTuCost = TUCost;
-			furthestNonVisibleTileToPreviousPosition = tile;
-		}
 	}
-	if (furthestNonVisibleTileToPreviousPosition)
-		return _save->getTileIndex(furthestNonVisibleTileToPreviousPosition->getPosition());
+	if (TileToCheckNext)
+		return _save->getTileIndex(TileToCheckNext->getPosition());
 	return -1;
 }
 

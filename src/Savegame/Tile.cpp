@@ -44,7 +44,10 @@ Tile::SerializationKey Tile::serializationKey =
  1, // _fire
  1, // _smoke
  1,	// one 8-bit bool field
- 4 + 2*4 + 2*4 + 1 + 1 + 1 // total bytes to save one tile
+ 2, // _lastExploredByHostile
+ 2, // _lastExploredByNeutral
+ 2, // _lastExploredByPlayer
+ 4 + 2*4 + 2*4 + 1 + 1 + 1 + 2 + 2 + 2// total bytes to save one tile
 };
 
 /**
@@ -93,6 +96,9 @@ void Tile::load(const YAML::Node &node)
 	}
 	_fire = node["fire"].as<int>(_fire);
 	_smoke = node["smoke"].as<int>(_smoke);
+	_lastExploredByHostile = node["lastExploredByHostile"].as<int>(_lastExploredByHostile);
+	_lastExploredByNeutral = node["lastExploredByNeutral"].as<int>(_lastExploredByNeutral);
+	_lastExploredByPlayer = node["lastExploredByPlayer"].as<int>(_lastExploredByPlayer);
 	if (node["discovered"])
 	{
 		for (int i = 0; i < 3; i++)
@@ -140,6 +146,9 @@ void Tile::loadBinary(Uint8 *buffer, Tile::SerializationKey& serKey)
 	_objectsCache[O_FLOOR].discovered = (boolFields & 4) ? 1 : 0;
 	_objectsCache[O_WESTWALL].currentFrame = (boolFields & 8) ? 7 : 0;
 	_objectsCache[O_NORTHWALL].currentFrame = (boolFields & 0x10) ? 7 : 0;
+	_lastExploredByHostile = unserializeInt(&buffer, serKey._lastExploredByHostile);
+	_lastExploredByNeutral = unserializeInt(&buffer, serKey._lastExploredByNeutral);
+	_lastExploredByPlayer = unserializeInt(&buffer, serKey._lastExploredByPlayer);
 	if (_fire || _smoke)
 	{
 		_animationOffset = RNG::seedless(0, 3);
@@ -164,6 +173,12 @@ YAML::Node Tile::save() const
 		node["smoke"] = _smoke;
 	if (_fire)
 		node["fire"] = _fire;
+	if (_lastExploredByHostile)
+		node["lastExploredByHostile"] = _lastExploredByHostile;
+	if (_lastExploredByNeutral)
+		node["lastExploredByNeutral"] = _lastExploredByNeutral;
+	if (_lastExploredByPlayer)
+		node["lastExploredByPlayer"] = _lastExploredByPlayer;
 	if (_objectsCache[O_FLOOR].discovered || _objectsCache[O_WESTWALL].discovered || _objectsCache[O_NORTHWALL].discovered)
 	{
 		throw Exception("Obsolete code");
@@ -205,6 +220,9 @@ void Tile::saveBinary(Uint8** buffer) const
 	boolFields |= isUfoDoorOpen(O_WESTWALL) ? 8 : 0; // west
 	boolFields |= isUfoDoorOpen(O_NORTHWALL) ? 0x10 : 0; // north?
 	serializeInt(buffer, serializationKey.boolFields, boolFields);
+	serializeInt(buffer, serializationKey._lastExploredByHostile, _lastExploredByHostile);
+	serializeInt(buffer, serializationKey._lastExploredByNeutral, _lastExploredByNeutral);
+	serializeInt(buffer, serializationKey._lastExploredByPlayer, _lastExploredByPlayer);
 }
 
 /**
@@ -1076,6 +1094,25 @@ void Tile::resetObstacle(void)
 	_obstacle = 0;
 }
 
+void Tile::setLastExplored(UnitFaction faction)
+{
+	if (faction == FACTION_PLAYER)
+		_lastExploredByPlayer = _save->getTurn();
+	else if (faction == FACTION_NEUTRAL)
+		_lastExploredByNeutral = _save->getTurn();
+	else
+		_lastExploredByHostile = _save->getTurn();
+}
+
+int Tile::getLastExplored(UnitFaction faction)
+{
+	if (faction == FACTION_PLAYER)
+		return _lastExploredByPlayer;
+	else if (faction == FACTION_NEUTRAL)
+		return _lastExploredByNeutral;
+	else
+		return _lastExploredByHostile;
+}
 
 ////////////////////////////////////////////////////////////
 //					Script binding
@@ -1179,8 +1216,6 @@ std::string debugDisplayScript(const Tile* t)
 		return "null";
 	}
 }
-
-
 
 } //namespace
 
