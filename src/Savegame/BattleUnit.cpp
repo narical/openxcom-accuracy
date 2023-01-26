@@ -2371,6 +2371,7 @@ bool BattleUnit::addToVisibleTiles(Tile *tile)
 	if (_visibleTilesLookup.insert(tile).second)
 	{
 		tile->setVisible(1);
+		tile->setLastExplored(getFaction());
 		_visibleTiles.push_back(tile);
 		return true;
 	}
@@ -5515,7 +5516,9 @@ bool BattleUnit::isBrutal() const
  */
 bool BattleUnit::isCheatOnMovement()
 {
-	bool cheat = Options::cheatOnMovement;
+	bool cheat = false;
+	if (getFaction() == FACTION_HOSTILE)
+		cheat = Options::cheatOnMovement;
 	if (_unitRules && _unitRules->isCheatOnMovement())
 		cheat = true;
 	return cheat;
