@@ -3062,9 +3062,9 @@ void AIModule::brutalThink(BattleAction* action)
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted());
 			Tile *targetTile = _save->getTile(targetPosition);
 			bool tileChecked = false;
-			if (targetTile->getSmoke() == 0 && _unit->hasVisibleTile(targetTile) && !_unit->hasVisibleUnit(target))
+			if (targetTile->getSmoke() == 0 && targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target))
 				tileChecked = true;
-			else if (_unit->getPosition() == targetPosition)
+			else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction() && !targetTile->getUnit()->isOut())
 				tileChecked = true;
 			if (_traceAI)
 				Log(LOG_INFO) << "Assuming unit at " << target->getPosition() << " to be at " << targetPosition << " checked: " << tileChecked;
@@ -3110,6 +3110,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool randomScouting = false;
 	Tile *encircleTile = NULL;
 	bool hideAfterPeaking = true;
+	bool rangeTooShortToPeak = false;
 	if (unitToWalkTo != NULL)
 	{
 		Position targetPosition = unitToWalkTo->getPosition();
@@ -3118,6 +3119,8 @@ void AIModule::brutalThink(BattleAction* action)
 		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true));
 		if (Position::distance(encircleTile->getPosition(), targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(encircleTile->getPosition(), _allPathFindingNodes, unitToWalkTo)))
 			hideAfterPeaking = false;
+		else
+			rangeTooShortToPeak = true;
 	}
 	else if (!_unit->isCheatOnMovement() && _unit->getTimeUnits() == _unit->getBaseStats()->tu)
 	{
@@ -3292,7 +3295,7 @@ void AIModule::brutalThink(BattleAction* action)
 	Position bestPrio3Position = _unit->getPosition();
 	if (iHaveLof && _blaster)
 		needToFlee = true;
-	if (_unit->getTimeUnits() == getMaxTU(_unit))
+	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak)
 		peakMode = true;
 	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking)
 		needToFlee = true;
@@ -3337,6 +3340,12 @@ void AIModule::brutalThink(BattleAction* action)
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
 				continue;
+			if (Options::strafers)
+			{
+				Tile *tileBelow = _save->getBelowTile(tile);
+				if (tileBelow && tileBelow->hasNoFloor() && tile->hasNoFloor())
+					continue;
+			}
 			float closestEnemyDist = FLT_MAX;
 			float targetDist = Position::distance(pos, targetPosition);
 			bool visibleToEnemy = false;
@@ -5009,11 +5018,10 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 
 int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* unit)
 {
-	std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &previousPosition);
 	Tile *TileToCheckNext = NULL;
 	int LowestTuCost = INT_MAX;
 	int lowestTurnExplored = INT_MAX;
-	for (auto pn : targetNodes)
+	for (auto pn : _allPathFindingNodes)
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
 		int lastExplored = tile->getLastExplored(_unit->getFaction());
@@ -5024,7 +5032,7 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 		}
 		else if (lastExplored == lowestTurnExplored)
 		{
-			int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
+			int TUCost = pn->getTUCost(false).time;
 			if (TUCost < LowestTuCost)
 			{
 				LowestTuCost = TUCost;
