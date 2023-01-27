@@ -133,6 +133,8 @@ de:
   STR_ALLOWPREPRIME_DESC: "Wenn aktiv, können von der brutalen KI gesteuerte Einheiten entscheiden ihre Granaten schon scharf machen bevor sie sie benutzen wollen."
   STR_IGNOREDELAY: "KI ignoriert Gegenstandsverzögerung"
   STR_IGNOREDELAY_DESC: "Normalerweise darf die KI bestimmte Gegnstände erst ab einer bestimmten Runde verwenden. Diese Option erlaubt der KI diese Einschränkung zu ignorieren."
+  STR_STRAFERS: "Tiefflieger"
+  STR_STRAFERS_DESC: "Fliegende Einheiten der KI werden maximal eine Etage über dem nächsten Boden fliegen. Dies spart Rechenzeit auf Karten mit vielen Etagen über dem Boden."
   STR_AITARGETMODE: "Zielverhalten für Brutale KI"
   STR_AITARGETMODE_DESC: "1> Nur was Einheiten selbst sehen. 2> Auch was andere Einheiten im selben Team sehen. 3> Auch Orte von denen sie oder ihre Kameraden angegriffen worden. 4> Keine Einschränkungen."
   STR_AILEEROYMODE: "Vorrückverhalten for Brutal AI"

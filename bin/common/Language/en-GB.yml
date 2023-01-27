@@ -133,6 +133,8 @@ en-GB:
   STR_IGNOREDELAY_DESC: "By default enemies will not use explosive items until turn 3. Enable this option to allow them to use explosives at any time."
   STR_ALLOWPREPRIME: "Allow Brutal AI to pre-prime grenades"
   STR_ALLOWPREPRIME_DESC: "If enabled units controlled by Brutal AI may decide to prime their grenades when they don't have anything more urgent to do and feel it's reasonably safe to do so."
+  STR_STRAFERS: "Strafers"
+  STR_STRAFERS_DESC: "Flying units of the AI will stick to at most one level above the closest ground. This saves processing-time on maps with many levels above ground."
   STR_AITARGETMODE: "Targeting behaviour for Brutal AI"
   STR_AITARGETMODE_DESC: "1> Units can only target what they see. 2> Units can also target what others on their team see. 3> Units can also target locations they or their comrades were attacked from. 4> No limitations."
   STR_AILEEROYMODE: "Charging behaviour for Brutal AI"
