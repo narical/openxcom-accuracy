@@ -240,7 +240,10 @@ void BattlescapeGame::think()
 			{
 				if (_save->getSelectedUnit())
 				{
-					if (!handlePanickingUnit(_save->getSelectedUnit()))
+					bool panicHandled = _save->getSelectedUnit()->getFaction() == FACTION_PLAYER;
+					if (!panicHandled)
+						panicHandled = handlePanickingUnit(_save->getSelectedUnit());
+					if (!panicHandled)
 						handleAI(_save->getSelectedUnit());
 				}
 				else
