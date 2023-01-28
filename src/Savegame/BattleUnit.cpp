@@ -5529,6 +5529,9 @@ bool BattleUnit::isCheatOnMovement()
  */
 int BattleUnit::aiTargetMode()
 {
+	// Player and Neutral-AI are locked to mode 3
+	if (getFaction() != FACTION_HOSTILE)
+		return 3;
 	int targetMode = Options::aiTargetMode;
 	if (_unitRules && _unitRules->aiTargetMode() > 0)
 		targetMode = std::max(targetMode, _unitRules->aiTargetMode());
