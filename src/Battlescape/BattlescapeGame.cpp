@@ -224,17 +224,8 @@ void BattlescapeGame::think()
 			return;
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
-		if (_save->getSide() != FACTION_PLAYER || Options::autoCombat)
+		if (_save->getSide() != FACTION_PLAYER || (Options::autoCombat && _playerPanicHandled))
 		{
-			if (_save->getSide() == FACTION_PLAYER)
-			{
-				// it's a player side && we have not handled all panicking units
-				if (!_playerPanicHandled)
-				{
-					_playerPanicHandled = handlePanickingPlayer();
-					_save->getBattleState()->updateSoldierInfo();
-				}
-			}
 			_save->resetUnitHitStates();
 			if (!_debugPlay)
 			{
