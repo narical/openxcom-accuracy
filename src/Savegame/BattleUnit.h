@@ -128,9 +128,9 @@ private:
 	int _smokeMaxHit;
 	int _moraleRestored;
 	BattleUnit *_charging;
-	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned, _turnsSinceSeen = 255;
-	int _tileLastSpotted = -1;
-	int _tileLastSpottedForBlindShot = -1;
+	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned, _turnsSinceSeenByHostile, _turnsSinceSeenByNeutral, _turnsSinceSeenByPlayer = 255;
+	int _tileLastSpottedByHostile, _tileLastSpottedByNeutral, _tileLastSpottedByPlayer = -1;
+	int _tileLastSpottedForBlindShotByHostile, _tileLastSpottedForBlindShotByNeutral, _tileLastSpottedForBlindShotByPlayer = -1;
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
 	std::string _preferredHandForReactions;
@@ -672,13 +672,13 @@ public:
 	/// Get how many turns left snipers know about this target.
 	int  getTurnsLeftSpottedForSnipers() const;
 	/// Set how many turns ago this unit was last seen
-	void setTurnsSinceSeen(int turns);
+	void setTurnsSinceSeen(int turns, UnitFaction faction);
 	/// Get how many turns ago this unit was last seen
-	int getTurnsSinceSeen() const;
+	int getTurnsSinceSeen(UnitFaction faction) const;
 	/// Set where the unit has last been spotted
-	void setTileLastSpotted(int index, bool forBlindShot = false);
+	void setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot = false);
 	/// Get the tile where the unit was last spotted
-	int getTileLastSpotted(bool forBlindShot = false) const;
+	int getTileLastSpotted(UnitFaction faction, bool forBlindShot = false) const;
 	/// Reset how many turns passed since stunned last time.
 	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Increase how many turns passed since stunned last time.

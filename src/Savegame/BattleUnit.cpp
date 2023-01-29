@@ -66,8 +66,9 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0), _turnsSinceSeen(255),
-	_tileLastSpotted(-1),
+	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
+	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
@@ -439,8 +440,9 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_fallPhase(0), _kneeled(false), _floating(false), _dontReselect(false), _fire(0), _currentAIState(0),
 	_visible(false), _exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
-	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0), _turnsSinceSeen(255),
-	_tileLastSpotted(-1),
+	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
+	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT),
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
 	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
@@ -685,9 +687,16 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_turretType = node["turretType"].as<int>(_turretType);
 	_visible = node["visible"].as<bool>(_visible);
 	_turnsSinceSpotted = node["turnsSinceSpotted"].as<int>(_turnsSinceSpotted);
-	_tileLastSpotted = node["tileLastSpotted"].as<int>(_tileLastSpotted);
+	_tileLastSpottedByHostile = node["tileLastSpottedByHostile"].as<int>(_tileLastSpottedByHostile);
+	_tileLastSpottedByNeutral = node["tileLastSpottedByNeutral"].as<int>(_tileLastSpottedByNeutral);
+	_tileLastSpottedByPlayer = node["tileLastSpottedByPlayer"].as<int>(_tileLastSpottedByPlayer);
+	_tileLastSpottedForBlindShotByHostile = node["tileLastSpottedForBlindShotByHostile"].as<int>(_tileLastSpottedForBlindShotByHostile);
+	_tileLastSpottedForBlindShotByNeutral = node["tileLastSpottedForBlindShotByNeutral"].as<int>(_tileLastSpottedForBlindShotByNeutral);
+	_tileLastSpottedForBlindShotByPlayer = node["tileLastSpottedForBlindShotByPlayer"].as<int>(_tileLastSpottedForBlindShotByPlayer);
 	_turnsLeftSpottedForSnipers = node["turnsLeftSpottedForSnipers"].as<int>(_turnsLeftSpottedForSnipers);
-	_turnsSinceSeen = node["turnsSinceSeen"].as<int>(_turnsSinceSeen);
+	_turnsSinceSeenByHostile = node["turnsSinceSeenByHostile"].as<int>(_turnsSinceSeenByHostile);
+	_turnsSinceSeenByNeutral = node["turnsSinceSeenByNeutral"].as<int>(_turnsSinceSeenByNeutral);
+	_turnsSinceSeenByPlayer = node["turnsSinceSeenByPlayer"].as<int>(_turnsSinceSeenByPlayer);
 	_turnsSinceStunned = node["turnsSinceStunned"].as<int>(_turnsSinceStunned);
 	_killedBy = (UnitFaction)node["killedBy"].as<int>(_killedBy);
 	_moraleRestored = node["moraleRestored"].as<int>(_moraleRestored);
@@ -795,9 +804,16 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["visible"] = _visible;
 	node["turnsSinceSpotted"] = _turnsSinceSpotted;
 	node["turnsLeftSpottedForSnipers"] = _turnsLeftSpottedForSnipers;
-	node["turnsSinceSeen"] = _turnsSinceSeen;
+	node["turnsSinceSeenByHostile"] = _turnsSinceSeenByHostile;
+	node["turnsSinceSeenByNeutral"] = _turnsSinceSeenByNeutral;
+	node["turnsSinceSeenByPlayer"] = _turnsSinceSeenByPlayer;
 	node["turnsSinceStunned"] = _turnsSinceStunned;
-	node["tileLastSpotted"] = _tileLastSpotted;
+	node["tileLastSpottedByHostile"] = _tileLastSpottedByHostile;
+	node["tileLastSpottedByNeutral"] = _tileLastSpottedByNeutral;
+	node["tileLastSpottedByPlayer"] = _tileLastSpottedByPlayer;
+	node["tileLastSpottedForBlindShotByHostile"] = _tileLastSpottedForBlindShotByHostile;
+	node["tileLastSpottedForBlindShotByNeutral"] = _tileLastSpottedForBlindShotByNeutral;
+	node["tileLastSpottedForBlindShotByPlayer"] = _tileLastSpottedForBlindShotByPlayer;
 	node["rankInt"] = _rankInt;
 	node["moraleRestored"] = _moraleRestored;
 	if (getAIModule())
@@ -4685,18 +4701,28 @@ int BattleUnit::getTurnsLeftSpottedForSnipers() const
  * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
  * @param turns number of turns
  */
-void BattleUnit::setTurnsSinceSeen(int turns)
+void BattleUnit::setTurnsSinceSeen(int turns, UnitFaction faction)
 {
-	_turnsSinceSeen = turns;
+	if (faction == FACTION_HOSTILE)
+		_turnsSinceSeenByHostile = turns;
+	else if (faction == FACTION_NEUTRAL)
+		_turnsSinceSeenByNeutral = turns;
+	else
+		_turnsSinceSeenByPlayer = turns;
 }
 
 /**
  * Get how long since this unit was seen.
  * @return number of turns
  */
-int BattleUnit::getTurnsSinceSeen() const
+int BattleUnit::getTurnsSinceSeen(UnitFaction faction) const
 {
-	return _turnsSinceSeen;
+	if (faction == FACTION_HOSTILE)
+		return _turnsSinceSeenByHostile;
+	else if (faction == FACTION_NEUTRAL)
+		return _turnsSinceSeenByNeutral;
+	else
+		return _turnsSinceSeenByPlayer;
 }
 
 /**
@@ -4704,23 +4730,55 @@ int BattleUnit::getTurnsSinceSeen() const
  * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
  * @param turns number of turns
  */
-void BattleUnit::setTileLastSpotted(int index, bool forBlindShot)
+void BattleUnit::setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot)
 {
-	if (forBlindShot)
-		_tileLastSpottedForBlindShot = index;
+	if (faction == FACTION_HOSTILE)
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByHostile = index;
+		else
+			_tileLastSpottedByHostile = index;
+	}
+	else if (faction == FACTION_NEUTRAL)
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByNeutral = index;
+		else
+			_tileLastSpottedByNeutral = index;
+	}
 	else
-		_tileLastSpotted = index;
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByPlayer = index;
+		else
+			_tileLastSpottedByPlayer = index;
+	}
 }
 
 /**
  * Get how long since this unit was seen.
  * @return number of turns
  */
-int BattleUnit::getTileLastSpotted(bool forBlindShot) const
+int BattleUnit::getTileLastSpotted(UnitFaction faction, bool forBlindShot) const
 {
-	if (forBlindShot)
-		return _tileLastSpottedForBlindShot;
-	return _tileLastSpotted;
+	if (faction == FACTION_HOSTILE)
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByHostile;
+		return _tileLastSpottedByHostile;
+	}
+	else if (faction == FACTION_NEUTRAL)
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByNeutral;
+		return _tileLastSpottedByNeutral;
+	}
+	else
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByPlayer;
+		return _tileLastSpottedByPlayer;
+	}
 }
 
 /**
@@ -6432,8 +6490,6 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getPositionZScript>("getPosition.getZ");
 	bu.add<&BattleUnit::getTurnsSinceSpotted>("getTurnsSinceSpotted");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceSpotted, 0, 255>>("setTurnsSinceSpotted");
-	bu.add<&BattleUnit::getTurnsSinceSeen>("getTurnsSinceSeen");
-	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceSeen, 0, 255> >("setTurnsSinceSeen");
 	bu.addField<&BattleUnit::_turnsSinceStunned>("getTurnsSinceStunned");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceStunned, 0, 255>>("setTurnsSinceStunned");
 

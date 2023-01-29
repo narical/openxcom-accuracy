@@ -634,10 +634,7 @@ void BattlescapeGenerator::nextStage()
 				++soldiersTotal;
 				(*j)->resetTurnsSinceStunned();
 				(*j)->setTurnsSinceSpotted(255);
-				(*j)->setTurnsSinceSeen(255);
 				(*j)->setTurnsLeftSpottedForSnipers(0);
-				(*j)->setTileLastSpotted(-1);
-				(*j)->setTileLastSpotted(-1, true);
 				if (!selectedFirstSoldier && (*j)->getGeoscapeSoldier())
 				{
 					_save->setSelectedUnit(*j);
@@ -667,6 +664,12 @@ void BattlescapeGenerator::nextStage()
 					(*j)->prepareNewTurn(false);
 				}
 			}
+		}
+		for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
+		{
+			(*j)->setTurnsSinceSeen(255, faction);
+			(*j)->setTileLastSpotted(-1, faction);
+			(*j)->setTileLastSpotted(-1, faction, true);
 		}
 	}
 	if (soldiersPlaced == 0)

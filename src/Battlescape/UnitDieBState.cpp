@@ -220,17 +220,20 @@ void UnitDieBState::think()
 		{
 			_unit->setTurnsSinceSpotted(255);
 		}
-		if (_unit->getTurnsSinceSeen() < 255)
+		for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
 		{
-			_unit->setTurnsSinceSeen(255);
-		}
-		if (_unit->getTileLastSpotted() >= 0)
-		{
-			_unit->setTileLastSpotted(-1);
-		}
-		if (_unit->getTileLastSpotted(true) >= 0)
-		{
-			_unit->setTileLastSpotted(-1, true);
+			if (_unit->getTurnsSinceSeen(faction) < 255)
+			{
+				_unit->setTurnsSinceSeen(255, faction);
+			}
+			if (_unit->getTileLastSpotted(faction) >= 0)
+			{
+				_unit->setTileLastSpotted(-1, faction);
+			}
+			if (_unit->getTileLastSpotted(faction, true) >= 0)
+			{
+				_unit->setTileLastSpotted(-1, faction, true);
+			}
 		}
 		if (_unit->getTurnsLeftSpottedForSnipers() != 0)
 		{
