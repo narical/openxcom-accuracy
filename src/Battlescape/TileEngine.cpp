@@ -918,15 +918,11 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 								unit->addToVisibleUnits((*i));
 								unit->addToVisibleTiles((*i)->getTile());
 								unit->addToLofTiles((*i)->getTile());
-
-								if ((unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE) || (unit->getFaction() != FACTION_HOSTILE && (*i)->getFaction() == FACTION_HOSTILE))
-								{
-									(*i)->setTurnsSinceSpotted(0);
-									(*i)->setTurnsSinceSeen(0);
-									(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()));
-									(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()), true);
-									(*i)->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), (*i)->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
-								}
+								(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()), unit->getFaction());
+								(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()), unit->getFaction(), true);
+								(*i)->setTurnsSinceSeen(0, unit->getFaction());
+								(*i)->setTurnsSinceSpotted(0);
+								(*i)->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), (*i)->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
 							}
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
@@ -944,6 +940,13 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 			}
 		}
 	}
+	if(unit->getUnitsSpottedThisTurn().size() != oldNumVisibleUnits)
+	{
+		unit->setWantToEndTurn(false);
+		if (unit->getAIModule())
+			unit->allowReselect();
+	}
+
 	// we only react when there are at least the same amount of visible units as before AND the checksum is different
 	// this way we stop if there are the same amount of visible units, but a different unit is seen
 	// or we stop if there are more visible units seen
@@ -4400,7 +4403,11 @@ bool TileEngine::tryConcealUnit(BattleUnit* unit)
 	}
 
 	unit->setTurnsSinceSpotted(255);
-	unit->setTurnsSinceSeen(255);
+	for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
+	{
+		if (faction != unit->getFaction())
+			unit->setTurnsSinceSeen(255, faction);
+	}
 	unit->setTurnsLeftSpottedForSnipers(0);
 
 	return true;

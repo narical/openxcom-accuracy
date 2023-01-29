@@ -1015,10 +1015,21 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 			{
 				ai->setWasHitBy(_unit);
 				_unit->setTurnsSinceSpotted(0);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()));
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), true);
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
+		}
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction());
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction(), true);
+		for (BattleUnit *friendOfVictim : *(_parent->getSave()->getUnits()))
+		{
+			if (friendOfVictim->isOut())
+				continue;
+			if (friendOfVictim->getFaction() != victim->getFaction())
+				continue;
+			if (!friendOfVictim->getAIModule())
+				continue;
+			friendOfVictim->setWantToEndTurn(false);
+			friendOfVictim->allowReselect();
 		}
 	}
 }
