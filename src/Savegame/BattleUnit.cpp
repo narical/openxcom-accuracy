@@ -5612,6 +5612,7 @@ bool BattleUnit::isLeeroyJenkins() const
 		return _isLeeroyJenkins;
 	else if (Options::aiLeeroyMode == 2)
 		return true;
+	return false;
 }
 
 ////////////////////////////////////////////////////////////
