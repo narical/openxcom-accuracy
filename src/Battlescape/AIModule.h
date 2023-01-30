@@ -201,6 +201,8 @@ public:
 	bool isAlly(BattleUnit *unit) const;
 	/// Checks whether the trajectory of a projectile visits tiles occupied by our allies
 	bool projectileMayHarmFriends(Position startPos, Position targetPos);
+	/// Checks whether at least one of our allies is in range for a good attack
+	bool inRangeOfAnyFriend(Position pos);
 };
 
 }

@@ -3089,8 +3089,12 @@ void AIModule::brutalThink(BattleAction* action)
 		if (brutalValidTarget(target, true))
 		{
 			Position furthestAttackPositon = furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true);
-			if (Position::distance(furthestAttackPositon, targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes, NULL)))
+			if (Position::distance(furthestAttackPositon, targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes, NULL)) || inRangeOfAnyFriend(targetPosition))
+			{
 				sweepMode = true;
+				if (_traceAI)
+					Log(LOG_INFO) << "Target " << target->getPosition() << " is close enough for me or any of my friends to be attacked. Switching to sweep-mode";
+			}
 			weKnowRealPosition = true;
 		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
@@ -3300,6 +3304,8 @@ void AIModule::brutalThink(BattleAction* action)
 	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking)
 		needToFlee = true;
 	bool shouldSkip = false;
+	if (_traceAI)
+		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: "<<sweepMode;
 	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode)
 		shouldSkip = true;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
@@ -4997,13 +5003,13 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 	if (!Options::battleUFOExtenderAccuracy)
 		return weapon->getRules()->getMaxRange();
 	int highestRangeAvailableWithTUs = 0;
-	if (weapon->getRules()->getCostAimed().Time > 0 && weapon->getRules()->getCostAimed().Time <= tus)
+	if (weapon->getRules()->getCostAimed().Time > 0 && unit->getActionTUs(BA_AIMEDSHOT, weapon).Time < tus)
 		highestRangeAvailableWithTUs = weapon->getRules()->getAimRange();
-	if (weapon->getRules()->getCostSnap().Time > 0 && weapon->getRules()->getCostSnap().Time <= tus)
+	if (weapon->getRules()->getCostSnap().Time > 0 && unit->getActionTUs(BA_SNAPSHOT, weapon).Time < tus)
 		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getSnapRange());
-	if (weapon->getRules()->getCostAuto().Time > 0 && weapon->getRules()->getCostAuto().Time <= tus)
+	if (weapon->getRules()->getCostAuto().Time > 0 && unit->getActionTUs(BA_AUTOSHOT, weapon).Time < tus)
 		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, weapon->getRules()->getAutoRange());
-	if (weapon->getRules()->getCostMelee().Time > 0 && weapon->getRules()->getCostMelee().Time <= tus)
+	if (weapon->getRules()->getCostMelee().Time > 0 && unit->getActionTUs(BA_HIT, weapon).Time < tus)
 		highestRangeAvailableWithTUs = std::max(highestRangeAvailableWithTUs, 1);
 	highestRangeAvailableWithTUs = std::min(highestRangeAvailableWithTUs, weapon->getRules()->getMaxRange());
 	return highestRangeAvailableWithTUs;
@@ -5146,6 +5152,20 @@ bool AIModule::projectileMayHarmFriends(Position startPos, Position targetPos)
 			}
 			return true;
 		}
+	}
+	return false;
+}
+
+bool AIModule::inRangeOfAnyFriend(Position pos)
+{
+	for (BattleUnit* ally : *(_save->getUnits()))
+	{
+		if (ally->isOut())
+			continue;
+		if (ally->getFaction() != _unit->getFaction())
+			continue;
+		if(maxExtenderRangeWith(ally, getMaxTU(ally)) > Position::distance(ally->getPosition(), pos))
+			return true;
 	}
 	return false;
 }
