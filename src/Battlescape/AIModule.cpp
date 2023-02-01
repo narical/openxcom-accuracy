@@ -3244,17 +3244,6 @@ void AIModule::brutalThink(BattleAction* action)
 			if (teammate->getMainHandWeapon() != NULL && teammate->getMainHandWeapon()->getCurrentWaypoints() != 0)
 				continue;
 		}
-		if (_traceAI)
-		{
-			Tile *reachTile = _save->getTile(furthestPositionEnemyCanReach);
-			if (reachTile)
-			{
-				reachTile->setMarkerColor(_unit->getId() % 100);
-				reachTile->setPreview(10);
-				reachTile->setTUMarker(_unit->getId() % 100);
-				Log(LOG_INFO) << "Tile that enemy could potentially reach and thus should be avoided: " << furthestPositionEnemyCanReach;
-			}
-		}
 	}
 	if (myUnitCount > 0)
 	{
@@ -3336,12 +3325,6 @@ void AIModule::brutalThink(BattleAction* action)
 			Tile *tile = _save->getTile(pos);
 			if (tile == NULL)
 				continue;
-			if (_traceAI)
-			{
-				tile->setMarkerColor(tile->getLastExplored(_unit->getFaction()));
-				tile->setPreview(10);
-				tile->setTUMarker(tile->getLastExplored(_unit->getFaction()));
-			}
 			if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
@@ -5142,25 +5125,36 @@ bool AIModule::isAlly(BattleUnit *unit) const
 
 bool AIModule::projectileMayHarmFriends(Position startPos, Position targetPos)
 {
-	std::vector<Position> trajectory;
-	trajectory.clear();
-	int tst = _save->getTileEngine()->calculateLineTile(startPos, targetPos, trajectory);
-	// Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
-	for (std::vector<Position>::iterator i = trajectory.begin(); i != trajectory.end(); ++i)
-	{
-		Position posVisited = (*i);
-		if (posVisited == startPos)
-			continue;
-		Tile *tile = _save->getTile(posVisited);
-		if (tile && tile->getUnit() && isAlly(tile->getUnit()) && !tile->getUnit()->isOut())
-		{
-			if (_traceAI)
+	for (int x = -1; x <= 1; ++x)
+		for (int y = -1; y <= 1; ++y)
+			for (int z = -1; z <= 1; ++z)
 			{
-				Log(LOG_INFO) << "Shot from " << startPos << " to " << targetPos << " likely to hit our friend at " << posVisited;
+				Position posToCheck = targetPos;
+				posToCheck.x += x;
+				posToCheck.y += y;
+				posToCheck.z += z;
+				std::vector<Position> trajectory;
+				trajectory.clear();
+				int tst = _save->getTileEngine()->calculateLineTile(startPos, posToCheck, trajectory);
+				// Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
+				for (std::vector<Position>::iterator i = trajectory.begin(); i != trajectory.end(); ++i)
+				{
+					Position posVisited = (*i);
+					if (posVisited == startPos)
+						continue;
+					Tile *tile = _save->getTile(posVisited);
+					if (!tile)
+						continue;
+					if (tile && tile->getUnit() && isAlly(tile->getUnit()) && !tile->getUnit()->isOut())
+					{
+						if (_traceAI)
+						{
+							Log(LOG_INFO) << "Shot from " << startPos << " to " << targetPos << " likely to hit our friend at " << posVisited;
+						}
+						return true;
+					}
+				}
 			}
-			return true;
-		}
-	}
 	return false;
 }
 
