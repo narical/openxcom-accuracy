@@ -3358,6 +3358,9 @@ void AIModule::brutalThink(BattleAction* action)
 			bool saveFromGrenades = false;
 			float cuddleAvoidModifier = 1;
 			bool eaglesCanFly = false;
+			bool outOfRangeForShortRangeWeapon = false;
+			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
+				outOfRangeForShortRangeWeapon = true;
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3382,9 +3385,6 @@ void AIModule::brutalThink(BattleAction* action)
 				if (unit->hasLofTile(tile) && (brutalValidTarget(unit, true) || _unit->isCheatOnMovement()))
 					visibleToEnemy = true;
 			}
-			bool outOfRangeForShortRangeWeapon = false;
-			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
-				outOfRangeForShortRangeWeapon = true;
 			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
 				continue;
 			bool haveTUToAttack = false;
@@ -3687,27 +3687,29 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	// Create a list of spotted targets and the type of attack we'd like to use on each
 	std::vector<std::pair<BattleUnit *, BattleAction> > spottedTargets;
 
-	// Get the TU costs for each available attack type
-	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costHit(BA_HIT, _attackAction.actor, _attackAction.weapon);
-
 	BattleActionCost costThrow;
-	// Only want to check throwing if we have a grenade, the default constructor (line above) conveniently returns false from haveTU()
-	if (_grenade)
+	// We know we have a grenade, now we need to know if we have the TUs to throw it
+	costThrow.type = BA_THROW;
+	costThrow.actor = _attackAction.actor;
+	costThrow.weapon = _unit->getGrenadeFromBelt();
+	costThrow.updateTU();
+	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
-		// We know we have a grenade, now we need to know if we have the TUs to throw it
-		costThrow.type = BA_THROW;
-		costThrow.actor = _attackAction.actor;
-		costThrow.weapon = _unit->getGrenadeFromBelt();
-		costThrow.updateTU();
-		if (!costThrow.weapon->isFuseEnabled())
-		{
-			costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
-			costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
-		}
+		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
+		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
 	}
+
+	std::vector<BattleItem *> weapons;
+	if (_attackAction.actor->getRightHandWeapon())
+		weapons.push_back(_attackAction.actor->getRightHandWeapon());
+	if (_attackAction.actor->getLeftHandWeapon())
+		weapons.push_back(_attackAction.actor->getLeftHandWeapon());
+	if (_attackAction.actor->getUtilityWeapon(BT_MELEE))
+		weapons.push_back(_attackAction.actor->getUtilityWeapon(BT_MELEE));
+	if (_attackAction.actor->getSpecialWeapon(BT_FIREARM))
+		weapons.push_back(_attackAction.actor->getSpecialWeapon(BT_FIREARM));
+	if (_attackAction.actor->getGrenadeFromBelt())
+		weapons.push_back(_attackAction.actor->getGrenadeFromBelt());
 
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
@@ -3717,23 +3719,28 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 			_aggroTarget = (*i);
 			_attackAction.type = BA_RETHINK;
 			_attackAction.target = (*i)->getPosition();
-			costAuto.Time += getTurnCostTowards(_attackAction.target);
-			costSnap.Time += getTurnCostTowards(_attackAction.target);
-			costAimed.Time += getTurnCostTowards(_attackAction.target);
-			costHit.Time += getTurnCostTowards(_attackAction.target);
-			if (_grenade)
-				costThrow.Time += getTurnCostTowards(_attackAction.target);
-			brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, true);
-
-			BattleAction chosenAction = _attackAction;
-			if (chosenAction.type == BA_THROW)
-				chosenAction.weapon = costThrow.weapon;
-
-			if (_attackAction.type != BA_RETHINK)
+			for (BattleItem *weapon : weapons)
 			{
-				std::pair<BattleUnit *, BattleAction> spottedTarget;
-				spottedTarget = std::make_pair((*i), chosenAction);
-				spottedTargets.push_back(spottedTarget);
+				// Get the TU costs for each available attack type
+				_attackAction.weapon = weapon;
+				BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor,weapon);
+				BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, weapon);
+				BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, weapon);
+				BattleActionCost costHit(BA_HIT, _attackAction.actor, weapon);
+				costAuto.Time += getTurnCostTowards(_attackAction.target);
+				costSnap.Time += getTurnCostTowards(_attackAction.target);
+				costAimed.Time += getTurnCostTowards(_attackAction.target);
+				costHit.Time += getTurnCostTowards(_attackAction.target);
+				costThrow.Time += getTurnCostTowards(_attackAction.target);
+				brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, true);
+
+				BattleAction chosenAction = _attackAction;
+				if (_attackAction.type != BA_RETHINK)
+				{
+					std::pair<BattleUnit *, BattleAction> spottedTarget;
+					spottedTarget = std::make_pair((*i), chosenAction);
+					spottedTargets.push_back(spottedTarget);
+				}
 			}
 		}
 	}
@@ -3774,7 +3781,6 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 		_attackAction.type = BA_RETHINK;
 		_attackAction.weapon = _unit->getMainHandWeapon(false);
 	}
-
 	return _aggroTarget != 0;
 }
 
@@ -4772,26 +4778,29 @@ void AIModule::blindFire()
 	// Create a list of spotted targets and the type of attack we'd like to use on each
 	std::vector<std::pair<BattleUnit *, BattleAction> > spottedTargets;
 
-	// Get the TU costs for each available attack type
-	BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, _attackAction.weapon);
-	BattleActionCost costHit(BA_HIT, _attackAction.actor, _attackAction.weapon);
 	BattleActionCost costThrow;
-	// Only want to check throwing if we have a grenade, the default constructor (line above) conveniently returns false from haveTU()
-	if (_grenade)
+	// We know we have a grenade, now we need to know if we have the TUs to throw it
+	costThrow.type = BA_THROW;
+	costThrow.actor = _attackAction.actor;
+	costThrow.weapon = _unit->getGrenadeFromBelt();
+	costThrow.updateTU();
+	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
-		// We know we have a grenade, now we need to know if we have the TUs to throw it
-		costThrow.type = BA_THROW;
-		costThrow.actor = _attackAction.actor;
-		costThrow.weapon = _unit->getGrenadeFromBelt();
-		costThrow.updateTU();
-		if (!costThrow.weapon->isFuseEnabled())
-		{
-			costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
-			costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
-		}
+		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
+		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
 	}
+
+	std::vector<BattleItem *> weapons;
+	if (_attackAction.actor->getRightHandWeapon())
+		weapons.push_back(_attackAction.actor->getRightHandWeapon());
+	if (_attackAction.actor->getLeftHandWeapon())
+		weapons.push_back(_attackAction.actor->getLeftHandWeapon());
+	if (_attackAction.actor->getUtilityWeapon(BT_MELEE))
+		weapons.push_back(_attackAction.actor->getUtilityWeapon(BT_MELEE));
+	if (_attackAction.actor->getSpecialWeapon(BT_FIREARM))
+		weapons.push_back(_attackAction.actor->getSpecialWeapon(BT_FIREARM));
+	if (_attackAction.actor->getGrenadeFromBelt())
+		weapons.push_back(_attackAction.actor->getGrenadeFromBelt());
 
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
@@ -4803,22 +4812,28 @@ void AIModule::blindFire()
 			_aggroTarget = (*i);
 			_attackAction.type = BA_RETHINK;
 			_attackAction.target = _save->getTileCoords((*i)->getTileLastSpotted(_unit->getFaction(), true));
-			costAuto.Time += getTurnCostTowards(_attackAction.target);
-			costSnap.Time += getTurnCostTowards(_attackAction.target);
-			costAimed.Time += getTurnCostTowards(_attackAction.target);
-			costHit.Time += getTurnCostTowards(_attackAction.target);
-			if (_grenade)
-				costThrow.Time += getTurnCostTowards(_attackAction.target);
-			brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, false);
-
-			BattleAction chosenAction = _attackAction;
-			if (chosenAction.type == BA_THROW)
-				chosenAction.weapon = costThrow.weapon;
-			if (_attackAction.type != BA_RETHINK)
+			for (BattleItem *weapon : weapons)
 			{
-				std::pair<BattleUnit *, BattleAction> spottedTarget;
-				spottedTarget = std::make_pair((*i), chosenAction);
-				spottedTargets.push_back(spottedTarget);
+				// Get the TU costs for each available attack type
+				_attackAction.weapon = weapon;
+				BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor, weapon);
+				BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, weapon);
+				BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, weapon);
+				BattleActionCost costHit(BA_HIT, _attackAction.actor, weapon);
+				costAuto.Time += getTurnCostTowards(_attackAction.target);
+				costSnap.Time += getTurnCostTowards(_attackAction.target);
+				costAimed.Time += getTurnCostTowards(_attackAction.target);
+				costHit.Time += getTurnCostTowards(_attackAction.target);
+				costThrow.Time += getTurnCostTowards(_attackAction.target);
+				brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, false);
+
+				BattleAction chosenAction = _attackAction;
+				if (_attackAction.type != BA_RETHINK)
+				{
+					std::pair<BattleUnit *, BattleAction> spottedTarget;
+					spottedTarget = std::make_pair((*i), chosenAction);
+					spottedTargets.push_back(spottedTarget);
+				}
 			}
 		}
 	}
@@ -4831,17 +4846,10 @@ void AIModule::blindFire()
 		for (auto targetAction : spottedTargets)
 		{
 			float dist = Position::distance(targetAction.first->getPosition(), _unit->getPosition());
-			if (targetAction.first->getMainHandWeapon() == NULL)
-				dist *= 5;
 			Tile *targetTile = _save->getTile(targetAction.first->getPosition());
 			// deprioritize naded targets but don't ignore them completely
 			if (targetTile->getDangerous())
 				dist *= 5;
-			// targets with lower morale have lower priority because they might panic anyways
-			float moraleMod = (targetAction.first->getMorale() + 100.0) / 100.0;
-			// targets with lower time-units have lower priority because they will not do reaction fire anyways
-			moraleMod *= (float)(targetAction.first->getTimeUnits() + targetAction.first->getBaseStats()->tu) / (float)targetAction.first->getBaseStats()->tu;
-			dist /= moraleMod;
 			if (dist < clostestDist)
 			{
 				clostestDist = dist;
