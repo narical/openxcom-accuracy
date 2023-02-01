@@ -5145,7 +5145,7 @@ bool AIModule::projectileMayHarmFriends(Position startPos, Position targetPos)
 					Tile *tile = _save->getTile(posVisited);
 					if (!tile)
 						continue;
-					if (tile && tile->getUnit() && isAlly(tile->getUnit()) && !tile->getUnit()->isOut())
+					if (tile && tile->getUnit() && isAlly(tile->getUnit()) && !tile->getUnit()->isOut() && tile->getUnit() != _unit)
 					{
 						if (_traceAI)
 						{
