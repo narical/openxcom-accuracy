@@ -100,7 +100,7 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
 	{
 		for (std::vector<Transfer*>::iterator j = (*i)->getTransfers()->begin(); j != (*i)->getTransfers()->end();)
 		{
-			if ((*j)->getHours() == 0)
+			if ((*j)->isDelivered())
 			{
 				_base = (*i);
 

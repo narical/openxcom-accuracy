@@ -1790,6 +1790,18 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 		{
 			timerReset();
 			popup(new GeoscapeEventState(*eventRules));
+			if (eventRules->isAnyItemTransfer())
+			{
+				popup(new ItemsArrivingState(this));
+
+				Base *hq = _game->getSavedGame()->getBases()->front();
+				if (Options::storageLimitsEnforced && hq != 0 && hq->storesOverfull())
+				{
+					popup(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(hq->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
+					popup(new SellState(hq, 0));
+				}
+			}
+
 		}
 	}
 
@@ -2051,6 +2063,17 @@ void GeoscapeState::time30Minutes()
 			{
 				timerReset();
 				popup(new GeoscapeEventState(ge->getRules()));
+				if (ge->getRules().isAnyItemTransfer())
+				{
+					popup(new ItemsArrivingState(this));
+
+					Base *hq = _game->getSavedGame()->getBases()->front();
+					if (Options::storageLimitsEnforced && hq != 0 && hq->storesOverfull())
+					{
+						popup(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(hq->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
+						popup(new SellState(hq, 0));
+					}
+				}
 			}
 		}
 	}

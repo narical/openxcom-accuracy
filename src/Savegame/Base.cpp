@@ -821,6 +821,9 @@ double Base::getUsedStores(bool excludeNormalItems) const
 	}
 	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
 	{
+		if ((*i)->isDelivered()) // Just in case we want to check storage before the popup clears a completed transfer.
+			continue;
+
 		if ((*i)->getType() == TRANSFER_ITEM)
 		{
 			total += (*i)->getQuantity() * _mod->getItem((*i)->getItems(), true)->getSize();
