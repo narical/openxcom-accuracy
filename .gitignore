@@ -80,3 +80,4 @@ bin/user
 /makefile
 /.kdev4/
 /*.kdev4
+bin/Win32/stderr.txt
