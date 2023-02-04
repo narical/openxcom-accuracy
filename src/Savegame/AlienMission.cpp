@@ -719,8 +719,8 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 			if (_rule.getOperationType() == AMOT_REGION_EXISTING_BASE || _rule.getOperationType() == AMOT_REGION_NEW_BASE_IF_NECESSARY)
 			{
 				// region only
-				auto* missionRegion = mod.getRegion(_region, true);
-				for (auto* ab : *game.getAlienBases())
+				auto missionRegion = mod.getRegion(_region, true);
+				for (auto ab : *game.getAlienBases())
 				{
 					if (missionRegion->insideRegion(ab->getLongitude(), ab->getLatitude()))
 					{
@@ -754,7 +754,7 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 				std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getOperationSpawnZone()).areas;
 				std::pair<double, double> pos;
 				int tries = 0;
-				AlienDeployment* operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
+				auto operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
 				bool wantsToSpawnFakeUnderwater = RNG::percent(operationBaseType->getFakeUnderwaterSpawnChance());
 				bool found = false;
 				while (!found)
@@ -856,6 +856,23 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	ufo.setTrajectoryPoint(nextWaypoint);
 	const RuleRegion &regionRules = *mod.getRegion(_region, true);
 	std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules, ufo);
+	if (Options::aggressiveRetaliation && _rule.getObjective() == OBJECTIVE_RETALIATION && trajectory.getZone(nextWaypoint) != 5)
+	{
+		for(auto *base : *(engine.getSavedGame()->getBases()))
+		{
+			if(regionRules.insideRegion(base->getLongitude(), base->getLatitude()))
+			{
+				double minLon = base->getLongitude() - M_PI_4 / 3.0;
+				double maxLon = base->getLongitude() + M_PI_4 / 3.0;
+				double minLat = base->getLatitude() - M_PI_4 / 3.0;
+				double maxLat = base->getLatitude() + M_PI_4 / 3.0;
+				double lon = RNG::generate(minLon, maxLon);
+				double lat = RNG::generate(minLat, maxLat);
+				pos = std::make_pair(lon, lat);
+				break;
+			}
+		}
+	}
 
 	Waypoint *wp = new Waypoint();
 	wp->setLongitude(pos.first);

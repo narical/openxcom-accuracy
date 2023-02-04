@@ -44,6 +44,7 @@
 #include "../Menu/TestState.h"
 #include <algorithm>
 #include "../fallthrough.h"
+#include "../Geoscape/GeoscapeState.h"
 
 namespace OpenXcom
 {
@@ -785,6 +786,23 @@ void Game::resetTouchButtonFlags()
 	_shift = false;
 	_rmb = false;
 	_mmb = false;
+}
+
+/**
+ * Returns the GeoscapeState
+ * @return the GeoscapeState
+*/
+GeoscapeState* Game::getGeoscapeState() const
+{
+	for (auto *state : _states)
+	{
+		auto *geo = dynamic_cast<GeoscapeState *>(state);
+		if (geo)
+		{
+			return geo;
+		}
+	}
+	return NULL;
 }
 
 }

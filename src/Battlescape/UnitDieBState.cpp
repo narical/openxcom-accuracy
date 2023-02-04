@@ -220,6 +220,21 @@ void UnitDieBState::think()
 		{
 			_unit->setTurnsSinceSpotted(255);
 		}
+		for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
+		{
+			if (_unit->getTurnsSinceSeen(faction) < 255)
+			{
+				_unit->setTurnsSinceSeen(255, faction);
+			}
+			if (_unit->getTileLastSpotted(faction) >= 0)
+			{
+				_unit->setTileLastSpotted(-1, faction);
+			}
+			if (_unit->getTileLastSpotted(faction, true) >= 0)
+			{
+				_unit->setTileLastSpotted(-1, faction, true);
+			}
+		}
 		if (_unit->getTurnsLeftSpottedForSnipers() != 0)
 		{
 			_unit->setTurnsLeftSpottedForSnipers(0);
@@ -294,7 +309,7 @@ void UnitDieBState::convertUnitToCorpse()
 			{
 				if ((*it)->getUnit() == _unit)
 				{
-					auto* corpseRules = _unit->getArmor()->getCorpseBattlescape()[0]; // we're in an inventory, so we must be a 1x1 unit
+					auto corpseRules = _unit->getArmor()->getCorpseBattlescape()[0]; // we're in an inventory, so we must be a 1x1 unit
 					(*it)->convertToCorpse(corpseRules);
 					break;
 				}

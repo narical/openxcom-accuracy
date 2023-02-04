@@ -20,6 +20,7 @@
 #include <yaml-cpp/yaml.h>
 #include "BattlescapeGame.h"
 #include "Position.h"
+#include "Pathfinding.h"
 #include "../Savegame/BattleUnit.h"
 #include <vector>
 
@@ -46,14 +47,17 @@ private:
 	int _knownEnemies, _visibleEnemies, _spottingEnemies;
 	int _escapeTUs, _ambushTUs;
 	bool _weaponPickedUp;
+	bool _wantToEndTurn;
 	bool _rifle, _melee, _blaster, _grenade;
 	bool _traceAI, _didPsi;
 	int _AIMode, _intelligence, _closestDist;
 	Node *_fromNode, *_toNode;
 	bool _foundBaseModuleToDestroy;
-	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy, _reachableWithAimedAttack;
+	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
+	std::vector<PathfindingNode*> _allPathFindingNodes;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
+	UnitFaction _myFaction;
 
 	BattleAction _escapeAction, _ambushAction, _attackAction, _patrolAction, _psiAction;
 
@@ -139,6 +143,66 @@ public:
 	BattleUnit* getTarget();
 	/// Frees up the destination node for another Unit to select
 	void freePatrolTarget();
+
+	/// Everything below belongs tu Brutal-AI
+	/// Checks whether anyone on our team can see the target
+	bool visibleToAnyFriend(BattleUnit *target) const;
+	/// Handles behavior of brutalAI
+	void brutalThink(BattleAction *action);
+	/// Like selectSpottedUnitForSniper but works for everyone
+	bool brutalSelectSpottedUnitForSniper();
+	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
+	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* LoFUnit = NULL, BattleUnit* actor = NULL);
+	/// find the cloest Position to our target we can reach while reserving for a BattleAction
+	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
+	/// checks if the path to a position is save
+	bool isPathToPositionSave(Position target, bool checkForComplicated = false);
+	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
+	bool brutalPsiAction();
+	/// Chooses a firing mode for the AI based on expected damage dealt
+	void brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false);
+	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
+	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
+	/// Used as multiplier for the throw-action in brutalScoreFiringMode
+	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
+	/// An inaccurate simplified check for line of fire from a specific position to a specific target
+	bool quickLineOfFire(Position pos, BattleUnit *target, bool beOkayWithFriendOfTarget = false, bool lastLocationMode = false, bool fleeMode = false);
+	/// checks whether there is clear sight between two tile-positions
+	bool clearSight(Position pos, Position target);
+	/// how many time-units would it take to turn to a specific target
+	int getTurnCostTowards(Position target);
+	/// Using weapons like the blaster but actually hitting what we want while avoiding to mow down our allies
+	void brutalBlaster();
+	/// Attempts to throw a grenade at tiles near potential targets when target itself couldn't be hit
+	void brutalGrenadeAction();
+	/// Tells the AI of the unit whether it wants to end the turn or not
+	void setWantToEndTurn(bool wantToEndTurn);
+	/// Asks the unit's AI whether it wants to end the turn or not
+	bool getWantToEndTurn();
+	/// Attack tiles where units have been seen before but we are not sure where they are
+	void blindFire();
+	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
+	bool validateArcingShot(BattleAction *action);
+	/// check if a unit is targetable according to aiTargetMode
+	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false) const;
+	/// check the path to an enemy and then subtracts their movement from the cost
+	Position closestPositionEnemyCouldReach(BattleUnit *enemy);
+	/// returns how far a unit can shoot while extender-accuracy is enabled with the given amount of time-units left 
+	int maxExtenderRangeWith(BattleUnit *unit, int tus);
+	/// Determines a new tile where to look for an enemy who's position is unknown
+	int getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit *unit);
+	/// Calculates how much TU this unit can have at most considering it's carrying capacity and leg-damage
+	int getMaxTU(BattleUnit *unit);
+	/// Get the ID of the closest tile which is an entry-point for the player
+	int getClosestSpawnTileId();
+	/// Tells us whether a unit is an enemy
+	bool isEnemy(BattleUnit* unit, bool ignoreSameOriginalFaction = false) const;
+	/// Tells us whether a unit is an ally
+	bool isAlly(BattleUnit *unit) const;
+	/// Checks whether the trajectory of a projectile visits tiles occupied by our allies
+	bool projectileMayHarmFriends(Position startPos, Position targetPos);
+	/// Checks whether at least one of our allies is in range for a good attack
+	bool inRangeOfAnyFriend(Position pos);
 };
 
 }

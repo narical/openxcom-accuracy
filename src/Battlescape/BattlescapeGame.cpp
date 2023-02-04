@@ -177,7 +177,7 @@ bool BattleActionCost::spendTU(std::string *message)
  */
 BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parentState) :
 	_save(save), _parentState(parentState),
-	_playerPanicHandled(true), _AIActionCounter(0), _AISecondMove(false), _playedAggroSound(false),
+	_playerPanicHandled(true), _AIActionCounter(0), _playedAggroSound(false),
 	_endTurnRequested(false), _endConfirmationHandled(false), _allEnemiesNeutralized(false)
 {
 	if (_save->isPreview())
@@ -224,7 +224,7 @@ void BattlescapeGame::think()
 			return;
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
-		if (_save->getSide() != FACTION_PLAYER)
+		if (_save->getSide() != FACTION_PLAYER || (Options::autoCombat && _playerPanicHandled))
 		{
 			_save->resetUnitHitStates();
 			if (!_debugPlay)
@@ -236,7 +236,7 @@ void BattlescapeGame::think()
 				}
 				else
 				{
-					if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+					if (_save->selectNextPlayerUnit(true) == 0)
 					{
 						if (!_save->getDebugMode())
 						{
@@ -284,13 +284,13 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 {
 	std::ostringstream ss;
 
-	if (unit->getTimeUnits() <= 5)
+	if (unit->getTimeUnits() <= 5 || unit->getWantToEndTurn())
 	{
 		unit->dontReselect();
 	}
-	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || unit->getTurnsSinceStunned() == 0) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
+	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
 	{
-		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		if (_save->selectNextPlayerUnit(true, unit->getWantToEndTurn()) == 0)
 		{
 			if (!_save->getDebugMode())
 			{
@@ -307,10 +307,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			_parentState->updateSoldierInfo();
 			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
-			if (_save->getSelectedUnit()->getId() <= unit->getId())
-			{
-				_AISecondMove = true;
-			}
 		}
 		_AIActionCounter = 0;
 		return;
@@ -335,7 +331,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
 	}
 
 	BattleAction action;
@@ -348,15 +343,31 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		_parentState->debug("Rethink");
 		unit->think(&action);
 	}
-
+	if (action.type == BA_RETHINK)
+	{
+		// You didn't come up with anything twice in a row? Just skip your turn then!
+		if (Options::traceAI)
+		{
+			if (action.actor->isBrutal())
+				Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: Could not formulate a plan.";
+			else
+				Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: Could not formulate a plan.";
+		}
+		unit->setWantToEndTurn(true);
+	}
+	action.tuBefore = action.actor->getTimeUnits();
 	_AIActionCounter = action.number;
 	BattleItem *weapon = unit->getMainHandWeapon();
-	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively();
+	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || unit->isBrutal();
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
 	{
-		if (unit->getOriginalFaction() != FACTION_PLAYER)
+		if (Options::traceAI)
+		{
+			Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
+		}
+		if (unit->getOriginalFaction() != FACTION_PLAYER || Options::autoCombat)
 		{
 			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
 			{
@@ -394,11 +405,32 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			statePushBack(new UnitWalkBState(this, action));
 		}
-		else if (walkToItem)
+		else 
 		{
 			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
-			targetTile->setDangerous(true);
+			if (walkToItem)
+			{
+				targetTile->setDangerous(true);
+			}
+			else
+			{
+				if (Options::traceAI)
+				{
+					if (action.actor->isBrutal())
+						Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: No path available.";
+					else
+						Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " Reason: No path available.";
+				}
+				action.actor->setWantToEndTurn(true);
+			}
 		}
+	}
+	if (action.type == BA_TURN || action.type == BA_NONE)
+	{
+		ss << "Turning in direction of " << action.target;
+		if (action.type == BA_NONE)
+			action.actor->setWantToEndTurn(true);
+		statePushBack(new UnitTurnBState(this, action));
 	}
 
 	if (action.type == BA_SNAPSHOT || action.type == BA_AUTOSHOT || action.type == BA_AIMEDSHOT || action.type == BA_THROW || action.type == BA_HIT || action.type == BA_MINDCONTROL || action.type == BA_USE || action.type == BA_PANIC || action.type == BA_LAUNCH)
@@ -413,7 +445,9 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		}
 		else
 		{
-			statePushBack(new UnitTurnBState(this, action));
+			// Xilmi: Only add the turn-state when we really have to turn as otherwise the resulting popState with no TU-change will be interpreted as invalid action-call
+			if (action.actor->getDirection() != _save->getTileEngine()->getDirectionTo(action.actor->getPosition(), action.target))
+				statePushBack(new UnitTurnBState(this, action));
 			if (action.type == BA_HIT)
 			{
 				statePushBack(new MeleeAttackBState(this, action));
@@ -429,7 +463,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_parentState->debug("Idle");
 		_AIActionCounter = 0;
-		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		if (_save->selectNextPlayerUnit(true, action.actor->getWantToEndTurn()) == 0)
 		{
 			if (!_save->getDebugMode())
 			{
@@ -446,10 +480,15 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		{
 			_parentState->updateSoldierInfo();
 			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
-			if (_save->getSelectedUnit()->getId() <= unit->getId())
-			{
-				_AISecondMove = true;
-			}
+		}
+	}
+
+	if (action.type == BA_WAIT)
+	{
+		_save->selectNextPlayerUnit(true);
+		if (_save->getSelectedUnit())
+		{
+			_parentState->updateSoldierInfo();
 		}
 	}
 }
@@ -497,7 +536,6 @@ void BattlescapeGame::endTurn()
 	_currentAction.waypoints.clear();
 	_parentState->showLaunchButton(false);
 	_currentAction.targeting = false;
-	_AISecondMove = false;
 
 	if (_triggerProcessed.tryRun())
 	{
@@ -625,7 +663,7 @@ void BattlescapeGame::endTurn()
 	_save->getTileEngine()->recalculateFOV();
 
 	// Calculate values
-	BattlescapeTally tally = _save->getBattleGame()->tallyUnits();
+	auto tally = _save->getBattleGame()->tallyUnits();
 
 	// if all units from either faction are killed - the mission is over.
 	if (_save->allObjectivesDestroyed() && _save->getObjectiveType() == MUST_DESTROY)
@@ -691,7 +729,7 @@ void BattlescapeGame::endTurn()
  */
 void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, BattleActionAttack attack, bool hiddenExplosion, bool terrainExplosion)
 {
-	auto* origMurderer = attack.attacker;
+	auto origMurderer = attack.attacker;
 	// If the victim was killed by the murderer's death explosion, fetch who killed the murderer and make HIM the murderer!
 	if (origMurderer && (origMurderer->getSpecialAbility() == SPECAB_EXPLODEONDEATH || origMurderer->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
 		&& origMurderer->getStatus() == STATUS_DEAD && origMurderer->getMurdererId() != 0)
@@ -868,6 +906,8 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 								if (victim->getFaction() == FACTION_HOSTILE && murderer)
 								{
 									murderer->setTurnsSinceSpotted(0);
+									murderer->setTileLastSpotted(getSave()->getTileIndex(murderer->getPosition()), victim->getFaction());
+									murderer->setTileLastSpotted(getSave()->getTileIndex(murderer->getPosition()), victim->getFaction(), true);
 								}
 							}
 							// the winning squad all get a morale increase
@@ -928,7 +968,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 						// the murderer gets a morale bonus if he is of a different faction (excluding neutrals)
 						murderer->moraleChange(20);
 
-						for (auto* winner : *_save->getUnits())
+						for (auto winner : *_save->getUnits())
 						{
 							if (!winner->isOut() && winner->isSmallUnit() && winner->getOriginalFaction() == murderer->getOriginalFaction())
 							{
@@ -1206,14 +1246,27 @@ void BattlescapeGame::popState()
 
 	if (_states.empty()) return;
 
-	auto* first = _states.front();
+	auto first = _states.front();
 	BattleAction action = first->getAction();
-
 	if (action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_PLAYER
 		&& _playerPanicHandled && (_save->getSide() == FACTION_PLAYER || _debugPlay))
 	{
 		_parentState->warning(action.result);
 		actionFailed = true;
+	}
+	if (action.actor && action.tuBefore == action.actor->getTimeUnits())
+	{
+		if (action.type != BA_NONE && action.type != BA_WAIT)
+		{
+			action.actor->setWantToEndTurn(true);
+			if (Options::traceAI)
+			{
+				if (action.actor->isBrutal())
+					Log(LOG_INFO) << action.actor->getId() << " using brutal-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+				else
+					Log(LOG_INFO) << action.actor->getId() << " using vanilla-AI at " << action.actor->getPosition() << " failed to carry out action with type: " << (int)action.type << " towards: " << action.target << " TUs: " << action.actor->getTimeUnits() << " TUs before: " << action.tuBefore << " Result: " << action.result;
+			}
+		}
 	}
 	_deleted.push_back(first);
 	_states.pop_front();
@@ -1711,7 +1764,7 @@ void BattlescapeGame::primaryAction(Position pos)
 				getMap()->getWaypoints()->push_back(pos);
 			}
 		}
-		else if (_currentAction.sprayTargeting) // Special "spray" autoshot that allows placing shots between waypoints
+		else if (_currentAction.sprayTargeting) // Special "spray" auto shot that allows placing shots between waypoints
 		{
 			int maxWaypoints = _currentAction.weapon->getRules()->getSprayWaypoints();
 			if ((int)_currentAction.waypoints.size() >= maxWaypoints ||
@@ -1776,7 +1829,7 @@ void BattlescapeGame::primaryAction(Position pos)
 		}
 		else if (_currentAction.type == BA_USE && _currentAction.weapon->getRules()->getBattleType() == BT_MINDPROBE)
 		{
-			auto* targetUnit = _save->selectUnit(pos);
+			auto targetUnit = _save->selectUnit(pos);
 			if (targetUnit && targetUnit->getFaction() != _save->getSelectedUnit()->getFaction() && targetUnit->getVisible())
 			{
 				if (!_currentAction.weapon->getRules()->isLOSRequired() ||
@@ -1803,10 +1856,10 @@ void BattlescapeGame::primaryAction(Position pos)
 		}
 		else if ((_currentAction.type == BA_PANIC || _currentAction.type == BA_MINDCONTROL || _currentAction.type == BA_USE) && _currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP)
 		{
-			auto* targetUnit = _save->selectUnit(pos);
+			auto targetUnit = _save->selectUnit(pos);
 			if (targetUnit && targetUnit->getVisible())
 			{
-				UnitFaction targetFaction = targetUnit->getFaction();
+				auto targetFaction = targetUnit->getFaction();
 				bool psiTargetAllowed = _currentAction.weapon->getRules()->isTargetAllowed(targetFaction);
 				if (_currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
 				{
@@ -2213,8 +2266,8 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		}
 
 		// Pick the item sets if the unit has builtInWeaponSets
-		int monthsPassed = _parentState->getGame()->getSavedGame()->getMonthsPassed();
-		size_t alienItemLevels = getMod()->getAlienItemLevels().size();
+		auto monthsPassed = _parentState->getGame()->getSavedGame()->getMonthsPassed();
+		auto alienItemLevels = getMod()->getAlienItemLevels().size();
 		int month;
 		if (monthsPassed != -1)
 		{
@@ -2309,10 +2362,10 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 			if ((*unit)->getStatus() == STATUS_UNCONSCIOUS || (*unit)->getStatus() == STATUS_DEAD)
 				_save->removeUnconsciousBodyItem((*unit));
 
-			//remove all items from unit
+			//remove all items form unit
 			(*unit)->removeSpecialWeapons(_save);
-			auto invCopy = *(*unit)->getInventory();
-			for (auto* bi : invCopy)
+			auto inv = *(*unit)->getInventory();
+			for (auto* bi : inv)
 			{
 				_save->removeItem(bi);
 			}
@@ -2349,7 +2402,7 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 void BattlescapeGame::tallySummonedVIPs()
 {
 	EscapeType escapeType = _save->getVIPEscapeType();
-	for (auto* unit : *_save->getUnits())
+	for (auto unit : *_save->getUnits())
 	{
 		if (unit->isVIP() && unit->isSummonedPlayerUnit())
 		{
@@ -2452,6 +2505,21 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 			// if we're already standing on it...
 			if (targetItem->getTile()->getPosition() == action->actor->getPosition())
 			{
+				if(Options::traceAI)
+					Log(LOG_INFO) << "Reached position of " << targetItem->getRules()->getName() << " I want to pick up: " << targetItem->getTile()->getPosition();
+				// Xilmi: Check if the item is a weapon while we have a weapon. If that't the case, we need to drop ours first. The only way this should happen is if our weapon is out of ammo.
+				if (targetItem->isWeaponWithAmmo() && action->actor->getMainHandWeapon(true, false) != NULL)
+				{
+					if (Options::traceAI)
+						Log(LOG_INFO) << targetItem->getRules()->getName() << " has ammo but my " << action->actor->getMainHandWeapon(true, false)->getRules()->getName() << " doesn't. So I drop mine before picking up the other.";
+					if (action->actor->getTimeUnits() >= 2)
+					{
+						dropItem(action->actor->getPosition(), action->actor->getMainHandWeapon(true, false), true);
+						BattleActionCost cost{action->actor};
+						cost.Time += 2;
+						cost.spendTU();
+					}
+				}
 				// try to pick it up
 				if (takeItemFromGround(targetItem, action) == 0)
 				{
@@ -2472,15 +2540,19 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 			else if (!targetItem->getTile()->getUnit() || targetItem->getTile()->getUnit()->isOut())
 			{
 				// if we're not standing on it, we should try to get to it.
-				action->target = targetItem->getTile()->getPosition();
-				action->type = BA_WALK;
-				walkToItem = true;
-				if (pickUpWeaponsMoreActively)
+				_save->getPathfinding()->calculate(action->actor, targetItem->getTile()->getPosition(), BAM_NORMAL);
+				if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getTotalTUCost() <= action->actor->getTimeUnits())
 				{
-					// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
-					action->finalAction = false;
-					action->desperate = false;
-					action->actor->setHiding(false);
+					action->target = targetItem->getTile()->getPosition();
+					action->type = BA_WALK;
+					walkToItem = true;
+					if (pickUpWeaponsMoreActively)
+					{
+						// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
+						action->finalAction = false;
+						action->desperate = false;
+						action->actor->setHiding(false);
+					}
 				}
 			}
 		}
@@ -2542,7 +2614,10 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 			targetItem = *i;
 		}
 	}
-
+	if (Options::traceAI && targetItem != NULL)
+	{
+		Log(LOG_INFO) << "Best item to pick up was " << targetItem->getRules()->getName() << " at "<<targetItem->getTile()->getPosition();
+	}
 	return targetItem;
 }
 
@@ -2702,15 +2777,15 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 {
 	bool placed = false;
 	Mod *mod = _parentState->getGame()->getMod();
-	auto* rightWeapon = action->actor->getRightHandWeapon();
-	auto* leftWeapon = action->actor->getLeftHandWeapon();
-	auto* unit = action->actor;
+	auto rightWeapon = action->actor->getRightHandWeapon();
+	auto leftWeapon = action->actor->getLeftHandWeapon();
+	auto unit = action->actor;
 
 	auto reloadWeapon = [&unit](BattleItem* weapon, BattleItem* i)
 	{
 		if (weapon && weapon->isWeaponWithAmmo() && !weapon->haveAllAmmo())
 		{
-			int slot = weapon->getRules()->getSlotForAmmo(i->getRules());
+			auto slot = weapon->getRules()->getSlotForAmmo(i->getRules());
 			if (slot != -1)
 			{
 				BattleActionCost cost{ unit };
@@ -3012,13 +3087,13 @@ int BattlescapeGame::checkForProximityGrenades(BattleUnit *unit)
 	{
 		std::ostringstream ss;
 		ss << "STR_DEATH_TRAP_" << deathTrapTile->getFloorSpecialTileType();
-		auto* deathTrapRule = getMod()->getItem(ss.str());
+		auto deathTrapRule = getMod()->getItem(ss.str());
 		if (deathTrapRule &&
 			deathTrapRule->isTargetAllowed(unit->getOriginalFaction()) &&
 			(deathTrapRule->getBattleType() == BT_PROXIMITYGRENADE || deathTrapRule->getBattleType() == BT_MELEE))
 		{
 			BattleItem* deathTrapItem = nullptr;
-			for (auto* item : *deathTrapTile->getInventory())
+			for (auto item : *deathTrapTile->getInventory())
 			{
 				if (item->getRules() == deathTrapRule)
 				{
@@ -3219,7 +3294,7 @@ void BattlescapeGame::autoEndBattle()
 		}
 		else
 		{
-			BattlescapeTally tally = tallyUnits();
+			auto tally = tallyUnits();
 			end = (tally.liveAliens == 0 || tally.liveSoldiers == 0);
 			if (tally.liveAliens == 0)
 			{

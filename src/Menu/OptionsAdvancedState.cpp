@@ -109,6 +109,10 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 			{
 				_settingsBattle.push_back(*i);
 			}
+			else if (i->category() == "STR_AI")
+			{
+				_settingsAI.push_back(*i);
+			}
 			else if (i->category() == "STR_OXCE")
 			{
 				_settingsOxce.push_back(*i);
@@ -144,8 +148,12 @@ void OptionsAdvancedState::init()
 	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2, 0, _colorGroup);
 	addSettings(_settingsBattle);
 	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_OXCE").c_str(), "");
+	_lstOptions->addRow(2, tr("STR_AI").c_str(), "");
 	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2, 0, _colorGroup);
+	addSettings(_settingsAI);
+	_lstOptions->addRow(2, "", "");
+	_lstOptions->addRow(2, tr("STR_OXCE").c_str(), "");
+	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2, 0, _colorGroup);
 	addSettings(_settingsOxce);
 }
 
@@ -155,7 +163,7 @@ void OptionsAdvancedState::init()
  */
 void OptionsAdvancedState::addSettings(const std::vector<OptionInfo> &settings)
 {
-	auto& fixeduserOptions = _game->getMod()->getFixedUserOptions();
+	auto fixeduserOptions = _game->getMod()->getFixedUserOptions();
 	for (std::vector<OptionInfo>::const_iterator i = settings.begin(); i != settings.end(); ++i)
 	{
 		std::string name = tr(i->description());
@@ -203,9 +211,14 @@ OptionInfo *OptionsAdvancedState::getSetting(size_t sel)
 		return &_settingsBattle[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2];
 	}
 	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 &&
-		sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsOxce.size())
+			 sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size())
 	{
-		return &_settingsOxce[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2];
+		return &_settingsAI[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2];
+	}
+	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2 &&
+		sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2 + _settingsOxce.size())
+	{
+		return &_settingsOxce[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2 - _settingsAI.size() - 2];
 	}
 	else
 	{
@@ -229,7 +242,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 	if (!setting) return;
 
 	// greyed out options are fixed, cannot be changed by the user
-	auto& fixeduserOptions = _game->getMod()->getFixedUserOptions();
+	auto fixeduserOptions = _game->getMod()->getFixedUserOptions();
 	std::map<std::string, std::string>::const_iterator it = fixeduserOptions.find(setting->id());
 	if (it != fixeduserOptions.end())
 	{
@@ -259,6 +272,16 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		*i += increment;
 
 		int min = 0, max = 0;
+		if (i == &Options::aiTargetMode)
+		{
+			min = 1;
+			max = 4;
+		}
+		if (i == &Options::aiLeeroyMode)
+		{
+			min = 0;
+			max = 2;
+		}
 		if (i == &Options::battleExplosionHeight)
 		{
 			min = 0;

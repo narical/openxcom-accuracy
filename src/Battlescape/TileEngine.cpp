@@ -215,28 +215,13 @@ void iterateTiles(SavedBattleGame* save, MapSubset gs, TileFunc func)
 	{
 		for (int z = 0; z < totalSizeZ; ++z)
 		{
-			auto posStart = Position{ gs.beg_x, gs.beg_y, z };
-			auto rowStart = save->getTile(posStart);
-			auto indexStart = save->getTileIndex(posStart);
-			for (auto stepsY = gs.size_y(); stepsY != 0; --stepsY, rowStart += totalSizeX, indexStart += totalSizeX)
+			auto rowStart = save->getTile(Position{ gs.beg_x, gs.beg_y, z });
+			for (auto stepsY = gs.size_y(); stepsY != 0; --stepsY, rowStart += totalSizeX)
 			{
 				auto curr = rowStart;
-				auto index = indexStart;
-				for (auto stepX = gs.size_x(); stepX != 0; --stepX, curr += 1, index += 1)
+				for (auto stepX = gs.size_x(); stepX != 0; --stepX, curr += 1)
 				{
-					if constexpr (std::is_invocable_v<TileFunc, Tile*, int>)
-					{
-						func(curr, index);
-					}
-					else if constexpr (std::is_invocable_v<TileFunc, int>)
-					{
-						func(index);
-					}
-					else
-					{
-						static_assert(std::is_invocable_v<TileFunc, Tile*>, "unsupported callback for iterateTiles");
-						func(curr);
-					}
+					func(curr);
 				}
 			}
 		}
@@ -283,15 +268,6 @@ constexpr static Uint32 MaskSmoke =  selectBit(+7, +1) << 2;
 
 
 
-template<typename T>
-Uint32 getBlockDir(const T& td)
-{
-	return td.blockDir;
-}
-Uint32 getBlockDir(Uint32 td)
-{
-	return td;
-}
 template<typename T>
 bool getBlockDir(const T& td, int dir, int z)
 {
@@ -358,519 +334,6 @@ void addBigWallDir(T& td, int dir, bool p)
 	td.bigWall |= p * (1u << dir);
 }
 
-////////////////////////////////////////////////////////////
-//					light propagation
-////////////////////////////////////////////////////////////
-
-/**
- * Index to component of Pos
- */
-enum Axis : char
-{
-	X = 0,
-	Y = 1,
-	Z = 2,
-
-	AxisMax = 3,
-	AxisInvalid = -1,
-};
-
-/**
- * Index to component of Box
- */
-enum BoxAxis : char
-{
-	B_X = X,
-	B_Y = Y,
-	B_Z = Z,
-
-	E_X = AxisMax + X,
-	E_Y = AxisMax + Y,
-	E_Z = AxisMax + Z,
-
-	BoxAxisMax = AxisMax + AxisMax,
-	BoxAxisInvalid = AxisInvalid,
-};
-
-/**
- * Index to vertex of box
- */
-enum BoxVertex : char
-{
-	V_000 = 0b000,
-	V_001 = 0b001,
-	V_010 = 0b010,
-	V_011 = 0b011,
-	V_100 = 0b100,
-	V_101 = 0b101,
-	V_110 = 0b110,
-	V_111 = 0b111,
-	BoxVertexMax = 8,
-};
-
-/**
- * 3d position, similar to `Position` but optimized for uniformed processing
- */
-using Pos = std::array<int, AxisMax>;
-
-/**
- * 3d Box, effective contains two `Pos`.
- * Both ends will be visited iterated if is end point.
- * But algorithm will skip first step in iteration.
- */
-using Box = std::array<int, BoxAxisMax>;
-
-constexpr Box fromPos(Pos a, Pos b)
-{
-	return {
-		a[X],
-		a[Y],
-		a[Z],
-		b[X],
-		b[Y],
-		b[Z],
-	};
-}
-constexpr Pos add(Pos a, Pos b)
-{
-	for (int i = 0; i < AxisMax; ++i)
-	{
-		a[i] += b[i];
-	}
-	return a;
-}
-
-bool isIntersectingWith(const Box& target, const Box& limit)
-{
-	for (int i = 0; i < AxisMax; ++i)
-	{
-		if ((target[i] > limit[i + AxisMax]) || (limit[i] > target[i + AxisMax]))
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-/**
- * Crop first argument to second, both need not empty intersection others wise it will return wrong answer.
- * @param target
- * @param limit
- */
-void intersectWithUnchecked(Box& target, const Box& limit)
-{
-	for (int i = 0; i < AxisMax; ++i)
-	{
-		target[i] = std::max(target[i], limit[i]);
-		target[i + AxisMax] = std::min(target[i + AxisMax], limit[i + AxisMax]);
-	}
-}
-
-void expand(Box& box)
-{
-	constexpr static Box diff = { -1, -1, -1, 1, 1, 1 };
-	for (int i = 0; i < BoxAxisMax; ++i)
-	{
-		box[i] += diff[i];
-	}
-}
-
-constexpr std::array diffToAxis =
-{
-	AxisInvalid,
-	X,  // 0b001
-	Y,  // 0b010
-	AxisInvalid,
-	Z,  // 0b100
-	AxisInvalid,
-	AxisInvalid,
-	AxisInvalid,
-};
-
-struct ConfigSide
-{
-	constexpr ConfigSide() = default;
-
-	constexpr ConfigSide(BoxVertex start, BoxVertex ii, BoxVertex jj)
-	{
-		// `kk` is determined as vertex that lie on orthogonal line to surface defined by vertexes `start`, `ii` and `jj`.
-		const auto kk = BoxVertex(start ^ (V_111 - (start ^ jj) - (start ^ ii)));
-
-		i.fill(start, ii);
-		j.fill(start, jj);
-		k.fill(start, kk);
-	}
-
-	struct Direction
-	{
-		Axis axis = {};
-		Sint8 dir = {};
-		BoxAxis first = {};
-		BoxAxis last = {};
-
-		constexpr Direction() = default;
-
-		constexpr void fill(BoxVertex from, BoxVertex to)
-		{
-			const bool asc = from < to;
-			axis = diffToAxis[from ^ to];
-			dir = asc ? +1 : -1;
-			first = BoxAxis(axis + (asc ? 0 : AxisMax));
-			last = BoxAxis(axis + (asc ? AxisMax : 0));
-		}
-	};
-
-	Direction i, j, k;
-};
-
-constexpr auto SquareLoopSize = 4;
-using SquareLoop = std::array<BoxVertex, SquareLoopSize>;
-
-/**
- * Object with definition of operation order
- */
-constexpr std::array propagationSequence = ([]
-{
-	std::array<ConfigSide, 24> s = {};
-
-	auto up = [](BoxVertex e) -> BoxVertex
-	{
-		return BoxVertex(e + V_100);
-	};
-	auto curr = [](const SquareLoop& a, int x)
-	{
-		return a[x];
-	};
-	auto next = [](const SquareLoop& a, int x)
-	{
-		return a[(x + 1) % SquareLoopSize];
-	};
-	auto prev = [](const SquareLoop& a, int x)
-	{
-		return a[(x - 1 + SquareLoopSize) % SquareLoopSize];
-	};
-
-	int total = 0;
-
-	const SquareLoop floor_loop =
-	{
-		V_000,
-		V_001,
-		V_011,
-		V_010,
-	};
-	for (int j = 0; j < SquareLoopSize; ++j, ++total)
-	{
-		s[total] = ConfigSide
-		{
-			curr(floor_loop, j),
-			next(floor_loop, j),
-			prev(floor_loop, j),
-		};
-	}
-	for (int j = 0; j < SquareLoopSize; ++j, ++total)
-	{
-		s[total] = ConfigSide
-		{
-			up(curr(floor_loop, j)),
-			up(next(floor_loop, j)),
-			up(prev(floor_loop, j)),
-		};
-	}
-	for (int i = 0; i < SquareLoopSize; ++i)
-	{
-		SquareLoop side =
-		{
-			curr(floor_loop, i),
-			next(floor_loop, i),
-			up(next(floor_loop, i)),
-			up(curr(floor_loop, i)),
-		};
-		for (int j = 0; j < SquareLoopSize; ++j, ++total)
-		{
-			s[total] = ConfigSide
-			{
-				curr(side, j),
-				next(side, j),
-				prev(side, j),
-			};
-		}
-	}
-
-	return s;
-}());
-
-
-template<typename F>
-void iterateEdge(const Box& b, const Box& e, const ConfigSide::Direction d, F&& f)
-{
-	auto begin = b[d.first];
-	auto end = e[d.last];
-	for (int i = begin; i != end; i += d.dir)
-	{
-		f(i);
-	}
-}
-
-template<typename F>
-void iterateSide(int k, const Box& b, const Box& e, const ConfigSide c, F&& f)
-{
-	Pos p = {};
-
-	p[c.k.axis] = k;
-	iterateEdge(b, e, c.j,
-		[&](int pj)
-		{
-			p[c.j.axis] = pj;
-			iterateEdge(b, e, c.i,
-				[&](int pi)
-				{
-					p[c.i.axis] = pi;
-					f(p);
-				}
-			);
-		}
-	);
-}
-
-template<typename F>
-void iterateSurface(Box& box, const Box& limit, F&& f)
-{
-	Box beginBox = box;
-
-	expand(box);
-
-	Box crop = box;
-	Box endBox = box;
-
-	expand(endBox);
-
-	intersectWithUnchecked(crop, limit);
-	intersectWithUnchecked(beginBox, limit);
-	intersectWithUnchecked(endBox, limit);
-
-	for (auto& c : propagationSequence)
-	{
-		//check if plane of side is inside of limit box
-		if (box[c.k.first] == crop[c.k.first])
-		{
-			iterateSide(box[c.k.first], beginBox, endBox, c, f);
-		}
-	}
-}
-template<typename F>
-void iterateVolume(Pos start, int eventRadius, int range, MapSubset gs, int end_z, F&& f)
-{
-	auto b = fromPos(start, start);
-	const auto limit = Box{ gs.beg_x, gs.beg_y, 0, gs.end_x - 1, gs.end_y - 1, end_z - 1 };
-
-	//check that make sure that `intersectWithUnchecked` is guarantee to work correctly
-	if (!isIntersectingWith(b, limit))
-	{
-		return;
-	}
-
-	if (eventRadius == 0)
-	{
-		f(start);
-	}
-	else
-	{
-		//expanding range without update as it should be already updated, only edge need processing, this is why we "transfer" one step to next loop.
-		range++;
-		eventRadius--;
-		while (eventRadius-- > 0)
-		{
-			expand(b);
-		}
-	}
-
-	while (range-- > 0)
-	{
-		iterateSurface(b, limit, f);
-	}
-}
-
-constexpr static int dir_max = 9;
-constexpr static int dir_x[dir_max] = { 0,  0, +1, +1, +1,  0, -1, -1, -1, };
-constexpr static int dir_y[dir_max] = { 0, -1, -1,  0, +1, +1, +1,  0, -1, };
-constexpr static int dir_z[dir_max] = { 0,  0,  0,  0,  0,  0,  0,  0,  0, };
-
-constexpr static int dir_level_max = 3;
-constexpr static int dir_level_x[dir_level_max] = {  0,  0,  0};
-constexpr static int dir_level_y[dir_level_max] = {  0,  0,  0};
-constexpr static int dir_level_z[dir_level_max] = { -1,  0, +1};
-
-constexpr auto getPosOffsetByDirections(int dir)
-{
-	return Pos
-	{
-		dir_x[dir + 1],
-		dir_y[dir + 1],
-		dir_z[dir + 1],
-	};
-}
-constexpr auto getPosUpDown(int dir)
-{
-	return Pos
-	{
-		dir_level_x[dir + 1],
-		dir_level_y[dir + 1],
-		dir_level_z[dir + 1],
-	};
-}
-
-struct DirConfig
-{
-	signed char level;
-	signed char dir;
-	Pos offset;
-	unsigned int mask;
-	unsigned int next;
-};
-
-constexpr bool isSameCubFace(Pos a, Pos b)
-{
-	for (int i = 0; i < AxisMax; ++i)
-	{
-		if (a[i] != 0 && a[i] == b[i])
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-/**
- * Work around for lack of `constexpr std::max` in some supported compilers
- */
-constexpr int getMax(int a, int b)
-{
-	return a > b ? a : b;
-}
-
-/**
- * Work around for lack of `constexpr std::abs` in some supported compilers
- */
-constexpr int getAbs(int a)
-{
-	return a >= 0 ? a : -a;
-}
-
-constexpr int getChebyshevDistance(Pos a, Pos b)
-{
-	int dis = 0;
-	for (int i = 0; i < AxisMax; ++i)
-	{
-		dis = getMax(getAbs(a[i]-b[i]), dis);
-	}
-	return dis;
-}
-
-constexpr int dir3dMax = dir_level_max * dir_max;
-constexpr int dir3dStartMask = (1 << dir3dMax) - 1;
-
-/**
- * Object with definition of directions to check
- */
-constexpr auto directions = ([]
-{
-	auto array = std::array<DirConfig, dir3dMax>{};
-
-	for (int i = 0; i < dir3dMax; ++i)
-	{
-		auto& a = array[i];
-		a.level = (i / dir_max) - 1;
-		a.dir = (i % dir_max) - 1;
-		a.offset = add(getPosOffsetByDirections(a.dir), getPosUpDown(a.level));
-		a.mask = selectBit(a.dir, a.level);
-	}
-
-	for (int i = 0; i < dir3dMax; ++i)
-	{
-		auto& a = array[i];
-		for (int j = 0; j < dir3dMax; ++j)
-		{
-			const auto& b = array[j];
-
-			if (isSameCubFace(a.offset, b.offset) && getChebyshevDistance(a.offset, b.offset) <= 1)
-			{
-				a.next |= b.mask;
-			}
-		}
-	}
-
-	return array;
-}());
-
-/**
- * Iterate through some subset of map tiles.
- * @param save Map data.
- */
-template<typename TileWorkSet, typename TileBlockCache>
-void iterateTilesLightMaxBound(SavedBattleGame* save, Position position, int eventRadius, int maxRange, MapSubset gsMap, TileWorkSet& work, const TileBlockCache& blockCache)
-{
-	if (position == TileEngine::invalid)
-	{
-		iterateTiles(save, gsMap,
-			[&](int idx)
-			{
-				work[idx] = dir3dStartMask;
-			}
-		);
-
-		return;
-	}
-
-	iterateTiles(save, gsMap,
-		[&](int idx)
-		{
-			work[idx] = 0x0;
-		}
-	);
-	iterateTiles(save, mapArea(position, eventRadius),
-		[&](Tile* tile, int idx)
-		{
-			//TODO: on multi level maps we skip far levels to speed calculations,
-			// but sometimes we could skip even more levels, for `position` and `eventRadius` we lose
-			// detailed info what tiles were in reality affected,
-			// in most cases most updates are limited to one level.
-			if (std::abs(tile->getPosition().z - position.z) <= eventRadius)
-			{
-				work[idx] = dir3dStartMask;
-			}
-		}
-	);
-
-
-	const int map_mul_y = save->getMapSizeX();
-	const int map_mul_z = map_mul_y * save->getMapSizeY();
-	auto index = [map_mul_y, map_mul_z](Pos pp)
-	{
-		return pp[X] + pp[Y] * map_mul_y + pp[Z] * map_mul_z;
-	};
-	auto callback = [&](Pos pp)
-	{
-		const auto idx = index(pp);
-		const auto c = work[idx];
-
-		const auto check = c & ~getBlockDir(blockCache[idx]);
-		if (check)
-		{
-			for (const auto& d : directions)
-			{
-				if (d.mask & check)
-				{
-					work[index(add(pp, d.offset))] |= c & d.next;
-				}
-			}
-		}
-	};
-
-
-	iterateVolume(Pos{position.x, position.y, position.z}, eventRadius, maxRange, gsMap, save->getMapSizeZ(), callback);
-}
 
 } // namespace
 
@@ -896,8 +359,6 @@ TileEngine::TileEngine(SavedBattleGame *save, Mod *mod) :
 	_enhancedLighting(mod->getEnhancedLighting())
 {
 	_blockVisibility.resize(save->getMapSizeXYZ());
-	_lightPropagationTerrainBlocking.resize(save->getMapSizeXYZ());
-	_lightPropagationTempNeedUpdate.resize(save->getMapSizeXYZ());
 	_cacheTilePos = invalid;
 
 	if (Options::oxceTogglePersonalLightType == 2)
@@ -936,7 +397,7 @@ void TileEngine::calculateSunShading(MapSubset gs)
 		gs,
 		[&](Tile* tile)
 		{
-			int currLight = power;
+			auto currLight = power;
 
 			// At night/dusk sun isn't dropping shades blocked by roofs
 			if (_save->getGlobalShade() <= 4)
@@ -979,7 +440,7 @@ void TileEngine::calculateTerrainBackground(MapSubset gs)
 		mapAreaExpand(gs, getMaxStaticLightDistance() - 1),
 		[&](Tile* tile)
 		{
-			int currLight = 0;
+			auto currLight = 0;
 
 			if (tile->getMapData(O_FLOOR))
 			{
@@ -1024,7 +485,7 @@ void TileEngine::calculateTerrainItems(MapSubset gs)
 		mapAreaExpand(gs, getMaxDynamicLightDistance() - 1),
 		[&](Tile* tile)
 		{
-			int currLight = 0;
+			auto currLight = 0;
 
 			for (const BattleItem *it : *tile->getInventory())
 			{
@@ -1033,7 +494,7 @@ void TileEngine::calculateTerrainItems(MapSubset gs)
 					currLight = std::max(currLight, it->getGlowRange());
 				}
 
-				auto* u = it->getUnit();
+				auto u = it->getUnit();
 				if (u && u->getFire())
 				{
 					currLight = std::max(currLight, unitFireLightPowerStunned);
@@ -1061,7 +522,7 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 			continue;
 		}
 
-		int currLight = 0;
+		auto currLight = 0;
 		// add lighting of soldiers
 		if (_personalLighting && unit->getFaction() == FACTION_PLAYER)
 		{
@@ -1077,7 +538,7 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 				currLight = std::max(currLight, w->getGlowRange());
 			}
 
-			auto* u = w->getUnit();
+			auto u = w->getUnit();
 			if (u && u->getFire())
 			{
 				currLight = std::max(currLight, unitFireLightPowerStunned);
@@ -1107,8 +568,7 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 
 void TileEngine::calculateLighting(LightLayers layer, Position position, int eventRadius, bool terrianChanged)
 {
-	const auto gsMap = MapSubset{ _save->getMapSizeX(), _save->getMapSizeY() };
-	auto gsDynamic = gsMap;
+	auto gsDynamic = MapSubset{ _save->getMapSizeX(), _save->getMapSizeY() };
 	auto gsStatic = gsDynamic;
 
 	if (position != invalid)
@@ -1121,13 +581,13 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 	{
 		iterateTiles(
 			_save,
-			position != invalid ? mapArea(position, eventRadius + 1) : gsMap,
+			mapArea(position, position != invalid ? eventRadius + 1 : 1000),
 			[&](Tile* tile)
 			{
 				const auto currPos = tile->getPosition();
 				const auto index = _save->getTileIndex(currPos);
-				const auto* mapData = tile->getMapData(O_OBJECT);
-				auto& cache = _blockVisibility[index];
+				const auto mapData = tile->getMapData(O_OBJECT);
+				auto &cache = _blockVisibility[index];
 
 				cache = {};
 				cache.height = -tile->getTerrainLevel();
@@ -1146,7 +606,7 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 				{
 					Position pos = {};
 					Pathfinding::directionToVector(dir, &pos);
-					auto* tileNext = _save->getTile(currPos + pos);
+					auto tileNext = _save->getTile(currPos + pos);
 					auto result = 0;
 
 					result = horizontalBlockage(tile, tileNext, DT_NONE, true);
@@ -1161,41 +621,18 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 					tileNext = _save->getTile(currPos + pos + Position{ 0, 0, -1 });
 					addBlockDir(cache, dir, -1, verticalBlockage(tile, tileNext, DT_NONE) > 127);
 				}
-
-				_lightPropagationTerrainBlocking[index] = getBlockDir(cache);
-				//HACK: some times light can lit wall objects even if its can't propagate through them,
-				// for simplicity we consider them transparent.
-				// But if is already big wall then next step to big wall is blocked.
-				if (tile->getMapData(O_OBJECT) == nullptr || tile->getMapData(O_OBJECT)->getBigWall())
-				{
-					for (int dir = 0; dir < 8; ++dir)
-					{
-						Position pos = {};
-						Pathfinding::directionToVector(dir, &pos);
-						auto* tileNext = _save->getTile(currPos + pos);
-						auto result = 0;
-
-						result = horizontalBlockage(tile, tileNext, DT_NONE, true);
-						if (result == -1)
-						{
-							_lightPropagationTerrainBlocking[index] &= ~selectBit(dir, 0);
-						}
-					}
-				}
 			}
 		);
 	}
-
-	iterateTilesLightMaxBound(_save, position, eventRadius, getMaxDynamicLightDistance(), gsMap, _lightPropagationTempNeedUpdate, _lightPropagationTerrainBlocking);
 
 	if (layer <= LL_FIRE)
 	{
 		iterateTiles(
 			_save,
 			gsStatic,
-			[&](Tile* tile, int index)
+			[&](Tile* tile)
 			{
-				if (_lightPropagationTempNeedUpdate[index]) tile->resetLightMulti(layer);
+				tile->resetLightMulti(layer);
 			}
 		);
 	}
@@ -1203,9 +640,9 @@ void TileEngine::calculateLighting(LightLayers layer, Position position, int eve
 	iterateTiles(
 		_save,
 		gsDynamic,
-		[&](Tile* tile, int index)
+		[&](Tile* tile)
 		{
-			if (_lightPropagationTempNeedUpdate[index]) tile->resetLightMulti(std::max(layer, LL_ITEMS));
+			tile->resetLightMulti(std::max(layer, LL_ITEMS));
 		}
 	);
 
@@ -1241,12 +678,11 @@ void TileEngine::addLight(MapSubset gs, Position center, int power, LightLayers 
 	const auto topTargetVoxel = static_cast<Sint16>(_save->getMapSizeZ() * accuracy.z - 1);
 	const auto topCenterVoxel = static_cast<Sint16>((getBlockUp(_blockVisibility[_save->getTileIndex(center)]) ? (center.z + 1) : _save->getMapSizeZ()) * accuracy.z - 1);
 	const auto maxFirePower = std::min(15, getMaxStaticLightDistance() - 1);
-	const auto gsInter = MapSubset::intersection(gs, mapArea(center, power - 1));
 
 	iterateTiles(
 		_save,
-		gsInter,
-		[&](Tile* tile, int idx)
+		MapSubset::intersection(gs, mapArea(center, power - 1)),
+		[&](Tile* tile)
 		{
 			const auto target = tile->getPosition();
 			const auto diff = target - center;
@@ -1261,10 +697,6 @@ void TileEngine::addLight(MapSubset gs, Position center, int power, LightLayers 
 			if (clasicLighting)
 			{
 				tile->addLight(currLight, layer);
-				return;
-			}
-			if (_lightPropagationTempNeedUpdate[idx] == 0)
-			{
 				return;
 			}
 
@@ -1456,10 +888,13 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 		if (!(*i)->isOut() && (unit->getId() != (*i)->getId()))
 		{
 			int sizeOther = (*i)->getArmor()->getSize();
+			int totalUnitTiles = 0;
+			int unitTilesNotInViewSector = 0;
 			for (int x = 0; x < sizeOther; ++x)
 			{
 				for (int y = 0; y < sizeOther; ++y)
 				{
+					totalUnitTiles++;
 					Position posToCheck = posOther + Position(x, y, 0);
 					//If we can now find any unit within the arc defined by the event tangent points, its visibility may have been affected by the event.
 					if (inEventVisibilitySector(posToCheck))
@@ -1467,7 +902,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 						if (!unit->checkViewSector(posToCheck, useTurretDirection))
 						{
 							//Unit within arc, but not in view sector. If it just walked out we need to remove it.
-							unit->removeFromVisibleUnits((*i));
+							unitTilesNotInViewSector++;
 						}
 						else if (visible(unit, _save->getTile(posToCheck))) // (distance is checked here)
 						{
@@ -1476,33 +911,42 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								(*i)->setVisible(true);
 							}
-							if ((( (*i)->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER )
+							if ((((*i)->getFaction() == FACTION_HOSTILE && unit->getFaction() != FACTION_HOSTILE)
 								|| ( (*i)->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE ))
 								&& !unit->hasVisibleUnit((*i)))
 							{
 								unit->addToVisibleUnits((*i));
 								unit->addToVisibleTiles((*i)->getTile());
-
-								if (unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE)
-								{
-									(*i)->setTurnsSinceSpotted(0);
-
-									(*i)->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), (*i)->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
-								}
+								unit->addToLofTiles((*i)->getTile());
+								(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()), unit->getFaction());
+								(*i)->setTileLastSpotted(_save->getTileIndex((*i)->getPosition()), unit->getFaction(), true);
+								(*i)->setTurnsSinceSeen(0, unit->getFaction());
+								(*i)->setTurnsSinceSpotted(0);
+								(*i)->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), (*i)->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
 							}
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
 						}
-						else
-						{
+						else						{
 							//Within arc, but not visible. Need to check to see if whatever happened at eventPos blocked a previously seen unit.
-							unit->removeFromVisibleUnits((*i));
+							unitTilesNotInViewSector++;
 						}
 					}
 				}
 			}
+			if (unitTilesNotInViewSector == totalUnitTiles)
+			{
+				unit->removeFromVisibleUnits((*i));
+			}
 		}
 	}
+	if(unit->getUnitsSpottedThisTurn().size() != oldNumVisibleUnits)
+	{
+		unit->setWantToEndTurn(false);
+		if (unit->getAIModule())
+			unit->allowReselect();
+	}
+
 	// we only react when there are at least the same amount of visible units as before AND the checksum is different
 	// this way we stop if there are the same amount of visible units, but a different unit is seen
 	// or we stop if there are more visible units seen
@@ -1534,7 +978,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	{
 		direction = unit->getDirection();
 	}
-	if (unit->getFaction() != FACTION_PLAYER || (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection)))
+	if (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection))
 	{
 		//The event wasn't meant for us and/or visible for us.
 		return;
@@ -1572,12 +1016,12 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		}
 	}
 	//Test all tiles within view cone for visibility.
-	for (int x = 0; x <= getMaxViewDistance(); ++x) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+	for (int x = 0; x <= _save->getMapSizeX(); ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
 		if (direction & 1)
 		{
 			y1 = 0;
-			y2 = getMaxViewDistance();
+			y2 = _save->getMapSizeY();
 		}
 		else
 		{
@@ -1587,7 +1031,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		for (int y = y1; y <= y2; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
 			const int distanceSqr = x*x + y*y;
-			if (distanceSqr <= getMaxViewDistanceSq() && distanceSqr >= distanceSqrMin)
+			if (distanceSqr >= distanceSqrMin)
 			{
 				posTest.x = posSelf.x + signX[direction] * (swap ? y : x);
 				posTest.y = posSelf.y + signY[direction] * (swap ? x : y);
@@ -1621,17 +1065,26 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 										Position posVisited = (*i);
 										//Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
 										// this bresenham line's period might be different from the one that originally revealed the tile.
-										if (!unit->hasVisibleTile(_save->getTile(posVisited)))
+										if (!unit->hasVisibleTile(_save->getTile(posVisited)) && x <= getMaxViewDistance() && y <= getMaxViewDistance() && distanceSqr <= getMaxViewDistanceSq())
 										{
 											unit->addToVisibleTiles(_save->getTile(posVisited));
-											_save->getTile(posVisited)->setVisible(+1);
-											_save->getTile(posVisited)->setDiscovered(true, O_FLOOR);
+											if (unit->getFaction() == FACTION_PLAYER)
+											{
+												_save->getTile(posVisited)->setVisible(+1);
+												_save->getTile(posVisited)->setDiscovered(true, O_FLOOR);
 
-											// walls to the east or south of a visible tile, we see that too
-											Tile* t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
-											if (t) t->setDiscovered(true, O_WESTWALL);
-											t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
-											if (t) t->setDiscovered(true, O_NORTHWALL);
+												// walls to the east or south of a visible tile, we see that too
+												Tile *t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
+												if (t)
+													t->setDiscovered(true, O_WESTWALL);
+												t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
+												if (t)
+													t->setDiscovered(true, O_NORTHWALL);
+											}
+										}
+										if (!unit->hasLofTile(_save->getTile(posVisited)))
+										{
+											unit->addToLofTiles(_save->getTile(posVisited));
 										}
 									}
 								}
@@ -1665,7 +1118,7 @@ bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRe
  */
 Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 {
-	const Position pos = currentUnit->getPosition();
+	const auto pos = currentUnit->getPosition();
 	auto* tile = currentUnit->getTile();
 
 	// determine the origin and target voxels for the raytrace
@@ -1800,7 +1253,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 			}
 		}
 		visibleDistanceMaxVoxel = getMaxVoxelViewDistance(); // reset again (because of smoke formula)
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * smokeDensityFactor * getMaxViewDistance()/(3 * 20 * 100);
+		auto visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * smokeDensityFactor * getMaxViewDistance()/(3 * 20 * 100);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke * smokeDensityFactor / 100, densityOfFire };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
@@ -2013,7 +1466,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
 			}
 		}
 		visibleDistanceMaxVoxel = getMaxVoxelViewDistance(); // reset again (because of smoke formula)
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * getMaxViewDistance()/(3 * 20);
+		auto visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * getMaxViewDistance()/(3 * 20);
 		seen = 0 < visibilityQuality;
 	}
 	return seen;
@@ -2397,7 +1850,7 @@ void TileEngine::calculateFOV(Position position, int eventRadius, const bool upd
 	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		const Position posUnit = (*i)->getPosition();
+		const auto posUnit = (*i)->getPosition();
 
 		if (Position::distance2dSq(position, posUnit) <= updateRadius) //could this unit have observed the event?
 		{
@@ -2721,8 +2174,8 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 	action.target = target->getPosition();
 	action.updateTU();
 
-	auto* unit = action.actor;
-	auto* ammo = action.weapon->getAmmoForAction(action.type);
+	auto unit = action.actor;
+	auto ammo = action.weapon->getAmmoForAction(action.type);
 	if (ammo && action.haveTU())
 	{
 		action.targeting = true;
@@ -2753,7 +2206,7 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 			int reactionChance = BA_HIT != originalAction.type ? 100 : meleeReactionChance;
 			int dist = Position::distance2d(unit->getPositionVexels(), target->getPositionVexels());
 			int arc = getArcDirection(getDirectionTo(unit->getPositionVexels(), target->getPositionVexels()), unit->getDirection());
-			auto* origTarg = _save->getTile(originalAction.target) ? _save->getTile(originalAction.target)->getUnit() : nullptr;
+			auto *origTarg = _save->getTile(originalAction.target) ? _save->getTile(originalAction.target)->getUnit() : nullptr;
 
 			ModScript::ReactionCommon::Output arg{ reactionChance, dist };
 			ModScript::ReactionCommon::Worker worker{ target, unit, action.weapon, action.type, reaction->count, originalAction.weapon, originalAction.skillRules, originalAction.type, origTarg, moveType, arc, _save };
@@ -2840,8 +2293,8 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
 		return false;
 	}
 
-	auto* unit = attack.attacker;
-	auto* weapon = attack.weapon_item;
+	auto unit = attack.attacker;
+	auto weapon = attack.weapon_item;
 
 	if (!target)
 	{
@@ -3107,9 +2560,9 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 	}
 
 	voxelCheckFlush();
-	const VoxelType part = (terrainMeleeTilePart > 0) ? (VoxelType)terrainMeleeTilePart : voxelCheck(center, attack.attacker);
-	const int damage = type->getRandomDamage(power);
-	const int tileFinalDamage = type->getTileFinalDamage(type->getRandomDamageForTile(power, damage));
+	const auto part = (terrainMeleeTilePart > 0) ? (VoxelType)terrainMeleeTilePart : voxelCheck(center, attack.attacker);
+	const auto damage = type->getRandomDamage(power);
+	const auto tileFinalDamage = type->getTileFinalDamage(type->getRandomDamageForTile(power, damage));
 	if (part >= V_FLOOR && part <= V_OBJECT)
 	{
 		bool nothing = true;
@@ -3127,7 +2580,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 		}
 		if (nothing)
 		{
-			const TilePart tp = static_cast<TilePart>(part);
+			const auto tp = static_cast<TilePart>(part);
 			//Do we need to update the visibility of units due to smoke/fire?
 			effectGenerated = hitTile(tile, damage, type);
 			//If a tile was destroyed we may have revealed new areas for one or more observers
@@ -3171,7 +2624,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 	if (terrainChanged || effectGenerated)
 	{
 		applyGravity(tile);
-		LightLayers layer = LL_ITEMS;
+		auto layer = LL_ITEMS;
 		if (part == V_FLOOR && _save->getTile(tilePos - Position(0, 0, 1)))
 		{
 			layer = LL_AMBIENT; // roof destroyed, update sunlight in this tile column
@@ -3562,8 +3015,8 @@ int TileEngine::verticalBlockage(Tile *startTile, Tile *endTile, ItemDamageType 
 	// safety check
 	if (startTile == 0 || endTile == 0) return 255;
 
-	Position startPos = startTile->getPosition();
-	Position endPos = endTile->getPosition();
+	auto startPos = startTile->getPosition();
+	auto endPos = endTile->getPosition();
 	int direction = endPos.z - startPos.z;
 
 	if (direction == 0 ) return 0;
@@ -3620,8 +3073,8 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 	// safety check
 	if (startTile == 0 || endTile == 0) return 255;
 
-	Position startPos = startTile->getPosition();
-	Position endPos = endTile->getPosition();
+	auto startPos = startTile->getPosition();
+	auto endPos = endTile->getPosition();
 	if (startPos.z != endPos.z) return 0;
 	Tile *tmpTile = nullptr;
 
@@ -4187,11 +3640,11 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 		{
 			trajectory.push_back(point);
 
-			const Position difference = point - lastPoint;
-			const int dir = Pathfinding::vectorToDirection(difference);
+			const auto difference = point - lastPoint;
+			const auto dir = Pathfinding::vectorToDirection(difference);
 			const auto& cache = _blockVisibility[_save->getTileIndex(lastPoint)];
 
-			bool result = getBlockDir(cache, dir, difference.z);
+			auto result = getBlockDir(cache, dir, difference.z);
 			if (result && difference.z == 0 && getBigWallDir(cache, dir))
 			{
 				if (steps<2)
@@ -4546,14 +3999,14 @@ int TileEngine::psiAttackCalculate(BattleActionAttack::ReadOnly attack, const Ba
 	if (!victim)
 		return 0;
 
-	BattleActionType type = attack.type;
-	auto* attacker = attack.attacker;
-	auto* weapon = attack.weapon_item;
+	auto type = attack.type;
+	auto attacker = attack.attacker;
+	auto weapon = attack.weapon_item;
 
 	int attackStrength = BattleUnit::getPsiAccuracy(attack);
 	int defenseStrength = 30 + victim->getArmor()->getPsiDefence(victim);
 
-	float dis = Position::distance(attacker->getPosition().toVoxel(), victim->getPosition().toVoxel());
+	auto dis = Position::distance(attacker->getPosition().toVoxel(), victim->getPosition().toVoxel());
 
 	auto rng = RNG::globalRandomState().subSequence();
 	int psiAttackResult = 0;
@@ -4672,6 +4125,7 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 			calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
 			victim->recoverTimeUnits();
 			victim->allowReselect();
+			victim->setWantToEndTurn(false);
 			victim->abortTurn(); // resets unit status to STANDING
 			// if all units from either faction are mind controlled - auto-end the mission.
 			if (_save->getSide() == FACTION_PLAYER && Options::allowPsionicCapture)
@@ -4704,9 +4158,9 @@ int TileEngine::meleeAttackCalculate(BattleActionAttack::ReadOnly attack, const 
 	int arc = getArcDirection(getDirectionTo(victim->getPositionVexels(), attack.attacker->getPositionVexels()), victim->getDirection());
 	int defenseStrengthPenalty = Clamp((int)(defenseStrength * (arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f)), 0, std::max(0, defenseStrength));
 
-	BattleActionType type = attack.type;
-	auto* attacker = attack.attacker;
-	auto* weapon = attack.weapon_item;
+	auto type = attack.type;
+	auto attacker = attack.attacker;
+	auto weapon = attack.weapon_item;
 
 	auto rng = RNG::globalRandomState().subSequence();
 
@@ -4949,6 +4403,11 @@ bool TileEngine::tryConcealUnit(BattleUnit* unit)
 	}
 
 	unit->setTurnsSinceSpotted(255);
+	for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
+	{
+		if (faction != unit->getFaction())
+			unit->setTurnsSinceSeen(255, faction);
+	}
 	unit->setTurnsLeftSpottedForSnipers(0);
 
 	return true;
@@ -5299,7 +4758,7 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 
 	if (action->weapon)
 	{
-		auto* wRule = action->weapon->getRules();
+		auto wRule = action->weapon->getRules();
 		if (wRule->getBattleType() == BT_MELEE)
 		{
 			// check primary damage type
@@ -5379,7 +4838,7 @@ bool TileEngine::validTerrainMeleeRange(BattleAction* action)
 			{
 				if (dir > -1 && tp == O_OBJECT)
 				{
-					int bigWall = obj->getBigWall();
+					auto bigWall = obj->getBigWall();
 					if (dir == 0 /*north*/ && bigWall != Pathfinding::BIGWALLNORTH && bigWall != Pathfinding::BIGWALLWESTANDNORTH) return false;
 					if (dir == 2 /*east */ && bigWall != Pathfinding::BIGWALLEAST  && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;
 					if (dir == 4 /*south*/ && bigWall != Pathfinding::BIGWALLSOUTH && bigWall != Pathfinding::BIGWALLEASTANDSOUTH) return false;
@@ -5793,7 +5252,7 @@ void TileEngine::setDangerZone(Position pos, int radius, BattleUnit *unit)
 						// granted this won't properly account for explosions tearing through walls, but then we can't really
 						// know that kind of information before the fact, so let's have the AI assume that the wall (or tree)
 						// is enough to protect them.
-						if (calculateLineVoxel(originVoxel, targetVoxel, false, &trajectory, unit, unit) == V_EMPTY)
+						if (calculateLineVoxel(originVoxel, targetVoxel, true, &trajectory, unit, unit) == V_EMPTY)
 						{
 							if (trajectory.size() && (trajectory.back().toTile()) == pos + Position(x,y,0))
 							{
@@ -5903,6 +5362,25 @@ void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttac
 		calculateLighting(LL_ITEMS, pos, 2, true);
 		calculateFOV(pos, 1, false);
 	}
+}
+
+bool TileEngine::isNextToDoor(Tile* tile)
+{
+	if (tile == NULL)
+		return false;
+	if (tile->isDoor(O_NORTHWALL) || tile->isDoor(O_WESTWALL) || tile->isUfoDoor(O_NORTHWALL) || tile->isUfoDoor(O_WESTWALL))
+		return true;
+	Position neighbourSouth = tile->getPosition();
+	neighbourSouth += Position(0, 1, 0);
+	Tile* tileSouth = _save->getTile(neighbourSouth);
+	if (tileSouth != NULL && (tileSouth->isDoor(O_NORTHWALL) || tileSouth->isUfoDoor(O_NORTHWALL)))
+		return true;
+	Position neighbourEast = tile->getPosition();
+	neighbourEast += Position(1, 0, 0);
+	Tile *tileEast = _save->getTile(neighbourEast);
+	if (tileEast != NULL && (tileEast->isDoor(O_WESTWALL) || tileEast->isUfoDoor(O_WESTWALL)))
+		return true;
+	return false;
 }
 
 }

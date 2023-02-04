@@ -22,6 +22,8 @@
 #include "DebriefingState.h"
 #include "CannotReequipState.h"
 #include "../Geoscape/GeoscapeEventState.h"
+#include "../Geoscape/GeoscapeState.h"
+#include "../Geoscape/Globe.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -32,6 +34,7 @@
 #include "PromotionsState.h"
 #include "CommendationState.h"
 #include "CommendationLateState.h"
+#include "../Mod/AlienRace.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleCountry.h"
 #include "../Mod/RuleCraft.h"
@@ -999,7 +1002,7 @@ void DebriefingState::prepareDebriefing()
 
 	AlienDeployment *ruleDeploy = _game->getMod()->getDeployment(battle->getMissionType());
 	// OXCE: Don't forget custom mission overrides
-	AlienDeployment* alienCustomMission = _game->getMod()->getDeployment(battle->getAlienCustomMission());
+	auto alienCustomMission = _game->getMod()->getDeployment(battle->getAlienCustomMission());
 	if (alienCustomMission)
 	{
 		ruleDeploy = alienCustomMission;
@@ -1191,7 +1194,7 @@ void DebriefingState::prepareDebriefing()
 					toBeDamaged.push_back((*k));
 				}
 			}
-			for (auto* fac : toBeDamaged)
+			for (auto fac : toBeDamaged)
 			{
 				base->damageFacility(fac);
 			}
@@ -1220,7 +1223,7 @@ void DebriefingState::prepareDebriefing()
 	// lets see what happens with units
 
 	// manual update state of all units
-	for (auto* unit : *battle->getUnits())
+	for (auto unit : *battle->getUnits())
 	{
 		// scripts (or some bugs in the game) could make aliens or soldiers that have "unresolved" stun or death state.
 		// Note: resolves the "last bleeding alien" too
@@ -1235,7 +1238,7 @@ void DebriefingState::prepareDebriefing()
 			//spawn corpse/body for unit to recover
 			for (int i = unit->getArmor()->getTotalSize() - 1; i >= 0; --i)
 			{
-				auto* corpse = battle->createItemForTile(unit->getArmor()->getCorpseBattlescape()[i], nullptr);
+				auto corpse = battle->createItemForTile(unit->getArmor()->getCorpseBattlescape()[i], nullptr);
 				corpse->setUnit(unit);
 				battle->getTileEngine()->itemDrop(unit->getTile(), corpse, false);
 			}
@@ -1326,6 +1329,79 @@ void DebriefingState::prepareDebriefing()
 				{
 					if ((*i)->getStatus() == Ufo::LANDED)
 					{
+						//Xilmi: Make aliens mad about losing their UFO, same as if it was shot down
+						if (Options::brutalAI)
+						{
+							AlienRace *race = _game->getMod()->getAlienRace((*i)->getAlienRace());
+							AlienMission *mission = (*i)->getMission();
+							mission->ufoShotDown(*(*i));
+							// Check for retaliation trigger.
+							int retaliationOdds = mission->getRules().getRetaliationOdds();
+							if (retaliationOdds == -1)
+							{
+								retaliationOdds = 100 - (4 * (24 - _game->getSavedGame()->getDifficultyCoefficient()) - race->getRetaliationAggression());
+								{
+									int diff = _game->getSavedGame()->getDifficulty();
+									auto &custom = _game->getMod()->getRetaliationTriggerOdds();
+									if (custom.size() > (size_t)diff)
+									{
+										retaliationOdds = custom[diff] + race->getRetaliationAggression();
+									}
+								}
+							}
+							// Have mercy on beginners
+							if (_game->getSavedGame()->getMonthsPassed() < Mod::DIFFICULTY_BASED_RETAL_DELAY[_game->getSavedGame()->getDifficulty()])
+							{
+								retaliationOdds = 0;
+							}
+
+							if (RNG::percent(retaliationOdds))
+							{
+								// Spawn retaliation mission.
+								std::string targetRegion;
+								int retaliationUfoMissionRegionOdds = 50 - 6 * _game->getSavedGame()->getDifficultyCoefficient();
+								{
+									int diff = _game->getSavedGame()->getDifficulty();
+									auto &custom = _game->getMod()->getRetaliationBaseRegionOdds();
+									if (custom.size() > (size_t)diff)
+									{
+										retaliationUfoMissionRegionOdds = 100 - custom[diff];
+									}
+								}
+								if (RNG::percent(retaliationUfoMissionRegionOdds) || !craft)
+								{
+									// Attack on UFO's mission region
+									targetRegion = (*i)->getMission()->getRegion();
+								}
+								else if (craft)
+								{
+									// Try to find and attack the originating base.
+									targetRegion = _game->getSavedGame()->locateRegion(*craft->getBase())->getRules()->getType();
+									// TODO: If the base is removed, the mission is canceled.
+								}
+								// Difference from original: No retaliation until final UFO lands (Original: Is spawned).
+								if (!_game->getSavedGame()->findAlienMission(targetRegion, OBJECTIVE_RETALIATION, race))
+								{
+									auto *retalWeights = race->retaliationMissionWeights(_game->getSavedGame()->getMonthsPassed());
+									std::string retalMission = retalWeights ? retalWeights->choose() : "";
+									const RuleAlienMission *rule = _game->getMod()->getAlienMission(retalMission, false);
+									if (!rule)
+									{
+										rule = _game->getMod()->getRandomMission(OBJECTIVE_RETALIATION, _game->getSavedGame()->getMonthsPassed());
+									}
+
+									if (rule && _game->getGeoscapeState() != NULL)
+									{
+										AlienMission *newMission = new AlienMission(*rule);
+										newMission->setId(_game->getSavedGame()->getId("ALIEN_MISSIONS"));
+										newMission->setRegion(targetRegion, *_game->getMod());
+										newMission->setRace((*i)->getAlienRace());
+										newMission->start(*_game, *_game->getGeoscapeState()->getGlobe(), newMission->getRules().getWave(0).spawnTimer); // fixed delay for first scout
+										_game->getSavedGame()->getAlienMissions().push_back(newMission);
+									}
+								}
+							}
+						}
 						(*i)->setDamage((*i)->getCraftStats().damageMax, _game->getMod());
 					}
 				}
@@ -1426,8 +1502,8 @@ void DebriefingState::prepareDebriefing()
 	}
 	for (auto* u : waitingTransformations)
 	{
-		bool ignore = u->isIgnored();
-		UnitFaction faction = u->getFaction();
+		auto ignore = u->isIgnored();
+		auto faction = u->getFaction();
 		// convert it, and mind control the resulting unit.
 		// reason: zombies don't create unconscious bodies... ever.
 		// the only way we can get into this situation is if psi-capture is enabled.
@@ -1563,7 +1639,7 @@ void DebriefingState::prepareDebriefing()
 							{
 								const RuleItem *primaryRule = weapon->getRules();
 								const BattleItem *ammoItem = weapon->getAmmoForSlot(0);
-								const RuleItem *compatible = primaryRule->getVehicleClipAmmo();
+								const auto *compatible = primaryRule->getVehicleClipAmmo();
 								if (primaryRule->getVehicleUnit() && compatible && ammoItem != 0 && ammoItem->getAmmoQuantity() > 0)
 								{
 									int total = ammoItem->getAmmoQuantity();
@@ -1617,7 +1693,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				if (!(*j)->getArmor()->getCorpseBattlescape().empty())
 				{
-					auto* corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
+					auto corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
 					if (corpseRule && corpseRule->isRecoverable())
 					{
 						recoverAlien(*j, base);
@@ -1635,7 +1711,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				if (!(*j)->getArmor()->getCorpseBattlescape().empty())
 				{
-					auto* corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
+					auto corpseRule = (*j)->getArmor()->getCorpseBattlescape().front();
 					if (corpseRule && corpseRule->isRecoverable())
 					{
 						recoverAlien(*j, base);
@@ -1710,7 +1786,7 @@ void DebriefingState::prepareDebriefing()
 		int vipSubtotal = battle->getSavedVIPs() + battle->getLostVIPs();
 
 		// 2. add non-fake civilian VIPs, no scoring
-		for (auto* unit : *battle->getUnits())
+		for (auto unit : *battle->getUnits())
 		{
 			if (unit->isVIP() && unit->getOriginalFaction() == FACTION_NEUTRAL && !unit->isResummonedFakeCivilian())
 			{
@@ -2108,7 +2184,7 @@ void DebriefingState::prepareDebriefing()
 		{
 			int bountyQty = std::max(1, ruleDeploy->getMissionBountyItemCount());
 			addItemsToBaseStores(bountyItem, base, bountyQty, true);
-			int specialType = bountyItem->getSpecialType();
+			auto specialType = bountyItem->getSpecialType();
 			if (specialType > 1)
 			{
 				if (_recoveryStats.find(specialType) != _recoveryStats.end())
@@ -2245,7 +2321,7 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 	}
 	else
 	{
-		auto& recoveryTransformations = ruleItem->getRecoveryTransformations();
+		auto recoveryTransformations = ruleItem->getRecoveryTransformations();
 		if (!recoveryTransformations.empty())
 		{
 			for (auto& pair : recoveryTransformations)
@@ -2253,9 +2329,9 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 				if (pair.second.size() > 1)
 				{
 					int totalWeight = 0;
-					for (int it : pair.second)
+					for (auto it = pair.second.begin(); it != pair.second.end(); ++it)
 					{
-						totalWeight += it;
+						totalWeight += (*it);
 					}
 					// roll each item separately
 					for (int i = 0; i < quantity; ++i)
@@ -2263,9 +2339,9 @@ void DebriefingState::addItemsToBaseStores(const RuleItem *ruleItem, Base *base,
 						int roll = RNG::generate(1, totalWeight);
 						int runningTotal = 0;
 						int position = 0;
-						for (int it : pair.second)
+						for (auto it = pair.second.begin(); it != pair.second.end(); ++it)
 						{
-							runningTotal += it;
+							runningTotal += (*it);
 							if (runningTotal >= roll)
 							{
 								base->getStorageItems()->addItem(pair.first->getType(), position);
@@ -2635,13 +2711,13 @@ void DebriefingState::recoverAlien(BattleUnit *from, Base *base)
 
 		if (!from->getArmor()->getCorpseBattlescape().empty())
 		{
-			auto* corpseRule = from->getArmor()->getCorpseBattlescape().front();
+			auto corpseRule = from->getArmor()->getCorpseBattlescape().front();
 			if (corpseRule && corpseRule->isRecoverable())
 			{
 				if (corpseRule->isCorpseRecoverable())
 				{
 					addStat("STR_ALIEN_CORPSES_RECOVERED", 1, corpseRule->getRecoveryPoints());
-					auto* corpseItem = from->getArmor()->getCorpseGeoscape();
+					auto corpseItem = from->getArmor()->getCorpseGeoscape();
 					addItemsToBaseStores(corpseItem, base, 1, true);
 				}
 			}
@@ -2698,7 +2774,7 @@ int DebriefingState::getRecoveredItemCount(const RuleItem *rule)
 int DebriefingState::getTotalRecoveredItemCount()
 {
 	int total = 0;
-	for (auto& item : _recoveredItems)
+	for (auto item : _recoveredItems)
 	{
 		total += item.second;
 	}

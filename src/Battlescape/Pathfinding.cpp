@@ -48,9 +48,11 @@ Pathfinding::Pathfinding(SavedBattleGame *save) : _save(save), _unit(0), _pathPr
 	_size = _save->getMapSizeXYZ();
 	// Initialize one node per tile
 	_nodes.reserve(_size);
+	_altNodes.reserve(_size);
 	for (int i = 0; i < _size; ++i)
 	{
 		_nodes.push_back(PathfindingNode(_save->getTileCoords(i)));
+		_altNodes.push_back(PathfindingNode(_save->getTileCoords(i)));
 	}
 }
 
@@ -68,8 +70,10 @@ Pathfinding::~Pathfinding()
  * @param pos Position.
  * @return Pointer to node.
  */
-PathfindingNode *Pathfinding::getNode(Position pos)
+PathfindingNode *Pathfinding::getNode(Position pos, bool alt)
 {
+	if (alt)
+		return &_altNodes[_save->getTileIndex(pos)];
 	return &_nodes[_save->getTileIndex(pos)];
 }
 
@@ -82,16 +86,29 @@ PathfindingNode *Pathfinding::getNode(Position pos)
  */
 void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget, int maxTUCost)
 {
+	calculate(unit, unit->getPosition(), endPosition, bam, missileTarget, maxTUCost);
+}
+
+/**
+ * Calculates the shortest path.
+ * @param unit Unit taking the path.
+ * @param startPosition The position we want to start from.
+ * @param endPosition The position we want to reach.
+ * @param missileTarget Target of the path.
+ * @param maxTUCost Maximum time units the path can cost.
+ */
+void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget, int maxTUCost)
+{
 	_totalTUCost = {};
 	_path.clear();
 	// i'm DONE with these out of bounds errors.
-	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0) return;
+	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0)
+		return;
 
 	bool sneak = Options::sneakyAI && unit->getFaction() == FACTION_HOSTILE;
 
-	Position startPosition = unit->getPosition();
-	MovementType movementType = getMovementType(unit, missileTarget, bam);
-	if (missileTarget != 0 && maxTUCost == -1 && bam == BAM_MISSILE)  // pathfinding for missile
+	auto movementType = getMovementType(unit, missileTarget, bam);
+	if (missileTarget != 0 && maxTUCost == -1 && bam == BAM_MISSILE) // pathfinding for missile
 	{
 		maxTUCost = 10000;
 	}
@@ -100,11 +117,12 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	Tile *destinationTile = _save->getTile(endPosition);
 
 	// check if destination is not blocked
-	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
+	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget))
+		return;
 
 	// the following check avoids that the unit walks behind the stairs if we click behind the stairs to make it go up the stairs.
 	// it only works if the unit is on one of the 2 tiles on the stairs, or on the tile right in front of the stairs.
-	if (isOnStairs(startPosition, endPosition))
+	if (isOnStairs(startPosition, endPosition) && unit->getFaction() == FACTION_PLAYER) //Xilmi: Yeah... but not if the AI actually wants to go behind the stairs!
 	{
 		endPosition.z++;
 		destinationTile = _save->getTile(endPosition);
@@ -127,18 +145,16 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 		endPosition.z--;
 		destinationTile = _save->getTile(endPosition);
 	}
-	// check if destination is not blocked
-	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
 
 	// Strafing move allowed only to adjacent squares on same z. "Same z" rule mainly to simplify walking render.
 	_strafeMove = bam == BAM_STRAFE && (startPosition.z == endPosition.z) &&
-							(abs(startPosition.x - endPosition.x) <= 1) && (abs(startPosition.y - endPosition.y) <= 1);
+				  (abs(startPosition.x - endPosition.x) <= 1) && (abs(startPosition.y - endPosition.y) <= 1);
 
 	if (_strafeMove)
 	{
-		int direction = -1;
+		auto direction = -1;
 		vectorToDirection(endPosition - startPosition, direction);
-		if (direction == -1 || std::min(abs(8 + direction - _unit->getDirection()), std::min( abs(_unit->getDirection() - direction), abs(8 + _unit->getDirection() - direction))) > 2)
+		if (direction == -1 || std::min(abs(8 + direction - _unit->getDirection()), std::min(abs(_unit->getDirection() - direction), abs(8 + _unit->getDirection() - direction))) > 2)
 		{
 			// Strafing backwards-ish currently unsupported, turn it off and continue.
 			_strafeMove = false;
@@ -153,7 +169,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	// look for a possible fast and accurate bresenham path and skip A*
 	if (startPosition.z == endPosition.z && bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
 	{
-		std::reverse(_path.begin(), _path.end()); //paths are stored in reverse order
+		std::reverse(_path.begin(), _path.end()); // paths are stored in reverse order
 		return;
 	}
 	else
@@ -211,7 +227,7 @@ bool Pathfinding::aStarPath(Position startPosition, Position endPosition, Battle
 		// Try all reachable neighbours.
 		for (int direction = 0; direction < 10; direction++)
 		{
-			PathfindingStep r = getTUCost(currentPos, direction, _unit, missileTarget, bam);
+			auto r = getTUCost(currentPos, direction, _unit, missileTarget, bam);
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 
@@ -251,7 +267,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	directionToVector(direction, &pos);
 	pos += startPosition;
 
-	const MovementType movementType = getMovementType(unit, missileTarget, bam);
+	const auto movementType = getMovementType(unit, missileTarget, bam);
 	const Armor* armor =  unit->getArmor();
 	const int size = armor->getSize() - 1;
 	const int numberOfParts = armor->getTotalSize();
@@ -293,7 +309,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// check move up or down
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		int maskCurrentPart = 1 << i;
+		auto maskCurrentPart = 1 << i;
 		if (direction < DIR_UP && startTile[i]->getTerrainLevel() > - 16)
 		{
 			// check if we can go this way
@@ -315,14 +331,14 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		else if (bam != BAM_MISSILE && movementType == MT_FLY)
 		{
 			// 2 or more voxels poking into this tile = no go
-			BattleUnit* overlaping = destinationTile[i]->getOverlappingUnit(_save, TUO_IGNORE_SMALL);
-			if (overlaping && overlaping != unit)
+			auto overlaping = destinationTile[i]->getOverlappingUnit(_save, TUO_IGNORE_SMALL);
+			if (overlaping && overlaping != unit && overlaping != missileTarget)
 			{
 				return {{INVALID_MOVE_COST, 0}};
 			}
 		}
 
-		Tile* aboveStart =_save->getAboveTile(startTile[i]);
+		auto aboveStart =_save->getAboveTile(startTile[i]);
 		if (aboveStart && aboveStart->hasNoFloor(_save))
 		{
 			maskOfPartsHoleUp |= maskCurrentPart;
@@ -376,7 +392,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// don't let tanks phase through doors.
 	if (size)
 	{
-		Tile* t = destinationTile[3];
+		auto t = destinationTile[3];
 		if ((t->isDoor(O_NORTHWALL)) ||
 			(t->isDoor(O_WESTWALL)))
 		{
@@ -385,7 +401,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	}
 
 	// pre-calculate fire penalty (to make it consistent for 2x2 units)
-	int firePenaltyCost = 0;
+	auto firePenaltyCost = 0;
 	if (unit->getFaction() != FACTION_PLAYER &&
 		unit->getSpecialAbility() < SPECAB_BURNFLOOR)
 	{
@@ -400,13 +416,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 
 
 	// calculate cost and some final checks
-	int totalCost = 0;
+	auto totalCost = 0;
 
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		int cost = 0;
-		bool upperLevel = destinationTile[i]->getPosition().z > startTile[i]->getPosition().z;
-		bool sameLevel = destinationTile[i]->getPosition().z == startTile[i]->getPosition().z;
+		auto cost = 0;
+		auto upperLevel = destinationTile[i]->getPosition().z > startTile[i]->getPosition().z;
+		auto sameLevel = destinationTile[i]->getPosition().z == startTile[i]->getPosition().z;
 		if (direction < DIR_UP && sameLevel)
 		{
 			// check if we can go this way
@@ -557,7 +573,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		return { { }, { firePenaltyCost, 0 }, pos };
 	}
 
-	const int costDiv = 100 * 100 * 100;
+	const auto costDiv = 100 * 100 * 100;
 	ArmorMoveCost cost = { totalCost, totalCost };
 
 	cost *= unit->getMoveCostBase();
@@ -633,8 +649,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		assert(false && "Unreachable code in pathfinding cost");
 	}
 
-	const int timeCost = (cost.TimePercent - 1 + (costDiv / 2)) / costDiv;
-	const int energyCost = (cost.EnergyPercent - 1 + (costDiv / 2)) / costDiv;
+	const auto timeCost = (cost.TimePercent - 1 + (costDiv / 2)) / costDiv;
+	const auto energyCost = (cost.EnergyPercent - 1 + (costDiv / 2)) / costDiv;
 
 	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
 }
@@ -706,7 +722,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 {
 	if (tile == 0) return true; // probably outside the map here
 
-	MovementType movementType = getMovementType(unit, missileTarget, bam);
+	auto movementType = getMovementType(unit, missileTarget, bam);
 
 	if (part == O_BIGWALL)
 	{
@@ -1125,12 +1141,12 @@ void Pathfinding::refreshPath()
 	const bool strafing = _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->isSmallUnit()) && _path.size() == 1;
 	const bool sneaking = _altUsed && _unit->getArmor()->allowsSneaking(_unit->isSmallUnit());
 
-	const BattleActionMove bam = strafing ? BAM_STRAFE : running ? BAM_RUN : sneaking ? BAM_SNEAK : BAM_NORMAL;
-	const MovementType movementType = getMovementType(_unit, nullptr, bam); //preview always for unit not missiles
+	const auto bam = strafing ? BAM_STRAFE : running ? BAM_RUN : sneaking ? BAM_SNEAK : BAM_NORMAL;
+	const auto movementType = getMovementType(_unit, nullptr, bam); //preview always for unit not missiles
 	for (std::vector<int>::reverse_iterator i = _path.rbegin(); i != _path.rend(); ++i)
 	{
 		int dir = *i;
-		PathfindingStep r = getTUCost(pos, dir, _unit, 0, bam);
+		auto r = getTUCost(pos, dir, _unit, 0, bam);
 		pos = r.pos;
 		energy -= r.cost.energy;
 		tus -= r.cost.time;
@@ -1264,9 +1280,9 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
 			{
 				if (xd[dir] == cx-lastPoint.x && yd[dir] == cy-lastPoint.y) break;
 			}
-			PathfindingStep r = getTUCost(lastPoint, dir, _unit, missileTarget, bam);
+			auto r = getTUCost(lastPoint, dir, _unit, missileTarget, bam);
 			nextPoint = r.pos;
-			int tuCost = r.cost.time + r.penalty.time;
+			auto tuCost = r.cost.time + r.penalty.time;
 
 			if (sneak && _save->getTile(nextPoint)->getVisible()) return false;
 
@@ -1321,21 +1337,54 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
  */
 std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const BattleActionCost &cost)
 {
-	const Position start = unit->getPosition();
+	std::vector<PathfindingNode *> reachable = findReachablePathFindingNodes(unit, cost);
+	std::vector<int> tiles;
+	tiles.reserve(reachable.size());
+	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
+	{
+		tiles.push_back(_save->getTileIndex((*it)->getPosition()));
+	}
+	return tiles;
+}
+
+/**
+ * Locates all tiles reachable to @a *unit with a TU cost no more than @a tuMax.
+ * Uses Dijkstra's algorithm.
+ * @param unit Pointer to the unit.
+ * @param tuMax The maximum cost of the path to each tile.
+ * @param entireMap Ignore the constraints of the unit and create Nodes for the entire map from the unit as starting-point
+ * @param missileTarget we can path into this unit as we want to hit it
+ * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
+ */
+std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
+{
+	Position start = unit->getPosition();
+	if (alternateStart)
+		start = *alternateStart;
 	int tuMax = unit->getTimeUnits() - cost.Time;
 	int energyMax = unit->getEnergy() - cost.Energy;
 
-	PathfindingCost costMax = { tuMax, energyMax };
+	PathfindingCost costMax = {tuMax, energyMax};
 
-	for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
+	if (alternateStart)
 	{
-		it->reset();
+		for (std::vector<PathfindingNode>::iterator it = _altNodes.begin(); it != _altNodes.end(); ++it)
+		{
+			it->reset();
+		}
 	}
-	PathfindingNode *startNode = getNode(start);
+	else
+	{
+		for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
+		{
+			it->reset();
+		}
+	}
+	PathfindingNode *startNode = getNode(start, alternateStart);
 	startNode->connect({}, 0, 0);
 	PathfindingOpenSet unvisited;
 	unvisited.push(startNode);
-	std::vector<PathfindingNode*> reachable;
+	std::vector<PathfindingNode *> reachable;
 	while (!unvisited.empty())
 	{
 		PathfindingNode *currentNode = unvisited.pop();
@@ -1344,13 +1393,13 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 		// Try all reachable neighbours.
 		for (int direction = 0; direction < 10; direction++)
 		{
-			PathfindingStep r = getTUCost(currentPos, direction, unit, 0, BAM_NORMAL);
+			auto r = getTUCost(currentPos, direction, unit, missileTarget, BAM_NORMAL);
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
-			PathfindingCost totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
-			if (!(totalTuCost <= costMax)) // Run out of TUs/Energy
+			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
+			if (!(totalTuCost <= costMax) && !entireMap) // Run out of TUs/Energy
 				continue;
-			PathfindingNode *nextNode = getNode(r.pos);
+			PathfindingNode *nextNode = getNode(r.pos, alternateStart);
 			if (nextNode->isChecked()) // Our algorithm means this node is already at minimum cost.
 				continue;
 			// If this node is unvisited or visited from a better path.
@@ -1364,13 +1413,7 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 		reachable.push_back(currentNode);
 	}
 	std::sort(reachable.begin(), reachable.end(), MinNodeCosts());
-	std::vector<int> tiles;
-	tiles.reserve(reachable.size());
-	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
-	{
-		tiles.push_back(_save->getTileIndex((*it)->getPosition()));
-	}
-	return tiles;
+	return reachable;
 }
 
 /**

@@ -388,7 +388,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	// Set up objects
 	RuleInterface *dogfightInterface = _game->getMod()->getInterface("dogfight");
 
-	SurfaceCrop crop = _game->getMod()->getSurface("INTERWIN.DAT")->getCrop();
+	auto crop = _game->getMod()->getSurface("INTERWIN.DAT")->getCrop();
 	crop.setX(0);
 	crop.setY(0);
 	crop.getCrop()->x = 0;
@@ -980,6 +980,28 @@ void DogfightState::update()
 					escapeCounter = 999; // we're still ok, continue shooting...
 				}
 			}
+			else if (Options::dogfightAI)
+			{
+				int maxRange = 0;
+				for (CraftWeapon *wpn : *(_craft->getWeapons()))
+				{
+					if (wpn == NULL)
+						continue;
+					if (wpn->getAmmo() == 0)
+						continue;
+					if (wpn->getRules()->getRange() > maxRange)
+						maxRange = wpn->getRules()->getRange();
+				}
+				int speedMinusTractors = std::max(0, _ufo->getCraftStats().speedMax - _ufo->getTractorBeamSlowdown());
+				if (speedMinusTractors > _craft->getCraftStats().speedMax && _currentDist <= maxRange * 8)
+				{
+					if (_targetDist > _ufo->getRules()->getWeaponRange() * 8)
+					{
+						_targetDist = _ufo->getRules()->getWeaponRange() * 8;
+						setStatus("STR_CANT_KEEP_DISTANCE");
+					}
+				}
+			}
 
 			if (escapeCounter > 0)
 			{
@@ -1280,7 +1302,7 @@ void DogfightState::update()
 			if (_projectiles.empty())
 			{
 				bool hasNoAmmo = true;
-				for (auto* cw : *_craft->getWeapons())
+				for (auto cw : *_craft->getWeapons())
 				{
 					if (cw && cw->getAmmo() > 0)
 					{
