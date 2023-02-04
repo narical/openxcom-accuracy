@@ -308,7 +308,7 @@ void CraftSoldiersState::initList(size_t scrl)
 	}
 
 	Craft *c = _base->getCrafts()->at(_craft);
-	auto recovery = _base->getSumRecoveryPerDay();
+	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
 	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
 	{
 		if (_dynGetter != NULL)
@@ -498,7 +498,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 		}
 		else if (s->hasFullHealth())
 		{
-			auto space = c->getSpaceAvailable();
+			int space = c->getSpaceAvailable();
 			if (c->validateAddingSoldier(space, s))
 			{
 				s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
@@ -593,7 +593,7 @@ void CraftSoldiersState::btnDeassignCraftSoldiersClick(Action *action)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	int row = 0;
-	for (auto s : *_base->getSoldiers())
+	for (auto* s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == c)
 		{

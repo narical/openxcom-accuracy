@@ -30,8 +30,6 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Base.h"
-#include "../Savegame/ItemContainer.h"
-#include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
 #include "../Mod/RuleSoldier.h"
 
@@ -135,7 +133,7 @@ void SoldierAvatarState::initPreview(Soldier *s)
 	{
 		for (const auto& layer : s->getArmorLayers())
 		{
-			auto surf = _game->getMod()->getSurface(layer, true);
+			auto* surf = _game->getMod()->getSurface(layer, true);
 			surf->blitNShade(_soldierSurface, 0, 0);
 		}
 	}

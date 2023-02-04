@@ -21,11 +21,9 @@
 #include <algorithm>
 #include <sstream>
 #include <climits>
-#include <unordered_map>
 #include <cassert>
 #include "../Engine/CrossPlatform.h"
 #include "../Engine/FileMap.h"
-#include "../Engine/SDL2Helpers.h"
 #include "../Engine/Palette.h"
 #include "../Engine/Font.h"
 #include "../Engine/Surface.h"
@@ -349,7 +347,7 @@ Mod::Mod() :
 	_inventoryOverlapsPaperdoll(false),
 	_maxViewDistance(20), _maxDarknessToSeeUnits(9), _maxStaticLightDistance(16), _maxDynamicLightDistance(24), _enhancedLighting(0),
 	_costHireEngineer(0), _costHireScientist(0),
-	_costEngineer(0), _costScientist(0), _timePersonnel(0), _initialFunding(0),
+	_costEngineer(0), _costScientist(0), _timePersonnel(0), _hireByCountryOdds(0), _hireByRegionOdds(0), _initialFunding(0),
 	_aiUseDelayBlaster(3), _aiUseDelayFirearm(0), _aiUseDelayGrenade(3), _aiUseDelayMelee(0), _aiUseDelayPsionic(0),
 	_aiFireChoiceIntelCoeff(5), _aiFireChoiceAggroCoeff(5), _aiExtendedFireModeChoice(false), _aiRespectMaxRange(false), _aiDestroyBaseFacilities(false),
 	_aiPickUpWeaponsMoreActively(false), _aiPickUpWeaponsMoreActivelyCiv(false),
@@ -1056,7 +1054,7 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 		return;
 	}
 
-	for (auto sprite : sprites)
+	for (int sprite : sprites)
 	{
 		checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
 	}
@@ -1091,7 +1089,7 @@ void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& s
 
 	auto* s = getSoundSet(set);
 
-	for (auto sound : sounds)
+	for (int sound : sounds)
 	{
 		checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
 	}
@@ -2022,7 +2020,7 @@ void Mod::loadAll()
 		_modCurrent = &_modData.at(i);
 		//if (_modCurrent->info->isMaster())
 		{
-			auto file = FileMap::getModRuleFile(_modCurrent->info, _modCurrent->info->getResourceConfigFile());
+			auto* file = FileMap::getModRuleFile(_modCurrent->info, _modCurrent->info->getResourceConfigFile());
 			if (file)
 			{
 				loadResourceConfigFile(*file);
@@ -2085,9 +2083,9 @@ void Mod::loadAll()
 	int y1 = RuleInventory::PAPERDOLL_Y;
 	int w1 = RuleInventory::PAPERDOLL_W;
 	int h1 = RuleInventory::PAPERDOLL_H;
-	for (auto invCategory : _invs)
+	for (auto& invCategory : _invs)
 	{
-		for (auto invSlot : *invCategory.second->getSlots())
+		for (auto& invSlot : *invCategory.second->getSlots())
 		{
 			int x2 = invCategory.second->getX() + (invSlot.x * RuleInventory::SLOT_W);
 			int y2 = invCategory.second->getY() + (invSlot.y * RuleInventory::SLOT_H);
@@ -2166,7 +2164,7 @@ void Mod::loadAll()
 	{
 		std::vector<int> tmp;
 		tmp.reserve(_soldierBonus.size());
-		for (auto i : _soldierBonus)
+		for (auto& i : _soldierBonus)
 		{
 			tmp.push_back(i.second->getListOrder());
 		}
@@ -2180,10 +2178,10 @@ void Mod::loadAll()
 	}
 
 	// auto-create alternative manufacture rules
-	for (auto shortcutPair : _manufactureShortcut)
+	for (auto& shortcutPair : _manufactureShortcut)
 	{
 		// 1. check if the new project has a unique name
-		auto typeNew = shortcutPair.first;
+		auto& typeNew = shortcutPair.first;
 		auto it = _manufacture.find(typeNew);
 		if (it != _manufacture.end())
 		{
@@ -2774,6 +2772,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_costEngineer = doc["costEngineer"].as<int>(_costEngineer);
 	_costScientist = doc["costScientist"].as<int>(_costScientist);
 	_timePersonnel = doc["timePersonnel"].as<int>(_timePersonnel);
+	_hireByCountryOdds = doc["hireByCountryOdds"].as<int>(_hireByCountryOdds);
+	_hireByRegionOdds = doc["hireByRegionOdds"].as<int>(_hireByRegionOdds);
 	_initialFunding = doc["initialFunding"].as<int>(_initialFunding);
 	_alienFuel = doc["alienFuel"].as<std::pair<std::string, int> >(_alienFuel);
 	_fontName = doc["fontName"].as<std::string>(_fontName);
@@ -3428,7 +3428,9 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 		// Generate soldiers
 		for (size_t i = 0; i < randomTypes.size(); ++i)
 		{
-			Soldier *soldier = genSoldier(save, randomTypes[i]);
+			RuleSoldier* ruleSoldier = getSoldier(randomTypes[i], true);
+			int nationality = save->selectSoldierNationalityByLocation(this, ruleSoldier, nullptr); // -1 (unfortunately the first base is not placed yet)
+			Soldier *soldier = genSoldier(save, ruleSoldier, nationality);
 			base->getSoldiers()->push_back(soldier);
 			// Award soldier a special 'original eight' commendation
 			if (_commendations.find("STR_MEDAL_ORIGINAL8_NAME") != _commendations.end())
@@ -3948,6 +3950,15 @@ int Mod::getPersonnelTime() const
 }
 
 /**
+ * Gets maximum supported lookVariant.
+ * @return value in range from 0 to 63
+ */
+int Mod::getMaxLookVariant() const
+{
+	return abs(_maxLookVariant) % RuleSoldier::LookVariantMax;
+}
+
+/**
  * Gets the escort range.
  * @return Escort range.
  */
@@ -4043,7 +4054,7 @@ std::vector<const RuleResearch*> Mod::getResearch(const std::vector<std::string>
 	dest.reserve(id.size());
 	for (auto& n : id)
 	{
-		auto r = getResearch(n, false);
+		auto* r = getResearch(n, false);
 		if (r)
 		{
 			dest.push_back(r);
@@ -4370,8 +4381,8 @@ struct compareRule<RuleCraftWeapon>
 
 	bool operator()(const std::string &r1, const std::string &r2) const
 	{
-		auto *rule1 = _mod->getCraftWeapon(r1)->getLauncherItem();
-		auto *rule2 = _mod->getCraftWeapon(r2)->getLauncherItem();
+		auto* rule1 = _mod->getCraftWeapon(r1)->getLauncherItem();
+		auto* rule2 = _mod->getCraftWeapon(r2)->getLauncherItem();
 		return (rule1->getListOrder() < rule2->getListOrder());
 	}
 };
@@ -4470,9 +4481,9 @@ struct compareSection
  */
 void Mod::sortLists()
 {
-	for (auto rulePair : _ufopaediaArticles)
+	for (auto& rulePair : _ufopaediaArticles)
 	{
-		auto rule = rulePair.second;
+		auto* rule = rulePair.second;
 		if (rule->section != UFOPAEDIA_NOT_AVAILABLE)
 		{
 			if (_ufopaediaSections.find(rule->section) == _ufopaediaSections.end())
@@ -4519,14 +4530,10 @@ const std::vector<std::string> &Mod::getPsiRequirements() const
  * @param type The soldier type to generate.
  * @return Newly generated soldier.
  */
-Soldier *Mod::genSoldier(SavedGame *save, std::string type) const
+Soldier *Mod::genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int nationality) const
 {
 	Soldier *soldier = 0;
 	int newId = save->getId("STR_SOLDIER");
-	if (isEmptyRuleName(type))
-	{
-		type = _soldiersIndex.front();
-	}
 
 	// Check for duplicates
 	// Original X-COM gives up after 10 tries so might as well do the same here
@@ -4534,7 +4541,7 @@ Soldier *Mod::genSoldier(SavedGame *save, std::string type) const
 	for (int tries = 0; tries < 10 && duplicate; ++tries)
 	{
 		delete soldier;
-		soldier = new Soldier(getSoldier(type, true), getSoldier(type, true)->getDefaultArmor(), newId);
+		soldier = new Soldier(ruleSoldier, ruleSoldier->getDefaultArmor(), nationality, newId);
 		duplicate = false;
 		for (std::vector<Base*>::iterator i = save->getBases()->begin(); i != save->getBases()->end() && !duplicate; ++i)
 		{
@@ -4747,7 +4754,7 @@ RuleBaseFacility *Mod::getDestroyedFacility() const
 	if (isEmptyRuleName(_destroyedFacility))
 		return 0;
 
-	auto temp = getBaseFacility(_destroyedFacility, true);
+	auto* temp = getBaseFacility(_destroyedFacility, true);
 	if (temp->getSize() != 1)
 	{
 		throw Exception("Destroyed base facility definition must have size: 1");
@@ -5060,7 +5067,7 @@ void Mod::loadVanillaResources()
 		{
 			// we're here if and only if this is the first mod loading
 			// and it got soundDefs in the ruleset, which basically means it's xcom2.
-			for (auto i : _soundDefs)
+			for (auto& i : _soundDefs)
 			{
 				if (_sounds.find(i.first) == _sounds.end())
 				{
@@ -5071,7 +5078,7 @@ void Mod::loadVanillaResources()
 				if (FileMap::fileExists(fname))
 				{
 					CatFile catfile(fname);
-					for (auto j : i.second->getSoundList())
+					for (int j : i.second->getSoundList())
 					{
 						_sounds[i.first]->loadCatByIndex(catfile, j, true);
 						Log(LOG_VERBOSE) << "TFTD: adding sound " << j << " to " << i.first;
@@ -5608,7 +5615,7 @@ void Mod::loadExtraResources()
 	}
 
 	bool backup_logged = false;
-	for (auto pal : _palettes)
+	for (auto& pal : _palettes)
 	{
 		if (pal.first.find("PAL_") == 0)
 		{

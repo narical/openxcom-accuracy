@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <algorithm>
 #include "RuleResearch.h"
 #include "../Engine/Exception.h"
 #include "../Engine/Collections.h"
@@ -96,7 +95,7 @@ void RuleResearch::afterLoad(const Mod* mod)
 	_getOneFreeProtected.reserve(_getOneFreeProtectedName.size());
 	for (auto& n : _getOneFreeProtectedName)
 	{
-		auto left = mod->getResearch(n.first, false);
+		auto* left = mod->getResearch(n.first, false);
 		if (left)
 		{
 			auto right = mod->getResearch(n.second);

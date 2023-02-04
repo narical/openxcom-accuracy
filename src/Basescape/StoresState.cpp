@@ -31,16 +31,13 @@
 #include "../Interface/Window.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/Craft.h"
-#include "../Savegame/CraftWeapon.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/ResearchProject.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Transfer.h"
-#include "../Savegame/Vehicle.h"
 #include "../Mod/Armor.h"
 #include "../Mod/Mod.h"
-#include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/RuleResearch.h"
 #include <algorithm>
@@ -278,7 +275,7 @@ void StoresState::initList(bool grandTotal)
 		}
 
 		int qty = 0;
-		auto rule = _game->getMod()->getItem(item, true);
+		auto* rule = _game->getMod()->getItem(item, true);
 		if (!grandTotal)
 		{
 			// items in stores from this base only

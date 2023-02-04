@@ -25,12 +25,10 @@
 #include "Camera.h"
 #include "AIModule.h"
 #include "../Savegame/Tile.h"
-#include "../Engine/RNG.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"
 #include "../Engine/Exception.h"
-#include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
 #include "../fmath.h"
@@ -98,7 +96,7 @@ void MeleeAttackBState::init()
 	if (reactionShoot)
 	{
 		// no ammo or target is dead: give the time units back and cancel the shot.
-		auto target = _parent->getSave()->getTile(_action.target)->getUnit();
+		BattleUnit* target = _parent->getSave()->getTile(_action.target)->getUnit();
 		if (!target || target->isOut() || target->isOutThresholdExceed() || target != _parent->getSave()->getSelectedUnit())
 		{
 			_parent->popState();

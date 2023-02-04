@@ -125,7 +125,7 @@ SoldierArmorState::SoldierArmorState(Base *base, size_t soldier, SoldierArmorOri
 	_sortName->setX(_sortName->getX() + _txtType->getTextWidth() + 4);
 	_sortName->onMouseClick((ActionHandler)&SoldierArmorState::sortNameClick);
 
-	const auto &armors = _game->getMod()->getArmorsForSoldiers();
+	const auto& armors = _game->getMod()->getArmorsForSoldiers();
 	for (auto* a : armors)
 	{
 		if (a->getRequiredResearch() && !_game->getSavedGame()->isResearched(a->getRequiredResearch()))
@@ -330,7 +330,7 @@ void SoldierArmorState::lstArmorClick(Action *)
 */
 void SoldierArmorState::lstArmorClickMiddle(Action *action)
 {
-	auto armor = _game->getMod()->getArmor(_armors[_indices[_lstArmor->getSelectedRow()]].type, true);
+	Armor* armor = _game->getMod()->getArmor(_armors[_indices[_lstArmor->getSelectedRow()]].type, true);
 	std::string articleId = armor->getUfopediaType();
 	Ufopaedia::openArticle(_game, articleId);
 }

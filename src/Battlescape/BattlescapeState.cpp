@@ -198,7 +198,7 @@ BattlescapeState::BattlescapeState() :
 	_btnSkills->setVisible(false);
 
 	{
-		auto posX = (screenWidth - 32);
+		int posX = (screenWidth - 32);
 		for (auto& pos :  _posSpecialActions)
 		{
 			pos = posX;
@@ -246,7 +246,7 @@ BattlescapeState::BattlescapeState() :
 	_txtTooltip = new Text(300, 10, x + 2, y - 10);
 
 	// Palette transformations
-	auto enviro = _game->getSavedGame()->getSavedBattle()->getEnviroEffects();
+	auto* enviro = _game->getSavedGame()->getSavedBattle()->getEnviroEffects();
 	if (enviro)
 	{
 		for (auto& change : enviro->getPaletteTransformations())
@@ -285,7 +285,7 @@ BattlescapeState::BattlescapeState() :
 	}
 
 	// there is some cropping going on here, because the icons image is 320x200 while we only need the bottom of it.
-	auto crop = icons->getCrop();
+	SurfaceCrop crop = icons->getCrop();
 	crop.getCrop()->x = 0;
 	crop.getCrop()->y = 200 - iconsHeight;
 	crop.getCrop()->w = iconsWidth;
@@ -726,7 +726,7 @@ void BattlescapeState::resetPalettes()
 {
 	if (_paletteResetNeeded)
 	{
-		for (auto origPal : _game->getMod()->getPalettes())
+		for (auto& origPal : _game->getMod()->getPalettes())
 		{
 			if (origPal.first.find("PAL_") == 0)
 			{
@@ -753,7 +753,7 @@ void BattlescapeState::init()
 
 		resetPalettes();
 		_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
-		for (auto surface : _surfaces)
+		for (auto* surface : _surfaces)
 		{
 			surface->setPalette(_palette);
 		}
@@ -1497,7 +1497,7 @@ void BattlescapeState::btnLeftHandItemClick(Action *action)
 		if (!leftHandItem)
 		{
 			auto typesToCheck = {BT_MELEE, BT_PSIAMP, BT_FIREARM, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE};
-			for (auto &type : typesToCheck)
+			for (auto& type : typesToCheck)
 			{
 				leftHandItem = _save->getSelectedUnit()->getSpecialWeapon(type);
 				if (leftHandItem && leftHandItem->getRules()->isSpecialUsingEmptyHand())
@@ -1545,7 +1545,7 @@ void BattlescapeState::btnRightHandItemClick(Action *action)
 		if (!rightHandItem)
 		{
 			auto typesToCheck = {BT_MELEE, BT_PSIAMP, BT_FIREARM, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE};
-			for (auto &type : typesToCheck)
+			for (auto& type : typesToCheck)
 			{
 				rightHandItem = _save->getSelectedUnit()->getSpecialWeapon(type);
 				if (rightHandItem && rightHandItem->getRules()->isSpecialUsingEmptyHand())
@@ -1579,7 +1579,7 @@ void BattlescapeState::btnVisibleUnitClick(Action *action)
 
 	if (btnID != -1)
 	{
-		auto position = _visibleUnit[btnID]->getPosition();
+		Position position = _visibleUnit[btnID]->getPosition();
 		if (position == TileEngine::invalid)
 		{
 			bool found = false;
@@ -1897,7 +1897,7 @@ void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<Num
 		{
 			if (item->isAmmoVisibleForSlot(slot))
 			{
-				auto ammo = item->getAmmoForSlot(slot);
+				BattleItem* ammo = item->getAmmoForSlot(slot);
 				if (!ammo)
 				{
 					ammoText[slot]->setVisible(true);
@@ -2052,7 +2052,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		{
 			// show rank (vanilla behaviour)
 			SurfaceSet *texture = _game->getMod()->getSurfaceSet("SMOKE.PCK");
-			auto frame = texture->getFrame(soldier->getRankSpriteBattlescape());
+			auto* frame = texture->getFrame(soldier->getRankSpriteBattlescape());
 			if (frame)
 			{
 				frame->blitNShade(_rank, 0, 0);
@@ -2081,9 +2081,9 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			{
 				for (const auto& layer : soldier->getArmorLayers(customArmor))
 				{
-					auto surf = _game->getMod()->getSurface(layer, true);
+					Surface* surf = _game->getMod()->getSurface(layer, true);
 
-					auto crop = surf->getCrop();
+					SurfaceCrop crop = surf->getCrop();
 					crop.getCrop()->x = soldier->getRules()->getAvatarOffsetX();
 					crop.getCrop()->y = soldier->getRules()->getAvatarOffsetY();
 					crop.getCrop()->w = 26;
@@ -2129,7 +2129,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 				}
 
 				// crop
-				auto crop = surf->getCrop();
+				SurfaceCrop crop = surf->getCrop();
 				crop.getCrop()->x = soldier->getRules()->getAvatarOffsetX();
 				crop.getCrop()->y = soldier->getRules()->getAvatarOffsetY();
 				crop.getCrop()->w = 26;
@@ -2277,7 +2277,7 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	bool hasPsiWeapon = psiWeapon != 0 && psiWeapon != specialWeapon;
 
 	bool hasSkills = false;
-	auto soldier = battleUnit->getGeoscapeSoldier();
+	Soldier* soldier = battleUnit->getGeoscapeSoldier();
 	if (soldier)
 	{
 		hasSkills = soldier->getRules()->isSkillMenuDefined();
@@ -2533,7 +2533,7 @@ std::string BattlescapeState::getMeleeDamagePreview(BattleUnit *actor, BattleIte
 	{
 		int totalDamage = 0;
 		const RuleDamageType *dmgType;
-		auto attack = BattleActionAttack::GetBeforeShoot(BA_HIT, actor, weapon);
+		BattleActionAttack attack = BattleActionAttack::GetBeforeShoot(BA_HIT, actor, weapon);
 		if (weapon->getRules()->getBattleType() == BT_MELEE)
 		{
 			totalDamage += weapon->getRules()->getPowerBonus(attack);
@@ -2678,7 +2678,7 @@ inline void BattlescapeState::handle(Action *action)
 
 						BattleItem *specialWeapon = 0;
 						auto typesToCheck = {BT_MELEE, BT_PSIAMP, BT_FIREARM, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE};
-						for (auto &type : typesToCheck)
+						for (auto& type : typesToCheck)
 						{
 							specialWeapon = actor->getSpecialWeapon(type);
 							if (specialWeapon && specialWeapon->getRules()->isSpecialUsingEmptyHand())
@@ -3494,7 +3494,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 			return;
 		}
 
-		auto weaponRule = weapon->getRules();
+		auto* weaponRule = weapon->getRules();
 
 		// find the target unit
 		if (weaponRule->getBattleType() == BT_MEDIKIT)

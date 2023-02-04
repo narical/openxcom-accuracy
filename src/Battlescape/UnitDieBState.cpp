@@ -294,7 +294,7 @@ void UnitDieBState::convertUnitToCorpse()
 			{
 				if ((*it)->getUnit() == _unit)
 				{
-					auto corpseRules = _unit->getArmor()->getCorpseBattlescape()[0]; // we're in an inventory, so we must be a 1x1 unit
+					auto* corpseRules = _unit->getArmor()->getCorpseBattlescape()[0]; // we're in an inventory, so we must be a 1x1 unit
 					(*it)->convertToCorpse(corpseRules);
 					break;
 				}

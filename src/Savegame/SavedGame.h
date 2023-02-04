@@ -417,6 +417,8 @@ public:
 	Country* locateCountry(double lon, double lat) const;
 	/// Locate a country containing a Target.
 	Country* locateCountry(const Target& target) const;
+	/// Select a soldier nationality based on mod rules and location on the globe.
+	int selectSoldierNationalityByLocation(const Mod* mod, const RuleSoldier* rule, const Target* target) const;
 	/// Return the month counter.
 	int getMonthsPassed() const;
 	/// Return the GraphRegionToggles.

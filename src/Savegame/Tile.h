@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <list>
 #include <vector>
 #include <memory>
 #include "../Engine/Surface.h"
@@ -33,7 +32,6 @@ class MapData;
 class BattleUnit;
 class BattleItem;
 class RuleInventory;
-class Particle;
 class SavedBattleGame;
 class ScriptParserBase;
 

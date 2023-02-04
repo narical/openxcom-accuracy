@@ -43,7 +43,6 @@
 #include "SackSoldierState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
-#include "../Mod/RuleSoldierBonus.h"
 #include "../Savegame/SoldierDeath.h"
 
 namespace OpenXcom
@@ -388,7 +387,7 @@ void SoldierInfoState::init()
 	_btnBonuses->setVisible(hasBonus);
 
 	SurfaceSet *texture = _game->getMod()->getSurfaceSet("BASEBITS.PCK");
-	auto frame = texture->getFrame(_soldier->getRankSprite());
+	auto* frame = texture->getFrame(_soldier->getRankSprite());
 	if (frame)
 	{
 		frame->blitNShade(_rank, 0, 0);
@@ -404,7 +403,7 @@ void SoldierInfoState::init()
 	else
 	{
 		int index = 0;
-		for (auto item : mapping)
+		for (int item : mapping)
 		{
 			if (_soldier->getKills() <= item)
 			{
@@ -518,7 +517,7 @@ void SoldierInfoState::init()
 	}
 	_txtCraft->setText(tr("STR_CRAFT_").arg(craft));
 
-	auto recovery = _base ? _base->getSumRecoveryPerDay() : BaseSumDailyRecovery();
+	BaseSumDailyRecovery recovery = _base ? _base->getSumRecoveryPerDay() : BaseSumDailyRecovery();
 	auto getDaysOrInfinity = [&](int days)
 	{
 		if (days < 0)

@@ -23,10 +23,8 @@
 #include "BaseFacility.h"
 #include "../Mod/RuleBaseFacility.h"
 #include "Craft.h"
-#include "CraftWeapon.h"
 #include "SavedGame.h"
 #include "../Mod/RuleCraft.h"
-#include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Mod.h"
 #include "ItemContainer.h"
 #include "Soldier.h"
@@ -144,7 +142,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		std::string type = (*i)["type"].as<std::string>(_mod->getSoldiersList().front());
 		if (_mod->getSoldier(type))
 		{
-			Soldier *s = new Soldier(_mod->getSoldier(type), 0);
+			Soldier *s = new Soldier(_mod->getSoldier(type), nullptr, 0 /*nationality*/);
 			s->load(*i, _mod, save, _mod->getScriptGlobal());
 			s->setCraft(0);
 			if (const YAML::Node &craft = (*i)["craft"])
@@ -430,7 +428,7 @@ std::vector<Soldier*> *Base::getSoldiers()
  */
 void Base::prepareSoldierStatsWithBonuses()
 {
-	for (auto soldier : _soldiers)
+	for (auto* soldier : _soldiers)
 	{
 		soldier->prepareStatsWithBonuses(_mod);
 	}
@@ -481,12 +479,12 @@ void Base::setEngineers(int engineers)
  */
 UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool alreadyTracked) const
 {
-	auto distance = XcomDistance(getDistance(target));
-	auto hyperwave = false;
-	auto hyperwave_max_range = 0;
-	auto hyperwave_chance = 0;
-	auto radar_max_range = 0;
-	auto radar_chance = 0;
+	int distance = XcomDistance(getDistance(target));
+	bool hyperwave = false;
+	int hyperwave_max_range = 0;
+	int hyperwave_chance = 0;
+	int radar_max_range = 0;
+	int radar_chance = 0;
 
 	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
 	{
@@ -520,8 +518,8 @@ UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool already
 		}
 	}
 
-	auto detectionChance = 0;
-	auto detectionType = DETECTION_NONE;
+	int detectionChance = 0;
+	UfoDetection detectionType = DETECTION_NONE;
 
 	if (alreadyTracked)
 	{
@@ -678,11 +676,11 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	inventoryCount = 0;
 	int totalCost = 0;
 
-	for (auto transfer : _transfers)
+	for (auto* transfer : _transfers)
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			auto ruleItem = _mod->getItem(transfer->getItems(), true);
+			auto* ruleItem = _mod->getItem(transfer->getItems(), true);
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += transfer->getQuantity();
@@ -696,7 +694,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 		}
 		else if (transfer->getType() == TRANSFER_SOLDIER)
 		{
-			auto ruleItem = transfer->getSoldier()->getArmor()->getStoreItem();
+			auto* ruleItem = transfer->getSoldier()->getArmor()->getStoreItem();
 			if (ruleItem && ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += 1;
@@ -711,7 +709,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	}
 	for (const auto& storeItem : *_items->getContents())
 	{
-		auto ruleItem = _mod->getItem(storeItem.first, true);
+		auto* ruleItem = _mod->getItem(storeItem.first, true);
 		if (ruleItem->getMonthlySalary() != 0)
 		{
 			staffCount += storeItem.second;
@@ -723,11 +721,11 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 			totalCost += ruleItem->getMonthlyMaintenance() * storeItem.second;
 		}
 	}
-	for (auto craft : _crafts)
+	for (auto* craft : _crafts)
 	{
-		for (const auto &craftItem : *craft->getItems()->getContents())
+		for (const auto& craftItem : *craft->getItems()->getContents())
 		{
-			auto ruleItem = _mod->getItem(craftItem.first, true);
+			auto* ruleItem = _mod->getItem(craftItem.first, true);
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += craftItem.second;
@@ -739,9 +737,9 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 				totalCost += ruleItem->getMonthlyMaintenance() * craftItem.second;
 			}
 		}
-		for (auto vehicle : *craft->getVehicles())
+		for (auto* vehicle : *craft->getVehicles())
 		{
-			auto ruleItem = vehicle->getRules();
+			auto* ruleItem = vehicle->getRules();
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += 1;
@@ -754,9 +752,9 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 			}
 		}
 	}
-	for (auto soldier : _soldiers)
+	for (auto* soldier : _soldiers)
 	{
-		auto ruleItem = soldier->getArmor()->getStoreItem();
+		auto* ruleItem = soldier->getArmor()->getStoreItem();
 		if (ruleItem && ruleItem->getMonthlySalary() != 0)
 		{
 			staffCount += 1;
@@ -1619,7 +1617,7 @@ void Base::setupDefenses(AlienMission* am)
 			{
 				for (int j = 0; j < itemQty; ++j)
 				{
-					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
+					auto* vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 				}
@@ -1639,7 +1637,7 @@ void Base::setupDefenses(AlienMission* am)
 				int canBeAdded = std::min(itemQty, baseQty);
 				for (int j=0; j<canBeAdded; ++j)
 				{
-					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
+					auto* vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 					_items->removeItem(ammo, ammoPerVehicle);
@@ -1680,7 +1678,7 @@ void Base::damageFacilities(Ufo *ufo)
 	{
 		WeightedOptions options;
 		int index = 0;
-		for (auto facility : _facilities)
+		for (auto* facility : _facilities)
 		{
 			if (facility->getRules()->getMissileAttraction() > 0 && !facility->getRules()->isLift())
 			{
@@ -1902,7 +1900,7 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 		}
 		else
 		{
-			auto remove = -(getAvailableHangars() - getUsedHangars() - (*facility)->getRules()->getCrafts());
+			int remove = -(getAvailableHangars() - getUsedHangars() - (*facility)->getRules()->getCrafts());
 			remove = Collections::deleteIf(_productions, remove,
 				[&](Production* i)
 				{
@@ -2102,7 +2100,7 @@ void Base::cleanupDefenses(bool reclaimItems)
 
 	if (reclaimItems)
 	{
-		for (auto v : _vehiclesFromBase)
+		for (auto* v : _vehiclesFromBase)
 		{
 			RuleItem *rule = v->getRules();
 			std::string type = rule->getType();
@@ -2165,7 +2163,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 
 	for (auto& bf : _facilities)
 	{
-		auto rule = bf->getRules();
+		auto* rule = bf->getRules();
 		if (BaseAreaSubset::intersection(bf->getPlacement(), area))
 		{
 			++removedBuildings;
@@ -2176,7 +2174,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 
 			if (rule->getAliens() > 0)
 			{
-				auto type = rule->getPrisonType();
+				int type = rule->getPrisonType();
 				if (std::find(prisonBegin, prisonCurr, type) == prisonCurr)
 				{
 					//too many prison types, give up
@@ -2274,10 +2272,10 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 
 		auto sumAvailablePrisons = [&](const RuleBaseFacility* rule)
 		{
-			auto prisonSize = rule->getAliens();
+			int prisonSize = rule->getAliens();
 			if (prisonSize > 0)
 			{
-				auto type = rule->getPrisonType();
+				int type = rule->getPrisonType();
 				auto find = std::find(prisonBegin, prisonCurr, type);
 				if (find != prisonCurr)
 				{
@@ -2289,7 +2287,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 		// sum all available space
 		for (auto& bf : _facilities)
 		{
-			auto rule = bf->getRules();
+			auto* rule = bf->getRules();
 			if (!BaseAreaSubset::intersection(bf->getPlacement(), area))
 			{
 				sumAvailablePrisons(rule);
@@ -2463,7 +2461,7 @@ BaseSumDailyRecovery Base::getSumRecoveryPerDay() const
 	{
 		if (bf->getBuildTime() == 0)
 		{
-			auto rule = bf->getRules();
+			auto* rule = bf->getRules();
 
 			manaMinimum = std::min(manaMinimum, rule->getManaRecoveryPerDay());
 			manaMaximum = std::max(manaMaximum, rule->getManaRecoveryPerDay());

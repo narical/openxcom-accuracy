@@ -35,7 +35,6 @@
 #include "../Savegame/Craft.h"
 #include "../Mod/Armor.h"
 #include "SoldierArmorState.h"
-#include "../Savegame/SavedGame.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
@@ -268,7 +267,7 @@ void CraftArmorState::initList(size_t scrl)
 	}
 
 	Craft *c = _base->getCrafts()->at(_craft);
-	auto recovery = _base->getSumRecoveryPerDay();
+	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
 	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
 	{
 		if (_dynGetter != NULL)
@@ -447,7 +446,7 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 				}
 				else if (s->hasFullHealth())
 				{
-					auto space = c->getSpaceAvailable();
+					int space = c->getSpaceAvailable();
 					if (c->validateAddingSoldier(space, s))
 					{
 						s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
@@ -598,7 +597,7 @@ void CraftArmorState::btnDeequipCraftArmorClick(Action *action)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	int row = 0;
-	for (auto s : *_base->getSoldiers())
+	for (auto* s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == c || s->getCraft() == 0)
 		{

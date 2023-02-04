@@ -27,7 +27,6 @@
 #include "../Engine/Game.h"
 #include "../Engine/Action.h"
 #include "../Engine/Options.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
@@ -214,7 +213,7 @@ void ExtendedBattlescapeLinksState::btnKillAllClick(Action *)
 	{
 		// kill all
 		_parent->debug("Influenza bacterium dispersed");
-		for (auto unit : *_save->getUnits())
+		for (auto* unit : *_save->getUnits())
 		{
 			if (unit->getOriginalFaction() == FACTION_HOSTILE && !unit->isOut())
 			{

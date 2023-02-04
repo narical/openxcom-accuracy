@@ -21,7 +21,6 @@
 #include <vector>
 #include <string>
 #include <bitset>
-#include <type_traits>
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/Options.h"
@@ -209,7 +208,7 @@ private:
 	int _maxViewDistance, _maxDarknessToSeeUnits;
 	int _maxStaticLightDistance, _maxDynamicLightDistance, _enhancedLighting;
 	int _costHireEngineer, _costHireScientist;
-	int _costEngineer, _costScientist, _timePersonnel, _initialFunding;
+	int _costEngineer, _costScientist, _timePersonnel, _hireByCountryOdds, _hireByRegionOdds, _initialFunding;
 	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayMelee, _aiUseDelayPsionic;
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
@@ -773,6 +772,10 @@ public:
 	int getScientistCost() const;
 	/// Gets the transfer time of personnel.
 	int getPersonnelTime() const;
+	/// Gets the odds of hiring soldiers by country.
+	int getHireByCountryOdds() const { return _hireByCountryOdds; }
+	/// Gets the odds of hiring soldiers by region.
+	int getHireByRegionOdds() const { return _hireByRegionOdds; }
 
 	/// Gets first turn when AI can use Blaster launcher.
 	int getAIUseDelayBlaster() const  {return _aiUseDelayBlaster;}
@@ -798,8 +801,8 @@ public:
 	bool getAIPickUpWeaponsMoreActively() const { return _aiPickUpWeaponsMoreActively; }
 	/// Gets whether or not the civilian AI should pick up weapons more actively.
 	bool getAIPickUpWeaponsMoreActivelyCiv() const { return _aiPickUpWeaponsMoreActivelyCiv; }
-	/// Gets maximum supported lookVariant (0-15)
-	int getMaxLookVariant() const  {return abs(_maxLookVariant) % 16;}
+	/// Gets maximum supported lookVariant.
+	int getMaxLookVariant() const;
 	/// Gets the threshold for too much smoke (vanilla default = 10).
 	int getTooMuchSmokeThreshold() const  {return _tooMuchSmokeThreshold;}
 	/// Gets the custom physical training factor in percent (default = 100).
@@ -1004,7 +1007,7 @@ public:
 	/// Returns the sorted list of inventories.
 	const std::vector<std::string> &getInvsList() const;
 	/// Generates a new soldier.
-	Soldier *genSoldier(SavedGame *save, std::string type = "") const;
+	Soldier *genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int nationality) const;
 	/// Gets the item to be used as fuel for ships.
 	std::string getAlienFuelName() const;
 	/// Gets the amount of alien fuel to recover

@@ -283,7 +283,7 @@ public:
 	bool getSpacecraft() const;
 	/// Should notification be displayed when the craft is refueled?
 	bool notifyWhenRefueled() const;
-	/// Does this craft support auto patrol?
+	/// Does this craft support auto-patrol?
 	bool canAutoPatrol() const;
 	/// Is this craft immune to detection by HKs and alien bases?
 	bool isUndetectable() const { return _undetectable; }

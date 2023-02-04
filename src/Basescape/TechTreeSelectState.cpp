@@ -25,7 +25,6 @@
 #include "../Mod/RuleArcScript.h"
 #include "../Mod/RuleEventScript.h"
 #include "../Mod/RuleMissionScript.h"
-#include "../Engine/CrossPlatform.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Interface/TextButton.h"
@@ -166,7 +165,7 @@ void TechTreeSelectState::initLists()
 	{
 		for (auto& arcScriptId : *_game->getMod()->getArcScriptList())
 		{
-			auto arcScript = _game->getMod()->getArcScript(arcScriptId, false);
+			auto* arcScript = _game->getMod()->getArcScript(arcScriptId, false);
 			if (arcScript)
 			{
 				for (auto& trigger : arcScript->getResearchTriggers())
@@ -180,7 +179,7 @@ void TechTreeSelectState::initLists()
 	{
 		for (auto& eventScriptId : *_game->getMod()->getEventScriptList())
 		{
-			auto eventScript = _game->getMod()->getEventScript(eventScriptId, false);
+			auto* eventScript = _game->getMod()->getEventScript(eventScriptId, false);
 			if (eventScript)
 			{
 				for (auto& trigger : eventScript->getResearchTriggers())
@@ -194,7 +193,7 @@ void TechTreeSelectState::initLists()
 	{
 		for (auto& missionScriptId : *_game->getMod()->getMissionScriptList())
 		{
-			auto missionScript = _game->getMod()->getMissionScript(missionScriptId, false);
+			auto* missionScript = _game->getMod()->getMissionScript(missionScriptId, false);
 			if (missionScript)
 			{
 				for (auto& trigger : missionScript->getResearchTriggers())

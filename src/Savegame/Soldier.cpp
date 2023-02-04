@@ -49,7 +49,7 @@ namespace OpenXcom
  * @param armor Soldier armor.
  * @param id Unique soldier id for soldier generation.
  */
-Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
+Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_id(id), _nationality(0),
 	_improvement(0), _psiStrImprovement(0), _rules(rules), _rank(RANK_ROOKIE), _craft(0),
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
@@ -80,7 +80,32 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 		const std::vector<SoldierNamePool*> &names = rules->getNames();
 		if (!names.empty())
 		{
-			_nationality = RNG::generate(0, names.size() - 1);
+			if (nationality > -1)
+			{
+				// nationality by location, or hardcoded/technical nationality
+				_nationality = nationality;
+			}
+			else
+			{
+				// nationality by name pool weights
+				int tmp = RNG::generate(0, rules->getTotalSoldierNamePoolWeight());
+				int nat = 0;
+				for (auto* namepool : names)
+				{
+					if (tmp <= namepool->getGlobalWeight())
+					{
+						break;
+					}
+					tmp -= namepool->getGlobalWeight();
+					++nat;
+				}
+				_nationality = nat;
+			}
+			if ((size_t)_nationality >= names.size())
+			{
+				// handling weird cases, e.g. corner cases in soldier transformations
+				_nationality = RNG::generate(0, names.size() - 1);
+			}
 			_name = names.at(_nationality)->genName(&_gender, rules->getFemaleFrequency());
 			_callsign = generateCallsign(rules->getNames());
 			_look = (SoldierLook)names.at(_nationality)->genLook(4); // Once we add the ability to mod in extra looks, this will need to reference the ruleset for the maximum amount of looks.
@@ -585,7 +610,7 @@ std::string Soldier::getCraftString(Language *lang, const BaseSumDailyRecovery& 
 		std::ostringstream ss;
 		ss << lang->getString("STR_WOUNDED");
 		ss << ">";
-		auto days = getNeededRecoveryTime(recovery);
+		int days = getNeededRecoveryTime(recovery);
 		if (days < 0)
 		{
 			ss << "∞";
@@ -1238,12 +1263,12 @@ void Soldier::replenishStats(const BaseSumDailyRecovery& recovery)
  */
 int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 {
-	auto time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
+	int time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
 
-	auto bonusTime = 0;
+	int bonusTime = 0;
 	if (_healthMissing > 0)
 	{
-		auto t = recoveryTime(
+		int t = recoveryTime(
 			valueOverThreshold(_healthMissing, _currentStats.health, _rules->getHealthWoundThreshold()),
 			recovery.HealthRecovery
 		);
@@ -1257,7 +1282,7 @@ int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 	}
 	if (_manaMissing > 0)
 	{
-		auto t = recoveryTime(
+		int t = recoveryTime(
 			valueOverThreshold(_manaMissing, _currentStats.mana, _rules->getManaWoundThreshold()),
 			recovery.ManaRecovery
 		);
@@ -1626,13 +1651,13 @@ bool Soldier::isEligibleForTransformation(RuleSoldierTransformation *transformat
 	// Does this soldier's transformation history preclude this new project?
 	const std::vector<std::string> &requiredTransformations = transformationRule->getRequiredPreviousTransformations();
 	const std::vector<std::string> &forbiddenTransformations = transformationRule->getForbiddenPreviousTransformations();
-	for (auto reqd_trans : requiredTransformations)
+	for (auto& reqd_trans : requiredTransformations)
 	{
 		if (_previousTransformations.find(reqd_trans) == _previousTransformations.end())
 			return false;
 	}
 
-	for (auto forb_trans : forbiddenTransformations)
+	for (auto& forb_trans : forbiddenTransformations)
 	{
 		if (_previousTransformations.find(forb_trans) != _previousTransformations.end())
 			return false;
@@ -1656,10 +1681,10 @@ bool Soldier::isEligibleForTransformation(RuleSoldierTransformation *transformat
 		return false;
 
 	// Does the soldier have the required commendations?
-	for (auto reqd_comm : transformationRule->getRequiredCommendations())
+	for (auto& reqd_comm : transformationRule->getRequiredCommendations())
 	{
 		bool found = false;
-		for (auto comm : *_diary->getSoldierCommendations())
+		for (auto* comm : *_diary->getSoldierCommendations())
 		{
 			if (comm->getDecorationLevelInt() >= reqd_comm.second && comm->getType() == reqd_comm.first)
 			{
@@ -1767,7 +1792,7 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 
 		// and randomize stats where needed
 		{
-			Soldier *tmpSoldier = new Soldier(_rules, 0, _id);
+			Soldier *tmpSoldier = new Soldier(_rules, nullptr, 0 /*nationality*/, _id);
 			_currentStats = UnitStats::combine(transformationRule->getRerollStats(), _currentStats, *tmpSoldier->getCurrentStats());
 			delete tmpSoldier;
 			tmpSoldier = 0;
@@ -1949,15 +1974,15 @@ const std::vector<const RuleSoldierBonus*> *Soldier::getBonuses(const Mod *mod)
 			}
 		};
 
-		for (auto bonusName : _transformationBonuses)
+		for (auto& bonusName : _transformationBonuses)
 		{
-			auto bonusRule = mod->getSoldierBonus(bonusName.first, false);
+			auto* bonusRule = mod->getSoldierBonus(bonusName.first, false);
 
 			addSorted(bonusRule);
 		}
-		for (auto commendation : *_diary->getSoldierCommendations())
+		for (auto* commendation : *_diary->getSoldierCommendations())
 		{
-			auto bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
+			auto* bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
 
 			addSorted(bonusRule);
 		}
@@ -1994,10 +2019,10 @@ bool Soldier::prepareStatsWithBonuses(const Mod *mod)
 	auto basePsiSkill = _currentStats.psiSkill;
 
 	// 2. refresh soldier bonuses
-	auto bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
+	auto* bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
 
 	// 3. apply soldier bonuses
-	for (auto bonusRule : *bonuses)
+	for (auto* bonusRule : *bonuses)
 	{
 		hasSoldierBonus = true;
 		tmp += *(bonusRule->getStats());

@@ -24,10 +24,8 @@
 #include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
 #include "../Engine/Game.h"
-#include "../Engine/Palette.h"
 #include "../Engine/Surface.h"
 #include "../Engine/LocalizedText.h"
-#include "../Engine/CrossPlatform.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/Text.h"
@@ -47,7 +45,7 @@ namespace OpenXcom
 		_txtTitle = new Text(300, 17, 5, 24);
 
 		// Set palette
-		auto customArmorSprite = defs->image_id.empty() ? nullptr : _game->getMod()->getSurface(defs->image_id, true);
+		Surface* customArmorSprite = defs->image_id.empty() ? nullptr : _game->getMod()->getSurface(defs->image_id, true);
 		if (defs->customPalette && customArmorSprite)
 		{
 			setCustomPalette(customArmorSprite->getPalette(), Mod::BATTLESCAPE_CURSOR);
@@ -87,16 +85,18 @@ namespace OpenXcom
 		else if (armor->hasLayersDefinition())
 		{
 			// dummy default soldier (M0)
-			Soldier *s = new Soldier(_game->getMod()->getSoldier(_game->getMod()->getSoldiersList().front(), true), armor, 0);
+			Soldier *s = new Soldier(_game->getMod()->getSoldier(_game->getMod()->getSoldiersList().front(), true), armor, 0 /*nationality*/, 0 /*id*/);
 			s->setGender(GENDER_MALE);
 			s->setLook(LOOK_BLONDE);
 			s->setLookVariant(0);
 
 			for (const auto& layer : s->getArmorLayers())
 			{
-				auto surf = _game->getMod()->getSurface(layer, true);
+				auto* surf = _game->getMod()->getSurface(layer, true);
 				surf->blitNShade(_bg, 0, 0);
 			}
+			delete s;
+			s = nullptr;
 		}
 		else
 		{

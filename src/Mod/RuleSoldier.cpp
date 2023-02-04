@@ -26,7 +26,6 @@
 #include "Armor.h"
 #include "SoldierNamePool.h"
 #include "StatString.h"
-#include "../Engine/Collections.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/ScriptBind.h"
 #include "../Engine/Unicode.h"
@@ -43,6 +42,7 @@ RuleSoldier::RuleSoldier(const std::string &type) : _type(type), _listOrder(0), 
 	_monthlyBuyLimit(0), _costBuy(0), _costSalary(0),
 	_costSalarySquaddie(0), _costSalarySergeant(0), _costSalaryCaptain(0), _costSalaryColonel(0), _costSalaryCommander(0),
 	_standHeight(0), _kneelHeight(0), _floatHeight(0), _femaleFrequency(50), _value(20), _transferTime(0), _moraleLossWhenKilled(100),
+	_totalSoldierNamePoolWeight(0),
 	_avatarOffsetX(67), _avatarOffsetY(48), _flagOffset(0),
 	_allowPromotion(true), _allowPiloting(true), _showTypeInInventory(false),
 	_rankSprite(42), _rankSpriteBattlescape(20), _rankSpriteTiny(0), _skillIconSprite(1)
@@ -199,6 +199,12 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
  */
 void RuleSoldier::afterLoad(const Mod* mod)
 {
+	_totalSoldierNamePoolWeight = 0;
+	for (auto* namepool : _names)
+	{
+		_totalSoldierNamePoolWeight += namepool->getGlobalWeight();
+	}
+
 	mod->linkRule(_armor, _armorName);
 	mod->checkForSoftError(_armor == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);
 

@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <SDL.h>
 #include <string>
 #include <vector>
 #include "OptionInfo.h"
@@ -109,6 +108,8 @@ namespace Options
 	bool isPasswordCorrect();
 	/// returns the id of the active master mod
 	std::string getActiveMaster();
+	/// Gets the master mod info.
+	const ModInfo* getActiveMasterInfo();
 	/// Gets the map of mod ids to mod infos
 	const std::map<std::string, ModInfo> &getModInfos();
 	/// Refreshes the mods.

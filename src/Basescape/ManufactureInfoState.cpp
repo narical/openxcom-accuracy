@@ -225,7 +225,7 @@ void ManufactureInfoState::initProfitInfo ()
 	const RuleManufacture *item = _production->getRules();
 
 	_producedItemsValue = 0;
-	auto ruleCraft = item->getProducedCraft();
+	auto* ruleCraft = item->getProducedCraft();
 	if (ruleCraft)
 	{
 		_producedItemsValue += ruleCraft->getSellCost();
@@ -577,13 +577,13 @@ void ManufactureInfoState::lessUnitClick(Action *action)
 			{
 				// when infinite amount is decreased by 1, set the amount to maximum possible considering current funds and store supplies
 				int productionPossible = INT_MAX;
-				auto manufRule = _production->getRules();
+				auto* manufRule = _production->getRules();
 				if (manufRule->getManufactureCost() > 0)
 				{
 					int byFunds = _game->getSavedGame()->getFunds() / manufRule->getManufactureCost();
 					productionPossible = std::min(productionPossible, byFunds);
 				}
-				for (auto &item : manufRule->getRequiredItems())
+				for (auto& item : manufRule->getRequiredItems())
 				{
 					productionPossible = std::min(productionPossible, _base->getStorageItems()->getItem(item.first) / item.second);
 				}

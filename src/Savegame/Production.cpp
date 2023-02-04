@@ -31,7 +31,6 @@
 #include "../Mod/RuleItem.h"
 #include "../Mod/RuleCraft.h"
 #include "../Engine/Language.h"
-#include "../Engine/Options.h"
 #include "../Engine/RNG.h"
 #include <climits>
 #include "BaseFacility.h"
@@ -144,7 +143,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 		int count = 0;
 		do
 		{
-			auto ruleCraft = _rules->getProducedCraft();
+			auto* ruleCraft = _rules->getProducedCraft();
 			if (ruleCraft)
 			{
 				Craft *craft = new Craft(ruleCraft, b, g->getId(ruleCraft->getType()));
@@ -234,7 +233,8 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					if (rule != 0)
 					{
 						Transfer *t = new Transfer(24);
-						Soldier *s = m->genSoldier(g, rule->getType());
+						int nationality = g->selectSoldierNationalityByLocation(m, rule, b);
+						Soldier *s = m->genSoldier(g, rule, nationality);
 						s->load(_rules->getSpawnedSoldierTemplate(), m, g, m->getScriptGlobal(), true); // load from soldier template
 						if (_rules->getSpawnedPersonName() != "")
 						{

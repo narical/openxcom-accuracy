@@ -20,8 +20,6 @@
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/ModInfo.h"
-#include "../Engine/Options.h"
-#include "../Engine/ModInfo.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
@@ -37,7 +35,7 @@ namespace OpenXcom
 	 * @param state Pointer to the Options|Mod state.
 	 * @param modInfo What exactly mod caused this question?
 	 */
-	ModConfirmExtendedState::ModConfirmExtendedState(ModListState *state, const ModInfo *modInfo) : _state(state), _isMaster(modInfo->isMaster())
+	ModConfirmExtendedState::ModConfirmExtendedState(ModListState *state, const ModInfo *modInfo, const ModInfo *masterInfo) : _state(state), _isMaster(modInfo->isMaster())
 	{
 		_screen = false;
 
@@ -73,7 +71,11 @@ namespace OpenXcom
 		_txtTitle->setAlign(ALIGN_CENTER);
 		_txtTitle->setBig();
 		_txtTitle->setWordWrap(true);
-		if (modInfo->getRequiredExtendedEngine() != OPENXCOM_VERSION_ENGINE)
+		if (masterInfo && !modInfo->isParentMasterOk(masterInfo))
+		{
+			_txtTitle->setText(tr("STR_MASTER_MOD_VERSION_REQUIRED_QUESTION").arg(modInfo->getRequiredMasterVersion()).arg(masterInfo->getVersion()));
+		}
+		else if (modInfo->getRequiredExtendedEngine() != OPENXCOM_VERSION_ENGINE)
 		{
 			_txtTitle->setText(tr("STR_OXCE_REQUIRED_QUESTION").arg(modInfo->getRequiredExtendedEngine()));
 		}
@@ -123,4 +125,43 @@ namespace OpenXcom
 		}
 	}
 
+	/**
+	 * Check if master mod is not valid.
+	 */
+	bool ModConfirmExtendedState::isMasterNotValid(const ModInfo *masterInfo)
+	{
+		return !masterInfo->isEngineOk();
+	}
+
+	/**
+	 * Check if mod is not valid.
+	 */
+	bool ModConfirmExtendedState::isModNotValid(const ModInfo *modInfo, const ModInfo *masterInfo)
+	{
+		return !modInfo->isMaster() && // skip checking master mod
+			(!modInfo->isEngineOk() || !modInfo->isParentMasterOk(masterInfo));
+	}
+
+
+	bool ModConfirmExtendedState::tryShowMasterNotValidConfirmationState(ModListState *state, const ModInfo *masterInfo)
+	{
+		if (isMasterNotValid(masterInfo))
+		{
+			_game->pushState(new ModConfirmExtendedState(state, masterInfo));
+			return true;
+		}
+
+		return false;
+	}
+
+	bool ModConfirmExtendedState::tryShowModNotValidConfirmationState(ModListState *state, const ModInfo *modInfo, const ModInfo *masterInfo)
+	{
+		if (isModNotValid(modInfo, masterInfo))
+		{
+			_game->pushState(new ModConfirmExtendedState(state, modInfo, masterInfo));
+			return true;
+		}
+
+		return false;
+	}
 }

@@ -28,7 +28,6 @@
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Timer.h"
 #include "../Engine/Options.h"
-#include "../Engine/CrossPlatform.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
@@ -46,7 +45,6 @@
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
-#include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Armor.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Battlescape/CannotReequipState.h"
@@ -161,12 +159,12 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 		_cats.push_back("STR_FILTER_MISSING");
 	}
 
-	auto providedBaseFunc = _base->getProvidedBaseFunc({});
+	RuleBaseFacilityFunctions providedBaseFunc = _base->getProvidedBaseFunc({});
 	const std::vector<std::string> &soldiers = _game->getMod()->getSoldiersList();
 	for (std::vector<std::string>::const_iterator i = soldiers.begin(); i != soldiers.end(); ++i)
 	{
 		RuleSoldier *rule = _game->getMod()->getSoldier(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_SOLDIER, rule, tr(rule->getType()), rule->getBuyCost(), _base->getSoldierCountAndSalary(rule->getType()).first, 0, 0, -4, 0, 0, 0 };
@@ -204,7 +202,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (std::vector<std::string>::const_iterator i = crafts.begin(); i != crafts.end(); ++i)
 	{
 		RuleCraft *rule = _game->getMod()->getCraft(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_CRAFT, rule, tr(rule->getType()), rule->getBuyCost(), _base->getCraftCount(rule), 0, 0, -1, 0, 0, 0 };
@@ -220,7 +218,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
 	{
 		RuleItem *rule = _game->getMod()->getItem(*i);
-		auto purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
+		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
 		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && _game->getSavedGame()->isResearched(rule->getBuyRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
 		{
 			TransferRow row = { TRANSFER_ITEM, rule, tr(rule->getType()), rule->getBuyCost(), _base->getStorageItems()->getItem(rule), 0, 0, rule->getListOrder(), 0, 0, 0 };
@@ -708,7 +706,8 @@ void PurchaseState::btnOkClick(Action *)
 					if (time == 0)
 						time = _game->getMod()->getPersonnelTime();
 					t = new Transfer(time);
-					t->setSoldier(_game->getMod()->genSoldier(_game->getSavedGame(), rule->getType()));
+					int nationality = _game->getSavedGame()->selectSoldierNationalityByLocation(_game->getMod(), rule, _base);
+					t->setSoldier(_game->getMod()->genSoldier(_game->getSavedGame(), rule, nationality));
 					_base->getTransfers()->push_back(t);
 				}
 				break;

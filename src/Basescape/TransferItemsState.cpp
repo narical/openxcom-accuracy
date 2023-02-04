@@ -26,7 +26,6 @@
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
@@ -45,7 +44,6 @@
 #include "../Engine/Options.h"
 #include "../fmath.h"
 #include "../Mod/RuleInterface.h"
-#include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Armor.h"
 #include "../Interface/ComboBox.h"
 #include "../Ufopaedia/Ufopaedia.h"
@@ -847,7 +845,7 @@ void TransferItemsState::increaseByValue(int change)
 		}
 		else if (Options::storageLimitsEnforced)
 		{
-			auto used = craft->getTotalItemStorageSize(_game->getMod());
+			double used = craft->getTotalItemStorageSize(_game->getMod());
 			if (used > 0.0 && _baseTo->storesOverfull(_iQty + used))
 			{
 				errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE_FOR_CRAFT");

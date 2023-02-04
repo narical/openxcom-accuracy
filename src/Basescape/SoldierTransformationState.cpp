@@ -24,7 +24,6 @@
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Engine/Screen.h"
-#include "../Interface/ComboBox.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/TextEdit.h"
@@ -245,7 +244,7 @@ void SoldierTransformationState::initTransformationData()
 	UnitStats changedStatsMin = _sourceSoldier->calculateStatChanges(_game->getMod(), _transformationRule, _sourceSoldier, 1, _sourceSoldier->getRules());
 	UnitStats changedStatsMax = _sourceSoldier->calculateStatChanges(_game->getMod(), _transformationRule, _sourceSoldier, 2, _sourceSoldier->getRules());
 	UnitStats bonusStats;
-	auto bonusRule = _game->getMod()->getSoldierBonus(_transformationRule->getSoldierBonusType(), false);
+	auto* bonusRule = _game->getMod()->getSoldierBonus(_transformationRule->getSoldierBonusType(), false);
 	if (bonusRule)
 	{
 		bonusStats += *bonusRule->getStats();
@@ -476,6 +475,7 @@ void SoldierTransformationState::performTransformation()
 		destinationSoldier = new Soldier(
 			newSoldierType,
 			newSoldierType->getDefaultArmor(),
+			_sourceSoldier->getNationality(), // try to preserve nationality if possible
 			newId);
 
 		// copy stuff that is not influenced by transformation ruleset

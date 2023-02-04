@@ -20,7 +20,6 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "../Engine/GraphSubset.h"
 #include "Base.h"
-#include <algorithm>
 
 namespace OpenXcom
 {
@@ -127,7 +126,7 @@ void BaseFacility::setY(int y)
  */
 BaseAreaSubset BaseFacility::getPlacement() const
 {
-	auto size = _rules->getSize();
+	int size = _rules->getSize();
 	return BaseAreaSubset(size, size).offset(_x, _y);
 }
 

@@ -22,7 +22,6 @@
 #include "AllocateTrainingState.h"
 #include "../Engine/Game.h"
 #include "../Engine/Language.h"
-#include "../Engine/Palette.h"
 #include "../Mod/RuleInterface.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/ToggleTextButton.h"
@@ -31,7 +30,6 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Base.h"
 #include "../Interface/TextList.h"
-#include "GeoscapeState.h"
 #include "../Savegame/Soldier.h"
 #include "../Engine/Action.h"
 #include "../Engine/Options.h"
@@ -481,7 +479,7 @@ void AllocateTrainingState::lstSoldiersClick(Action *action)
 	_sel = _lstSoldiers->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
-		auto soldier = _base->getSoldiers()->at(_sel);
+		auto* soldier = _base->getSoldiers()->at(_sel);
 
 		// can't put fully trained soldiers back into training
 		if (soldier->isFullyTrained()) return;

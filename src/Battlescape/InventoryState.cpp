@@ -73,9 +73,24 @@ static const int _applyTemplateBtnY  = 113;
  * @param tu Does Inventory use up Time Units?
  * @param parent Pointer to parent Battlescape.
  */
-InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bool noCraft) : _tu(tu), _noCraft(noCraft), _parent(parent), _base(base), _reloadUnit(false), _globalLayoutIndex(-1)
+InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bool noCraft) :
+	_tu(tu), _noCraft(noCraft), _parent(parent), _base(base),
+	_resetCustomDeploymentBackup(false), _reloadUnit(false), _globalLayoutIndex(-1)
 {
 	_battleGame = _game->getSavedGame()->getSavedBattle();
+
+	if (Options::oxceAlternateCraftEquipmentManagement && !_tu && _base && _noCraft)
+	{
+		// deassign all soldiers
+		for (auto* soldier : *_base->getSoldiers())
+		{
+			_backup[soldier] = soldier->getCraft();
+			if (soldier->getCraft() && soldier->getCraft()->getStatus() != "STR_OUT")
+			{
+				soldier->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
+			}
+		}
+	}
 
 	if (Options::maximizeInfoScreens)
 	{
@@ -110,7 +125,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnArmor = new BattlescapeButton(RuleInventory::PAPERDOLL_W, RuleInventory::PAPERDOLL_H, RuleInventory::PAPERDOLL_X, RuleInventory::PAPERDOLL_Y);
 	_btnCreateTemplate = new BattlescapeButton(32, 22, _templateBtnX, _createTemplateBtnY);
 	_btnApplyTemplate = new BattlescapeButton(32, 22, _templateBtnX, _applyTemplateBtnY);
-	auto pixelShift = _game->getMod()->getInterface("inventory")->getElement("buttonLinks");
+	Element* pixelShift = _game->getMod()->getInterface("inventory")->getElement("buttonLinks");
 	if (pixelShift && pixelShift->TFTDMode)
 	{
 		_btnLinks = new BattlescapeButton(23, 22, 213, 0);
@@ -296,10 +311,10 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	if (_battleGame->getDebugMode() && _game->isShiftPressed())
 	{
 		// replenish TUs
-		auto unit = _inv->getSelectedUnit();
+		auto* unit = _inv->getSelectedUnit();
 		if (unit)
 		{
-			auto missingTUs = unit->getBaseStats()->tu - unit->getTimeUnits();
+			int missingTUs = unit->getBaseStats()->tu - unit->getTimeUnits();
 			unit->spendTimeUnits(-missingTUs);
 		}
 	}
@@ -416,6 +431,11 @@ void InventoryState::init()
 		// reload necessary after the change of armor
 		if (_reloadUnit)
 		{
+			if (Options::oxceAlternateCraftEquipmentManagement && s->getArmor() && unit->getArmor() && s->getArmor()->getSize() > unit->getArmor()->getSize())
+			{
+				_resetCustomDeploymentBackup = true;
+			}
+
 			// Step 0: update unit's armor
 			unit->updateArmorFromSoldier(_game->getMod(), s, s->getArmor(), _battleGame->getDepth(), false, nullptr);
 
@@ -445,7 +465,7 @@ void InventoryState::init()
 		}
 
 		SurfaceSet *texture = _game->getMod()->getSurfaceSet("SMOKE.PCK");
-		auto frame = texture->getFrame(s->getRankSpriteBattlescape());
+		auto* frame = texture->getFrame(s->getRankSpriteBattlescape());
 		if (frame)
 		{
 			frame->blitNShade(_btnRank, 0, 0);
@@ -825,7 +845,7 @@ void InventoryState::loadGlobalLayout(int index)
 
 bool InventoryState::loadGlobalLayoutArmor(int index)
 {
-	auto armorName = _game->getSavedGame()->getGlobalEquipmentLayoutArmor(index);
+	auto& armorName = _game->getSavedGame()->getGlobalEquipmentLayoutArmor(index);
 	return tryArmorChange(armorName);
 }
 
@@ -899,6 +919,10 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 			{
 				_base->getStorageItems()->removeItem(next->getStoreItem());
 			}
+		}
+		if (Options::oxceAlternateCraftEquipmentManagement && next->getSize() > prev->getSize())
+		{
+			_resetCustomDeploymentBackup = true;
 		}
 		soldier->setArmor(next, true);
 		armorChanged = true;
@@ -1036,6 +1060,22 @@ void InventoryState::btnOkClick(Action *)
 		if (_base || !Options::oxceAlternateCraftEquipmentManagement)
 		{
 			saveEquipmentLayout();
+		}
+		if (Options::oxceAlternateCraftEquipmentManagement && !_tu && _base && _noCraft)
+		{
+			// assign all soldiers back, if possible
+			for (auto* soldier : *_base->getSoldiers())
+			{
+				Craft* c = _backup[soldier];
+				if (!soldier->getCraft() && c && c->getStatus() != "STR_OUT")
+				{
+					int space = c->getSpaceAvailable();
+					if (c->validateAddingSoldier(space, soldier))
+					{
+						soldier->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, _resetCustomDeploymentBackup);
+					}
+				}
+			}
 		}
 		if (_parent)
 		{
@@ -1237,7 +1277,7 @@ void InventoryState::btnCreatePersonalTemplateClick(Action *)
 		return;
 	}
 
-	auto unit = _battleGame->getSelectedUnit();
+	auto* unit = _battleGame->getSelectedUnit();
 	if (unit && unit->getGeoscapeSoldier())
 	{
 		auto& personalTemplate = *unit->getGeoscapeSoldier()->getPersonalEquipmentLayout();
@@ -1399,7 +1439,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		if (!found && matchedWeapon)
 		{
 			found = true;
-			auto allMatch = true;
+			bool allMatch = true;
 			for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 			{
 				allMatch &= (needsAmmo[slot] && matchedAmmo[slot]) || (!needsAmmo[slot]);
@@ -1500,13 +1540,13 @@ void InventoryState::btnApplyPersonalTemplateClick(Action *)
 		return;
 	}
 
-	auto unit = _battleGame->getSelectedUnit();
+	auto* unit = _battleGame->getSelectedUnit();
 	if (unit && unit->getGeoscapeSoldier())
 	{
 		// optionally load armor too
 		if (Options::oxcePersonalLayoutIncludingArmor)
 		{
-			auto newArmor = unit->getGeoscapeSoldier()->getPersonalEquipmentArmor();
+			auto* newArmor = unit->getGeoscapeSoldier()->getPersonalEquipmentArmor();
 			if (newArmor && newArmor != unit->getArmor())
 			{
 				bool success = tryArmorChange(newArmor->getType());
@@ -1546,7 +1586,7 @@ void InventoryState::btnShowPersonalTemplateClick(Action *)
 		return;
 	}
 
-	auto unit = _battleGame->getSelectedUnit();
+	auto* unit = _battleGame->getSelectedUnit();
 	if (unit && unit->getGeoscapeSoldier())
 	{
 		_game->pushState(new InventoryPersonalState(unit->getGeoscapeSoldier()));
@@ -1654,7 +1694,7 @@ void InventoryState::calculateCurrentDamageTooltip()
 	}
 	else if (_currentDamageTooltipItem->needsAmmoForSlot(PRIMARY_SLOT))
 	{
-		auto ammo = _currentDamageTooltipItem->getAmmoForSlot(PRIMARY_SLOT);
+		auto* ammo = _currentDamageTooltipItem->getAmmoForSlot(PRIMARY_SLOT);
 		if (ammo != nullptr)
 		{
 			damageItem = ammo;
@@ -1763,7 +1803,7 @@ void InventoryState::invMouseOver(Action *)
 		}
 		else
 		{
-			auto save = _game->getSavedGame();
+			auto* save = _game->getSavedGame();
 			if (save->isResearched(item->getRules()->getRequirements()))
 			{
 				std::string text = tr(item->getRules()->getName());
@@ -1774,7 +1814,7 @@ void InventoryState::invMouseOver(Action *)
 						continue;
 					}
 
-					auto ammo = item->getAmmoForSlot(slot);
+					auto* ammo = item->getAmmoForSlot(slot);
 					if (!ammo || !save->isResearched(ammo->getRules()->getRequirements()))
 					{
 						continue;
@@ -2000,9 +2040,9 @@ void InventoryState::think()
 {
 	if (_mouseHoverItem)
 	{
-		auto anim = _inv->getAnimFrame();
-		auto seq = std::max(((anim - _mouseHoverItemFrame) / 10) - 1, 0); // `-1` cause that first item will be show bit more longer
-		auto modulo = 0;
+		int anim = _inv->getAnimFrame();
+		int seq = std::max(((anim - _mouseHoverItemFrame) / 10) - 1, 0); // `-1` cause that first item will be show bit more longer
+		int modulo = 0;
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
 			bool showSelfAmmo = slot == 0 && _mouseHoverItem->getRules()->getClipSize() > 0;
@@ -2105,7 +2145,7 @@ void InventoryState::txtArmorTooltipIn(Action *action)
 
 				if (unit->getGeoscapeSoldier())
 				{
-					auto soldierRules = unit->getGeoscapeSoldier()->getRules();
+					auto* soldierRules = unit->getGeoscapeSoldier()->getRules();
 					if (soldierRules->getShowTypeInInventory())
 					{
 						ss << tr(soldierRules->getType());

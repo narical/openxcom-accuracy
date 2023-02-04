@@ -50,11 +50,9 @@
 #include "../Savegame/Region.h"
 #include "../Mod/RuleRegion.h"
 #include "../Savegame/AlienMission.h"
-#include "../Savegame/Waypoint.h"
 #include "DogfightErrorState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/Mod.h"
-#include "../Engine/Logger.h"
 
 namespace OpenXcom
 {
@@ -390,7 +388,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	// Set up objects
 	RuleInterface *dogfightInterface = _game->getMod()->getInterface("dogfight");
 
-	auto crop = _game->getMod()->getSurface("INTERWIN.DAT")->getCrop();
+	SurfaceCrop crop = _game->getMod()->getSurface("INTERWIN.DAT")->getCrop();
 	crop.setX(0);
 	crop.setY(0);
 	crop.getCrop()->x = 0;
@@ -1282,7 +1280,7 @@ void DogfightState::update()
 			if (_projectiles.empty())
 			{
 				bool hasNoAmmo = true;
-				for (auto cw : *_craft->getWeapons())
+				for (auto* cw : *_craft->getWeapons())
 				{
 					if (cw && cw->getAmmo() > 0)
 					{

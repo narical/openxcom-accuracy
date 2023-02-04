@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <algorithm>
 #include "RuleCraft.h"
 #include "RuleTerrain.h"
 #include "../Engine/Exception.h"
@@ -483,8 +482,8 @@ bool RuleCraft::notifyWhenRefueled() const
 }
 
 /**
-* Checks if the craft supports auto patrol feature.
-* @return True if auto patrol is supported.
+* Checks if the craft supports auto-patrol feature.
+* @return True if auto-patrol is supported.
 */
 bool RuleCraft::canAutoPatrol() const
 {

@@ -92,7 +92,7 @@ BaseDestroyedState::BaseDestroyedState(Base *base, bool missiles, bool partialDe
 
 	if (_missiles && _partialDestruction)
 	{
-		for (auto each : *_base->getDestroyedFacilitiesCache())
+		for (auto& each : *_base->getDestroyedFacilitiesCache())
 		{
 			std::ostringstream ss;
 			ss << each.second;

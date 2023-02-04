@@ -20,7 +20,6 @@
 #include <vector>
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
@@ -107,7 +106,7 @@ AbortMissionState::AbortMissionState(SavedBattleGame *battleGame, BattlescapeSta
 	}
 
 	// Calculate values
-	auto tally = _battleGame->isPreview() ? _battleGame->tallyUnitsForPreview() : _battleGame->getBattleGame()->tallyUnits();
+	BattlescapeTally tally = _battleGame->isPreview() ? _battleGame->tallyUnitsForPreview() : _battleGame->getBattleGame()->tallyUnits();
 	_inEntrance = tally.inEntrance;
 	_inExit = tally.inExit;
 	_outside = tally.inField;
