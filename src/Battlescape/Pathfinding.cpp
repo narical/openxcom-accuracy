@@ -766,7 +766,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 		{
 			BattleUnit *u = tile->getUnit();
 			if (u == unit || u == missileTarget || u->isOut()) return false;
-			if (missileTarget && u != missileTarget && u->getFaction() == FACTION_HOSTILE)
+			if (missileTarget && u != missileTarget && u->getFaction() == _unit->getFaction())
 				return true;			// AI pathfinding with missiles shouldn't path through their own units
 			if (unit)
 			{
@@ -1335,7 +1335,7 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
  * @param tuMax The maximum cost of the path to each tile.
  * @return An array of reachable tiles, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const BattleActionCost &cost)
+std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleActionCost &cost)
 {
 	std::vector<PathfindingNode *> reachable = findReachablePathFindingNodes(unit, cost);
 	std::vector<int> tiles;
@@ -1356,8 +1356,9 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
  * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(const BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
+std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
 {
+	_unit = unit;
 	Position start = unit->getPosition();
 	if (alternateStart)
 		start = *alternateStart;
