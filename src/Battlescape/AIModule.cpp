@@ -3721,11 +3721,6 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 				BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, weapon);
 				BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, weapon);
 				BattleActionCost costHit(BA_HIT, _attackAction.actor, weapon);
-				costAuto.Time += getTurnCostTowards(_attackAction.target);
-				costSnap.Time += getTurnCostTowards(_attackAction.target);
-				costAimed.Time += getTurnCostTowards(_attackAction.target);
-				costHit.Time += getTurnCostTowards(_attackAction.target);
-				costThrow.Time += getTurnCostTowards(_attackAction.target);
 				brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, true);
 
 				BattleAction chosenAction = _attackAction;
@@ -4143,21 +4138,7 @@ void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleAc
 	for (auto &i : attackOptions)
 	{
 		testAction.type = i;
-		if (i == BA_THROW)
-		{
-			if (_grenade)
-			{
-				testAction.weapon = _unit->getGrenadeFromBelt();
-			}
-			else
-			{
-				continue;
-			}
-		}
-		else
-		{
-			testAction.weapon = _attackAction.weapon;
-		}
+		testAction.Time += getTurnCostTowards(_attackAction.target);
 		int newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF);
 
 		if (newScore > score)
@@ -4256,9 +4237,8 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	tuCost += getTurnCostTowards(action->target);
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
-	if (action->type == BA_THROW && _grenade)
+	if (action->type == BA_THROW && _grenade && action->weapon == _unit->getGrenadeFromBelt())
 	{
-		tuCost = _unit->getActionTUs(action->type, _unit->getGrenadeFromBelt()).Time;
 		if (!_unit->getGrenadeFromBelt()->isFuseEnabled())
 		{
 			tuCost += 4;
@@ -4274,6 +4254,8 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	}
 	else
 	{
+		if (action->type == BA_THROW && action->weapon != _unit->getGrenadeFromBelt())
+			return 0;
 		auto ammo = action->weapon->getAmmoForAction(action->type);
 		if (ammo)
 		{
@@ -4816,11 +4798,6 @@ void AIModule::blindFire()
 				BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, weapon);
 				BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, weapon);
 				BattleActionCost costHit(BA_HIT, _attackAction.actor, weapon);
-				costAuto.Time += getTurnCostTowards(_attackAction.target);
-				costSnap.Time += getTurnCostTowards(_attackAction.target);
-				costAimed.Time += getTurnCostTowards(_attackAction.target);
-				costHit.Time += getTurnCostTowards(_attackAction.target);
-				costThrow.Time += getTurnCostTowards(_attackAction.target);
 				brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, false);
 
 				BattleAction chosenAction = _attackAction;
