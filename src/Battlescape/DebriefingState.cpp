@@ -869,16 +869,6 @@ void DebriefingState::btnOkClick(Action *)
 			if (canSpawn)
 			{
 				_game->pushState(new GeoscapeEventState(*_eventToSpawn));
-				if (_eventToSpawn->isAnyItemTransfer())
-				{
-					Base *hq = _game->getSavedGame()->getBases()->front();
-					if (hq != _base && Options::storageLimitsEnforced && hq != 0 && hq->storesOverfull()) // The current base will be checked in a moment.
-					{
-						_game->pushState(new SellState(hq, 0));
-						_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(hq->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
-					}
-					// _game->pushState(new ItemsArrivingState(geoscapeState)); // Can't create an 'items arriving' popup for this type of event, because we don't have a geoscape state.
-				}
 			}
 		}
 		if (!_deadSoldiersCommended.empty())
