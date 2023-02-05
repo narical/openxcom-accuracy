@@ -90,8 +90,6 @@ public:
 	const std::vector<std::map<std::string, int> > &getRandomMultiItemList() const { return _randomMultiItemList; }
 	/// Gets a list of items; one of them is randomly selected (considering weights) and transferred to HQ stores when this event pops up.
 	const WeightedOptions &getWeightedItemList() const { return _weightedItemList; }
-	/// Returns true if the event has any type of item transfer to HQ
-	bool isAnyItemTransfer() const { return !_everyItemList.empty() || !_everyMultiItemList.empty() || !_randomItemList.empty() || !_randomMultiItemList.empty() || !_weightedItemList.empty(); }
 	/// Gets a list of research projects; one of them will be randomly discovered when this event pops up.
 	const std::vector<std::string> &getResearchList() const { return _researchList; }
 	/// Gets the research project that will interrupt/terminate an already generated (but not yet popped up) event.

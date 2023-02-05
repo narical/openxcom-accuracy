@@ -255,10 +255,9 @@ void GeoscapeEventState::eventLogic()
 
 	for (auto &ti : itemsToTransfer)
 	{
-		Transfer *t = new Transfer(0);
+		Transfer *t = new Transfer(1);
 		t->setItems(ti.first, ti.second);
 		hq->getTransfers()->push_back(t);
-		t->advance(hq); // Have the items arrive right away.
 	}
 
 	// 4. give bonus research

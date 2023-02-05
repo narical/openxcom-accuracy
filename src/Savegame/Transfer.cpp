@@ -298,7 +298,7 @@ TransferType Transfer::getType() const
 void Transfer::advance(Base *base)
 {
 	_hours--;
-	if (_hours <= 0 && !_delivered)
+	if (_hours <= 0)
 	{
 		if (_soldier != 0)
 		{
