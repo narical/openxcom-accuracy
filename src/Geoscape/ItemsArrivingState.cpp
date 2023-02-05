@@ -17,22 +17,22 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ItemsArrivingState.h"
-#include <sstream>
-#include <algorithm>
-#include "../Engine/Game.h"
-#include "../Mod/Mod.h"
-#include "../Interface/TextButton.h"
-#include "../Interface/Window.h"
-#include "../Interface/Text.h"
-#include "../Interface/TextList.h"
-#include "../Savegame/SavedGame.h"
-#include "../Savegame/Base.h"
-#include "../Savegame/Transfer.h"
-#include "../Savegame/Craft.h"
-#include "../Mod/RuleItem.h"
-#include "GeoscapeState.h"
-#include "../Engine/Options.h"
 #include "../Basescape/BasescapeState.h"
+#include "../Engine/Game.h"
+#include "../Engine/Options.h"
+#include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
+#include "../Interface/TextList.h"
+#include "../Interface/Window.h"
+#include "../Mod/Mod.h"
+#include "../Mod/RuleItem.h"
+#include "../Savegame/Base.h"
+#include "../Savegame/Craft.h"
+#include "../Savegame/SavedGame.h"
+#include "../Savegame/Transfer.h"
+#include "GeoscapeState.h"
+#include <algorithm>
+#include <sstream>
 
 namespace OpenXcom
 {
@@ -96,21 +96,22 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
 	_lstTransfers->setBackground(_window);
 	_lstTransfers->setMargin(2);
 
-	for (auto* xbase : *_game->getSavedGame()->getBases())
+	for (auto *xbase : *_game->getSavedGame()->getBases())
 	{
 		for (auto transferIt = xbase->getTransfers()->begin(); transferIt != xbase->getTransfers()->end();)
 		{
-			if (transferIt->getHours() == 0)
+			Transfer *transfer = (*transferIt);
+			if (transfer->getHours() == 0)
 			{
 				_base = xbase;
 
 				// Check if we have an automated use for an item
-				if (transferIt->getType() == TRANSFER_ITEM)
+				if (transfer->getType() == TRANSFER_ITEM)
 				{
 					RuleItem *item = _game->getMod()->getItem(transfer->getItems(), true);
 					if (item->getBattleType() == BT_NONE)
 					{
-						for (auto* xcraft : *xbase->getCrafts())
+						for (auto *xcraft : *xbase->getCrafts())
 						{
 							xcraft->reuseItem(item);
 						}
@@ -137,7 +138,6 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
  */
 ItemsArrivingState::~ItemsArrivingState()
 {
-
 }
 
 /**
