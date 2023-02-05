@@ -5117,9 +5117,17 @@ bool AIModule::isAlly(BattleUnit *unit) const
 
 bool AIModule::projectileMayHarmFriends(Position startPos, Position targetPos)
 {
-	for (int x = -1; x <= 1; ++x)
-		for (int y = -1; y <= 1; ++y)
-			for (int z = -1; z <= 1; ++z)
+	float distance = Position::distance(startPos, targetPos);
+	int min = -1;
+	int max = 1;
+	if (distance <= 4)
+	{
+		min = 0;
+		max = 0;
+	}
+	for (int x = min; x <= max; ++x)
+		for (int y = min; y <= max; ++y)
+			for (int z = min; z <= max; ++z)
 			{
 				Position posToCheck = targetPos;
 				posToCheck.x += x;
