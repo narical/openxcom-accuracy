@@ -138,13 +138,12 @@ void ManufactureDependenciesTreeState::initList()
 	// dependency map (item -> vector of items that needs this item)
 	std::unordered_map< std::string, std::vector<std::string> > deps;
 
-	const std::vector<std::string> &manufactureItems = _game->getMod()->getManufactureList();
-	for (std::vector<std::string>::const_iterator i = manufactureItems.begin(); i != manufactureItems.end(); ++i)
+	for (auto& manufName : _game->getMod()->getManufactureList())
 	{
-		RuleManufacture *rule = _game->getMod()->getManufacture((*i));
-		for (auto& j : rule->getRequiredItems())
+		RuleManufacture *rule = _game->getMod()->getManufacture(manufName);
+		for (auto& pair : rule->getRequiredItems())
 		{
-			deps[j.first->getType()].push_back((*i));
+			deps[pair.first->getType()].push_back(manufName);
 		}
 	}
 
@@ -158,15 +157,15 @@ void ManufactureDependenciesTreeState::initList()
 
 	std::unordered_set<std::string> alreadyVisited;
 	alreadyVisited.insert(_selectedItem);
-	for (std::vector<std::string>::const_iterator i = firstLevel.begin(); i != firstLevel.end(); ++i)
+	for (const auto& name : firstLevel)
 	{
-		alreadyVisited.insert((*i));
+		alreadyVisited.insert(name);
 	}
 
 	std::vector<const RuleBaseFacility*> facilitiesLevel;
-	for (auto& facilityId : _game->getMod()->getBaseFacilitiesList())
+	for (auto& facilityType : _game->getMod()->getBaseFacilitiesList())
 	{
-		RuleBaseFacility* facilityRule = _game->getMod()->getBaseFacility(facilityId);
+		RuleBaseFacility* facilityRule = _game->getMod()->getBaseFacility(facilityType);
 		for (auto& itemRequired : facilityRule->getBuildCostItems())
 		{
 			if (itemRequired.first == _selectedItem)
@@ -191,11 +190,11 @@ void ManufactureDependenciesTreeState::initList()
 	++row;
 
 	// first list all the dependent base facilities
-	for (auto& i : facilitiesLevel)
+	for (auto* fac : facilitiesLevel)
 	{
-		if (_showAll || _game->getSavedGame()->isResearched(i->getRequirements()))
+		if (_showAll || _game->getSavedGame()->isResearched(fac->getRequirements()))
 		{
-			_lstTopics->addRow(1, tr(i->getType()).c_str());
+			_lstTopics->addRow(1, tr(fac->getType()).c_str());
 		}
 		else
 		{
@@ -204,11 +203,11 @@ void ManufactureDependenciesTreeState::initList()
 		++row;
 	}
 
-	for (std::vector<std::string>::const_iterator i = firstLevel.begin(); i != firstLevel.end(); ++i)
+	for (const auto& name : firstLevel)
 	{
-		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture((*i))->getRequirements()))
+		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture(name)->getRequirements()))
 		{
-			_lstTopics->addRow(1, tr((*i)).c_str());
+			_lstTopics->addRow(1, tr(name).c_str());
 		}
 		else
 		{
@@ -216,13 +215,12 @@ void ManufactureDependenciesTreeState::initList()
 		}
 		++row;
 
-		const std::vector<std::string> goDeeper = deps[(*i)];
-		for (std::vector<std::string>::const_iterator j = goDeeper.begin(); j != goDeeper.end(); ++j)
+		for (const auto& goDeeper : deps[name])
 		{
-			if (alreadyVisited.find((*j)) == alreadyVisited.end())
+			if (alreadyVisited.find(goDeeper) == alreadyVisited.end())
 			{
-				secondLevel.push_back((*j));
-				alreadyVisited.insert((*j));
+				secondLevel.push_back(goDeeper);
+				alreadyVisited.insert(goDeeper);
 			}
 		}
 	}
@@ -242,11 +240,11 @@ void ManufactureDependenciesTreeState::initList()
 	_lstTopics->setRowColor(row, _lstTopics->getSecondaryColor());
 	++row;
 
-	for (std::vector<std::string>::const_iterator i = secondLevel.begin(); i != secondLevel.end(); ++i)
+	for (const auto& name : secondLevel)
 	{
-		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture((*i))->getRequirements()))
+		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture(name)->getRequirements()))
 		{
-			_lstTopics->addRow(1, tr((*i)).c_str());
+			_lstTopics->addRow(1, tr(name).c_str());
 		}
 		else
 		{
@@ -254,13 +252,12 @@ void ManufactureDependenciesTreeState::initList()
 		}
 		++row;
 
-		const std::vector<std::string> goDeeper = deps[(*i)];
-		for (std::vector<std::string>::const_iterator j = goDeeper.begin(); j != goDeeper.end(); ++j)
+		for (const auto& goDeeper : deps[name])
 		{
-			if (alreadyVisited.find((*j)) == alreadyVisited.end())
+			if (alreadyVisited.find(goDeeper) == alreadyVisited.end())
 			{
-				thirdLevel.push_back((*j));
-				alreadyVisited.insert((*j));
+				thirdLevel.push_back(goDeeper);
+				alreadyVisited.insert(goDeeper);
 			}
 		}
 	}
@@ -280,11 +277,11 @@ void ManufactureDependenciesTreeState::initList()
 	_lstTopics->setRowColor(row, _lstTopics->getSecondaryColor());
 	++row;
 
-	for (std::vector<std::string>::const_iterator i = thirdLevel.begin(); i != thirdLevel.end(); ++i)
+	for (const auto& name : thirdLevel)
 	{
-		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture((*i))->getRequirements()))
+		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture(name)->getRequirements()))
 		{
-			_lstTopics->addRow(1, tr((*i)).c_str());
+			_lstTopics->addRow(1, tr(name).c_str());
 		}
 		else
 		{
@@ -292,13 +289,12 @@ void ManufactureDependenciesTreeState::initList()
 		}
 		++row;
 
-		const std::vector<std::string> goDeeper = deps[(*i)];
-		for (std::vector<std::string>::const_iterator j = goDeeper.begin(); j != goDeeper.end(); ++j)
+		for (const auto& goDeeper : deps[name])
 		{
-			if (alreadyVisited.find((*j)) == alreadyVisited.end())
+			if (alreadyVisited.find(goDeeper) == alreadyVisited.end())
 			{
-				fourthLevel.push_back((*j));
-				alreadyVisited.insert((*j));
+				fourthLevel.push_back(goDeeper);
+				alreadyVisited.insert(goDeeper);
 			}
 		}
 	}
@@ -318,11 +314,11 @@ void ManufactureDependenciesTreeState::initList()
 	_lstTopics->setRowColor(row, _lstTopics->getSecondaryColor());
 	++row;
 
-	for (std::vector<std::string>::const_iterator i = fourthLevel.begin(); i != fourthLevel.end(); ++i)
+	for (const auto& name : fourthLevel)
 	{
-		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture((*i))->getRequirements()))
+		if (_showAll || _game->getSavedGame()->isResearched(_game->getMod()->getManufacture(name)->getRequirements()))
 		{
-			_lstTopics->addRow(1, tr((*i)).c_str());
+			_lstTopics->addRow(1, tr(name).c_str());
 		}
 		else
 		{
@@ -330,13 +326,12 @@ void ManufactureDependenciesTreeState::initList()
 		}
 		++row;
 
-		const std::vector<std::string> goDeeper = deps[(*i)];
-		for (std::vector<std::string>::const_iterator j = goDeeper.begin(); j != goDeeper.end(); ++j)
+		for (const auto& goDeeper : deps[name])
 		{
-			if (alreadyVisited.find((*j)) == alreadyVisited.end())
+			if (alreadyVisited.find(goDeeper) == alreadyVisited.end())
 			{
-				fifthLevel.push_back((*j));
-				alreadyVisited.insert((*j));
+				fifthLevel.push_back(goDeeper);
+				alreadyVisited.insert(goDeeper);
 			}
 		}
 	}

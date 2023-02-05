@@ -198,13 +198,13 @@ bool RuleInventory::checkSlotInPosition(int *x, int *y) const
 	}
 	else
 	{
-		for (std::vector<RuleSlot>::const_iterator i = _slots.begin(); i != _slots.end(); ++i)
+		for (const auto& coord : _slots)
 		{
-			if (mouseX >= _x + i->x * SLOT_W && mouseX < _x + (i->x + 1) * SLOT_W &&
-				mouseY >= _y + i->y * SLOT_H && mouseY < _y + (i->y + 1) * SLOT_H)
+			if (mouseX >= _x + coord.x * SLOT_W && mouseX < _x + (coord.x + 1) * SLOT_W &&
+				mouseY >= _y + coord.y * SLOT_H && mouseY < _y + (coord.y + 1) * SLOT_H)
 			{
-				*x = i->x;
-				*y = i->y;
+				*x = coord.x;
+				*y = coord.y;
 				return true;
 			}
 		}
@@ -247,10 +247,14 @@ bool RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
 	{
 		int totalSlots = item->getInventoryWidth() * item->getInventoryHeight();
 		int foundSlots = 0;
-		for (std::vector<RuleSlot>::const_iterator i = _slots.begin(); i != _slots.end() && foundSlots < totalSlots; ++i)
+		for (const auto& coord : _slots)
 		{
-			if (i->x >= x && i->x < x + item->getInventoryWidth() &&
-				i->y >= y && i->y < y + item->getInventoryHeight())
+			if (foundSlots >= totalSlots)
+			{
+				break; // loop finished
+			}
+			if (coord.x >= x && coord.x < x + item->getInventoryWidth() &&
+				coord.y >= y && coord.y < y + item->getInventoryHeight())
 			{
 				foundSlots++;
 			}

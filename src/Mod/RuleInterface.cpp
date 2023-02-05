@@ -93,7 +93,7 @@ void RuleInterface::load(const YAML::Node& node, Mod *mod)
  */
 Element *RuleInterface::getElement(const std::string &id)
 {
-	std::map<std::string, Element>::iterator i = _elements.find(id);
+	auto i = _elements.find(id);
 	if (_elements.end() != i) return &i->second; else return 0;
 }
 

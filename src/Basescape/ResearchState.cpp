@@ -230,16 +230,15 @@ void ResearchState::init()
  */
 void ResearchState::fillProjectList(size_t scrl)
 {
-	const std::vector<ResearchProject *> & baseProjects(_base->getResearch());
 	_lstResearch->clearList();
-	for (std::vector<ResearchProject *>::const_iterator iter = baseProjects.begin(); iter != baseProjects.end(); ++iter)
+	for (const auto* proj : _base->getResearch())
 	{
 		std::ostringstream sstr;
-		sstr << (*iter)->getAssigned();
-		const RuleResearch *r = (*iter)->getRules();
+		sstr << proj->getAssigned();
+		const RuleResearch *r = proj->getRules();
 
 		std::string wstr = tr(r->getName());
-		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr((*iter)->getResearchProgress()).c_str());
+		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
 	}
 	_txtAvailable->setText(tr("STR_SCIENTISTS_AVAILABLE").arg(_base->getAvailableScientists()));
 	_txtAllocated->setText(tr("STR_SCIENTISTS_ALLOCATED").arg(_base->getAllocatedScientists()));

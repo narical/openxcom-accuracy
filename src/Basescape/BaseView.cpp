@@ -102,13 +102,13 @@ void BaseView::setBase(Base *base)
 	}
 
 	// Fill grid with base facilities
-	for (std::vector<BaseFacility*>::iterator i = _base->getFacilities()->begin(); i != _base->getFacilities()->end(); ++i)
+	for (auto* fac : *_base->getFacilities())
 	{
-		for (int y = (*i)->getY(); y < (*i)->getY() + (*i)->getRules()->getSize(); ++y)
+		for (int y = fac->getY(); y < fac->getY() + fac->getRules()->getSize(); ++y)
 		{
-			for (int x = (*i)->getX(); x < (*i)->getX() + (*i)->getRules()->getSize(); ++x)
+			for (int x = fac->getX(); x < fac->getX() + fac->getRules()->getSize(); ++x)
 			{
-				_facilities[x][y] = *i;
+				_facilities[x][y] = fac;
 			}
 		}
 	}
@@ -351,20 +351,30 @@ void BaseView::reCalcQueuedBuildings()
 {
 	setBase(_base);
 	std::vector<BaseFacility*> facilities;
-	for (std::vector<BaseFacility*>::iterator i = _base->getFacilities()->begin(); i != _base->getFacilities()->end(); ++i)
-		if ((*i)->getAdjustedBuildTime() > 0)
+	for (auto* fac : *_base->getFacilities())
+	{
+		if (fac->getAdjustedBuildTime() > 0)
 		{
 			// Set all queued buildings to infinite.
-			if ((*i)->getAdjustedBuildTime() > (*i)->getRules()->getBuildTime()) (*i)->setBuildTime(INT_MAX);
-			facilities.push_back(*i);
+			if (fac->getAdjustedBuildTime() > fac->getRules()->getBuildTime())
+			{
+				fac->setBuildTime(INT_MAX);
+			}
+			facilities.push_back(fac);
 		}
+	}
 
 	// Applying a simple Dijkstra Algorithm
 	while (!facilities.empty())
 	{
-		std::vector<BaseFacility*>::iterator min = facilities.begin();
-		for (std::vector<BaseFacility*>::iterator i = facilities.begin(); i != facilities.end(); ++i)
-			if ((*i)->getAdjustedBuildTime() < (*min)->getAdjustedBuildTime()) min=i;
+		auto min = facilities.begin();
+		for (auto it = facilities.begin(); it != facilities.end(); ++it)
+		{
+			if ((*it)->getAdjustedBuildTime() < (*min)->getAdjustedBuildTime())
+			{
+				min = it;
+			}
+		}
 		BaseFacility* facility=(*min);
 		facilities.erase(min);
 		const RuleBaseFacility *rule=facility->getRules();
@@ -454,23 +464,23 @@ void BaseView::draw()
 		}
 	}
 
-	std::vector<Craft*>::iterator craft = _base->getCrafts()->begin();
+	auto craftIt = _base->getCrafts()->begin();
 
-	for (std::vector<BaseFacility*>::iterator i = _base->getFacilities()->begin(); i != _base->getFacilities()->end(); ++i)
+	for (const auto* fac : *_base->getFacilities())
 	{
 		// Draw facility shape
 		int num = 0;
-		for (int y = (*i)->getY(); y < (*i)->getY() + (*i)->getRules()->getSize(); ++y)
+		for (int y = fac->getY(); y < fac->getY() + fac->getRules()->getSize(); ++y)
 		{
-			for (int x = (*i)->getX(); x < (*i)->getX() + (*i)->getRules()->getSize(); ++x)
+			for (int x = fac->getX(); x < fac->getX() + fac->getRules()->getSize(); ++x)
 			{
 				Surface *frame;
 
-				int outline = std::max((*i)->getRules()->getSize() * (*i)->getRules()->getSize(), 3);
-				if ((*i)->getBuildTime() == 0)
-					frame = _texture->getFrame((*i)->getRules()->getSpriteShape() + num);
+				int outline = std::max(fac->getRules()->getSize() * fac->getRules()->getSize(), 3);
+				if (fac->getBuildTime() == 0)
+					frame = _texture->getFrame(fac->getRules()->getSpriteShape() + num);
 				else
-					frame = _texture->getFrame((*i)->getRules()->getSpriteShape() + num + outline);
+					frame = _texture->getFrame(fac->getRules()->getSpriteShape() + num + outline);
 
 				int fx = (x * GRID_SIZE);
 				int fy = (y * GRID_SIZE);
@@ -481,16 +491,16 @@ void BaseView::draw()
 		}
 	}
 
-	for (std::vector<BaseFacility*>::iterator i = _base->getFacilities()->begin(); i != _base->getFacilities()->end(); ++i)
+	for (const auto* fac : *_base->getFacilities())
 	{
 		// Draw connectors
-		if ((*i)->isBuiltOrHadPreviousFacility() && !(*i)->getRules()->connectorsDisabled())
+		if (fac->isBuiltOrHadPreviousFacility() && !fac->getRules()->connectorsDisabled())
 		{
 			// Facilities to the right
-			int x = (*i)->getX() + (*i)->getRules()->getSize();
+			int x = fac->getX() + fac->getRules()->getSize();
 			if (x < BASE_SIZE)
 			{
-				for (int y = (*i)->getY(); y < (*i)->getY() + (*i)->getRules()->getSize(); ++y)
+				for (int y = fac->getY(); y < fac->getY() + fac->getRules()->getSize(); ++y)
 				{
 					if (_facilities[x][y] != 0 && _facilities[x][y]->isBuiltOrHadPreviousFacility() && !_facilities[x][y]->getRules()->connectorsDisabled())
 					{
@@ -503,10 +513,10 @@ void BaseView::draw()
 			}
 
 			// Facilities to the bottom
-			int y = (*i)->getY() + (*i)->getRules()->getSize();
+			int y = fac->getY() + fac->getRules()->getSize();
 			if (y < BASE_SIZE)
 			{
-				for (int subX = (*i)->getX(); subX < (*i)->getX() + (*i)->getRules()->getSize(); ++subX)
+				for (int subX = fac->getX(); subX < fac->getX() + fac->getRules()->getSize(); ++subX)
 				{
 					if (_facilities[subX][y] != 0 && _facilities[subX][y]->isBuiltOrHadPreviousFacility() && !_facilities[subX][y]->getRules()->connectorsDisabled())
 					{
@@ -520,17 +530,18 @@ void BaseView::draw()
 		}
 	}
 
-	for (std::vector<BaseFacility*>::iterator i = _base->getFacilities()->begin(); i != _base->getFacilities()->end(); ++i)
+	// TODO: make const in the future
+	for (auto* fac : *_base->getFacilities())
 	{
 		// Draw facility graphic
 		int num = 0;
-		for (int y = (*i)->getY(); y < (*i)->getY() + (*i)->getRules()->getSize(); ++y)
+		for (int y = fac->getY(); y < fac->getY() + fac->getRules()->getSize(); ++y)
 		{
-			for (int x = (*i)->getX(); x < (*i)->getX() + (*i)->getRules()->getSize(); ++x)
+			for (int x = fac->getX(); x < fac->getX() + fac->getRules()->getSize(); ++x)
 			{
-				if ((*i)->getRules()->getSize() == 1)
+				if (fac->getRules()->getSize() == 1)
 				{
-					Surface *frame = _texture->getFrame((*i)->getRules()->getSpriteFacility() + num);
+					Surface *frame = _texture->getFrame(fac->getRules()->getSpriteFacility() + num);
 					int fx = (x * GRID_SIZE);
 					int fy = (y * GRID_SIZE);
 					frame->blitNShade(this, fx, fy);
@@ -541,38 +552,38 @@ void BaseView::draw()
 		}
 
 		// Draw crafts
-		(*i)->setCraftForDrawing(0);
-		if ((*i)->getBuildTime() == 0 && (*i)->getRules()->getCrafts() > 0)
+		fac->setCraftForDrawing(0);
+		if (fac->getBuildTime() == 0 && fac->getRules()->getCrafts() > 0)
 		{
-			if (craft != _base->getCrafts()->end())
+			if (craftIt != _base->getCrafts()->end())
 			{
-				if ((*craft)->getStatus() != "STR_OUT")
+				if ((*craftIt)->getStatus() != "STR_OUT")
 				{
-					Surface *frame = _texture->getFrame((*craft)->getSkinSprite() + 33);
-					int fx = ((*i)->getX() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 + 2);
-					int fy = ((*i)->getY() * GRID_SIZE + ((*i)->getRules()->getSize() - 1) * GRID_SIZE / 2 - 4);
+					Surface *frame = _texture->getFrame((*craftIt)->getSkinSprite() + 33);
+					int fx = (fac->getX() * GRID_SIZE + (fac->getRules()->getSize() - 1) * GRID_SIZE / 2 + 2);
+					int fy = (fac->getY() * GRID_SIZE + (fac->getRules()->getSize() - 1) * GRID_SIZE / 2 - 4);
 					frame->blitNShade(this, fx, fy);
-					(*i)->setCraftForDrawing(*craft);
+					fac->setCraftForDrawing(*craftIt);
 				}
-				++craft;
+				++craftIt;
 			}
 		}
 
 		// Draw time remaining
-		if ((*i)->getBuildTime() > 0 || (*i)->getDisabled())
+		if (fac->getBuildTime() > 0 || fac->getDisabled())
 		{
-			Text *text = new Text(GRID_SIZE * (*i)->getRules()->getSize(), 16, 0, 0);
+			Text *text = new Text(GRID_SIZE * fac->getRules()->getSize(), 16, 0, 0);
 			text->setPalette(getPalette());
 			text->initText(_big, _small, _lang);
-			text->setX((*i)->getX() * GRID_SIZE);
-			text->setY((*i)->getY() * GRID_SIZE + (GRID_SIZE * (*i)->getRules()->getSize() - 16) / 2);
+			text->setX(fac->getX() * GRID_SIZE);
+			text->setY(fac->getY() * GRID_SIZE + (GRID_SIZE * fac->getRules()->getSize() - 16) / 2);
 			text->setBig();
 			std::ostringstream ss;
-			if ((*i)->getDisabled())
+			if (fac->getDisabled())
 				ss << "X";
 			else
-				ss << (*i)->getBuildTime();
-			if ((*i)->getIfHadPreviousFacility()) // Indicate that this facility still counts for connectivity
+				ss << fac->getBuildTime();
+			if (fac->getIfHadPreviousFacility()) // Indicate that this facility still counts for connectivity
 				ss << "*";
 			text->setAlign(ALIGN_CENTER);
 			text->setColor(_cellColor);

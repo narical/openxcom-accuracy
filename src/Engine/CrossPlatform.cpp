@@ -451,12 +451,12 @@ std::string searchDataFile(const std::string &filename)
 	}
 
 	// Check every other path
-	for (std::vector<std::string>::const_iterator i = Options::getDataList().begin(); i != Options::getDataList().end(); ++i)
+	for (auto& dataPath : Options::getDataList())
 	{
-		path = *i + name;
+		path = dataPath + name;
 		if (fileExists(path))
 		{
-			Options::setDataFolder(*i);
+			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -478,12 +478,12 @@ std::string searchDataFolder(const std::string &foldername)
 	}
 
 	// Check every other path
-	for (std::vector<std::string>::const_iterator i = Options::getDataList().begin(); i != Options::getDataList().end(); ++i)
+	for (auto& dataPath : Options::getDataList())
 	{
-		path = *i + name;
+		path = dataPath + name;
 		if (folderExists(path))
 		{
-			Options::setDataFolder(*i);
+			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}

@@ -368,7 +368,7 @@ namespace OpenXcom
 					int maxShow = 3;
 					int skipShow = maxShow * ammoSlotPrevUsage;
 					int currShow = 0;
-					for (auto& type : *ammo_data)
+					for (auto* type : *ammo_data)
 					{
 						ArticleDefinition *ammo_article = _game->getMod()->getUfopaediaArticle(type->getType(), true);
 						if (Ufopaedia::isArticleAvailable(_game->getSavedGame(), ammo_article))
@@ -428,7 +428,7 @@ namespace OpenXcom
 	{
 		std::ostringstream ss;
 		bool isFirst = true;
-		for (RuleStatBonusDataOrig item : *value.getBonusRaw())
+		for (const auto& item : *value.getBonusRaw())
 		{
 			int power = 0;
 			for (float number : item.second)

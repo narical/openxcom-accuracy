@@ -77,7 +77,7 @@ InventoryPersonalState::InventoryPersonalState(Soldier* soldier)
 
 	// 1. tally items
 	std::map<std::string, int> summary;
-	for (auto* layoutItem : *soldier->getPersonalEquipmentLayout())
+	for (const auto* layoutItem : *soldier->getPersonalEquipmentLayout())
 	{
 		// item
 		summary[layoutItem->getItemType()] += 1;

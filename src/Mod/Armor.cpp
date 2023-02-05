@@ -316,7 +316,7 @@ void Armor::afterLoad(const Mod* mod)
 	}
 
 	int numCorpse = 0;
-	for (auto& c : _corpseBattle)
+	for (auto* c : _corpseBattle)
 	{
 		if (!c)
 		{

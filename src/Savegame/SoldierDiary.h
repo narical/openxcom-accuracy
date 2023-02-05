@@ -43,7 +43,7 @@ public:
 	/// Creates a new commendation and loads its contents from YAML.
 	SoldierCommendations(const YAML::Node& node, const Mod* mod);
 	/// Creates a commendation of the specified type.
-	SoldierCommendations(std::string commendationName, std::string noun, const Mod* mod);
+	SoldierCommendations(const std::string& commendationName, const std::string& noun, const Mod* mod);
 	/// Cleans up the commendation.
 	~SoldierCommendations();
 	/// Loads the commendation information from YAML.

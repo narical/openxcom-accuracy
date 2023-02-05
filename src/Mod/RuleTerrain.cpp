@@ -40,9 +40,9 @@ RuleTerrain::RuleTerrain(const std::string &name) : _name(name), _mapScript("DEF
  */
 RuleTerrain::~RuleTerrain()
 {
-	for (std::vector<MapBlock*>::iterator i = _mapBlocks.begin(); i != _mapBlocks.end(); ++i)
+	for (auto* mapblock : _mapBlocks)
 	{
-		delete *i;
+		delete mapblock;
 	}
 }
 
@@ -165,7 +165,7 @@ void RuleTerrain::refreshMapDataSets(int craftSkinIndex, Mod *mod)
 		}
 	}
 	_mapDataSets.clear();
-	for (auto& newName : newNames)
+	for (const auto& newName : newNames)
 	{
 		_mapDataSets.push_back(mod->getMapDataSet(newName));
 	}
@@ -202,15 +202,15 @@ MapBlock* RuleTerrain::getRandomMapBlock(int maxSizeX, int maxSizeY, int group, 
 {
 	std::vector<MapBlock*> compliantMapBlocks;
 
-	for (std::vector<MapBlock*>::const_iterator i = _mapBlocks.begin(); i != _mapBlocks.end(); ++i)
+	for (auto* mapblock : _mapBlocks)
 	{
-		if (((*i)->getSizeX() == maxSizeX ||
-			(!force && (*i)->getSizeX() < maxSizeX)) &&
-			((*i)->getSizeY() == maxSizeY ||
-			(!force && (*i)->getSizeY() < maxSizeY)) &&
-			(*i)->isInGroup(group))
+		if ((mapblock->getSizeX() == maxSizeX ||
+			(!force && mapblock->getSizeX() < maxSizeX)) &&
+			(mapblock->getSizeY() == maxSizeY ||
+			(!force && mapblock->getSizeY() < maxSizeY)) &&
+			mapblock->isInGroup(group))
 		{
-			compliantMapBlocks.push_back((*i));
+			compliantMapBlocks.push_back(mapblock);
 		}
 	}
 
@@ -228,10 +228,10 @@ MapBlock* RuleTerrain::getRandomMapBlock(int maxSizeX, int maxSizeY, int group, 
  */
 MapBlock* RuleTerrain::getMapBlock(const std::string &name)
 {
-	for (std::vector<MapBlock*>::const_iterator i = _mapBlocks.begin(); i != _mapBlocks.end(); ++i)
+	for (auto* mapblock : _mapBlocks)
 	{
-		if ((*i)->getName() == name)
-			return (*i);
+		if (mapblock->getName() == name)
+			return mapblock;
 	}
 	return 0;
 }
@@ -245,10 +245,10 @@ MapBlock* RuleTerrain::getMapBlock(const std::string &name)
 MapData *RuleTerrain::getMapData(unsigned int *id, int *mapDataSetID) const
 {
 	MapDataSet* mdf = 0;
-	std::vector<MapDataSet*>::const_iterator i = _mapDataSets.begin();
-	for (; i != _mapDataSets.end(); ++i)
+	auto iter = _mapDataSets.begin();
+	for (; iter != _mapDataSets.end(); ++iter)
 	{
-		mdf = *i;
+		mdf = *iter;
 		if (*id < mdf->getSize())
 		{
 			break;
@@ -256,7 +256,7 @@ MapData *RuleTerrain::getMapData(unsigned int *id, int *mapDataSetID) const
 		*id -= mdf->getSize();
 		(*mapDataSetID)++;
 	}
-	if (i == _mapDataSets.end())
+	if (iter == _mapDataSets.end())
 	{
 		// oops! someone at microprose made an error in the map!
 		// set this broken tile reference to BLANKS 0.

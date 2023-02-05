@@ -1618,7 +1618,7 @@ void StatsForNerdsState::addRuleStatBonus(std::ostringstream &ss, const RuleStat
 	}
 	resetStream(ss);
 	bool isFirst = true;
-	for (RuleStatBonusDataOrig item : *value.getBonusRaw())
+	for (const auto& item : *value.getBonusRaw())
 	{
 		int power = 0;
 		for (float number : item.second)
@@ -1705,7 +1705,7 @@ void StatsForNerdsState::addRuleArmorMoveCost(std::ostringstream &ss, const Armo
  */
 void StatsForNerdsState::addSpriteResourcePath(std::ostringstream &ss, Mod *mod, const std::string &resourceSetName, const int &resourceId)
 {
-	std::map<std::string, std::vector<ExtraSprites *> >::const_iterator i = mod->getExtraSprites().find(resourceSetName);
+	auto i = mod->getExtraSprites().find(resourceSetName);
 	if (i != mod->getExtraSprites().end())
 	{
 		for (auto* extraSprite : i->second)

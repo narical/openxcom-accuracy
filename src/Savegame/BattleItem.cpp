@@ -551,11 +551,11 @@ void BattleItem::moveToOwner(BattleUnit *owner)
 
 		if (_previousOwner)
 		{
-			for (std::vector<BattleItem*>::iterator i = _previousOwner->getInventory()->begin(); i != _previousOwner->getInventory()->end(); ++i)
+			for (auto iter = _previousOwner->getInventory()->begin(); iter != _previousOwner->getInventory()->end(); ++iter)
 			{
-				if ((*i) == this)
+				if ((*iter) == this)
 				{
-					_previousOwner->getInventory()->erase(i);
+					_previousOwner->getInventory()->erase(iter);
 					break;
 				}
 			}
@@ -778,7 +778,7 @@ bool BattleItem::haveAnyAmmo() const
  */
 bool BattleItem::haveAllAmmo() const
 {
-	for (const auto& a : _ammoItem)
+	for (const auto* a : _ammoItem)
 	{
 		if (a == nullptr)
 		{
@@ -943,7 +943,7 @@ void BattleItem::spendAmmoForAction(BattleActionType action, SavedBattleGame* sa
 			ammo->setIsAmmo(false);
 			if (ammo != this)
 			{
-				for (auto& a : _ammoItem)
+				for (auto*& a : _ammoItem)
 				{
 					if (a == ammo)
 					{
@@ -1041,7 +1041,7 @@ bool BattleItem::isAmmoVisibleForSlot(int slot) const
 int BattleItem::getTotalWeight() const
 {
 	int weight = _rules->getWeight();
-	for (const auto& a : _ammoItem)
+	for (const auto* a : _ammoItem)
 	{
 		if (a && a != this)
 		{

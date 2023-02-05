@@ -99,7 +99,7 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 			id = base["id"].as<int>();
 			type = base["type"].as<std::string>();
 		}
-		std::vector<AlienBase*>::const_iterator found = std::find_if(game.getAlienBases()->begin(), game.getAlienBases()->end(), matchById(id, type));
+		auto found = std::find_if(game.getAlienBases()->begin(), game.getAlienBases()->end(), matchById(id, type));
 		if (found == game.getAlienBases()->end())
 		{
 			throw Exception("Corrupted save: Invalid base for mission.");
@@ -256,10 +256,10 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	}
 	if (_rule.getObjective() == OBJECTIVE_INFILTRATION && _nextWave == _rule.getWaveCount())
 	{
-		for (std::vector<Country*>::iterator c = game.getCountries()->begin(); c != game.getCountries()->end(); ++c)
+		for (auto* c : *game.getCountries())
 		{
 			RuleRegion *region = mod.getRegion(_region, true);
-			if ((*c)->canBeInfiltrated() && region->insideRegion((*c)->getRules()->getLabelLongitude(), (*c)->getRules()->getLabelLatitude()))
+			if (c->canBeInfiltrated() && region->insideRegion(c->getRules()->getLabelLongitude(), c->getRules()->getLabelLatitude()))
 			{
 				std::pair<double, double> pos;
 				int tries = 0;
@@ -308,7 +308,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 					alienBaseType = chooseAlienBaseType(mod, dummyArea);
 					wantsToSpawnFakeUnderwater = RNG::percent(alienBaseType->getFakeUnderwaterSpawnChance());
 
-					RuleCountry* cRule = (*c)->getRules();
+					RuleCountry* cRule = c->getRules();
 					int pick = 0;
 					double lonMini, lonMaxi, latMini, latMaxi;
 					while (!found)
@@ -348,9 +348,9 @@ void AlienMission::think(Game &engine, const Globe &globe)
 				if (tries < 100 || mod.getAllowAlienBasesOnWrongTextures())
 				{
 					// only create a pact if the base is going to be spawned too
-					(*c)->setNewPact();
+					c->setNewPact();
 
-					spawnAlienBase((*c), engine, pos, alienBaseType);
+					spawnAlienBase(c, engine, pos, alienBaseType);
 
 					// if the base can't be spawned for this country, try the next country
 					break;
@@ -609,17 +609,17 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 		{
 			ufo->setEscort(true);
 			// Find a UFO to escort
-			for (std::vector<Ufo*>::const_iterator u = game.getUfos()->begin(); u != game.getUfos()->end(); ++u)
+			for (auto* ufoToBeEscorted : *game.getUfos())
 			{
 				// From the same mission
-				if ((*u)->getMission()->getId() == ufo->getMission()->getId())
+				if (ufoToBeEscorted->getMission()->getId() == ufo->getMission()->getId())
 				{
 					// But not another hunter-killer, we escort only normal UFOs
-					if (!(*u)->isHunterKiller())
+					if (!ufoToBeEscorted->isHunterKiller())
 					{
-						ufo->setLongitude((*u)->getLongitude());
-						ufo->setLatitude((*u)->getLatitude());
-						ufo->setEscortedUfo((*u));
+						ufo->setLongitude(ufoToBeEscorted->getLongitude());
+						ufo->setLatitude(ufoToBeEscorted->getLatitude());
+						ufo->setEscortedUfo(ufoToBeEscorted);
 						break;
 					}
 				}
@@ -669,17 +669,17 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	{
 		ufo->setEscort(true);
 		// Find a UFO to escort
-		for (std::vector<Ufo*>::const_iterator u = game.getUfos()->begin(); u != game.getUfos()->end(); ++u)
+		for (auto* ufoToBeEscorted : *game.getUfos())
 		{
 			// From the same mission
-			if ((*u)->getMission()->getId() == ufo->getMission()->getId())
+			if (ufoToBeEscorted->getMission()->getId() == ufo->getMission()->getId())
 			{
 				// But not another hunter-killer, we escort only normal UFOs
-				if (!(*u)->isHunterKiller())
+				if (!ufoToBeEscorted->isHunterKiller())
 				{
-					ufo->setLongitude((*u)->getLongitude());
-					ufo->setLatitude((*u)->getLatitude());
-					ufo->setEscortedUfo((*u));
+					ufo->setLongitude(ufoToBeEscorted->getLongitude());
+					ufo->setLatitude(ufoToBeEscorted->getLatitude());
+					ufo->setEscortedUfo(ufoToBeEscorted);
 					break;
 				}
 			}
@@ -891,12 +891,11 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 			MissionSite *missionSite = spawnMissionSite(game, mod, area, &ufo);
 			if (missionSite)
 			{
-				std::vector<Craft*> followers = ufo.getCraftFollowers();
-				for (std::vector<Craft*>::iterator c = followers.begin(); c != followers.end(); ++c)
+				for (auto* follower : ufo.getCraftFollowers())
 				{
-					if ((*c)->getNumTotalUnits() > 0)
+					if (follower->getNumTotalUnits() > 0)
 					{
-						(*c)->setDestination(missionSite);
+						follower->setDestination(missionSite);
 					}
 				}
 			}
@@ -906,9 +905,7 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 			// Ignore what the trajectory might say, this is a base assault.
 			// Remove UFO, replace with Base defense.
 			ufo.setDetected(false);
-			std::vector<Base *>::const_iterator found =
-				std::find_if (game.getBases()->begin(), game.getBases()->end(),
-					 MatchBaseCoordinates(ufo.getLongitude(), ufo.getLatitude()));
+			auto found = std::find_if (game.getBases()->begin(), game.getBases()->end(), MatchBaseCoordinates(ufo.getLongitude(), ufo.getLatitude()));
 			if (found == game.getBases()->end())
 			{
 				ufo.setStatus(Ufo::DESTROYED);
@@ -1077,19 +1074,19 @@ void AlienMission::addScore(double lon, double lat, SavedGame &game) const
 {
 	if (_rule.getObjective() == OBJECTIVE_INFILTRATION)
 		return; // pact score is a special case
-	for (std::vector<Region *>::iterator region = game.getRegions()->begin(); region != game.getRegions()->end(); ++region)
+	for (auto* region : *game.getRegions())
 	{
-		if ((*region)->getRules()->insideRegion(lon, lat))
+		if (region->getRules()->insideRegion(lon, lat))
 		{
-			(*region)->addActivityAlien(_rule.getPoints());
+			region->addActivityAlien(_rule.getPoints());
 			break;
 		}
 	}
-	for (std::vector<Country *>::iterator country = game.getCountries()->begin(); country != game.getCountries()->end(); ++country)
+	for (auto* country : *game.getCountries())
 	{
-		if ((*country)->getRules()->insideCountry(lon, lat))
+		if (country->getRules()->insideCountry(lon, lat))
 		{
-			(*country)->addActivityAlien(_rule.getPoints());
+			country->addActivityAlien(_rule.getPoints());
 			break;
 		}
 	}

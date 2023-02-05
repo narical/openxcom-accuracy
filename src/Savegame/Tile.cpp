@@ -829,11 +829,11 @@ void Tile::addItem(BattleItem *item, const RuleInventory *ground)
  */
 void Tile::removeItem(BattleItem *item)
 {
-	for (std::vector<BattleItem*>::iterator i = _inventory.begin(); i != _inventory.end(); ++i)
+	for (auto iter = _inventory.begin(); iter != _inventory.end(); ++iter)
 	{
-		if ((*i) == item)
+		if ((*iter) == item)
 		{
-			_inventory.erase(i);
+			_inventory.erase(iter);
 			break;
 		}
 	}
@@ -855,19 +855,19 @@ BattleItem* Tile::getTopItem()
 
 	int biggestWeight = -1;
 	BattleItem* biggestItem = 0;
-	for (std::vector<BattleItem*>::iterator i = _inventory.begin(); i != _inventory.end(); ++i)
+	for (auto* bi : _inventory)
 	{
 		// Note: floorOb drawing optimisation
-		if ((*i)->getUnit())
+		if (bi->getUnit())
 		{
 			// any unit has the highest priority (btw. this is still backwards-compatible with both xcom1/xcom2, where corpses are the heaviest items)
-			return *i;
+			return bi;
 		}
-		int temp = (*i)->getTotalWeight();
+		int temp = bi->getTotalWeight();
 		if (temp > biggestWeight)
 		{
 			biggestWeight = temp;
-			biggestItem = *i;
+			biggestItem = bi;
 		}
 	}
 	return biggestItem;
@@ -917,9 +917,9 @@ void Tile::prepareNewTurn(bool smokeDamage)
 	if (_smoke)
 	{
 		applyEnvi(_unit, _smoke, _fire, smokeDamage);
-		for (std::vector<BattleItem*>::iterator i = _inventory.begin(); i != _inventory.end(); ++i)
+		for (auto* bi : _inventory)
 		{
-			applyEnvi((*i)->getUnit(), _smoke, _fire, smokeDamage);
+			applyEnvi(bi->getUnit(), _smoke, _fire, smokeDamage);
 		}
 	}
 	_overlaps = 0;

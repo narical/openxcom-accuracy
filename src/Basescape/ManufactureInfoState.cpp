@@ -222,20 +222,20 @@ void ManufactureInfoState::buildUi()
 
 void ManufactureInfoState::initProfitInfo ()
 {
-	const RuleManufacture *item = _production->getRules();
+	const RuleManufacture *manuf = _production->getRules();
 
 	_producedItemsValue = 0;
-	auto* ruleCraft = item->getProducedCraft();
+	auto* ruleCraft = manuf->getProducedCraft();
 	if (ruleCraft)
 	{
 		_producedItemsValue += ruleCraft->getSellCost();
 	}
 	else
 	{
-		for (auto& i : item->getProducedItems())
+		for (auto& pair : manuf->getProducedItems())
 		{
-			int64_t adjustedSellValue = i.first->getSellCost();
-			adjustedSellValue = adjustedSellValue * i.second * _game->getSavedGame()->getSellPriceCoefficient() / 100;
+			int64_t adjustedSellValue = pair.first->getSellCost();
+			adjustedSellValue = adjustedSellValue * pair.second * _game->getSavedGame()->getSellPriceCoefficient() / 100;
 			_producedItemsValue += adjustedSellValue;
 		}
 	}

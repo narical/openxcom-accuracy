@@ -147,16 +147,15 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 	_categoryStrings.push_back("STR_ALL");
 	_categoryStrings.push_back("STR_EQUIPPED");
 	bool hasUnassigned = false;
-	const std::vector<std::string> &items = _game->getMod()->getItemsList();
-	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
+	for (auto& itemType : _game->getMod()->getItemsList())
 	{
-		RuleItem *rule = _game->getMod()->getItem(*i);
+		RuleItem *rule = _game->getMod()->getItem(itemType);
 		Unit* isVehicle = rule->getVehicleUnit();
-		int cQty = isVehicle ? c->getVehicleCount(*i) : c->getItems()->getItem(*i);
+		int cQty = isVehicle ? c->getVehicleCount(itemType) : c->getItems()->getItem(itemType);
 
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
 			_game->getSavedGame()->isResearched(rule->getRequirements()) &&
-			(_base->getStorageItems()->getItem(*i) > 0 || cQty > 0))
+			(_base->getStorageItems()->getItem(itemType) > 0 || cQty > 0))
 		{
 			if (rule->getCategories().empty())
 			{
@@ -164,21 +163,21 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 			}
 			else
 			{
-				for (std::vector<std::string>::const_iterator j = rule->getCategories().begin(); j != rule->getCategories().end(); ++j)
+				for (auto& itemCategoryName : rule->getCategories())
 				{
-					_usedCategoryStrings[(*j)] = true;
+					_usedCategoryStrings[itemCategoryName] = true;
 				}
 			}
 		}
 	}
-	const std::vector<std::string> &itemCategories = _game->getMod()->getItemCategoriesList();
-	for (std::vector<std::string>::const_iterator i = itemCategories.begin(); i != itemCategories.end(); ++i)
+	auto& itemCategories = _game->getMod()->getItemCategoriesList();
+	for (auto& categoryName : itemCategories)
 	{
-		if (_usedCategoryStrings[(*i)])
+		if (_usedCategoryStrings[categoryName])
 		{
-			if (!_game->getMod()->getItemCategory((*i))->isHidden())
+			if (!_game->getMod()->getItemCategory(categoryName)->isHidden())
 			{
-				_categoryStrings.push_back((*i));
+				_categoryStrings.push_back(categoryName);
 			}
 		}
 	}
@@ -322,29 +321,28 @@ void CraftEquipmentState::initList()
 	_lstEquipment->clearList();
 
 	int row = 0;
-	const std::vector<std::string> &items = _game->getMod()->getItemsList();
-	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
+	for (auto& itemType : _game->getMod()->getItemsList())
 	{
-		RuleItem *rule = _game->getMod()->getItem(*i);
+		RuleItem *rule = _game->getMod()->getItem(itemType);
 
 		Unit* isVehicle = rule->getVehicleUnit();
 		int cQty = 0;
 		if (isVehicle)
 		{
-			cQty = c->getVehicleCount(*i);
+			cQty = c->getVehicleCount(itemType);
 		}
 		else
 		{
-			cQty = c->getItems()->getItem(*i);
+			cQty = c->getItems()->getItem(itemType);
 			_totalItems += cQty;
 			_totalItemStorageSize += cQty * rule->getSize();
 		}
 
-		int bQty = _base->getStorageItems()->getItem(*i);
+		int bQty = _base->getStorageItems()->getItem(itemType);
 		int reserved = 0;
 		if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
 		{
-			reserved = c->getSoldierItems()->getItem(*i);
+			reserved = c->getSoldierItems()->getItem(itemType);
 		}
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
 			(bQty > 0 || cQty > 0 || reserved > 0))
@@ -403,7 +401,7 @@ void CraftEquipmentState::initList()
 			// quick search
 			if (!searchString.empty())
 			{
-				std::string projectName = tr((*i));
+				std::string projectName = tr(itemType);
 				Unicode::upperCase(projectName);
 				if (projectName.find(searchString) == std::string::npos)
 				{
@@ -411,7 +409,7 @@ void CraftEquipmentState::initList()
 				}
 			}
 
-			_items.push_back(*i);
+			_items.push_back(itemType);
 			std::ostringstream ss, ss2;
 			if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
 			{
@@ -423,9 +421,9 @@ void CraftEquipmentState::initList()
 					int itemsToAdd = std::min(bQty, reserved - cQty);
 					if (itemsToAdd > 0)
 					{
-						_base->getStorageItems()->removeItem(*i, itemsToAdd);
+						_base->getStorageItems()->removeItem(itemType, itemsToAdd);
 						bQty -= itemsToAdd;
-						c->getItems()->addItem(*i, itemsToAdd);
+						c->getItems()->addItem(itemType, itemsToAdd);
 						cQty += itemsToAdd;
 						_totalItems += itemsToAdd;
 						_totalItemStorageSize += itemsToAdd * rule->getSize();
@@ -453,7 +451,7 @@ void CraftEquipmentState::initList()
 				ss << "-";
 			}
 
-			std::string s = tr(*i);
+			std::string s = tr(itemType);
 			if (rule->getBattleType() == BT_AMMO)
 			{
 				s.insert(0, "  ");
@@ -958,21 +956,21 @@ void CraftEquipmentState::saveGlobalLoadout(int index)
 
 	Craft *c = _base->getCrafts()->at(_craft);
 	// save only what is visible on the screen (can be DIFFERENT than what's really in the craft for various reasons)
-	for (auto& itemRule : _items)
+	for (const auto& itemType : _items)
 	{
-		RuleItem *item = _game->getMod()->getItem(itemRule, true);
+		RuleItem *item = _game->getMod()->getItem(itemType, true);
 		int cQty = 0;
 		if (item->getVehicleUnit())
 		{
-			cQty = c->getVehicleCount(itemRule);
+			cQty = c->getVehicleCount(itemType);
 		}
 		else
 		{
-			cQty = c->getItems()->getItem(itemRule);
+			cQty = c->getItems()->getItem(itemType);
 		}
 		if (cQty > 0)
 		{
-			tmpl->addItem(itemRule, cQty);
+			tmpl->addItem(itemType, cQty);
 		}
 	}
 }
@@ -1019,7 +1017,7 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 	// lastly check and report what's missing
 	std::string craftName = c->getName(_game->getLanguage());
 	std::vector<ReequipStat> _missingItems;
-	for (auto& templateItem : *tmpl->getContents())
+	for (const auto& templateItem : *tmpl->getContents())
 	{
 		RuleItem *item = _game->getMod()->getItem(templateItem.first, false);
 		if (item)
@@ -1035,7 +1033,7 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 				if (onlyAddItems)
 				{
 					int total = 0;
-					for (auto* vehicle : craftVehiclesBackup)
+					for (const auto* vehicle : craftVehiclesBackup)
 					{
 						if (vehicle->getRules()->getType() == item->getName())
 						{

@@ -191,12 +191,12 @@ void GlobalManufactureState::fillProductionList()
 	int allocatedEngineers = 0;
 	int freeWorkshops = 0;
 
-	for (Base *base : *_game->getSavedGame()->getBases())
+	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
-		const std::vector<Production *> & baseProductions(base->getProductions());
+		auto& baseProductions = xbase->getProductions();
 		if (!baseProductions.empty())
 		{
-			std::string baseName = base->getName(_game->getLanguage());
+			std::string baseName = xbase->getName(_game->getLanguage());
 			_lstManufacture->addRow(3, baseName.c_str(), "", "");
 			_lstManufacture->setRowColor(_lstManufacture->getLastRowIndex(), _lstManufacture->getSecondaryColor());
 
@@ -204,26 +204,26 @@ void GlobalManufactureState::fillProductionList()
 			_bases.push_back(0);
 			_topics.push_back(0);
 		}
-		for (std::vector<Production *>::const_iterator iter = baseProductions.begin(); iter != baseProductions.end(); ++iter)
+		for (const auto* prod : baseProductions)
 		{
 			std::ostringstream s1;
-			s1 << (*iter)->getAssignedEngineers();
+			s1 << prod->getAssignedEngineers();
 			std::ostringstream s2;
-			s2 << (*iter)->getAmountProduced() << "/";
-			if ((*iter)->getInfiniteAmount()) s2 << "∞";
-			else s2 << (*iter)->getAmountTotal();
-			if ((*iter)->getSellItems()) s2 << " $";
+			s2 << prod->getAmountProduced() << "/";
+			if (prod->getInfiniteAmount()) s2 << "∞";
+			else s2 << prod->getAmountTotal();
+			if (prod->getSellItems()) s2 << " $";
 			std::ostringstream s3;
-			s3 << Unicode::formatFunding((*iter)->getRules()->getManufactureCost());
+			s3 << Unicode::formatFunding(prod->getRules()->getManufactureCost());
 			std::ostringstream s4;
-			if ((*iter)->getInfiniteAmount())
+			if (prod->getInfiniteAmount())
 			{
 				s4 << "∞";
 			}
-			else if ((*iter)->getAssignedEngineers() > 0)
+			else if (prod->getAssignedEngineers() > 0)
 			{
-				int timeLeft = (*iter)->getAmountTotal() * (*iter)->getRules()->getManufactureTime() - (*iter)->getTimeSpent();
-				int numEffectiveEngineers = (*iter)->getAssignedEngineers();
+				int timeLeft = prod->getAmountTotal() * prod->getRules()->getManufactureTime() - prod->getTimeSpent();
+				int numEffectiveEngineers = prod->getAssignedEngineers();
 				// ensure we round up since it takes an entire hour to manufacture any part of that hour's capacity
 				int hoursLeft = (timeLeft + numEffectiveEngineers - 1) / numEffectiveEngineers;
 				int daysLeft = hoursLeft / 24;
@@ -235,15 +235,15 @@ void GlobalManufactureState::fillProductionList()
 
 				s4 << "-";
 			}
-			_lstManufacture->addRow(5, tr((*iter)->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
+			_lstManufacture->addRow(5, tr(prod->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
 
-			_bases.push_back(base);
-			_topics.push_back(_game->getMod()->getManufacture((*iter)->getRules()->getName()));
+			_bases.push_back(xbase);
+			_topics.push_back(_game->getMod()->getManufacture(prod->getRules()->getName()));
 		}
 
-		availableEngineers += base->getAvailableEngineers();
-		allocatedEngineers += base->getAllocatedEngineers();
-		freeWorkshops += base->getFreeWorkshops();
+		availableEngineers += xbase->getAvailableEngineers();
+		allocatedEngineers += xbase->getAllocatedEngineers();
+		freeWorkshops += xbase->getFreeWorkshops();
 	}
 
 	_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(availableEngineers));

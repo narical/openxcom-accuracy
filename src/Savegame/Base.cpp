@@ -65,30 +65,30 @@ Base::Base(const Mod *mod) : Target(), _mod(mod), _scientists(0), _engineers(0),
  */
 Base::~Base()
 {
-	for (std::vector<BaseFacility*>::iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (auto* fac : _facilities)
 	{
-		delete *i;
+		delete fac;
 	}
-	for (std::vector<Soldier*>::iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
+	for (auto* soldier : _soldiers)
 	{
-		delete *i;
+		delete soldier;
 	}
-	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (auto* xcraft : _crafts)
 	{
-		delete *i;
+		delete xcraft;
 	}
-	for (std::vector<Transfer*>::iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		delete *i;
+		delete transfer;
 	}
-	for (std::vector<Production *>::iterator i = _productions.begin(); i != _productions.end(); ++i)
+	for (auto* prod : _productions)
 	{
-		delete *i;
+		delete prod;
 	}
 	delete _items;
-	for (std::vector<ResearchProject*>::iterator i = _research.begin(); i != _research.end(); ++i)
+	for (auto* proj : _research)
 	{
-		delete *i;
+		delete proj;
 	}
 	Collections::deleteAll(_vehiclesFromBase);
 }
@@ -148,11 +148,11 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 			if (const YAML::Node &craft = (*i)["craft"])
 			{
 				CraftId craftId = Craft::loadId(craft);
-				for (std::vector<Craft*>::iterator j = _crafts.begin(); j != _crafts.end(); ++j)
+				for (auto* xcraft : _crafts)
 				{
-					if ((*j)->getUniqueId() == craftId)
+					if (xcraft->getUniqueId() == craftId)
 					{
-						s->setCraft(*j);
+						s->setCraft(xcraft);
 						break;
 					}
 				}
@@ -167,16 +167,16 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 
 	_items->load(node["items"]);
 	// Some old saves have bad items, better get rid of them to avoid further bugs
-	for (std::map<std::string, int>::iterator i = _items->getContents()->begin(); i != _items->getContents()->end();)
+	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
 	{
-		if (_mod->getItem(i->first) == 0)
+		if (_mod->getItem(iter->first) == 0)
 		{
-			Log(LOG_ERROR) << "Failed to load item " << i->first;
-			_items->getContents()->erase(i++);
+			Log(LOG_ERROR) << "Failed to load item " << iter->first;
+			_items->getContents()->erase(iter++);
 		}
 		else
 		{
-			++i;
+			++iter;
 		}
 	}
 
@@ -230,11 +230,11 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 	if (const YAML::Node& mission = node["retaliationMissionUniqueId"])
 	{
 		int missionId = mission.as<int>();
-		for (auto* i : save->getAlienMissions())
+		for (auto* am : save->getAlienMissions())
 		{
-			if (i->getId() == missionId)
+			if (am->getId() == missionId)
 			{
-				_retaliationMission = i;
+				_retaliationMission = am;
 				break;
 			}
 		}
@@ -258,11 +258,11 @@ void Base::finishLoading(const YAML::Node &node, SavedGame *save)
 		if (_mod->getCraft(type))
 		{
 			Craft *craft = 0;
-			for (std::vector<Craft*>::iterator c = _crafts.begin(); c != _crafts.end(); ++c)
+			for (auto* xcraft : _crafts)
 			{
-				if ((*c)->getId() == id && (*c)->getRules()->getType() == type)
+				if (xcraft->getId() == id && xcraft->getRules()->getType() == type)
 				{
-					craft = (*c);
+					craft = xcraft;
 					break;
 				}
 			}
@@ -296,11 +296,11 @@ bool Base::isOverlappingOrOverflowing()
 		}
 	}
 
-	for (std::vector<BaseFacility*>::iterator f = _facilities.begin(); f != _facilities.end(); ++f)
+	for (auto* fac : _facilities)
 	{
-		const RuleBaseFacility *rules = (*f)->getRules();
-		int facilityX = (*f)->getX();
-		int facilityY = (*f)->getY();
+		const RuleBaseFacility *rules = fac->getRules();
+		int facilityX = fac->getX();
+		int facilityY = fac->getY();
 		int facilitySize = rules->getSize();
 
 		if (facilityX < 0 || facilityY < 0 || facilityX + (facilitySize - 1) >= BASE_SIZE || facilityY + (facilitySize - 1) >= BASE_SIZE)
@@ -320,7 +320,7 @@ bool Base::isOverlappingOrOverflowing()
 						<< ") overlaps with " << grid[x][y]->getRules()->getType() << " at [" << x << ", " << y << "] (size " << grid[x][y]->getRules()->getSize() << ")";
 					result = true;
 				}
-				grid[x][y] = *f;
+				grid[x][y] = fac;
 			}
 		}
 	}
@@ -335,34 +335,34 @@ bool Base::isOverlappingOrOverflowing()
 YAML::Node Base::save() const
 {
 	YAML::Node node = Target::save();
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		node["facilities"].push_back((*i)->save());
+		node["facilities"].push_back(fac->save());
 	}
-	for (std::vector<Soldier*>::const_iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
+	for (const auto* soldier : _soldiers)
 	{
-		node["soldiers"].push_back((*i)->save(_mod->getScriptGlobal()));
+		node["soldiers"].push_back(soldier->save(_mod->getScriptGlobal()));
 	}
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (const auto* xcraft : _crafts)
 	{
-		node["crafts"].push_back((*i)->save(_mod->getScriptGlobal()));
+		node["crafts"].push_back(xcraft->save(_mod->getScriptGlobal()));
 	}
 	node["items"] = _items->save();
 	node["scientists"] = _scientists;
 	node["engineers"] = _engineers;
 	if (_inBattlescape)
 		node["inBattlescape"] = _inBattlescape;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		node["transfers"].push_back((*i)->save(this, _mod));
+		node["transfers"].push_back(transfer->save(this, _mod));
 	}
-	for (std::vector<ResearchProject*>::const_iterator i = _research.begin(); i != _research.end(); ++i)
+	for (const auto* proj : _research)
 	{
-		node["research"].push_back((*i)->save());
+		node["research"].push_back(proj->save());
 	}
-	for (std::vector<Production*>::const_iterator i = _productions.begin(); i != _productions.end(); ++i)
+	for (const auto* prod : _productions)
 	{
-		node["productions"].push_back((*i)->save());
+		node["productions"].push_back(prod->save());
 	}
 	if (_retaliationTarget)
 		node["retaliationTarget"] = _retaliationTarget;
@@ -486,16 +486,16 @@ UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool already
 	int radar_max_range = 0;
 	int radar_chance = 0;
 
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() != 0)
+		if (fac->getBuildTime() != 0)
 		{
 			continue;
 		}
-		if ((*i)->getRules()->getRadarRange() >= distance)
+		if (fac->getRules()->getRadarRange() >= distance)
 		{
-			int radarChance = (*i)->getRules()->getRadarChance();
-			if ((*i)->getRules()->isHyperwave())
+			int radarChance = fac->getRules()->getRadarChance();
+			if (fac->getRules()->isHyperwave())
 			{
 				if (radarChance == 100 || RNG::percent(radarChance))
 				{
@@ -508,13 +508,13 @@ UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool already
 				radar_chance += radarChance;
 			}
 		}
-		if ((*i)->getRules()->isHyperwave())
+		if (fac->getRules()->isHyperwave())
 		{
-			hyperwave_max_range = std::max(hyperwave_max_range, (*i)->getRules()->getRadarRange());
+			hyperwave_max_range = std::max(hyperwave_max_range, fac->getRules()->getRadarRange());
 		}
 		else
 		{
-			radar_max_range = std::max(radar_max_range, (*i)->getRules()->getRadarRange());
+			radar_max_range = std::max(radar_max_range, fac->getRules()->getRadarRange());
 		}
 	}
 
@@ -566,14 +566,14 @@ UfoDetection Base::detect(const Ufo *target, const SavedGame *save, bool already
 int Base::getAvailableSoldiers(bool checkCombatReadiness, bool includeWounded) const
 {
 	int total = 0;
-	for (std::vector<Soldier*>::const_iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
+	for (const auto* soldier : _soldiers)
 	{
-		if (!checkCombatReadiness && (*i)->getCraft() == 0)
+		if (!checkCombatReadiness && soldier->getCraft() == 0)
 		{
 			total++;
 		}
-		else if (checkCombatReadiness && (((*i)->getCraft() != 0 && (*i)->getCraft()->getStatus() != "STR_OUT") ||
-			((*i)->getCraft() == 0 && ((*i)->hasFullHealth() || (includeWounded && (*i)->canDefendBase())))))
+		else if (checkCombatReadiness && ((soldier->getCraft() != 0 && soldier->getCraft()->getStatus() != "STR_OUT") ||
+			(soldier->getCraft() == 0 && (soldier->hasFullHealth() || (includeWounded && soldier->canDefendBase())))))
 		{
 			total++;
 		}
@@ -589,11 +589,11 @@ int Base::getAvailableSoldiers(bool checkCombatReadiness, bool includeWounded) c
 int Base::getTotalSoldiers() const
 {
 	size_t total = _soldiers.size();
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_SOLDIER)
+		if (transfer->getType() == TRANSFER_SOLDIER)
 		{
-			total += (*i)->getQuantity();
+			total += transfer->getQuantity();
 		}
 	}
 	return total;
@@ -617,19 +617,16 @@ int Base::getAvailableScientists() const
 int Base::getTotalScientists() const
 {
 	int total = _scientists;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_SCIENTIST)
+		if (transfer->getType() == TRANSFER_SCIENTIST)
 		{
-			total += (*i)->getQuantity();
+			total += transfer->getQuantity();
 		}
 	}
-	const std::vector<ResearchProject *> & research (getResearch());
-	for (std::vector<ResearchProject *>::const_iterator itResearch = research.begin();
-		 itResearch != research.end();
-		 ++itResearch)
+	for (const auto* proj : _research)
 	{
-		total += (*itResearch)->getAssigned();
+		total += proj->getAssigned();
 	}
 	return total;
 }
@@ -652,16 +649,16 @@ int Base::getAvailableEngineers() const
 int Base::getTotalEngineers() const
 {
 	int total = _engineers;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_ENGINEER)
+		if (transfer->getType() == TRANSFER_ENGINEER)
 		{
-			total += (*i)->getQuantity();
+			total += transfer->getQuantity();
 		}
 	}
-	for (std::vector<Production *>::const_iterator iter = _productions.begin(); iter != _productions.end(); ++iter)
+	for (const auto* prod : _productions)
 	{
-		total += (*iter)->getAssignedEngineers();
+		total += prod->getAssignedEngineers();
 	}
 	return total;
 }
@@ -721,9 +718,9 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 			totalCost += ruleItem->getMonthlyMaintenance() * storeItem.second;
 		}
 	}
-	for (auto* craft : _crafts)
+	for (auto* xcraft : _crafts)
 	{
-		for (const auto& craftItem : *craft->getItems()->getContents())
+		for (const auto& craftItem : *xcraft->getItems()->getContents())
 		{
 			auto* ruleItem = _mod->getItem(craftItem.first, true);
 			if (ruleItem->getMonthlySalary() != 0)
@@ -737,7 +734,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 				totalCost += ruleItem->getMonthlyMaintenance() * craftItem.second;
 			}
 		}
-		for (auto* vehicle : *craft->getVehicles())
+		for (auto* vehicle : *xcraft->getVehicles())
 		{
 			auto* ruleItem = vehicle->getRules();
 			if (ruleItem->getMonthlySalary() != 0)
@@ -778,9 +775,9 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 int Base::getUsedQuarters() const
 {
 	int total = getTotalSoldiers() + getTotalScientists() + getTotalEngineers();
-	for (std::vector<Production*>::const_iterator i = _productions.begin(); i != _productions.end(); ++i)
+	for (const auto* prod : _productions)
 	{
-		if ((*i)->getRules()->getSpawnedPersonType() != "")
+		if (prod->getRules()->getSpawnedPersonType() != "")
 		{
 			// reserve one living space for each production project (even if it's on hold)
 			total += 1;
@@ -797,11 +794,11 @@ int Base::getUsedQuarters() const
 int Base::getAvailableQuarters() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getPersonnel();
+			total += fac->getRules()->getPersonnel();
 		}
 	}
 	return total;
@@ -815,20 +812,19 @@ int Base::getAvailableQuarters() const
 double Base::getUsedStores(bool excludeNormalItems) const
 {
 	double total = excludeNormalItems ? 0.0 : _items->getTotalSize(_mod);
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (const auto* xcraft : _crafts)
 	{
-		total += (*i)->getTotalItemStorageSize(_mod);
+		total += xcraft->getTotalItemStorageSize(_mod);
 	}
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_ITEM)
+		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			total += (*i)->getQuantity() * _mod->getItem((*i)->getItems(), true)->getSize();
+			total += transfer->getQuantity() * _mod->getItem(transfer->getItems(), true)->getSize();
 		}
-		else if ((*i)->getType() == TRANSFER_CRAFT)
+		else if (transfer->getType() == TRANSFER_CRAFT)
 		{
-			Craft *craft = (*i)->getCraft();
-			total += craft->getTotalItemStorageSize(_mod);
+			total += transfer->getCraft()->getTotalItemStorageSize(_mod);
 		}
 	}
 	return total;
@@ -869,11 +865,11 @@ bool Base::storesOverfullCritical() const
 int Base::getAvailableStores() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getStorage();
+			total += fac->getRules()->getStorage();
 		}
 	}
 	return total;
@@ -886,13 +882,10 @@ int Base::getAvailableStores() const
  */
 int Base::getUsedLaboratories() const
 {
-	const std::vector<ResearchProject *> & research (getResearch());
 	int usedLabSpace = 0;
-	for (std::vector<ResearchProject *>::const_iterator itResearch = research.begin();
-		 itResearch != research.end();
-		 ++itResearch)
+	for (const auto* proj : _research)
 	{
-		usedLabSpace += (*itResearch)->getAssigned();
+		usedLabSpace += proj->getAssigned();
 	}
 	return usedLabSpace;
 }
@@ -905,11 +898,11 @@ int Base::getUsedLaboratories() const
 int Base::getAvailableLaboratories() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getLaboratories();
+			total += fac->getRules()->getLaboratories();
 		}
 	}
 	return total;
@@ -923,9 +916,9 @@ int Base::getAvailableLaboratories() const
 int Base::getUsedWorkshops() const
 {
 	int usedWorkShop = 0;
-	for (std::vector<Production *>::const_iterator iter = _productions.begin(); iter != _productions.end(); ++iter)
+	for (const auto* prod : _productions)
 	{
-		usedWorkShop += ((*iter)->getAssignedEngineers() + (*iter)->getRules()->getRequiredSpace());
+		usedWorkShop += (prod->getAssignedEngineers() + prod->getRules()->getRequiredSpace());
 	}
 	return usedWorkShop;
 }
@@ -938,11 +931,11 @@ int Base::getUsedWorkshops() const
 int Base::getAvailableWorkshops() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getWorkshops();
+			total += fac->getRules()->getWorkshops();
 		}
 	}
 	return total;
@@ -956,19 +949,19 @@ int Base::getAvailableWorkshops() const
 int Base::getUsedHangars() const
 {
 	size_t total = _crafts.size();
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_CRAFT)
+		if (transfer->getType() == TRANSFER_CRAFT)
 		{
-			total += (*i)->getQuantity();
+			total += transfer->getQuantity();
 		}
 	}
-	for (std::vector<Production*>::const_iterator i = _productions.begin(); i != _productions.end(); ++i)
+	for (const auto* prod : _productions)
 	{
-		if ((*i)->getRules()->getProducedCraft())
+		if (prod->getRules()->getProducedCraft())
 		{
-			// This should be fixed on the case when (*i)->getInfiniteAmount() == TRUE
-			total += ((*i)->getAmountTotal() - (*i)->getAmountProduced());
+			// This should be fixed on the case when prod->getInfiniteAmount() == TRUE
+			total += (prod->getAmountTotal() - prod->getAmountProduced());
 		}
 	}
 	return total;
@@ -982,11 +975,11 @@ int Base::getUsedHangars() const
 int Base::getAvailableHangars() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getCrafts();
+			total += fac->getRules()->getCrafts();
 		}
 	}
 	return total;
@@ -1035,12 +1028,9 @@ int Base::getFreeContainment(int prisonType) const
 int Base::getAllocatedScientists() const
 {
 	int total = 0;
-	const std::vector<ResearchProject *> & research (getResearch());
-	for (std::vector<ResearchProject *>::const_iterator itResearch = research.begin();
-		 itResearch != research.end();
-		 ++itResearch)
+	for (const auto* proj : _research)
 	{
-		total += (*itResearch)->getAssigned();
+		total += proj->getAssigned();
 	}
 	return total;
 }
@@ -1052,9 +1042,9 @@ int Base::getAllocatedScientists() const
 int Base::getAllocatedEngineers() const
 {
 	int total = 0;
-	for (std::vector<Production *>::const_iterator iter = _productions.begin(); iter != _productions.end(); ++iter)
+	for (const auto* prod : _productions)
 	{
-		total += (*iter)->getAssignedEngineers();
+		total += prod->getAssignedEngineers();
 	}
 	return total;
 }
@@ -1067,11 +1057,11 @@ int Base::getAllocatedEngineers() const
 int Base::getDefenseValue() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getDefenseValue();
+			total += fac->getRules()->getDefenseValue();
 		}
 	}
 	return total;
@@ -1088,9 +1078,9 @@ int Base::getShortRangeDetection() const
 	int minRadarRange = _mod->getShortRadarRange();
 
 	if (minRadarRange == 0) return 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getRules()->getRadarRange() > 0 && (*i)->getRules()->getRadarRange() <= minRadarRange && (*i)->getBuildTime() == 0)
+		if (fac->getRules()->getRadarRange() > 0 && fac->getRules()->getRadarRange() <= minRadarRange && fac->getBuildTime() == 0)
 		{
 			total++;
 		}
@@ -1108,9 +1098,9 @@ int Base::getLongRangeDetection() const
 	int total = 0;
 	int minRadarRange = _mod->getShortRadarRange();
 
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getRules()->getRadarRange() > minRadarRange && (*i)->getBuildTime() == 0)
+		if (fac->getRules()->getRadarRange() > minRadarRange && fac->getBuildTime() == 0)
 		{
 			total++;
 		}
@@ -1127,16 +1117,16 @@ int Base::getLongRangeDetection() const
 int Base::getCraftCount(const RuleCraft *craft) const
 {
 	int total = 0;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_CRAFT && (*i)->getCraft()->getRules() == craft)
+		if (transfer->getType() == TRANSFER_CRAFT && transfer->getCraft()->getRules() == craft)
 		{
 			total++;
 		}
 	}
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (const auto* xcraft : _crafts)
 	{
-		if ((*i)->getRules() == craft)
+		if (xcraft->getRules() == craft)
 		{
 			total++;
 		}
@@ -1150,9 +1140,9 @@ int Base::getCraftCount(const RuleCraft *craft) const
 int Base::getCraftCountForProduction(const RuleCraft *craft) const
 {
 	int total = 0;
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (const auto* xcraft : _crafts)
 	{
-		if ((*i)->getRules() == craft && (*i)->getStatus() != "STR_OUT")
+		if (xcraft->getRules() == craft && xcraft->getStatus() != "STR_OUT")
 		{
 			total++;
 		}
@@ -1168,16 +1158,16 @@ int Base::getCraftCountForProduction(const RuleCraft *craft) const
 int Base::getCraftMaintenance() const
 {
 	int total = 0;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_CRAFT)
+		if (transfer->getType() == TRANSFER_CRAFT)
 		{
-			total += (*i)->getCraft()->getRules()->getRentCost();
+			total += transfer->getCraft()->getRules()->getRentCost();
 		}
 	}
-	for (std::vector<Craft*>::const_iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (const auto* xcraft : _crafts)
 	{
-		total += (*i)->getRules()->getRentCost();
+		total += xcraft->getRules()->getRentCost();
 	}
 	return total;
 }
@@ -1192,20 +1182,20 @@ std::pair<int, int> Base::getSoldierCountAndSalary(const std::string &soldier) c
 {
 	int total = 0;
 	int totalSalary = 0;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_SOLDIER && (*i)->getSoldier()->getRules()->getType() == soldier)
+		if (transfer->getType() == TRANSFER_SOLDIER && transfer->getSoldier()->getRules()->getType() == soldier)
 		{
 			total++;
-			totalSalary += (*i)->getSoldier()->getRules()->getSalaryCost((*i)->getSoldier()->getRank());
+			totalSalary += transfer->getSoldier()->getRules()->getSalaryCost(transfer->getSoldier()->getRank());
 		}
 	}
-	for (std::vector<Soldier*>::const_iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
+	for (const auto* xsoldier : _soldiers)
 	{
-		if ((*i)->getRules()->getType() == soldier)
+		if (xsoldier->getRules()->getType() == soldier)
 		{
 			total++;
-			totalSalary += (*i)->getRules()->getSalaryCost((*i)->getRank());
+			totalSalary += xsoldier->getRules()->getSalaryCost(xsoldier->getRank());
 		}
 	}
 	return std::make_pair(total, totalSalary);
@@ -1219,16 +1209,16 @@ std::pair<int, int> Base::getSoldierCountAndSalary(const std::string &soldier) c
 int Base::getPersonnelMaintenance() const
 {
 	int total = 0;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_SOLDIER)
+		if (transfer->getType() == TRANSFER_SOLDIER)
 		{
-			total += (*i)->getSoldier()->getRules()->getSalaryCost((*i)->getSoldier()->getRank());
+			total += transfer->getSoldier()->getRules()->getSalaryCost(transfer->getSoldier()->getRank());
 		}
 	}
-	for (std::vector<Soldier*>::const_iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
+	for (const auto* soldier : _soldiers)
 	{
-		total += (*i)->getRules()->getSalaryCost((*i)->getRank());
+		total += soldier->getRules()->getSalaryCost(soldier->getRank());
 	}
 	total += getTotalEngineers() * _mod->getEngineerCost();
 	total += getTotalScientists() * _mod->getScientistCost();
@@ -1245,11 +1235,11 @@ int Base::getPersonnelMaintenance() const
 int Base::getFacilityMaintenance() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getMonthlyCost();
+			total += fac->getRules()->getMonthlyCost();
 		}
 	}
 	return total;
@@ -1349,11 +1339,11 @@ const std::vector<Production *> & Base::getProductions() const
 int Base::getAvailablePsiLabs() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getPsiLaboratories();
+			total += fac->getRules()->getPsiLaboratories();
 		}
 	}
 	return total;
@@ -1367,19 +1357,19 @@ int Base::getAvailablePsiLabs() const
 int Base::getUsedPsiLabs() const
 {
 	int total = 0;
-	for (std::vector<Soldier*>::const_iterator s = _soldiers.begin(); s != _soldiers.end(); ++s)
+	for (const auto* soldier : _soldiers)
 	{
-		if ((*s)->isInPsiTraining())
+		if (soldier->isInPsiTraining())
 		{
-			total ++;
+			total++;
 		}
 	}
 	// Only soldiers returning home after being shot down by a HK can ever be in psi training while in transfer
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_SOLDIER)
+		if (transfer->getType() == TRANSFER_SOLDIER)
 		{
-			if ((*i)->getSoldier()->isInPsiTraining())
+			if (transfer->getSoldier()->isInPsiTraining())
 			{
 				total++;
 			}
@@ -1396,11 +1386,11 @@ int Base::getUsedPsiLabs() const
 int Base::getAvailableTraining() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			total += (*i)->getRules()->getTrainingFacilities();
+			total += fac->getRules()->getTrainingFacilities();
 		}
 	}
 	return total;
@@ -1414,11 +1404,11 @@ int Base::getAvailableTraining() const
 int Base::getUsedTraining() const
 {
 	int total = 0;
-	for (std::vector<Soldier*>::const_iterator s = _soldiers.begin(); s != _soldiers.end(); ++s)
+	for (const auto* soldier : _soldiers)
 	{
-		if ((*s)->isInTraining())
+		if (soldier->isInTraining())
 		{
-			total ++;
+			total++;
 		}
 	}
 	return total;
@@ -1442,20 +1432,20 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 {
 	int total = 0;
 	RuleItem *rule = 0;
-	for (std::vector<Transfer*>::const_iterator i = _transfers.begin(); i != _transfers.end(); ++i)
+	for (const auto* transfer : _transfers)
 	{
-		if ((*i)->getType() == TRANSFER_ITEM)
+		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			rule = _mod->getItem((*i)->getItems(), true);
+			rule = _mod->getItem(transfer->getItems(), true);
 			if (rule->isAlien() && rule->getPrisonType() == prisonType)
 			{
-				total += (*i)->getQuantity();
+				total += transfer->getQuantity();
 			}
 		}
 	}
-	for (std::vector<ResearchProject*>::const_iterator i = _research.begin(); i != _research.end(); ++i)
+	for (const auto* proj : _research)
 	{
-		const RuleResearch *projRules = (*i)->getRules();
+		const RuleResearch *projRules = proj->getRules();
 		if (projRules->needItem() && projRules->destroyItem())
 		{
 			rule = _mod->getItem(projRules->getName());
@@ -1470,12 +1460,12 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 		return total;
 	}
 
-	for (std::map<std::string, int>::iterator i = _items->getContents()->begin(); i != _items->getContents()->end(); ++i)
+	for (const auto& pair : *_items->getContents())
 	{
-		rule = _mod->getItem((i)->first, true);
+		rule = _mod->getItem(pair.first, true);
 		if (rule->isAlien() && rule->getPrisonType() == prisonType)
 		{
-			total += (i)->second;
+			total += pair.second;
 		}
 	}
 	return total;
@@ -1489,11 +1479,11 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 int Base::getAvailableContainment(int prisonType) const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0 && (*i)->getRules()->getPrisonType() == prisonType)
+		if (fac->getBuildTime() == 0 && fac->getRules()->getPrisonType() == prisonType)
 		{
-			total += (*i)->getRules()->getAliens();
+			total += fac->getRules()->getAliens();
 		}
 	}
 	return total;
@@ -1545,14 +1535,14 @@ size_t Base::getDetectionChance() const
 {
 	size_t mindShields = 0;
 	size_t completedFacilities = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0)
+		if (fac->getBuildTime() == 0)
 		{
-			completedFacilities += (*i)->getRules()->getSize() * (*i)->getRules()->getSize();
-			if ((*i)->getRules()->isMindShield() && !(*i)->getDisabled())
+			completedFacilities += fac->getRules()->getSize() * fac->getRules()->getSize();
+			if (fac->getRules()->isMindShield() && !fac->getDisabled())
 			{
-				mindShields += (*i)->getRules()->getMindShieldPower();
+				mindShields += fac->getRules()->getMindShieldPower();
 			}
 		}
 	}
@@ -1562,9 +1552,9 @@ size_t Base::getDetectionChance() const
 int Base::getGravShields() const
 {
 	int total = 0;
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0 && (*i)->getRules()->isGravShield())
+		if (fac->getBuildTime() == 0 && fac->getRules()->isGravShield())
 		{
 			++total;
 		}
@@ -1581,11 +1571,11 @@ void Base::setupDefenses(AlienMission* am)
 	}
 
 	_defenses.clear();
-	for (std::vector<BaseFacility*>::const_iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (auto* fac : _facilities)
 	{
-		if ((*i)->getBuildTime() == 0 && (*i)->getRules()->getDefenseValue())
+		if (fac->getBuildTime() == 0 && fac->getRules()->getDefenseValue())
 		{
-			_defenses.push_back(*i);
+			_defenses.push_back(fac);
 		}
 	}
 
@@ -1593,22 +1583,22 @@ void Base::setupDefenses(AlienMission* am)
 	Collections::deleteAll(_vehiclesFromBase);
 
 	// add vehicles that are in the crafts of the base, if it's not out
-	for (std::vector<Craft*>::iterator c = getCrafts()->begin(); c != getCrafts()->end(); ++c)
+	for (auto* xcraft : _crafts)
 	{
-		if ((*c)->getStatus() != "STR_OUT")
+		if (xcraft->getStatus() != "STR_OUT")
 		{
-			for (std::vector<Vehicle*>::iterator i = (*c)->getVehicles()->begin(); i != (*c)->getVehicles()->end(); ++i)
+			for (auto* vehicle : *xcraft->getVehicles())
 			{
-				_vehicles.push_back(*i);
+				_vehicles.push_back(vehicle);
 			}
 		}
 	}
 
 	// add vehicles left on the base
-	for (std::map<std::string, int>::iterator i = _items->getContents()->begin(); i != _items->getContents()->end(); )
+	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end(); )
 	{
-		std::string itemId = (i)->first;
-		int itemQty = (i)->second;
+		const auto& itemId = iter->first;
+		int itemQty = iter->second;
 		RuleItem *rule = _mod->getItem(itemId, true);
 		if (rule->getVehicleUnit())
 		{
@@ -1631,7 +1621,7 @@ void Base::setupDefenses(AlienMission* am)
 				int baseQty = _items->getItem(ammo) / ammoPerVehicle;
 				if (!baseQty)
 				{
-					++i;
+					++iter;
 					continue;
 				}
 				int canBeAdded = std::min(itemQty, baseQty);
@@ -1645,9 +1635,9 @@ void Base::setupDefenses(AlienMission* am)
 				_items->removeItem(itemId, canBeAdded);
 			}
 
-			i = _items->getContents()->begin(); // we have to start over because iterator is broken because of the removeItem
+			iter = _items->getContents()->begin(); // we have to start over because iterator is broken because of the removeItem
 		}
-		else ++i;
+		else ++iter;
 	}
 }
 
@@ -1747,13 +1737,13 @@ int Base::damageFacility(BaseFacility *toBeDamaged)
 	}
 
 	// 2. Now destroy the original
-	for (std::vector<BaseFacility*>::iterator k = _facilities.begin(); k != _facilities.end(); ++k)
+	for (auto iter = _facilities.begin(); iter != _facilities.end(); ++iter)
 	{
-		if ((*k) == toBeDamaged)
+		if ((*iter) == toBeDamaged)
 		{
 			// bigger facilities spend more missile power
 			result = toBeDamaged->getRules()->getSize() * toBeDamaged->getRules()->getSize();
-			destroyFacility(k);
+			destroyFacility(iter);
 			break;
 		}
 	}
@@ -1766,10 +1756,10 @@ int Base::damageFacility(BaseFacility *toBeDamaged)
  */
 void Base::destroyDisconnectedFacilities()
 {
-	std::list<std::vector<BaseFacility*>::iterator> disFacs = getDisconnectedFacilities(0);
-	for (std::list<std::vector<BaseFacility*>::iterator>::reverse_iterator i = disFacs.rbegin(); i != disFacs.rend(); ++i)
+	auto disFacs = getDisconnectedFacilities(0);
+	for (std::list<BASEFACILITIESITERATOR>::reverse_iterator outerIterator = disFacs.rbegin(); outerIterator != disFacs.rend(); ++outerIterator)
 	{
-		destroyFacility(*i);
+		destroyFacility(*outerIterator);
 	}
 }
 
@@ -1778,21 +1768,21 @@ void Base::destroyDisconnectedFacilities()
  * @param remove Facility to ignore (in case of facility dismantling).
  * @return a sorted list of iterators pointing to elements in _facilities.
  */
-std::list<std::vector<BaseFacility*>::iterator> Base::getDisconnectedFacilities(BaseFacility *remove)
+std::list<BASEFACILITIESITERATOR> Base::getDisconnectedFacilities(BaseFacility *remove)
 {
-	std::list<std::vector<BaseFacility*>::iterator> result;
+	std::list<BASEFACILITIESITERATOR> result;
 
 	if (remove != 0 && remove->getRules()->isLift())
 	{ // Theoretically this is impossible, but sanity check is good :)
-		for (std::vector<BaseFacility*>::iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+		for (BASEFACILITIESITERATOR iter = _facilities.begin(); iter != _facilities.end(); ++iter)
 		{
-			if ((*i) != remove) result.push_back(i);
+			if ((*iter) != remove) result.push_back(iter);
 		}
 		return result;
 	}
 
-	std::vector<std::pair<std::vector<BaseFacility*>::iterator, bool>*> facilitiesConnStates;
-	std::pair<std::vector<BaseFacility*>::iterator, bool> *grid[BASE_SIZE][BASE_SIZE];
+	std::vector< std::pair<BASEFACILITIESITERATOR, bool>* > facilitiesConnStates;
+	std::pair<BASEFACILITIESITERATOR, bool> *grid[BASE_SIZE][BASE_SIZE];
 	BaseFacility *lift = 0;
 
 	for (int x = 0; x < BASE_SIZE; ++x)
@@ -1804,18 +1794,19 @@ std::list<std::vector<BaseFacility*>::iterator> Base::getDisconnectedFacilities(
 	}
 
 	// Ok, fill up the grid(+facilitiesConnStates), and search the lift
-	for (std::vector<BaseFacility*>::iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (BASEFACILITIESITERATOR iter = _facilities.begin(); iter != _facilities.end(); ++iter)
 	{
-		if ((*i) != remove)
+		BaseFacility* fac = (*iter);
+		if (fac != remove)
 		{
-			if ((*i)->getRules()->isLift()) lift = (*i);
-			for (int x = 0; x != (*i)->getRules()->getSize(); ++x)
+			if (fac->getRules()->isLift()) lift = fac;
+			for (int x = 0; x != fac->getRules()->getSize(); ++x)
 			{
-				for (int y = 0; y != (*i)->getRules()->getSize(); ++y)
+				for (int y = 0; y != fac->getRules()->getSize(); ++y)
 				{
-					std::pair<std::vector<BaseFacility*>::iterator, bool> *p = new std::pair<std::vector<BaseFacility*>::iterator, bool>(i,false);
+					std::pair<BASEFACILITIESITERATOR, bool> *p = new std::pair<BASEFACILITIESITERATOR, bool>(iter,false);
 					facilitiesConnStates.push_back(p);
-					grid[(*i)->getX() + x][(*i)->getY() + y] = p;
+					grid[fac->getX() + x][fac->getY() + y] = p;
 				}
 			}
 		}
@@ -1851,13 +1842,13 @@ std::list<std::vector<BaseFacility*>::iterator> Base::getDisconnectedFacilities(
 	}
 
 	BaseFacility *lastFacility = 0;
-	for (std::vector<std::pair<std::vector<BaseFacility*>::iterator, bool>*>::iterator i = facilitiesConnStates.begin(); i != facilitiesConnStates.end(); ++i)
+	for (auto*& pair : facilitiesConnStates)
 	{
 		// Not a connected facility? -> push its iterator into the list!
 		// Oh, and we don't want duplicates (facilities with bigger sizes like hangar)
-		if (*((*i)->first) != lastFacility && !(*i)->second) result.push_back((*i)->first);
-		lastFacility = *((*i)->first);
-		delete *i; // We don't need the pair anymore.
+		if (*(pair->first) != lastFacility && !pair->second) result.push_back(pair->first);
+		lastFacility = *(pair->first);
+		delete pair; // We don't need the pair anymore.
 	}
 
 	return result;
@@ -1867,7 +1858,7 @@ std::list<std::vector<BaseFacility*>::iterator> Base::getDisconnectedFacilities(
  * Removes a base module, and deals with the ramifications thereof.
  * @param facility An iterator reference to the facility to destroy and remove.
  */
-void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
+void Base::destroyFacility(BASEFACILITIESITERATOR facility)
 {
 	if ((*facility)->getRules()->getCrafts() > 0)
 	{
@@ -1887,7 +1878,7 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 			// remove all items
 			while (!(*facility)->getCraftForDrawing()->getItems()->getContents()->empty())
 			{
-				std::map<std::string, int>::iterator i = (*facility)->getCraftForDrawing()->getItems()->getContents()->begin();
+				auto i = (*facility)->getCraftForDrawing()->getItems()->getContents()->begin();
 				_items->addItem(i->first, i->second);
 				(*facility)->getCraftForDrawing()->getItems()->removeItem(i->first, i->second);
 			}
@@ -1927,11 +1918,12 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 	{
 		// psi lab destruction: remove any soldiers over the maximum allowable from psi training.
 		int toRemove = (*facility)->getRules()->getPsiLaboratories() - getFreePsiLabs();
-		for (std::vector<Soldier*>::iterator i = _soldiers.begin(); i != _soldiers.end() && toRemove > 0; ++i)
+		for (auto* soldier : _soldiers)
 		{
-			if ((*i)->isInPsiTraining())
+			if (toRemove <= 0) break; // loop finished
+			if (soldier->isInPsiTraining())
 			{
-				(*i)->setPsiTraining(false);
+				soldier->setPsiTraining(false);
 				--toRemove;
 			}
 		}
@@ -1940,11 +1932,12 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 	{
 		// gym destruction: remove any soldiers over the maximum allowable from martial training.
 		int toRemove = (*facility)->getRules()->getTrainingFacilities() - getFreeTrainingSpace();
-		for (std::vector<Soldier*>::iterator i = _soldiers.begin(); i != _soldiers.end() && toRemove > 0; ++i)
+		for (auto* soldier : _soldiers)
 		{
-			if ((*i)->isInTraining())
+			if (toRemove <= 0) break; // loop finished
+			if (soldier->isInTraining())
 			{
-				(*i)->setTraining(false);
+				soldier->setTraining(false);
 				--toRemove;
 			}
 		}
@@ -1954,20 +1947,21 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 		// lab destruction: enforce lab space limits. take scientists off projects until
 		// it all evens out. research is not cancelled.
 		int toRemove = (*facility)->getRules()->getLaboratories() - getFreeLaboratories();
-		for (std::vector<ResearchProject*>::iterator i = _research.begin(); i != _research.end() && toRemove > 0;)
+		for (auto iter = _research.begin(); iter != _research.end() && toRemove > 0;)
 		{
-			if ((*i)->getAssigned() >= toRemove)
+			ResearchProject* proj = (*iter);
+			if (proj->getAssigned() >= toRemove)
 			{
-				(*i)->setAssigned((*i)->getAssigned() - toRemove);
+				proj->setAssigned(proj->getAssigned() - toRemove);
 				_scientists += toRemove;
 				break;
 			}
 			else
 			{
-				toRemove -= (*i)->getAssigned();
-				_scientists += (*i)->getAssigned();
-				(*i)->setAssigned(0);
-				++i;
+				toRemove -= proj->getAssigned();
+				_scientists += proj->getAssigned();
+				proj->setAssigned(0);
+				++iter;
 			}
 		}
 	}
@@ -2100,11 +2094,10 @@ void Base::cleanupDefenses(bool reclaimItems)
 
 	if (reclaimItems)
 	{
-		for (auto* v : _vehiclesFromBase)
+		for (auto* vehicle : _vehiclesFromBase)
 		{
-			RuleItem *rule = v->getRules();
-			std::string type = rule->getType();
-			_items->addItem(type);
+			RuleItem *rule = vehicle->getRules();
+			_items->addItem(rule->getType());
 			if (rule->getVehicleClipAmmo())
 			{
 				_items->addItem(rule->getVehicleClipAmmo(), rule->getVehicleClipsLoaded());
@@ -2161,7 +2154,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 	const auto prisonEnd = std::end(removedPrisonType);
 	auto prisonCurr = prisonBegin;
 
-	for (auto& bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		auto* rule = bf->getRules();
 		if (BaseAreaSubset::intersection(bf->getPlacement(), area))
@@ -2285,7 +2278,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 		};
 
 		// sum all available space
-		for (auto& bf : _facilities)
+		for (const auto* bf : _facilities)
 		{
 			auto* rule = bf->getRules();
 			if (!BaseAreaSubset::intersection(bf->getPlacement(), area))
@@ -2336,7 +2329,7 @@ RuleBaseFacilityFunctions Base::getProvidedBaseFunc(BaseAreaSubset skip) const
 {
 	RuleBaseFacilityFunctions ret = 0;
 
-	for (auto& bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		if (BaseAreaSubset::intersection(bf->getPlacement(), skip))
 		{
@@ -2361,7 +2354,7 @@ RuleBaseFacilityFunctions Base::getRequireBaseFunc(BaseAreaSubset skip) const
 {
 	RuleBaseFacilityFunctions ret = 0;
 
-	for (auto& bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		if (BaseAreaSubset::intersection(bf->getPlacement(), skip))
 		{
@@ -2370,14 +2363,14 @@ RuleBaseFacilityFunctions Base::getRequireBaseFunc(BaseAreaSubset skip) const
 		ret |= bf->getRules()->getRequireBaseFunc();
 	}
 
-	for (std::vector<ResearchProject*>::const_iterator res = _research.begin(); res != _research.end(); ++res)
+	for (const auto* proj : _research)
 	{
-		ret |= (*res)->getRules()->getRequireBaseFunc();
+		ret |= proj->getRules()->getRequireBaseFunc();
 	}
 
-	for (std::vector<Production*>::const_iterator prod = _productions.begin(); prod != _productions.end(); ++prod)
+	for (const auto* prod : _productions)
 	{
-		ret |= (*prod)->getRules()->getRequireBaseFunc();
+		ret |= prod->getRules()->getRequireBaseFunc();
 	}
 
 	return ret;
@@ -2391,7 +2384,7 @@ RuleBaseFacilityFunctions Base::getForbiddenBaseFunc(BaseAreaSubset skip) const
 {
 	RuleBaseFacilityFunctions ret = 0;
 
-	for (auto& bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		if (BaseAreaSubset::intersection(bf->getPlacement(), skip))
 		{
@@ -2411,7 +2404,7 @@ RuleBaseFacilityFunctions Base::getFutureBaseFunc(BaseAreaSubset skip) const
 {
 	RuleBaseFacilityFunctions ret = 0;
 
-	for (auto& bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		if (BaseAreaSubset::intersection(bf->getPlacement(), skip))
 		{
@@ -2434,9 +2427,9 @@ bool Base::isMaxAllowedLimitReached(RuleBaseFacility *rule) const
 
 	int total = 0;
 
-	for (std::vector<BaseFacility*>::const_iterator bf = _facilities.begin(); bf != _facilities.end(); ++bf)
+	for (const auto* bf : _facilities)
 	{
-		if ((*bf)->getRules()->getType() == rule->getType())
+		if (bf->getRules()->getType() == rule->getType())
 		{
 			total++;
 		}
@@ -2457,7 +2450,7 @@ BaseSumDailyRecovery Base::getSumRecoveryPerDay() const
 
 	int healthMaxinum = 0;
 
-	for (BaseFacility* bf : _facilities)
+	for (const auto* bf : _facilities)
 	{
 		if (bf->getBuildTime() == 0)
 		{
@@ -2497,11 +2490,11 @@ std::vector<Craft*>::iterator Base::removeCraft(Craft *craft, bool unload)
 	}
 
 	// Clear hangar
-	for (std::vector<BaseFacility*>::iterator f = _facilities.begin(); f != _facilities.end(); ++f)
+	for (auto* fac : _facilities)
 	{
-		if ((*f)->getCraftForDrawing() == craft)
+		if (fac->getCraftForDrawing() == craft)
 		{
-			(*f)->setCraftForDrawing(0);
+			fac->setCraftForDrawing(0);
 			break;
 		}
 	}

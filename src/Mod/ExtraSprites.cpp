@@ -224,24 +224,24 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 		}
 	}
 
-	for (std::map<int, std::string>::const_iterator j = _sprites.begin(); j != _sprites.end(); ++j)
+	for (const auto& pair : _sprites)
 	{
-		int startFrame = j->first;
-		std::string fileName = j->second;
+		int startFrame = pair.first;
+		const auto& fileName = pair.second;
 		if (fileName[fileName.length() - 1] == '/')
 		{
 			Log(LOG_VERBOSE) << "Loading surface set from folder: " << fileName << " starting at frame: " << startFrame;
 			int offset = startFrame;
 			std::vector<std::string> contents;
-			for (auto f: FileMap::getVFolderContents(fileName)) { contents.push_back(f); }
+			for (const auto& f: FileMap::getVFolderContents(fileName)) { contents.push_back(f); }
 			std::sort(contents.begin(), contents.end(), Unicode::naturalCompare);
-			for (auto k = contents.begin(); k != contents.end(); ++k)
+			for (const auto& name : contents)
 			{
-				if (!isImageFile(*k))
+				if (!isImageFile(name))
 					continue;
 				try
 				{
-					getFrame(set, offset)->loadImage(fileName + *k);
+					getFrame(set, offset)->loadImage(fileName + name);
 					offset++;
 				}
 				catch (Exception &e)

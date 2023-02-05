@@ -199,13 +199,13 @@ AlienDeployment::AlienDeployment(const std::string &type) :
  */
 AlienDeployment::~AlienDeployment()
 {
-	for (std::vector<std::pair<size_t, WeightedOptions*> >::iterator i = _huntMissionDistribution.begin(); i != _huntMissionDistribution.end(); ++i)
+	for (auto& pair : _huntMissionDistribution)
 	{
-		delete i->second;
+		delete pair.second;
 	}
-	for (std::vector<std::pair<size_t, WeightedOptions*> >::iterator i = _alienBaseUpgrades.begin(); i != _alienBaseUpgrades.end(); ++i)
+	for (auto& pair : _alienBaseUpgrades)
 	{
-		delete i->second;
+		delete pair.second;
 	}
 }
 

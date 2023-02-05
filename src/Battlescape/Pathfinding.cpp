@@ -181,8 +181,10 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 bool Pathfinding::aStarPath(Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget, bool sneak, int maxTUCost)
 {
 	// reset every node, so we have to check them all
-	for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
-		it->reset();
+	for (auto& pn : _nodes)
+	{
+		pn.reset();
+	}
 
 	// start position is the first one in our "open" list
 	PathfindingNode *start = getNode(startPosition);
@@ -1327,9 +1329,9 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 
 	PathfindingCost costMax = { tuMax, energyMax };
 
-	for (std::vector<PathfindingNode>::iterator it = _nodes.begin(); it != _nodes.end(); ++it)
+	for (auto& pn : _nodes)
 	{
-		it->reset();
+		pn.reset();
 	}
 	PathfindingNode *startNode = getNode(start);
 	startNode->connect({}, 0, 0);
@@ -1366,9 +1368,9 @@ std::vector<int> Pathfinding::findReachable(const BattleUnit *unit, const Battle
 	std::sort(reachable.begin(), reachable.end(), MinNodeCosts());
 	std::vector<int> tiles;
 	tiles.reserve(reachable.size());
-	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
+	for (auto* pn : reachable)
 	{
-		tiles.push_back(_save->getTileIndex((*it)->getPosition()));
+		tiles.push_back(_save->getTileIndex(pn->getPosition()));
 	}
 	return tiles;
 }

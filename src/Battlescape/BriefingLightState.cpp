@@ -114,12 +114,12 @@ void BriefingLightState::checkStartingCondition(AlienDeployment *deployment)
 			_btnArmors->setVisible(true);
 
 			std::vector<std::string> armorNameList;
-			for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+			for (auto& armorType : list)
 			{
-				ArticleDefinition* article = _game->getMod()->getUfopaediaArticle((*it), false);
+				ArticleDefinition* article = _game->getMod()->getUfopaediaArticle(armorType, false);
 				if (article && _game->getSavedGame()->isResearched(article->_requires))
 				{
-					std::string translation = tr(*it);
+					std::string translation = tr(armorType);
 					armorNameList.push_back(translation);
 				}
 			}

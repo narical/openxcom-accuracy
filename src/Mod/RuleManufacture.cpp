@@ -158,7 +158,7 @@ void RuleManufacture::breakDown(const Mod* mod, const RuleManufactureShortcut* r
 	// 1. init temp variables
 	std::map<const RuleItem*, int> tempRequiredItems = _requiredItems;
 	std::map<const RuleResearch*, bool> tempRequires;
-	for (auto& r : _requires)
+	for (auto* r : _requires)
 		tempRequires[r] = true;
 	RuleBaseFacilityFunctions tempRequiresBaseFunc = _requiresBaseFunc;
 
@@ -183,7 +183,7 @@ void RuleManufacture::breakDown(const Mod* mod, const RuleManufactureShortcut* r
 
 				for (auto& ri : projectRule->getRequiredItems())
 					tempRequiredItems[ri.first] += count * ri.second;
-				for (auto& r : projectRule->getRequirements())
+				for (auto* r : projectRule->getRequirements())
 					tempRequires[r] = true;
 
 				tempRequiresBaseFunc |= projectRule->getRequireBaseFunc();

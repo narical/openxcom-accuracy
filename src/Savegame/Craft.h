@@ -251,11 +251,11 @@ public:
 	/// Gets the amount of space used inside a craft.
 	int getSpaceUsed() const;
 	/// Checks if the commander is onboard.
-	bool isCommanderOnboard();
+	bool isCommanderOnboard() const;
 	/// Checks if there are only permitted soldier types onboard.
-	bool areOnlyPermittedSoldierTypesOnboard(const RuleStartingCondition* sc);
+	bool areOnlyPermittedSoldierTypesOnboard(const RuleStartingCondition* sc) const;
 	/// Checks if there are enough required items onboard.
-	bool areRequiredItemsOnboard(const std::map<std::string, int>& requiredItems);
+	bool areRequiredItemsOnboard(const std::map<std::string, int>& requiredItems) const;
 	/// Destroys given required items.
 	void destroyRequiredItems(const std::map<std::string, int>& requiredItems);
 	/// Checks if there are enough pilots onboard.

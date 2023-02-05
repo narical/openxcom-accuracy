@@ -84,22 +84,22 @@ PromotionsState::PromotionsState()
 	_lstSoldiers->setBackground(_window);
 	_lstSoldiers->setMargin(8);
 
-	for (std::vector<Base*>::iterator i = _game->getSavedGame()->getBases()->begin(); i != _game->getSavedGame()->getBases()->end(); ++i)
+	for (auto* xbase : *_game->getSavedGame()->getBases())
 	{
-		for (std::vector<Soldier*>::iterator j = (*i)->getSoldiers()->begin(); j != (*i)->getSoldiers()->end(); ++j)
+		for (auto* soldier : *xbase->getSoldiers())
 		{
-			if ((*j)->isPromoted())
+			if (soldier->isPromoted())
 			{
-				_lstSoldiers->addRow(3, (*j)->getName().c_str(), tr((*j)->getRankString()).c_str(), (*i)->getName().c_str());
+				_lstSoldiers->addRow(3, soldier->getName().c_str(), tr(soldier->getRankString()).c_str(), xbase->getName().c_str());
 			}
 		}
-		for (std::vector<Transfer*>::iterator j = (*i)->getTransfers()->begin(); j != (*i)->getTransfers()->end(); ++j)
+		for (auto* transfer : *xbase->getTransfers())
 		{
-			if ((*j)->getType() == TRANSFER_SOLDIER)
+			if (transfer->getType() == TRANSFER_SOLDIER)
 			{
-				if ((*j)->getSoldier()->isPromoted())
+				if (transfer->getSoldier()->isPromoted())
 				{
-					_lstSoldiers->addRow(3, (*j)->getSoldier()->getName().c_str(), tr((*j)->getSoldier()->getRankString()).c_str(), (*i)->getName().c_str());
+					_lstSoldiers->addRow(3, transfer->getSoldier()->getName().c_str(), tr(transfer->getSoldier()->getRankString()).c_str(), xbase->getName().c_str());
 				}
 			}
 		}

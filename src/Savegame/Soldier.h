@@ -264,9 +264,9 @@ public:
 	/// Trains a soldier's physical stats
 	void trainPhys(int customTrainingFactor);
 	/// Is the soldier already fully trained?
-	bool isFullyTrained();
+	bool isFullyTrained() const;
 	/// Returns whether the unit is in training or not
-	bool isInTraining();
+	bool isInTraining() const;
 	/// set the training status
 	void setTraining(bool training);
 	/// Should the soldier return to martial training automatically when fully healed?
@@ -278,7 +278,7 @@ public:
 	/// Gets the previous transformations performed on this soldier
 	std::map<std::string, int> &getPreviousTransformations();
 	/// Returns whether the unit is eligible for a certain transformation
-	bool isEligibleForTransformation(RuleSoldierTransformation *transformationRule);
+	bool isEligibleForTransformation(const RuleSoldierTransformation *transformationRule) const;
 	/// Performs a transformation on this soldier
 	void transform(const Mod *mod, RuleSoldierTransformation *transformationRule, Soldier *sourceSoldier, Base *base);
 	/// Calculates how this project changes the soldier's stats
@@ -286,9 +286,9 @@ public:
 	/// Gets all the soldier bonuses
 	const std::vector<const RuleSoldierBonus*> *getBonuses(const Mod *mod);
 	/// Get pointer to current stats with soldier bonuses, but without armor bonuses.
-	UnitStats *getStatsWithSoldierBonusesOnly();
+	const UnitStats *getStatsWithSoldierBonusesOnly() const;
 	/// Get pointer to current stats with armor and soldier bonuses.
-	UnitStats *getStatsWithAllBonuses();
+	const UnitStats *getStatsWithAllBonuses() const;
 	/// Pre-calculates soldier stats with various bonuses.
 	bool prepareStatsWithBonuses(const Mod *mod);
 	/// Gets a pointer to the daily dogfight experience cache.

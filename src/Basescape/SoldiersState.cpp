@@ -152,7 +152,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 			_availableOptions.push_back("STR_TRANSFORMATIONS_OVERVIEW");
 
 		bool refreshDeadSoldierStats = false;
-		for (auto* transformationRule : availableTransformations)
+		for (const auto* transformationRule : availableTransformations)
 		{
 			_availableOptions.push_back(transformationRule->getName());
 			if (transformationRule->isAllowingDeadSoldiers())
@@ -162,7 +162,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 		}
 		if (refreshDeadSoldierStats)
 		{
-			for (auto& deadMan : *_game->getSavedGame()->getDeadSoldiers())
+			for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
 			{
 				deadMan->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 			}
@@ -245,9 +245,9 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
  */
 SoldiersState::~SoldiersState()
 {
-	for (std::vector<SortFunctor *>::iterator it = _sortFunctors.begin(); it != _sortFunctors.end(); ++it)
+	for (auto* sortFunctor : _sortFunctors)
 	{
-		delete(*it);
+		delete sortFunctor;
 	}
 }
 
@@ -299,11 +299,9 @@ void SoldiersState::cbxSortByChange(Action *action)
 	{
 		// restore original ordering, ignoring (of course) those
 		// soldiers that have been sacked since this state started
-		for (std::vector<Soldier *>::const_iterator it = _origSoldierOrder.begin();
-		it != _origSoldierOrder.end(); ++it)
+		for (const auto* origSoldier : _origSoldierOrder)
 		{
-			std::vector<Soldier *>::iterator soldierIt =
-			std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *it);
+			auto soldierIt = std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), origSoldier);
 			if (soldierIt != _base->getSoldiers()->end())
 			{
 				Soldier *s = *soldierIt;
@@ -365,7 +363,7 @@ void SoldiersState::initList(size_t scrl)
 		RuleSoldierTransformation *transformationRule = _game->getMod()->getSoldierTransformation(selAction);
 		if (transformationRule)
 		{
-			for (auto& soldier : *_base->getSoldiers())
+			for (auto* soldier : *_base->getSoldiers())
 			{
 				if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
 				{
@@ -377,7 +375,7 @@ void SoldiersState::initList(size_t scrl)
 					_filteredListOfSoldiers.push_back(soldier);
 				}
 			}
-			for (auto& deadMan : *_game->getSavedGame()->getDeadSoldiers())
+			for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
 			{
 				if (deadMan->isEligibleForTransformation(transformationRule))
 				{
@@ -399,28 +397,28 @@ void SoldiersState::initList(size_t scrl)
 
 	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
 	unsigned int row = 0;
-	for (std::vector<Soldier*>::iterator i = _filteredListOfSoldiers.begin(); i != _filteredListOfSoldiers.end(); ++i)
+	for (auto* soldier : _filteredListOfSoldiers)
 	{
-		std::string craftString = (*i)->getCraftString(_game->getLanguage(), recovery);
+		std::string craftString = soldier->getCraftString(_game->getLanguage(), recovery);
 
 		if (_dynGetter != NULL)
 		{
 			// call corresponding getter
-			int dynStat = (*_dynGetter)(_game, *i);
+			int dynStat = (*_dynGetter)(_game, soldier);
 			std::ostringstream ss;
 			ss << dynStat;
-			_lstSoldiers->addRow(4, (*i)->getName(true).c_str(), tr((*i)->getRankString()).c_str(), craftString.c_str(), ss.str().c_str());
+			_lstSoldiers->addRow(4, soldier->getName(true).c_str(), tr(soldier->getRankString()).c_str(), craftString.c_str(), ss.str().c_str());
 		}
 		else
 		{
-			_lstSoldiers->addRow(3, (*i)->getName(true).c_str(), tr((*i)->getRankString()).c_str(), craftString.c_str());
+			_lstSoldiers->addRow(3, soldier->getName(true).c_str(), tr(soldier->getRankString()).c_str(), craftString.c_str());
 		}
 
-		if ((*i)->getCraft() == 0)
+		if (soldier->getCraft() == 0)
 		{
 			_lstSoldiers->setRowColor(row, _lstSoldiers->getSecondaryColor());
 		}
-		if ((*i)->getDeath())
+		if (soldier->getDeath())
 		{
 			_lstSoldiers->setRowColor(row, _txtCraft->getColor());
 		}

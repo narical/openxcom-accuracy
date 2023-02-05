@@ -689,33 +689,35 @@ void InventoryState::updateStats()
  */
 void InventoryState::saveEquipmentLayout()
 {
-	for (std::vector<BattleUnit*>::iterator i = _battleGame->getUnits()->begin(); i != _battleGame->getUnits()->end(); ++i)
+	for (auto* bu : *_battleGame->getUnits())
 	{
 		// we need X-Com soldiers only
-		if ((*i)->getGeoscapeSoldier() == 0) continue;
+		if (bu->getGeoscapeSoldier() == 0) continue;
 
-		std::vector<EquipmentLayoutItem*> *layoutItems = (*i)->getGeoscapeSoldier()->getEquipmentLayout();
+		std::vector<EquipmentLayoutItem*> *layoutItems = bu->getGeoscapeSoldier()->getEquipmentLayout();
 
 		// clear the previous save
 		if (!layoutItems->empty())
 		{
-			for (std::vector<EquipmentLayoutItem*>::iterator j = layoutItems->begin(); j != layoutItems->end(); ++j)
-				delete *j;
+			for (auto* equipmentLayoutItem : *layoutItems)
+			{
+				delete equipmentLayoutItem;
+			}
 			layoutItems->clear();
 		}
 
 		// save the soldier's items
 		// note: with using getInventory() we are skipping the ammos loaded, (they're not owned) because we handle the loaded-ammos separately (inside)
-		for (std::vector<BattleItem*>::iterator j = (*i)->getInventory()->begin(); j != (*i)->getInventory()->end(); ++j)
+		for (auto* bi : *bu->getInventory())
 		{
 			// skip fixed items
-			if ((*j)->getRules()->isFixed())
+			if (bi->getRules()->isFixed())
 			{
-				bool loaded = (*j)->needsAmmoForSlot(0) && (*j)->getAmmoForSlot(0);
+				bool loaded = bi->needsAmmoForSlot(0) && bi->getAmmoForSlot(0);
 				if (!loaded) continue;
 			}
 
-			layoutItems->push_back(new EquipmentLayoutItem((*j)));
+			layoutItems->push_back(new EquipmentLayoutItem(bi));
 		}
 	}
 }
@@ -745,11 +747,11 @@ void InventoryState::btnArmorClick(Action *action)
 	if (!(s->getCraft() && s->getCraft()->getStatus() == "STR_OUT"))
 	{
 		size_t soldierIndex = 0;
-		for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+		for (auto soldierIt = _base->getSoldiers()->begin(); soldierIt != _base->getSoldiers()->end(); ++soldierIt)
 		{
-			if ((*i)->getId() == s->getId())
+			if ((*soldierIt)->getId() == s->getId())
 			{
-				soldierIndex = i - _base->getSoldiers()->begin();
+				soldierIndex = soldierIt - _base->getSoldiers()->begin();
 			}
 		}
 
@@ -783,11 +785,11 @@ void InventoryState::btnArmorClickRight(Action *action)
 	if (!(s->getCraft() && s->getCraft()->getStatus() == "STR_OUT"))
 	{
 		size_t soldierIndex = 0;
-		for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+		for (auto soldierIt = _base->getSoldiers()->begin(); soldierIt != _base->getSoldiers()->end(); ++soldierIt)
 		{
-			if ((*i)->getId() == s->getId())
+			if ((*soldierIt)->getId() == s->getId())
 			{
-				soldierIndex = i - _base->getSoldiers()->begin();
+				soldierIndex = soldierIt - _base->getSoldiers()->begin();
 			}
 		}
 
@@ -1219,17 +1221,16 @@ void InventoryState::_createInventoryTemplate(std::vector<EquipmentLayoutItem*> 
 	// copy inventory instead of just keeping a pointer to it.  that way
 	// create/apply can be used as an undo button for a single unit and will
 	// also work as expected if inventory is modified after 'create' is clicked
-	std::vector<BattleItem*> *unitInv = _battleGame->getSelectedUnit()->getInventory();
-	for (std::vector<BattleItem*>::iterator j = unitInv->begin(); j != unitInv->end(); ++j)
+	for (const auto* bi : *_battleGame->getSelectedUnit()->getInventory())
 	{
 		// skip fixed items
-		if ((*j)->getRules()->isFixed())
+		if (bi->getRules()->isFixed())
 		{
-			bool loaded = (*j)->needsAmmoForSlot(0) && (*j)->getAmmoForSlot(0);
+			bool loaded = bi->needsAmmoForSlot(0) && bi->getAmmoForSlot(0);
 			if (!loaded) continue;
 		}
 
-		inventoryTemplate.push_back(new EquipmentLayoutItem((*j)));
+		inventoryTemplate.push_back(new EquipmentLayoutItem(bi));
 	}
 }
 
@@ -1319,8 +1320,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 	// from the ground.  if any item is not found on the ground, display warning
 	// message, but continue attempting to fulfill the template as best we can
 	bool itemMissing = false;
-	std::vector<EquipmentLayoutItem*>::iterator templateIt;
-	for (templateIt = inventoryTemplate.begin(); templateIt != inventoryTemplate.end(); ++templateIt)
+	for (const auto* equipmentLayoutItem : inventoryTemplate)
 	{
 		// search for template item in ground inventory
 		bool found = false;
@@ -1332,7 +1332,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
-			targetAmmo[slot] = (*templateIt)->getAmmoItemForSlot(slot);
+			targetAmmo[slot] = equipmentLayoutItem->getAmmoItemForSlot(slot);
 			needsAmmo[slot] = (targetAmmo[slot] != "NONE");
 			matchedAmmo[slot] = nullptr;
 		}
@@ -1357,7 +1357,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 				continue;
 			}
 
-			if ((*templateIt)->isFixed() == false && (*templateIt)->getItemType() == groundItemName)
+			if (equipmentLayoutItem->isFixed() == false && equipmentLayoutItem->getItemType() == groundItemName)
 			{
 				// if the loaded ammo doesn't match the template item's,
 				// remember the weapon for later and continue scanning
@@ -1389,7 +1389,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 			}
 		}
 
-		if ((*templateIt)->isFixed())
+		if (equipmentLayoutItem->isFixed())
 		{
 			for (BattleItem* fixedItem : *unit->getInventory())
 			{
@@ -1398,10 +1398,10 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 					// this is not a fixed item, continue searching...
 					continue;
 				}
-				if (fixedItem->getSlot()->getId() == (*templateIt)->getSlot() &&
-					fixedItem->getSlotX() == (*templateIt)->getSlotX() &&
-					fixedItem->getSlotY() == (*templateIt)->getSlotY() &&
-					fixedItem->getRules()->getType() == (*templateIt)->getItemType())
+				if (fixedItem->getSlot()->getId() == equipmentLayoutItem->getSlot() &&
+					fixedItem->getSlotX() == equipmentLayoutItem->getSlotX() &&
+					fixedItem->getSlotY() == equipmentLayoutItem->getSlotY() &&
+					fixedItem->getRules()->getType() == equipmentLayoutItem->getItemType())
 				{
 					// if the loaded ammo doesn't match the template item's,
 					// remember the weapon for later and continue scanning
@@ -1472,7 +1472,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 			itemMissing = true;
 		}
 
-		if ((*templateIt)->isFixed())
+		if (equipmentLayoutItem->isFixed())
 		{
 			// we have loaded the fixed weapon (if possible) and we don't need to do anything else, it's already in the correct slot
 			continue;
@@ -1482,16 +1482,16 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		if (matchedWeapon && !_inv->overlapItems(
 			unit,
 			matchedWeapon,
-			_game->getMod()->getInventory((*templateIt)->getSlot(), true),
-			(*templateIt)->getSlotX(),
-			(*templateIt)->getSlotY()))
+			_game->getMod()->getInventory(equipmentLayoutItem->getSlot(), true),
+			equipmentLayoutItem->getSlotX(),
+			equipmentLayoutItem->getSlotY()))
 		{
 			// move matched item from ground to the appropriate inventory slot
 			matchedWeapon->moveToOwner(unit);
-			matchedWeapon->setSlot(_game->getMod()->getInventory((*templateIt)->getSlot()));
-			matchedWeapon->setSlotX((*templateIt)->getSlotX());
-			matchedWeapon->setSlotY((*templateIt)->getSlotY());
-			matchedWeapon->setFuseTimer((*templateIt)->getFuseTimer());
+			matchedWeapon->setSlot(_game->getMod()->getInventory(equipmentLayoutItem->getSlot()));
+			matchedWeapon->setSlotX(equipmentLayoutItem->getSlotX());
+			matchedWeapon->setSlotY(equipmentLayoutItem->getSlotY());
+			matchedWeapon->setFuseTimer(equipmentLayoutItem->getFuseTimer());
 		}
 		else
 		{
@@ -1946,34 +1946,34 @@ void InventoryState::onMoveGroundInventoryToBase(Action *)
 	std::vector<BattleItem*> *groundInv = groundTile->getInventory();
 
 	// step 1: move stuff from craft to base
-	for (std::vector<BattleItem*>::iterator i = groundInv->begin(); i != groundInv->end(); ++i)
+	for (auto* bi : *groundInv)
 	{
-		std::string weaponRule = (*i)->getRules()->getType();
+		const auto& weaponType = bi->getRules()->getType();
 		// check all ammo slots first
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
-			if ((*i)->getAmmoForSlot(slot))
+			if (bi->getAmmoForSlot(slot))
 			{
-				std::string ammoRule = (*i)->getAmmoForSlot(slot)->getRules()->getType();
+				const auto& ammoType = bi->getAmmoForSlot(slot)->getRules()->getType();
 				// only real ammo
-				if (weaponRule != ammoRule)
+				if (weaponType != ammoType)
 				{
-					c->getItems()->removeItem(ammoRule);
-					_base->getStorageItems()->addItem(ammoRule);
+					c->getItems()->removeItem(ammoType);
+					_base->getStorageItems()->addItem(ammoType);
 				}
 			}
 		}
 		// and the weapon as last
-		c->getItems()->removeItem(weaponRule);
-		_base->getStorageItems()->addItem(weaponRule);
+		c->getItems()->removeItem(weaponType);
+		_base->getStorageItems()->addItem(weaponType);
 	}
 
 	// step 2: clear ground
-	for (std::vector<BattleItem*>::iterator i = groundInv->begin(); i != groundInv->end(); )
+	for (auto itemIt = groundInv->begin(); itemIt != groundInv->end(); )
 	{
-		(*i)->setOwner(NULL);
-		BattleItem *item = *i;
-		i = groundInv->erase(i);
+		BattleItem* item = (*itemIt);
+		item->setOwner(NULL);
+		itemIt = groundInv->erase(itemIt);
 		_game->getSavedGame()->getSavedBattle()->removeItem(item);
 	}
 

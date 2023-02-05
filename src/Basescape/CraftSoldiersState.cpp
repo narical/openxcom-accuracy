@@ -179,10 +179,9 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
  */
 CraftSoldiersState::~CraftSoldiersState()
 {
-	for (std::vector<SortFunctor *>::iterator it = _sortFunctors.begin();
-		it != _sortFunctors.end(); ++it)
+	for (auto* sortFunctor : _sortFunctors)
 	{
-		delete(*it);
+		delete sortFunctor;
 	}
 }
 
@@ -234,11 +233,9 @@ void CraftSoldiersState::cbxSortByChange(Action *)
 	{
 		// restore original ordering, ignoring (of course) those
 		// soldiers that have been sacked since this state started
-		for (std::vector<Soldier *>::const_iterator it = _origSoldierOrder.begin();
-			it != _origSoldierOrder.end(); ++it)
+		for (const auto* origSoldier : _origSoldierOrder)
 		{
-			std::vector<Soldier *>::iterator soldierIt =
-				std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *it);
+			auto soldierIt = std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), origSoldier);
 			if (soldierIt != _base->getSoldiers()->end())
 			{
 				Soldier *s = *soldierIt;
@@ -309,27 +306,27 @@ void CraftSoldiersState::initList(size_t scrl)
 
 	Craft *c = _base->getCrafts()->at(_craft);
 	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
-	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+	for (auto* soldier : *_base->getSoldiers())
 	{
 		if (_dynGetter != NULL)
 		{
 			// call corresponding getter
-			int dynStat = (*_dynGetter)(_game, *i);
+			int dynStat = (*_dynGetter)(_game, soldier);
 			std::ostringstream ss;
 			ss << dynStat;
-			_lstSoldiers->addRow(4, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString()).c_str(), (*i)->getCraftString(_game->getLanguage(), recovery).c_str(), ss.str().c_str());
+			_lstSoldiers->addRow(4, soldier->getName(true, 19).c_str(), tr(soldier->getRankString()).c_str(), soldier->getCraftString(_game->getLanguage(), recovery).c_str(), ss.str().c_str());
 		}
 		else
 		{
-			_lstSoldiers->addRow(3, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString()).c_str(), (*i)->getCraftString(_game->getLanguage(), recovery).c_str());
+			_lstSoldiers->addRow(3, soldier->getName(true, 19).c_str(), tr(soldier->getRankString()).c_str(), soldier->getCraftString(_game->getLanguage(), recovery).c_str());
 		}
 
 		Uint8 color;
-		if ((*i)->getCraft() == c)
+		if (soldier->getCraft() == c)
 		{
 			color = _lstSoldiers->getSecondaryColor();
 		}
-		else if ((*i)->getCraft() != 0)
+		else if (soldier->getCraft() != 0)
 		{
 			color = _otherCraftColor;
 		}
@@ -563,15 +560,15 @@ void CraftSoldiersState::btnDeassignAllSoldiersClick(Action *action)
 	Uint8 color = _lstSoldiers->getColor();
 
 	int row = 0;
-	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+	for (auto* soldier : *_base->getSoldiers())
 	{
 		color = _lstSoldiers->getColor();
-		if ((*i)->getCraft() && (*i)->getCraft()->getStatus() != "STR_OUT")
+		if (soldier->getCraft() && soldier->getCraft()->getStatus() != "STR_OUT")
 		{
-			(*i)->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
+			soldier->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
 			_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
 		}
-		else if ((*i)->getCraft() && (*i)->getCraft()->getStatus() == "STR_OUT")
+		else if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
 		{
 			color = _otherCraftColor;
 		}
@@ -593,11 +590,11 @@ void CraftSoldiersState::btnDeassignCraftSoldiersClick(Action *action)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	int row = 0;
-	for (auto* s : *_base->getSoldiers())
+	for (auto* soldier : *_base->getSoldiers())
 	{
-		if (s->getCraft() == c)
+		if (soldier->getCraft() == c)
 		{
-			s->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
+			soldier->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
 			_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
 			_lstSoldiers->setRowColor(row, _lstSoldiers->getColor());
 		}

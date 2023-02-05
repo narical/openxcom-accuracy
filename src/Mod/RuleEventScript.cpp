@@ -40,9 +40,9 @@ RuleEventScript::RuleEventScript(const std::string &type) :
  */
 RuleEventScript::~RuleEventScript()
 {
-	for (std::vector<std::pair<size_t, WeightedOptions*> >::iterator i = _eventWeights.begin(); i != _eventWeights.end(); ++i)
+	for (auto& pair : _eventWeights)
 	{
-		delete i->second;
+		delete pair.second;
 	}
 }
 

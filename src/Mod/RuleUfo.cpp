@@ -321,7 +321,7 @@ const RuleUfoStats& RuleUfo::getStats() const
  */
 const RuleUfoStats& RuleUfo::getRaceBonus(const std::string& s) const
 {
-	std::map<std::string, RuleUfoStats>::const_iterator i = _statsRaceBonus.find(s);
+	auto i = _statsRaceBonus.find(s);
 	if (i != _statsRaceBonus.end())
 		return i->second;
 	else

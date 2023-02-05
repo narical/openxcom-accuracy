@@ -124,15 +124,15 @@ void Craft::recalcSpeedMaxRadian()
  */
 Craft::~Craft()
 {
-	for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); i != _weapons.end(); ++i)
+	for (auto* cw : _weapons)
 	{
-		delete *i;
+		delete cw;
 	}
 	delete _items;
 	delete _tempSoldierItems;
-	for (std::vector<Vehicle*>::iterator i = _vehicles.begin(); i != _vehicles.end(); ++i)
+	for (auto* vehicle : _vehicles)
 	{
-		delete *i;
+		delete vehicle;
 	}
 }
 
@@ -177,16 +177,16 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 
 	_items->load(node["items"]);
 	// Some old saves have bad items, better get rid of them to avoid further bugs
-	for (std::map<std::string, int>::iterator i = _items->getContents()->begin(); i != _items->getContents()->end();)
+	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
 	{
-		if (mod->getItem(i->first) == 0)
+		if (mod->getItem(iter->first) == 0)
 		{
-			Log(LOG_ERROR) << "Failed to load item " << i->first;
-			_items->getContents()->erase(i++);
+			Log(LOG_ERROR) << "Failed to load item " << iter->first;
+			_items->getContents()->erase(iter++);
 		}
 		else
 		{
-			++i;
+			++iter;
 		}
 	}
 	for (YAML::const_iterator i = node["vehicles"].begin(); i != node["vehicles"].end(); ++i)
@@ -227,22 +227,22 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 		}
 		else if (type == "STR_UFO")
 		{
-			for (std::vector<Ufo*>::iterator i = save->getUfos()->begin(); i != save->getUfos()->end(); ++i)
+			for (auto* ufo : *save->getUfos())
 			{
-				if ((*i)->getId() == id)
+				if (ufo->getId() == id)
 				{
-					setDestination(*i);
+					setDestination(ufo);
 					break;
 				}
 			}
 		}
 		else if (type == "STR_WAY_POINT")
 		{
-			for (std::vector<Waypoint*>::iterator i = save->getWaypoints()->begin(); i != save->getWaypoints()->end(); ++i)
+			for (auto* wp : *save->getWaypoints())
 			{
-				if ((*i)->getId() == id)
+				if (wp->getId() == id)
 				{
-					setDestination(*i);
+					setDestination(wp);
 					break;
 				}
 			}
@@ -253,19 +253,21 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 			if (type == "STR_ALIEN_TERROR")
 				type = "STR_TERROR_SITE";
 			bool found = false;
-			for (std::vector<MissionSite*>::iterator i = save->getMissionSites()->begin(); i != save->getMissionSites()->end() && !found; ++i)
+			for (auto* ms : *save->getMissionSites())
 			{
-				if ((*i)->getId() == id && (*i)->getDeployment()->getMarkerName() == type)
+				if (found) break; // loop finished
+				if (ms->getId() == id && ms->getDeployment()->getMarkerName() == type)
 				{
-					setDestination(*i);
+					setDestination(ms);
 					found = true;
 				}
 			}
-			for (std::vector<AlienBase*>::iterator i = save->getAlienBases()->begin(); i != save->getAlienBases()->end() && !found; ++i)
+			for (auto* ab : *save->getAlienBases())
 			{
-				if ((*i)->getId() == id && (*i)->getDeployment()->getMarkerName() == type)
+				if (found) break; // loop finished
+				if (ab->getId() == id && ab->getDeployment()->getMarkerName() == type)
 				{
-					setDestination(*i);
+					setDestination(ab);
 					found = true;
 				}
 			}
@@ -311,13 +313,15 @@ void Craft::finishLoading(const YAML::Node &node, SavedGame *save)
 		int id = dest["id"].as<int>();
 
 		bool found = false;
-		for (std::vector<Base*>::iterator bi = save->getBases()->begin(); bi != save->getBases()->end() && !found; ++bi)
+		for (auto* xbase : *save->getBases())
 		{
-			for (std::vector<Craft*>::iterator ci = (*bi)->getCrafts()->begin(); ci != (*bi)->getCrafts()->end() && !found; ++ci)
+			if (found) break; // loop finished
+			for (auto* xcraft : *xbase->getCrafts())
 			{
-				if ((*ci)->getId() == id && (*ci)->getRules()->getType() == type)
+				if (found) break; // loop finished
+				if (xcraft->getId() == id && xcraft->getRules()->getType() == type)
 				{
-					setDestination(*ci);
+					setDestination(xcraft);
 					found = true;
 				}
 			}
@@ -353,12 +357,12 @@ YAML::Node Craft::save(const ScriptGlobal *shared) const
 	node["fuel"] = _fuel;
 	node["damage"] = _damage;
 	node["shield"] = _shield;
-	for (std::vector<CraftWeapon*>::const_iterator i = _weapons.begin(); i != _weapons.end(); ++i)
+	for (const auto* cw : _weapons)
 	{
 		YAML::Node subnode;
-		if (*i != 0)
+		if (cw != 0)
 		{
-			subnode = (*i)->save();
+			subnode = cw->save();
 		}
 		else
 		{
@@ -367,9 +371,9 @@ YAML::Node Craft::save(const ScriptGlobal *shared) const
 		node["weapons"].push_back(subnode);
 	}
 	node["items"] = _items->save();
-	for (std::vector<Vehicle*>::const_iterator i = _vehicles.begin(); i != _vehicles.end(); ++i)
+	for (const auto* vehicle : _vehicles)
 	{
-		node["vehicles"].push_back((*i)->save());
+		node["vehicles"].push_back(vehicle->save());
 	}
 	node["status"] = _status;
 	if (_lowFuel)
@@ -386,9 +390,9 @@ YAML::Node Craft::save(const ScriptGlobal *shared) const
 		node["isAutoPatrolling"] = _isAutoPatrolling;
 	node["lonAuto"] = serializeDouble(_lonAuto);
 	node["latAuto"] = serializeDouble(_latAuto);
-	for (std::vector<int>::const_iterator i = _pilots.begin(); i != _pilots.end(); ++i)
+	for (int soldierId : _pilots)
 	{
-		node["pilots"].push_back((*i));
+		node["pilots"].push_back(soldierId);
 	}
 	if (!_customSoldierDeployment.empty())
 	{
@@ -595,11 +599,11 @@ int Craft::getNumWeapons(bool onlyLoaded) const
 
 	int total = 0;
 
-	for (std::vector<CraftWeapon*>::const_iterator i = _weapons.begin(); i != _weapons.end(); ++i)
+	for (const auto* cw : _weapons)
 	{
-		if ((*i) != 0)
+		if (cw != 0)
 		{
-			if (onlyLoaded && !(*i)->getAmmo())
+			if (onlyLoaded && !cw->getAmmo())
 			{
 				continue;
 			}
@@ -1037,38 +1041,39 @@ void Craft::returnToBase()
  */
 void Craft::evacuateCrew(const Mod *mod)
 {
-	for (std::vector<Soldier*>::iterator s = _base->getSoldiers()->begin(); s != _base->getSoldiers()->end(); )
+	for (auto iter = _base->getSoldiers()->begin(); iter != _base->getSoldiers()->end(); )
 	{
-		if ((*s)->getCraft() == this)
+		Soldier* soldier = (*iter);
+		if (soldier->getCraft() == this)
 		{
-			int survivalChance = isPilot((*s)->getId()) ? mod->getPilotsEmergencyEvacuationSurvivalChance() : mod->getCrewEmergencyEvacuationSurvivalChance();
+			int survivalChance = isPilot(soldier->getId()) ? mod->getPilotsEmergencyEvacuationSurvivalChance() : mod->getCrewEmergencyEvacuationSurvivalChance();
 			if (RNG::percent(survivalChance))
 			{
 				// remove from craft
-				(*s)->setCraft(0);
+				soldier->setCraft(0);
 				// remove from training, but remember to return to training when back in the base
 				{
-					if ((*s)->isInTraining())
+					if (soldier->isInTraining())
 					{
-						(*s)->setReturnToTrainingWhenHealed(true);
+						soldier->setReturnToTrainingWhenHealed(true);
 					}
-					(*s)->setTraining(false);
+					soldier->setTraining(false);
 				}
 				// transfer to base
 				Transfer *t = new Transfer(mod->getPersonnelTime());
-				t->setSoldier((*s));
+				t->setSoldier(soldier);
 				_base->getTransfers()->push_back(t);
 				// next
-				s = _base->getSoldiers()->erase(s);
+				iter = _base->getSoldiers()->erase(iter);
 			}
 			else
 			{
-				++s; // will be killed later
+				++iter; // will be killed later
 			}
 		}
 		else
 		{
-			++s; // next
+			++iter; // next
 		}
 	}
 	removeAllPilots(); // just in case
@@ -1117,18 +1122,18 @@ bool Craft::isTakingOff() const
 void Craft::checkup()
 {
 	int available = 0, full = 0;
-	for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); i != _weapons.end(); ++i)
+	for (auto* cw : _weapons)
 	{
-		if ((*i) == 0)
+		if (cw == 0)
 			continue;
 		available++;
-		if ((*i)->getAmmo() >= (*i)->getRules()->getAmmoMax() || (*i)->isDisabled())
+		if (cw->getAmmo() >= cw->getRules()->getAmmoMax() || cw->isDisabled())
 		{
 			full++;
 		}
 		else
 		{
-			(*i)->setRearming(true);
+			cw->setRearming(true);
 		}
 	}
 
@@ -1310,9 +1315,9 @@ std::string Craft::refuel()
 	if (_fuel >= _stats.fuelMax)
 	{
 		_status = "STR_READY";
-		for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); i != _weapons.end(); ++i)
+		for (const auto* cw : _weapons)
 		{
-			if (*i && (*i)->isRearming())
+			if (cw && cw->isRearming())
 			{
 				_status = "STR_REARMING";
 				break;
@@ -1331,29 +1336,30 @@ std::string Craft::refuel()
 const RuleItem* Craft::rearm()
 {
 	const RuleItem* ammo = nullptr;
-	for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); ; ++i)
+	for (auto iter = _weapons.begin(); ; ++iter)
 	{
-		if (i == _weapons.end())
+		if (iter == _weapons.end())
 		{
 			_status = "STR_REFUELLING";
 			break;
 		}
-		if (*i != 0 && (*i)->isRearming())
+		CraftWeapon* cw = (*iter);
+		if (cw != 0 && cw->isRearming())
 		{
-			auto* clip = (*i)->getRules()->getClipItem();
+			auto* clip = cw->getRules()->getClipItem();
 			int available = _base->getStorageItems()->getItem(clip);
 			if (clip == nullptr)
 			{
-				(*i)->rearm(0, 0);
+				cw->rearm(0, 0);
 			}
 			else if (available > 0)
 			{
-				int used = (*i)->rearm(available, clip->getClipSize());
+				int used = cw->rearm(available, clip->getClipSize());
 
-				if (used == available && (*i)->isRearming())
+				if (used == available && cw->isRearming())
 				{
 					ammo = clip;
-					(*i)->setRearming(false);
+					cw->setRearming(false);
 				}
 
 				_base->getStorageItems()->removeItem(clip, used);
@@ -1361,7 +1367,7 @@ const RuleItem* Craft::rearm()
 			else
 			{
 				ammo = clip;
-				(*i)->setRearming(false);
+				cw->setRearming(false);
 			}
 			break;
 		}
@@ -1419,15 +1425,15 @@ int Craft::getSpaceAvailable() const
 int Craft::getSpaceUsed() const
 {
 	int vehicleSpaceUsed = 0;
-	for (Vehicle* v : _vehicles)
+	for (auto* vehicle : _vehicles)
 	{
-		vehicleSpaceUsed += v->getTotalSize();
+		vehicleSpaceUsed += vehicle->getTotalSize();
 	}
-	for (Soldier *s : *_base->getSoldiers())
+	for (auto* soldier : *_base->getSoldiers())
 	{
-		if (s->getCraft() == this)
+		if (soldier->getCraft() == this)
 		{
-			vehicleSpaceUsed += s->getArmor()->getTotalSize();
+			vehicleSpaceUsed += soldier->getArmor()->getTotalSize();
 		}
 	}
 	return vehicleSpaceUsed;
@@ -1437,11 +1443,11 @@ int Craft::getSpaceUsed() const
  * Checks if the commander is onboard.
  * @return True if the commander is onboard.
  */
-bool Craft::isCommanderOnboard()
+bool Craft::isCommanderOnboard() const
 {
-	for (Soldier* s : *_base->getSoldiers())
+	for (const auto* soldier : *_base->getSoldiers())
 	{
-		if (s->getCraft() == this && s->getRank() == RANK_COMMANDER)
+		if (soldier->getCraft() == this && soldier->getRank() == RANK_COMMANDER)
 		{
 			return true;
 		}
@@ -1453,11 +1459,11 @@ bool Craft::isCommanderOnboard()
  * Checks if there are only permitted soldier types onboard.
  * @return True if all soldiers onboard are permitted.
  */
-bool Craft::areOnlyPermittedSoldierTypesOnboard(const RuleStartingCondition* sc)
+bool Craft::areOnlyPermittedSoldierTypesOnboard(const RuleStartingCondition* sc) const
 {
-	for (Soldier* s : *_base->getSoldiers())
+	for (const auto* soldier : *_base->getSoldiers())
 	{
-		if (s->getCraft() == this && !sc->isSoldierTypePermitted(s->getRules()->getType()))
+		if (soldier->getCraft() == this && !sc->isSoldierTypePermitted(soldier->getRules()->getType()))
 		{
 			return false;
 		}
@@ -1469,9 +1475,9 @@ bool Craft::areOnlyPermittedSoldierTypesOnboard(const RuleStartingCondition* sc)
  * Checks if there are enough required items onboard.
  * @return True if the craft has enough required items.
  */
-bool Craft::areRequiredItemsOnboard(const std::map<std::string, int>& requiredItems)
+bool Craft::areRequiredItemsOnboard(const std::map<std::string, int>& requiredItems) const
 {
-	for (auto& mapItem : requiredItems)
+	for (const auto& mapItem : requiredItems)
 	{
 		if (_items->getItem(mapItem.first) < mapItem.second)
 		{
@@ -1486,7 +1492,7 @@ bool Craft::areRequiredItemsOnboard(const std::map<std::string, int>& requiredIt
  */
 void Craft::destroyRequiredItems(const std::map<std::string, int>& requiredItems)
 {
-	for (auto& mapItem : requiredItems)
+	for (const auto& mapItem : requiredItems)
 	{
 		_items->removeItem(mapItem.first, mapItem.second);
 	}
@@ -1554,11 +1560,11 @@ const std::vector<Soldier*> Craft::getPilotList(bool autoAdd)
 	{
 		// 2. just enough pilots or pilot candidates onboard (assign them all automatically)
 		int total = 0;
-		for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+		for (auto* soldier : *_base->getSoldiers())
 		{
-			if ((*i)->getCraft() == this && (*i)->getRules()->getAllowPiloting())
+			if (soldier->getCraft() == this && soldier->getRules()->getAllowPiloting())
 			{
-				result.push_back((*i));
+				result.push_back(soldier);
 				total++;
 			}
 		}
@@ -1572,13 +1578,13 @@ const std::vector<Soldier*> Craft::getPilotList(bool autoAdd)
 			int total2 = 0;
 			result.clear();
 			// 3a. first take all available (manually selected) pilots
-			for (std::vector<int>::iterator i = _pilots.begin(); i != _pilots.end(); ++i)
+			for (int soldierId : _pilots)
 			{
-				for (std::vector<Soldier*>::iterator j = _base->getSoldiers()->begin(); j != _base->getSoldiers()->end(); ++j)
+				for (auto* soldier : *_base->getSoldiers())
 				{
-					if ((*j)->getCraft() == this && (*j)->getRules()->getAllowPiloting() && (*j)->getId() == (*i))
+					if (soldier->getCraft() == this && soldier->getRules()->getAllowPiloting() && soldier->getId() == soldierId)
 					{
-						result.push_back((*j));
+						result.push_back(soldier);
 						total2++;
 						break; // pilot found, don't search anymore
 					}
@@ -1591,11 +1597,12 @@ const std::vector<Soldier*> Craft::getPilotList(bool autoAdd)
 			if (autoAdd)
 			{
 				// 3b. if not enough manually selected pilots, take some pilot candidates automatically (take from the rear first)
-				for (std::vector<Soldier*>::reverse_iterator k = _base->getSoldiers()->rbegin(); k != _base->getSoldiers()->rend(); ++k)
+				for (std::vector<Soldier*>::reverse_iterator iter = _base->getSoldiers()->rbegin(); iter != _base->getSoldiers()->rend(); ++iter)
 				{
-					if ((*k)->getCraft() == this && (*k)->getRules()->getAllowPiloting() && !isPilot((*k)->getId()))
+					Soldier* soldier = (*iter);
+					if (soldier->getCraft() == this && soldier->getRules()->getAllowPiloting() && !isPilot(soldier->getId()))
 					{
-						result.push_back((*k));
+						result.push_back(soldier);
 						total2++;
 					}
 					if (total2 >= _rules->getPilots())
@@ -1609,9 +1616,9 @@ const std::vector<Soldier*> Craft::getPilotList(bool autoAdd)
 
 	// remember the pilots and return
 	removeAllPilots();
-	for (std::vector<Soldier*>::iterator i = result.begin(); i != result.end(); ++i)
+	for (auto* soldier : result)
 	{
-		addPilot((*i)->getId());
+		addPilot(soldier->getId());
 	}
 	return result;
 }
@@ -1626,9 +1633,9 @@ int Craft::getPilotAccuracyBonus(const std::vector<Soldier*> &pilots, const Mod 
 		return 0;
 
 	int firingAccuracy = 0;
-	for (std::vector<Soldier*>::const_iterator i = pilots.begin(); i != pilots.end(); ++i)
+	for (const auto* soldier : pilots)
 	{
-			firingAccuracy += (*i)->getStatsWithSoldierBonusesOnly()->firing;
+		firingAccuracy += soldier->getStatsWithSoldierBonusesOnly()->firing;
 	}
 	firingAccuracy = firingAccuracy / pilots.size(); // average firing accuracy of all pilots
 
@@ -1645,9 +1652,9 @@ int Craft::getPilotDodgeBonus(const std::vector<Soldier*> &pilots, const Mod *mo
 		return 0;
 
 	int reactions = 0;
-	for (std::vector<Soldier*>::const_iterator i = pilots.begin(); i != pilots.end(); ++i)
+	for (const auto* soldier : pilots)
 	{
-		reactions += (*i)->getStatsWithSoldierBonusesOnly()->reactions;
+		reactions += soldier->getStatsWithSoldierBonusesOnly()->reactions;
 	}
 	reactions = reactions / pilots.size(); // average reactions of all pilots
 
@@ -1664,9 +1671,9 @@ int Craft::getPilotApproachSpeedModifier(const std::vector<Soldier*> &pilots, co
 		return 2; // vanilla
 
 	int bravery = 0;
-	for (std::vector<Soldier*>::const_iterator i = pilots.begin(); i != pilots.end(); ++i)
+	for (const auto* soldier : pilots)
 	{
-		bravery += (*i)->getStatsWithSoldierBonusesOnly()->bravery;
+		bravery += soldier->getStatsWithSoldierBonusesOnly()->bravery;
 	}
 	bravery = bravery / pilots.size(); // average bravery of all pilots
 
@@ -1697,9 +1704,9 @@ int Craft::getPilotApproachSpeedModifier(const std::vector<Soldier*> &pilots, co
 int Craft::getVehicleCount(const std::string &vehicle) const
 {
 	int total = 0;
-	for (std::vector<Vehicle*>::const_iterator i = _vehicles.begin(); i != _vehicles.end(); ++i)
+	for (const auto* v : _vehicles)
 	{
-		if ((*i)->getRules()->getType() == vehicle)
+		if (v->getRules()->getType() == vehicle)
 		{
 			total++;
 		}
@@ -1759,42 +1766,42 @@ CraftId Craft::getUniqueId() const
 void Craft::unload()
 {
 	// Remove weapons
-	for (std::vector<CraftWeapon*>::iterator w = _weapons.begin(); w != _weapons.end(); ++w)
+	for (auto*& cw : _weapons)
 	{
-		if ((*w) != 0)
+		if (cw != 0)
 		{
-			_base->getStorageItems()->addItem((*w)->getRules()->getLauncherItem());
-			_base->getStorageItems()->addItem((*w)->getRules()->getClipItem(), (*w)->getClipsLoaded());
-			delete (*w);
-			(*w) = nullptr;
+			_base->getStorageItems()->addItem(cw->getRules()->getLauncherItem());
+			_base->getStorageItems()->addItem(cw->getRules()->getClipItem(), cw->getClipsLoaded());
+			delete cw;
+			cw = nullptr;
 		}
 	}
 
 	// Remove items
-	for (std::map<std::string, int>::iterator it = _items->getContents()->begin(); it != _items->getContents()->end(); ++it)
+	for (const auto& pair : *_items->getContents())
 	{
-		_base->getStorageItems()->addItem(it->first, it->second);
+		_base->getStorageItems()->addItem(pair.first, pair.second);
 	}
 
 	// Remove vehicles
-	for (std::vector<Vehicle*>::iterator v = _vehicles.begin(); v != _vehicles.end(); ++v)
+	for (auto*& vehicle : _vehicles)
 	{
-		_base->getStorageItems()->addItem((*v)->getRules()->getType());
-		if ((*v)->getRules()->getVehicleClipAmmo())
+		_base->getStorageItems()->addItem(vehicle->getRules()->getType());
+		if (vehicle->getRules()->getVehicleClipAmmo())
 		{
-			_base->getStorageItems()->addItem((*v)->getRules()->getVehicleClipAmmo(), (*v)->getRules()->getVehicleClipsLoaded());
+			_base->getStorageItems()->addItem(vehicle->getRules()->getVehicleClipAmmo(), vehicle->getRules()->getVehicleClipsLoaded());
 		}
-		delete (*v);
-		(*v) = nullptr;
+		delete vehicle;
+		vehicle = nullptr;
 	}
 	_vehicles.clear();
 
 	// Remove soldiers
-	for (std::vector<Soldier*>::iterator s = _base->getSoldiers()->begin(); s != _base->getSoldiers()->end(); ++s)
+	for (auto* soldier : *_base->getSoldiers())
 	{
-		if ((*s)->getCraft() == this)
+		if (soldier->getCraft() == this)
 		{
-			(*s)->setCraft(0);
+			soldier->setCraft(0);
 		}
 	}
 }
@@ -1817,11 +1824,11 @@ void Craft::reuseItem(const RuleItem* item)
 	}
 
 	// Check if it's ammo to reload the craft
-	for (std::vector<CraftWeapon*>::iterator w = _weapons.begin(); w != _weapons.end(); ++w)
+	for (auto* cw : _weapons)
 	{
-		if ((*w) != 0 && item == (*w)->getRules()->getClipItem() && (*w)->getAmmo() < (*w)->getRules()->getAmmoMax() && !(*w)->isDisabled())
+		if (cw != 0 && item == cw->getRules()->getClipItem() && cw->getAmmo() < cw->getRules()->getAmmoMax() && !cw->isDisabled())
 		{
-			(*w)->setRearming(true);
+			cw->setRearming(true);
 			_status = "STR_REARMING";
 		}
 	}
@@ -1944,7 +1951,7 @@ int Craft::getNumSmallSoldiers() const
 
 	int total = 0;
 
-	for (Soldier* s : *_base->getSoldiers())
+	for (const auto* s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == this && s->getArmor()->getSize() == 1)
 			++total;
@@ -1964,7 +1971,7 @@ int Craft::getNumLargeSoldiers() const
 
 	int total = 0;
 
-	for (Soldier* s : *_base->getSoldiers())
+	for (const auto* s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == this && s->getArmor()->getSize() == 2)
 			++total;
@@ -1984,7 +1991,7 @@ int Craft::getNumSmallVehicles() const
 
 	int total = 0;
 
-	for (Vehicle* v : _vehicles)
+	for (const auto* v : _vehicles)
 	{
 		if (v->getTotalSize() == 1)
 			++total;
@@ -2004,7 +2011,7 @@ int Craft::getNumLargeVehicles() const
 
 	int total = 0;
 
-	for (Vehicle* v : _vehicles)
+	for (const auto* v : _vehicles)
 	{
 		if (v->getTotalSize() > 1)
 			++total;
@@ -2042,7 +2049,7 @@ int Craft::getNumTotalSoldiers() const
 
 	int total = 0;
 
-	for (Soldier* s : *_base->getSoldiers())
+	for (const auto* s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == this)
 			++total;

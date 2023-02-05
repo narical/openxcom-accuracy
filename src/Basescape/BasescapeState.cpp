@@ -181,9 +181,9 @@ BasescapeState::~BasescapeState()
 {
 	// Clean up any temporary bases
 	bool exists = false;
-	for (std::vector<Base*>::iterator i = _game->getSavedGame()->getBases()->begin(); i != _game->getSavedGame()->getBases()->end() && !exists; ++i)
+	for (const auto* xbase : *_game->getSavedGame()->getBases())
 	{
-		if (*i == _base)
+		if (xbase == _base)
 		{
 			exists = true;
 			break;
@@ -209,11 +209,11 @@ void BasescapeState::init()
 	_edtBase->setText(_base->getName());
 
 	// Get area
-	for (std::vector<Region*>::iterator i = _game->getSavedGame()->getRegions()->begin(); i != _game->getSavedGame()->getRegions()->end(); ++i)
+	for (const auto* region : *_game->getSavedGame()->getRegions())
 	{
-		if ((*i)->getRules()->insideRegion(_base->getLongitude(), _base->getLatitude()))
+		if (region->getRules()->insideRegion(_base->getLongitude(), _base->getLatitude()))
 		{
-			_txtLocation->setText(tr((*i)->getRules()->getType()));
+			_txtLocation->setText(tr(region->getRules()->getType()));
 			break;
 		}
 	}

@@ -105,10 +105,9 @@ void BuildFacilitiesState::populateBuildList()
 	RuleBaseFacilityFunctions forbiddenBaseFunc = _base->getForbiddenBaseFunc({});
 	RuleBaseFacilityFunctions futureBaseFunc = _base->getFutureBaseFunc({});
 
-	const std::vector<std::string> &facilities = _game->getMod()->getBaseFacilitiesList();
-	for (std::vector<std::string>::const_iterator i = facilities.begin(); i != facilities.end(); ++i)
+	for (auto& facilityType : _game->getMod()->getBaseFacilitiesList())
 	{
-		RuleBaseFacility *rule = _game->getMod()->getBaseFacility(*i);
+		RuleBaseFacility *rule = _game->getMod()->getBaseFacility(facilityType);
 		if (!rule->isAllowedForBaseType(_base->isFakeUnderwater()))
 		{
 			continue;
@@ -149,18 +148,18 @@ void BuildFacilitiesState::populateBuildList()
 	}
 
 	int row = 0;
-	for (std::vector<RuleBaseFacility*>::iterator i = _facilities.begin(); i != _facilities.end(); ++i)
+	for (const auto* facRule : _facilities)
 	{
-		_lstFacilities->addRow(1, tr((*i)->getType()).c_str());
+		_lstFacilities->addRow(1, tr(facRule->getType()).c_str());
 		++row;
 	}
 
 	if (!_disabledFacilities.empty())
 	{
 		Uint8 disabledColor = _lstFacilities->getSecondaryColor();
-		for (std::vector<RuleBaseFacility*>::iterator i = _disabledFacilities.begin(); i != _disabledFacilities.end(); ++i)
+		for (const auto* facRule : _disabledFacilities)
 		{
-			_lstFacilities->addRow(1, tr((*i)->getType()).c_str());
+			_lstFacilities->addRow(1, tr(facRule->getType()).c_str());
 			_lstFacilities->setRowColor(row, disabledColor);
 			++row;
 		}

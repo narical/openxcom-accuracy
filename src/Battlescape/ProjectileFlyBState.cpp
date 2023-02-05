@@ -232,7 +232,7 @@ void ProjectileFlyBState::init()
 				1,   // Fire right 45 degrees
 				2 }; // Fire right 90 degrees
 
-			for (std::vector<BattleUnit*>::iterator bu = closeQuartersTargetList.begin(); bu != closeQuartersTargetList.end(); ++bu)
+			for (auto* bu : closeQuartersTargetList)
 			{
 				BattleActionAttack attack;
 				attack.type = BA_CQB;
@@ -241,7 +241,7 @@ void ProjectileFlyBState::init()
 				attack.damage_item = _action.weapon;
 
 				// Roll for the check
-				if (!_parent->getTileEngine()->meleeAttack(attack, (*bu)))
+				if (!_parent->getTileEngine()->meleeAttack(attack, bu))
 				{
 					// Failed the check, roll again to see result
 					if (_parent->getSave()->getSide() == FACTION_PLAYER) // Only show message during player's turn
@@ -277,8 +277,8 @@ void ProjectileFlyBState::init()
 					}
 
 					// We're done, spend TUs and Energy; and don't check remaining CQB candidates anymore
-					(*bu)->spendTimeUnits(_parent->getMod()->getCloseQuartersTuCostGlobal());
-					(*bu)->spendEnergy(_parent->getMod()->getCloseQuartersEnergyCostGlobal());
+					bu->spendTimeUnits(_parent->getMod()->getCloseQuartersTuCostGlobal());
+					bu->spendEnergy(_parent->getMod()->getCloseQuartersEnergyCostGlobal());
 					break;
 				}
 			}

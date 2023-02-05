@@ -77,13 +77,13 @@ AbortMissionState::AbortMissionState(SavedBattleGame *battleGame, BattlescapeSta
 		{
 			lastUsedMapScript = deployment->getRandomMapScript(); // don't crash on old saves
 		}
-		const std::vector<MapScript*> *scripts = _game->getMod()->getMapScript(lastUsedMapScript);
-		if (scripts != 0)
+		const std::vector<MapScript*> *mapScriptEntries = _game->getMod()->getMapScript(lastUsedMapScript);
+		if (mapScriptEntries != 0)
 		{
 			craft = false;
-			for (std::vector<MapScript*>::const_iterator i = scripts->begin(); i != scripts->end(); ++i)
+			for (const auto* mapScriptEntry : *mapScriptEntries)
 			{
-				if ((*i)->getType() == MSC_ADDCRAFT)
+				if (mapScriptEntry->getType() == MSC_ADDCRAFT)
 				{
 					craft = true;
 					break;

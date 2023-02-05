@@ -256,7 +256,7 @@ void TestState::testCase4()
 	}
 	for (auto& mapScript : _game->getMod()->getMapScriptsRaw())
 	{
-		for (auto& mapScriptCommand : mapScript.second)
+		for (auto* mapScriptCommand : mapScript.second)
 		{
 			for (auto& terrainName : mapScriptCommand->getRandomAlternateTerrain())
 			{
@@ -290,7 +290,7 @@ void TestState::testCase4()
 	{
 		if (terrainRule)
 		{
-			for (auto& mapblock : *terrainRule->getMapBlocks())
+			for (auto* mapblock : *terrainRule->getMapBlocks())
 			{
 				std::string uc = mapblock->getName();
 				Unicode::upperCase(uc);
@@ -298,7 +298,7 @@ void TestState::testCase4()
 			}
 			for (int skinIndex = 0; skinIndex <= maxSkinIndex; ++skinIndex)
 			{
-				for (auto& dataset : *terrainRule->getMapDataSets())
+				for (auto* dataset : *terrainRule->getMapDataSets())
 				{
 					std::string uc = dataset->getName();
 					Unicode::upperCase(uc);
@@ -362,10 +362,10 @@ void TestState::testCase4()
 
 	auto findUnusedFiles = [](std::map<std::string, int> &mapRef, const std::string &dir, int &totalRef)
 	{
-		auto contents = FileMap::getVFolderContents(dir);
-		for (auto k = contents.begin(); k != contents.end(); ++k)
+		const auto& contents = FileMap::getVFolderContents(dir);
+		for (const auto& name : contents)
 		{
-			std::string upper = (*k);
+			std::string upper = name; // copy
 			Unicode::upperCase(upper);
 			std::string noExt = CrossPlatform::noExt(upper);
 			if (mapRef.find(noExt) == mapRef.end())
@@ -531,14 +531,14 @@ void TestState::testCase2()
 				std::string fileName = j.second;
 				if (fileName.substr(fileName.length() - 1, 1) == "/")
 				{
-					auto contents = FileMap::getVFolderContents(fileName);
-					for (auto k = contents.begin(); k != contents.end(); ++k)
+					const auto& contents = FileMap::getVFolderContents(fileName);
+					for (const auto& name : contents)
 					{
-						if (!ExtraSprites::isImageFile(*k))
+						if (!ExtraSprites::isImageFile(name))
 							continue;
 						try
 						{
-							const std::string& relPath = fileName + *k;
+							std::string relPath = fileName + name;
 							total += checkPalette(relPath, spritePack->getWidth(), spritePack->getHeight());
 						}
 						catch (Exception &e)
@@ -828,35 +828,35 @@ void TestState::testCase0()
 	_lstOutput->addRow(1, tr("STR_TESTS_STARTING").c_str());
 	_lstOutput->addRow(1, tr("STR_CHECKING_TERRAIN").c_str());
 	int total = 0;
-	for (std::vector<std::string>::const_iterator i = _game->getMod()->getTerrainList().begin(); i != _game->getMod()->getTerrainList().end(); ++i)
+	for (auto& terrainName : _game->getMod()->getTerrainList())
 	{
-		RuleTerrain *terrRule = _game->getMod()->getTerrain((*i));
-		for (std::vector<MapBlock*>::iterator j = terrRule->getMapBlocks()->begin(); j != terrRule->getMapBlocks()->end(); ++j)
+		RuleTerrain *terrRule = _game->getMod()->getTerrain(terrainName);
+		for (auto* mapblock : *terrRule->getMapBlocks())
 		{
-			total += checkRMP((*j));
+			total += checkRMP(mapblock);
 		}
 	}
 	_lstOutput->addRow(1, tr("STR_CHECKING_UFOS").c_str());
-	for (std::vector<std::string>::const_iterator i = _game->getMod()->getUfosList().begin(); i != _game->getMod()->getUfosList().end(); ++i)
+	for (auto& ufoName : _game->getMod()->getUfosList())
 	{
-		RuleUfo *ufoRule = _game->getMod()->getUfo((*i));
+		RuleUfo *ufoRule = _game->getMod()->getUfo(ufoName);
 		if (ufoRule->getBattlescapeTerrainData())
 		{
-			for (std::vector<MapBlock*>::iterator j = ufoRule->getBattlescapeTerrainData()->getMapBlocks()->begin(); j != ufoRule->getBattlescapeTerrainData()->getMapBlocks()->end(); ++j)
+			for (auto* mapblock : *ufoRule->getBattlescapeTerrainData()->getMapBlocks())
 			{
-				total += checkRMP((*j));
+				total += checkRMP(mapblock);
 			}
 		}
 	}
 	_lstOutput->addRow(1, tr("STR_CHECKING_CRAFT").c_str());
-	for (std::vector<std::string>::const_iterator i = _game->getMod()->getCraftsList().begin(); i != _game->getMod()->getCraftsList().end(); ++i)
+	for (auto& craftName : _game->getMod()->getCraftsList())
 	{
-		RuleCraft *craftRule = _game->getMod()->getCraft((*i));
+		RuleCraft *craftRule = _game->getMod()->getCraft(craftName);
 		if (craftRule->getBattlescapeTerrainData())
 		{
-			for (std::vector<MapBlock*>::iterator j = craftRule->getBattlescapeTerrainData()->getMapBlocks()->begin(); j != craftRule->getBattlescapeTerrainData()->getMapBlocks()->end(); ++j)
+			for (auto* mapblock : *craftRule->getBattlescapeTerrainData()->getMapBlocks())
 			{
-				total += checkRMP((*j));
+				total += checkRMP(mapblock);
 			}
 		}
 	}

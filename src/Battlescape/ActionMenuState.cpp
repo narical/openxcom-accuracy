@@ -335,22 +335,26 @@ void ActionMenuState::handleAction()
 		{
 			BattleUnit *targetUnit = 0;
 			TileEngine *tileEngine = _game->getSavedGame()->getSavedBattle()->getTileEngine();
-			const std::vector<BattleUnit*> *units = _game->getSavedGame()->getSavedBattle()->getUnits();
-			for (std::vector<BattleUnit*>::const_iterator i = units->begin(); i != units->end() && !targetUnit; ++i)
+			for (auto* bu : *_game->getSavedGame()->getSavedBattle()->getUnits())
 			{
 				// we can heal a unit that is at the same position, unconscious and healable(=woundable)
-				if ((*i)->getPosition() == _action->actor->getPosition() && *i != _action->actor && (*i)->getStatus() == STATUS_UNCONSCIOUS && ((*i)->isWoundable() || weapon->getAllowTargetImmune()) && weapon->getAllowTargetGround())
+				if (bu->getPosition() == _action->actor->getPosition() &&
+					bu != _action->actor &&
+					bu->getStatus() == STATUS_UNCONSCIOUS &&
+					(bu->isWoundable() || weapon->getAllowTargetImmune()) &&
+					weapon->getAllowTargetGround())
 				{
-					if ((*i)->isBigUnit())
+					if (bu->isBigUnit())
 					{
 						// never EVER apply anything to 2x2 units on the ground
 						continue;
 					}
-					if ((weapon->getAllowTargetFriendGround() && (*i)->getOriginalFaction() == FACTION_PLAYER) ||
-						(weapon->getAllowTargetNeutralGround() && (*i)->getOriginalFaction() == FACTION_NEUTRAL) ||
-						(weapon->getAllowTargetHostileGround() && (*i)->getOriginalFaction() == FACTION_HOSTILE))
+					if ((weapon->getAllowTargetFriendGround() && bu->getOriginalFaction() == FACTION_PLAYER) ||
+						(weapon->getAllowTargetNeutralGround() && bu->getOriginalFaction() == FACTION_NEUTRAL) ||
+						(weapon->getAllowTargetHostileGround() && bu->getOriginalFaction() == FACTION_HOSTILE))
 					{
-						targetUnit = *i;
+						targetUnit = bu;
+						break; // loop finished
 					}
 				}
 			}

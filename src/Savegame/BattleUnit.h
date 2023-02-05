@@ -358,7 +358,7 @@ public:
 	/// Remove a unit from the list of visible units.
 	bool removeFromVisibleUnits(BattleUnit *unit);
 	/// Is the given unit among this unit's visible units?
-	bool hasVisibleUnit(BattleUnit *unit);
+	bool hasVisibleUnit(const BattleUnit *unit) const;
 	/// Get the list of visible units.
 	std::vector<BattleUnit*> *getVisibleUnits();
 	/// Clear visible units.

@@ -154,13 +154,13 @@ std::string RuleStartingCondition::getArmorReplacement(const std::string& soldie
 
 	if (!allowed)
 	{
-		std::map<std::string, std::map<std::string, int> >::const_iterator j = _defaultArmor.find(soldierType);
+		auto j = _defaultArmor.find(soldierType);
 		if (j != _defaultArmor.end())
 		{
 			WeightedOptions w = WeightedOptions();
-			for (std::map<std::string, int>::const_iterator k = (j->second).begin(); k != (j->second).end(); ++k)
+			for (auto& k : (j->second))
 			{
-				w.set(k->first, k->second);
+				w.set(k.first, k.second);
 			}
 			std::string pick = w.choose();
 			return pick == "noChange" ? "" : pick;
@@ -276,18 +276,18 @@ bool RuleStartingCondition::isItemPermitted(const std::string& itemType, Mod* mo
 			if (!itemCategories.empty())
 			{
 				// check all categories of the item
-				for (std::vector<std::string>::iterator i = itemCategories.begin(); i != itemCategories.end(); ++i)
+				for (const auto& catName : itemCategories)
 				{
 					if (checkForbiddenCategories)
 					{
-						if (std::find(_forbiddenItemCategories.begin(), _forbiddenItemCategories.end(), (*i)) != _forbiddenItemCategories.end())
+						if (std::find(_forbiddenItemCategories.begin(), _forbiddenItemCategories.end(), catName) != _forbiddenItemCategories.end())
 						{
 							return false; // found a category that is forbidden
 						}
 					}
 					else if (checkAllowedCategories)
 					{
-						if (std::find(_allowedItemCategories.begin(), _allowedItemCategories.end(), (*i)) != _allowedItemCategories.end())
+						if (std::find(_allowedItemCategories.begin(), _allowedItemCategories.end(), catName) != _allowedItemCategories.end())
 						{
 							return true; // found a category that is allowed
 						}

@@ -33,9 +33,9 @@ AlienRace::AlienRace(const std::string &id) : _id(id), _retaliationAggression(0)
 
 AlienRace::~AlienRace()
 {
-	for (std::vector<std::pair<size_t, WeightedOptions*> >::iterator i = _retaliationMissionDistribution.begin(); i != _retaliationMissionDistribution.end(); ++i)
+	for (auto& pair : _retaliationMissionDistribution)
 	{
-		delete i->second;
+		delete pair.second;
 	}
 }
 

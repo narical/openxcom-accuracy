@@ -395,7 +395,7 @@ void AlienInventoryState::calculateRangedWeapon(BattleUnit* unit, BattleItem* we
 	ss << tr(weapon->getRules()->getType()) << " > ";
 	if (!closeQuartersTargetList.empty())
 	{
-		for (std::vector<BattleUnit*>::iterator bu = closeQuartersTargetList.begin(); bu != closeQuartersTargetList.end(); ++bu)
+		for (const auto* victim : closeQuartersTargetList)
 		{
 			{
 				BattleActionAttack attack;
@@ -406,7 +406,6 @@ void AlienInventoryState::calculateRangedWeapon(BattleUnit* unit, BattleItem* we
 				attack.skill_rules = nullptr;
 				int hitChance = BattleUnit::getFiringAccuracy(attack, _game->getMod());
 
-				BattleUnit* victim = (*bu);
 				if (victim)
 				{
 					int arc = tileEngine->getArcDirection(tileEngine->getDirectionTo(victim->getPositionVexels(), unit->getPositionVexels()), victim->getDirection());

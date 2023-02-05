@@ -187,28 +187,27 @@ void ManufactureState::btnNewProductionClick(Action *)
  */
 void ManufactureState::fillProductionList(size_t scrl)
 {
-	const std::vector<Production *> productions(_base->getProductions());
 	_lstManufacture->clearList();
-	for (std::vector<Production *>::const_iterator iter = productions.begin(); iter != productions.end(); ++iter)
+	for (const auto* prod : _base->getProductions())
 	{
 		std::ostringstream s1;
-		s1 << (*iter)->getAssignedEngineers();
+		s1 << prod->getAssignedEngineers();
 		std::ostringstream s2;
-		s2 << (*iter)->getAmountProduced() << "/";
-		if ((*iter)->getInfiniteAmount()) s2 << "∞";
-		else s2 << (*iter)->getAmountTotal();
-		if ((*iter)->getSellItems()) s2 << " $";
+		s2 << prod->getAmountProduced() << "/";
+		if (prod->getInfiniteAmount()) s2 << "∞";
+		else s2 << prod->getAmountTotal();
+		if (prod->getSellItems()) s2 << " $";
 		std::ostringstream s3;
-		s3 << Unicode::formatFunding((*iter)->getRules()->getManufactureCost());
+		s3 << Unicode::formatFunding(prod->getRules()->getManufactureCost());
 		std::ostringstream s4;
-		if ((*iter)->getInfiniteAmount())
+		if (prod->getInfiniteAmount())
 		{
 			s4 << "∞";
 		}
-		else if ((*iter)->getAssignedEngineers() > 0)
+		else if (prod->getAssignedEngineers() > 0)
 		{
-			int timeLeft = (*iter)->getAmountTotal() * (*iter)->getRules()->getManufactureTime() - (*iter)->getTimeSpent();
-			int numEffectiveEngineers = (*iter)->getAssignedEngineers();
+			int timeLeft = prod->getAmountTotal() * prod->getRules()->getManufactureTime() - prod->getTimeSpent();
+			int numEffectiveEngineers = prod->getAssignedEngineers();
 			// ensure we round up since it takes an entire hour to manufacture any part of that hour's capacity
 			int hoursLeft = (timeLeft + numEffectiveEngineers - 1) / numEffectiveEngineers;
 			int daysLeft = hoursLeft / 24;
@@ -220,7 +219,7 @@ void ManufactureState::fillProductionList(size_t scrl)
 
 			s4 << "-";
 		}
-		_lstManufacture->addRow(5, tr((*iter)->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
+		_lstManufacture->addRow(5, tr(prod->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
 	}
 	_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(_base->getAvailableEngineers()));
 	_txtAllocated->setText(tr("STR_ENGINEERS_ALLOCATED").arg(_base->getAllocatedEngineers()));

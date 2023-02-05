@@ -355,9 +355,9 @@ void RuleItem::loadConfFuse(RuleItemFuseTrigger& a, const YAML::Node& node, cons
 */
 void RuleItem::updateCategories(std::map<std::string, std::string> *replacementRules)
 {
-	for (auto it = replacementRules->begin(); it != replacementRules->end(); ++it)
+	for (const auto& pair : *replacementRules)
 	{
-		std::replace(_categories.begin(), _categories.end(), it->first, it->second);
+		std::replace(_categories.begin(), _categories.end(), pair.first, pair.second);
 	}
 }
 
@@ -2375,7 +2375,7 @@ const std::string &RuleItem::getZombieUnit(const BattleUnit* victim) const
 		// by armor and gender
 		if (victim->getGender() == GENDER_MALE)
 		{
-			std::map<std::string, std::string>::const_iterator i = _zombieUnitByArmorMale.find(victim->getArmor()->getType());
+			auto i = _zombieUnitByArmorMale.find(victim->getArmor()->getType());
 			if (i != _zombieUnitByArmorMale.end())
 			{
 				return i->second;
@@ -2383,7 +2383,7 @@ const std::string &RuleItem::getZombieUnit(const BattleUnit* victim) const
 		}
 		else
 		{
-			std::map<std::string, std::string>::const_iterator j = _zombieUnitByArmorFemale.find(victim->getArmor()->getType());
+			auto j = _zombieUnitByArmorFemale.find(victim->getArmor()->getType());
 			if (j != _zombieUnitByArmorFemale.end())
 			{
 				return j->second;
@@ -2391,7 +2391,7 @@ const std::string &RuleItem::getZombieUnit(const BattleUnit* victim) const
 		}
 		// by type
 		const std::string victimType = victim->getUnitRules() ? victim->getUnitRules()->getType() : victim->getGeoscapeSoldier()->getRules()->getType();
-		std::map<std::string, std::string>::const_iterator k = _zombieUnitByType.find(victimType);
+		auto k = _zombieUnitByType.find(victimType);
 		if (k != _zombieUnitByType.end())
 		{
 			return k->second;

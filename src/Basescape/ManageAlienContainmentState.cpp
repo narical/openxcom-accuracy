@@ -209,9 +209,9 @@ void ManageAlienContainmentState::resetListAndTotals()
 	_lstAliens->clearList();
 
 	std::vector<std::string> researchList;
-	for (std::vector<ResearchProject*>::const_iterator iter = _base->getResearch().begin(); iter != _base->getResearch().end(); ++iter)
+	for (const auto* proj : _base->getResearch())
 	{
-		const RuleResearch *research = (*iter)->getRules();
+		const RuleResearch *research = proj->getRules();
 		RuleItem *item = _game->getMod()->getItem(research->getName());
 		if (research->needItem() && research->destroyItem() && item && item->isAlien() && item->getPrisonType() == _prisonType)
 		{
@@ -221,23 +221,22 @@ void ManageAlienContainmentState::resetListAndTotals()
 
 	int sellPriceCoefficient = _game->getSavedGame()->getSellPriceCoefficient();
 
-	const std::vector<std::string> &items = _game->getMod()->getItemsList();
-	for (std::vector<std::string>::const_iterator i = items.begin(); i != items.end(); ++i)
+	for (auto& itemType : _game->getMod()->getItemsList())
 	{
-		int qty = _base->getStorageItems()->getItem(*i);
-		RuleItem *rule = _game->getMod()->getItem(*i, true);
+		int qty = _base->getStorageItems()->getItem(itemType);
+		RuleItem *rule = _game->getMod()->getItem(itemType, true);
 		if (qty > 0 && rule->isAlien() && rule->getPrisonType() == _prisonType)
 		{
 			_qtys.push_back(0);
-			_aliens.push_back(*i);
+			_aliens.push_back(itemType);
 			std::ostringstream ss;
 			ss << qty;
 			std::string rqty;
-			std::vector<std::string>::iterator research = std::find(researchList.begin(), researchList.end(), *i);
-			if (research != researchList.end())
+			auto researchIt = std::find(researchList.begin(), researchList.end(), itemType);
+			if (researchIt != researchList.end())
 			{
 				rqty = "1";
-				researchList.erase(research);
+				researchList.erase(researchIt);
 			}
 			else
 			{
@@ -252,15 +251,15 @@ void ManageAlienContainmentState::resetListAndTotals()
 				formattedCost = Unicode::formatFunding(adjustedCost / 1000).append("K");
 			}
 
-			_lstAliens->addRow(5, tr(*i).c_str(), formattedCost.c_str(), ss.str().c_str(), "0", rqty.c_str());
+			_lstAliens->addRow(5, tr(itemType).c_str(), formattedCost.c_str(), ss.str().c_str(), "0", rqty.c_str());
 		}
 	}
 
-	for (std::vector<std::string>::const_iterator i = researchList.begin(); i != researchList.end(); ++i)
+	for (const auto& researchName : researchList)
 	{
-		_aliens.push_back(*i);
+		_aliens.push_back(researchName);
 		_qtys.push_back(0);
-		_lstAliens->addRow(5, tr(*i).c_str(), Options::canSellLiveAliens ? "-" : "", "0", "0", "1");
+		_lstAliens->addRow(5, tr(researchName).c_str(), Options::canSellLiveAliens ? "-" : "", "0", "0", "1");
 		_lstAliens->setRowColor(_qtys.size() -1, _lstAliens->getSecondaryColor());
 	}
 

@@ -388,12 +388,13 @@ void ExplosionBState::think()
 		if (_parent->getMap()->getExplosions()->empty())
 			explode();
 
-		for (std::list<Explosion*>::iterator i = _parent->getMap()->getExplosions()->begin(); i != _parent->getMap()->getExplosions()->end();)
+		for (auto iter = _parent->getMap()->getExplosions()->begin(); iter != _parent->getMap()->getExplosions()->end();)
 		{
-			if (!(*i)->animate())
+			Explosion* explosion = (*iter);
+			if (!explosion->animate())
 			{
-				delete (*i);
-				i = _parent->getMap()->getExplosions()->erase(i);
+				delete explosion;
+				iter = _parent->getMap()->getExplosions()->erase(iter);
 				if (_parent->getMap()->getExplosions()->empty())
 				{
 					explode();
@@ -402,7 +403,7 @@ void ExplosionBState::think()
 			}
 			else
 			{
-				++i;
+				++iter;
 			}
 		}
 	}

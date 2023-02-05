@@ -97,9 +97,9 @@ SoldierTransformationListState::SoldierTransformationListState(Base *base, Combo
 
 	std::vector<std::string> availableOptions;
 	availableOptions.push_back("STR_ALL_SOLDIER_TYPES");
-	for (auto& i : _game->getMod()->getSoldiersList())
+	for (auto& soldierType : _game->getMod()->getSoldiersList())
 	{
-		availableOptions.push_back(i);
+		availableOptions.push_back(soldierType);
 	}
 
 	_cbxSoldierType->setOptions(availableOptions, true);
@@ -170,7 +170,7 @@ void SoldierTransformationListState::initList()
 
 	int currentIndex = -1;
 	ItemContainer* itemContainer(_base->getStorageItems());
-	for (auto* transformationRule : _availableTransformations)
+	for (const auto* transformationRule : _availableTransformations)
 	{
 		++currentIndex;
 
@@ -241,7 +241,7 @@ void SoldierTransformationListState::initList()
 		}
 
 		int eligibleSoldiers = 0;
-		for (auto& soldier : *_base->getSoldiers())
+		for (const auto* soldier : *_base->getSoldiers())
 		{
 			if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
 			{
@@ -253,7 +253,7 @@ void SoldierTransformationListState::initList()
 				++eligibleSoldiers;
 			}
 		}
-		for (auto& deadMan : *_game->getSavedGame()->getDeadSoldiers())
+		for (const auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
 		{
 			if (deadMan->isEligibleForTransformation(transformationRule))
 			{

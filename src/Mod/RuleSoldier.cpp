@@ -54,13 +54,13 @@ RuleSoldier::RuleSoldier(const std::string &type) : _type(type), _listOrder(0), 
  */
 RuleSoldier::~RuleSoldier()
 {
-	for (std::vector<SoldierNamePool*>::iterator i = _names.begin(); i != _names.end(); ++i)
+	for (auto* namepool : _names)
 	{
-		delete *i;
+		delete namepool;
 	}
-	for (std::vector<StatString*>::iterator i = _statStrings.begin(); i != _statStrings.end(); ++i)
+	for (auto* statString : _statStrings)
 	{
-		delete *i;
+		delete statString;
 	}
 }
 
@@ -143,9 +143,9 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 		std::string fileName = (*i).as<std::string>();
 		if (fileName == "delete")
 		{
-			for (std::vector<SoldierNamePool*>::iterator j = _names.begin(); j != _names.end(); ++j)
+			for (auto* namepool : _names)
 			{
-				delete *j;
+				delete namepool;
 			}
 			_names.clear();
 		}
@@ -155,11 +155,11 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 			{
 				// load all *.nam files in given directory
 				std::vector<std::string> names;
-				for (auto f: FileMap::filterFiles(FileMap::getVFolderContents(fileName), "nam")) { names.push_back(f); }
+				for (const auto& f: FileMap::filterFiles(FileMap::getVFolderContents(fileName), "nam")) { names.push_back(f); }
 				std::sort(names.begin(), names.end(), Unicode::naturalCompare);
-				for (auto j = names.begin(); j != names.end(); ++j)
+				for (const auto& name : names)
 				{
-					addSoldierNamePool(fileName + *j);
+					addSoldierNamePool(fileName + name);
 				}
 			}
 			else

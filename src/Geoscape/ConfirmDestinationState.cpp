@@ -185,11 +185,11 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	{
 		std::ostringstream ss2;
 		int i2 = 0;
-		for (std::map<std::string, int>::const_iterator it2 = requiredItems.begin(); it2 != requiredItems.end(); ++it2)
+		for (auto& pair : requiredItems)
 		{
 			if (i2 > 0)
 				ss2 << ", ";
-			ss2 << tr((*it2).first) << ": " << (*it2).second;
+			ss2 << tr(pair.first) << ": " << pair.second;
 			i2++;
 		}
 		std::string argument2 = ss2.str();
@@ -204,14 +204,14 @@ std::string ConfirmDestinationState::checkStartingCondition()
 
 		std::ostringstream ss;
 		int i = 0;
-		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+		for (auto& soldierType : list)
 		{
-			RuleSoldier* soldierTypeRule = _game->getMod()->getSoldier((*it), false);
+			RuleSoldier* soldierTypeRule = _game->getMod()->getSoldier(soldierType, false);
 			if (soldierTypeRule && _game->getSavedGame()->isResearched(soldierTypeRule->getRequirements()))
 			{
 				if (i > 0)
 					ss << ", ";
-				ss << tr(*it);
+				ss << tr(soldierType);
 				i++;
 			}
 		}
@@ -236,14 +236,14 @@ std::string ConfirmDestinationState::checkStartingCondition()
 
 	std::ostringstream ss;
 	int i = 0;
-	for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+	for (auto& articleName : list)
 	{
-		ArticleDefinition *article = _game->getMod()->getUfopaediaArticle((*it), false);
+		ArticleDefinition *article = _game->getMod()->getUfopaediaArticle(articleName, false);
 		if (article && _game->getSavedGame()->isResearched(article->_requires))
 		{
 			if (i > 0)
 				ss << ", ";
-			ss << tr(*it);
+			ss << tr(articleName);
 			i++;
 		}
 	}
@@ -271,13 +271,13 @@ void ConfirmDestinationState::btnOkClick(Action *)
 		return;
 	}
 
-	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (auto* craft : _crafts)
 	{
-		if (!(*i)->arePilotsOnboard())
+		if (!craft->arePilotsOnboard())
 		{
 			_game->popState();
 			_game->popState();
-			_game->pushState(new CraftNotEnoughPilotsState((*i)));
+			_game->pushState(new CraftNotEnoughPilotsState(craft));
 			return;
 		}
 	}
@@ -307,20 +307,20 @@ void ConfirmDestinationState::btnOkClick(Action *)
 		}
 	}
 
-	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	for (auto* craft : _crafts)
 	{
-		if ((*i) != _crafts.front())
+		if (craft != _crafts.front())
 		{
-			(*i)->setDestination(_crafts.front());
+			craft->setDestination(_crafts.front());
 		}
 
-		if ((*i)->getRules()->canAutoPatrol())
+		if (craft->getRules()->canAutoPatrol())
 		{
 			// cancel auto-patrol
-			(*i)->setIsAutoPatrolling(false);
+			craft->setIsAutoPatrolling(false);
 		}
 
-		(*i)->setStatus("STR_OUT");
+		craft->setStatus("STR_OUT");
 	}
 
 	_game->popState();
@@ -361,18 +361,19 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 	{
 		// Transfer soldiers inside craft
 		Base *currentBase = _crafts.front()->getBase();
-		for (std::vector<Soldier*>::iterator s = currentBase->getSoldiers()->begin(); s != currentBase->getSoldiers()->end();)
+		for (auto soldierIt = currentBase->getSoldiers()->begin(); soldierIt != currentBase->getSoldiers()->end();)
 		{
-			if ((*s)->getCraft() == _crafts.front())
+			Soldier* soldier = (*soldierIt);
+			if (soldier->getCraft() == _crafts.front())
 			{
-				(*s)->setPsiTraining(false);
-				(*s)->setTraining(false);
-				targetBase->getSoldiers()->push_back(*s);
-				s = currentBase->getSoldiers()->erase(s);
+				soldier->setPsiTraining(false);
+				soldier->setTraining(false);
+				targetBase->getSoldiers()->push_back(soldier);
+				soldierIt = currentBase->getSoldiers()->erase(soldierIt);
 			}
 			else
 			{
-				++s;
+				++soldierIt;
 			}
 		}
 

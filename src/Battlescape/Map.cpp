@@ -312,10 +312,10 @@ void Map::draw()
 	_explosionInFOV = _save->getDebugMode();
 	if (!_explosions.empty())
 	{
-		for (std::list<Explosion*>::iterator i = _explosions.begin(); i != _explosions.end(); ++i)
+		for (auto* explosion : _explosions)
 		{
-			t = _save->getTile((*i)->getPosition().toTile());
-			if (t && ((*i)->isBig() || t->getVisible()))
+			t = _save->getTile(explosion->getPosition().toTile());
+			if (t && (explosion->isBig() || t->getVisible()))
 			{
 				_explosionInFOV = true;
 				break;
@@ -342,9 +342,9 @@ void Map::draw()
 void Map::setPalette(const SDL_Color *colors, int firstcolor, int ncolors)
 {
 	Surface::setPalette(colors, firstcolor, ncolors);
-	for (std::vector<MapDataSet*>::const_iterator i = _save->getMapDataSets()->begin(); i != _save->getMapDataSets()->end(); ++i)
+	for (auto* mds : *_save->getMapDataSets())
 	{
-		(*i)->getSurfaceset()->setPalette(colors, firstcolor, ncolors);
+		mds->getSurfaceset()->setPalette(colors, firstcolor, ncolors);
 	}
 	_message->setPalette(colors, firstcolor, ncolors);
 	_message->setBackground(_game->getMod()->getSurface(_save->getHiddenMovementBackground()));
@@ -1469,9 +1469,9 @@ void Map::drawTerrain(Surface *surface)
 					int waypXOff = 2;
 					int waypYOff = 2;
 
-					for (std::vector<Position>::const_iterator i = _waypoints.begin(); i != _waypoints.end(); ++i)
+					for (const auto& waypoint : _waypoints)
 					{
-						if ((*i) == mapPosition)
+						if (waypoint == mapPosition)
 						{
 							if (waypXOff == 2 && waypYOff == 2)
 							{
@@ -1688,25 +1688,25 @@ void Map::drawTerrain(Surface *surface)
 		}
 		else
 		{
-			for (std::list<Explosion*>::const_iterator i = _explosions.begin(); i != _explosions.end(); ++i)
+			for (const auto* explosion : _explosions)
 			{
-				_camera->convertVoxelToScreen((*i)->getPosition(), &bulletPositionScreen);
-				if ((*i)->isBig())
+				_camera->convertVoxelToScreen(explosion->getPosition(), &bulletPositionScreen);
+				if (explosion->isBig())
 				{
-					if ((*i)->getCurrentFrame() >= 0)
+					if (explosion->getCurrentFrame() >= 0)
 					{
-						tmpSurface = _game->getMod()->getSurfaceSet("X1.PCK")->getFrame((*i)->getCurrentFrame());
+						tmpSurface = _game->getMod()->getSurfaceSet("X1.PCK")->getFrame(explosion->getCurrentFrame());
 						Surface::blitRaw(surface, tmpSurface, bulletPositionScreen.x - (tmpSurface.getWidth() / 2), bulletPositionScreen.y - (tmpSurface.getHeight() / 2), 0, false, _nvColor);
 					}
 				}
-				else if ((*i)->isHit())
+				else if (explosion->isHit())
 				{
-					tmpSurface = _game->getMod()->getSurfaceSet("HIT.PCK")->getFrame((*i)->getCurrentFrame());
+					tmpSurface = _game->getMod()->getSurfaceSet("HIT.PCK")->getFrame(explosion->getCurrentFrame());
 					Surface::blitRaw(surface, tmpSurface, bulletPositionScreen.x - 15, bulletPositionScreen.y - 25, 0, false, _nvColor);
 				}
 				else
 				{
-					tmpSurface = _game->getMod()->getSurfaceSet("SMOKE.PCK")->getFrame((*i)->getCurrentFrame());
+					tmpSurface = _game->getMod()->getSurfaceSet("SMOKE.PCK")->getFrame(explosion->getCurrentFrame());
 					Surface::blitRaw(surface, tmpSurface, bulletPositionScreen.x - 15, bulletPositionScreen.y - 15, 0, false, _nvColor);
 				}
 			}
@@ -1831,11 +1831,11 @@ int Map::reShade(Tile *tile)
 	}
 
 	// hybrid night vision (local)
-	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	for (const auto* bu : *_save->getUnits())
 	{
-		if ((*i)->getFaction() == FACTION_PLAYER && !(*i)->isOut())
+		if (bu->getFaction() == FACTION_PLAYER && !bu->isOut())
 		{
-			if (Position::distance2dSq(tile->getPosition(), (*i)->getPosition()) <= (*i)->getMaxViewDistanceAtDarkSquared())
+			if (Position::distance2dSq(tile->getPosition(), bu->getPosition()) <= bu->getMaxViewDistanceAtDarkSquared())
 			{
 				return tile->getShade() > _fadeShade ? _fadeShade : tile->getShade();
 			}
@@ -1964,9 +1964,9 @@ void Map::animate(bool redraw)
 	}
 
 	// animate certain units (large flying units have a propulsion animation)
-	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	for (auto* bu : *_save->getUnits())
 	{
-		const Position pos = (*i)->getPosition();
+		const Position pos = bu->getPosition();
 
 		// skip units that do not have position
 		if (pos == TileEngine::invalid)
@@ -1976,7 +1976,7 @@ void Map::animate(bool redraw)
 
 		if (_save->getDepth() > 0)
 		{
-			(*i)->setFloorAbove(false);
+			bu->setFloorAbove(false);
 
 			// make sure this unit isn't obscured by the floor above him, otherwise it looks weird.
 			if (_camera->getViewLevel() > pos.z)
@@ -1985,14 +1985,14 @@ void Map::animate(bool redraw)
 				{
 					if (!_save->getTile(Position(pos.x, pos.y, z))->hasNoFloor(0))
 					{
-						(*i)->setFloorAbove(true);
+						bu->setFloorAbove(true);
 						break;
 					}
 				}
 			}
 		}
 
-		(*i)->breathe();
+		bu->breathe();
 	}
 
 	if (redraw) _redraw = true;

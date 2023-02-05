@@ -170,11 +170,11 @@ void NewManufactureListState::lstProdClickLeft(Action *)
 		return;
 
 	RuleManufacture *rule = 0;
-	for (std::vector<RuleManufacture *>::iterator it = _possibleProductions.begin(); it != _possibleProductions.end(); ++it)
+	for (auto* manuf : _possibleProductions)
 	{
-		if ((*it)->getName() == _displayedStrings[_lstManufacture->getSelectedRow()])
+		if (manuf->getName() == _displayedStrings[_lstManufacture->getSelectedRow()])
 		{
-			rule = (*it);
+			rule = manuf;
 			break;
 		}
 	}
@@ -207,13 +207,13 @@ void NewManufactureListState::lstProdClickRight(Action *)
 					std::ostringstream ss;
 					int count = 0;
 					std::vector<std::string> missed = _game->getMod()->getBaseFunctionNames(~baseFunc & info->getRequireBaseFunc());
-					for (std::vector<std::string>::const_iterator iter = missed.begin(); iter != missed.end(); ++iter)
+					for (const auto& name : missed)
 					{
 						if (count > 0)
 						{
 							ss << ", ";
 						}
-						ss << tr(*iter);
+						ss << tr(name);
 						count++;
 					}
 					_lstManufacture->setCellText(row, 1, ss.str().c_str());
@@ -329,12 +329,12 @@ void NewManufactureListState::btnMarkAllAsSeenClick(Action *)
 	if (basicFilter == MANU_FILTER_FACILITY_REQUIRED)
 		return;
 
-	for (std::vector<std::string>::const_iterator i = _displayedStrings.begin(); i != _displayedStrings.end(); ++i)
+	for (const auto& name : _displayedStrings)
 	{
 		// mark all (new) manufacture items as normal
-		if (_game->getSavedGame()->getManufactureRuleStatus((*i)) != RuleManufacture::MANU_STATUS_HIDDEN)
+		if (_game->getSavedGame()->getManufactureRuleStatus(name) != RuleManufacture::MANU_STATUS_HIDDEN)
 		{
-			_game->getSavedGame()->setManufactureRuleStatus((*i), RuleManufacture::MANU_STATUS_NORMAL);
+			_game->getSavedGame()->setManufactureRuleStatus(name, RuleManufacture::MANU_STATUS_NORMAL);
 		}
 	}
 
@@ -366,12 +366,12 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 	ItemContainer * itemContainer (_base->getStorageItems());
 	int row = 0;
 	bool hasUnseen = false;
-	for (std::vector<RuleManufacture *>::iterator it = _possibleProductions.begin(); it != _possibleProductions.end(); ++it)
+	for (const auto* manuf : _possibleProductions)
 	{
-		if (((*it)->getCategory() == _catStrings[_cbxCategory->getSelected()]) || (_catStrings[_cbxCategory->getSelected()] == "STR_ALL_ITEMS"))
+		if ((manuf->getCategory() == _catStrings[_cbxCategory->getSelected()]) || (_catStrings[_cbxCategory->getSelected()] == "STR_ALL_ITEMS"))
 		{
 			// filter
-			bool isHidden = _game->getSavedGame()->getManufactureRuleStatus((*it)->getName()) == RuleManufacture::MANU_STATUS_HIDDEN;
+			bool isHidden = _game->getSavedGame()->getManufactureRuleStatus(manuf->getName()) == RuleManufacture::MANU_STATUS_HIDDEN;
 			if (basicFilter == MANU_FILTER_DEFAULT && isHidden)
 				continue;
 			if (basicFilter == MANU_FILTER_DEFAULT_SUPPLIES_OK && isHidden)
@@ -381,7 +381,7 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 			if (basicFilter == MANU_FILTER_HIDDEN && !isHidden)
 				continue;
 
-			bool isNew = _game->getSavedGame()->getManufactureRuleStatus((*it)->getName()) == RuleManufacture::MANU_STATUS_NEW;
+			bool isNew = _game->getSavedGame()->getManufactureRuleStatus(manuf->getName()) == RuleManufacture::MANU_STATUS_NEW;
 			if (_btnShowOnlyNew->getPressed())
 			{
 				if (!isNew)
@@ -393,7 +393,7 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 			// quick search
 			if (!searchString.empty())
 			{
-				std::string projectName = tr((*it)->getName());
+				std::string projectName = tr(manuf->getName());
 				Unicode::upperCase(projectName);
 				if (projectName.find(searchString) == std::string::npos)
 				{
@@ -403,12 +403,12 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 
 			// supplies calculation
 			int productionPossible = 10; // max
-			if ((*it)->getManufactureCost() > 0)
+			if (manuf->getManufactureCost() > 0)
 			{
-				int byFunds = _game->getSavedGame()->getFunds() / (*it)->getManufactureCost();
+				int byFunds = _game->getSavedGame()->getFunds() / manuf->getManufactureCost();
 				productionPossible = std::min(productionPossible, byFunds);
 			}
-			for (auto& iter : (*it)->getRequiredItems())
+			for (auto& iter : manuf->getRequiredItems())
 			{
 				productionPossible = std::min(productionPossible, itemContainer->getItem(iter.first) / iter.second);
 			}
@@ -433,8 +433,8 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 				}
 			}
 
-			_lstManufacture->addRow(3, tr((*it)->getName()).c_str(), tr((*it)->getCategory()).c_str(), ss.str().c_str());
-			_displayedStrings.push_back((*it)->getName().c_str());
+			_lstManufacture->addRow(3, tr(manuf->getName()).c_str(), tr(manuf->getCategory()).c_str(), ss.str().c_str());
+			_displayedStrings.push_back(manuf->getName().c_str());
 
 			// colors
 			if (basicFilter == MANU_FILTER_FACILITY_REQUIRED)

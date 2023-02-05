@@ -123,7 +123,7 @@ EnvironmentalCondition RuleEnviroEffects::getEnvironmetalCondition(const std::st
 {
 	if (!_environmentalConditions.empty())
 	{
-		std::map<std::string, EnvironmentalCondition>::const_iterator i = _environmentalConditions.find(faction);
+		auto i = _environmentalConditions.find(faction);
 		if (i != _environmentalConditions.end())
 		{
 			return i->second;
@@ -142,7 +142,7 @@ Armor* RuleEnviroEffects::getArmorTransformation(const Armor* sourceArmor) const
 {
 	if (!_armorTransformations.empty())
 	{
-		std::map<const Armor*, Armor*>::const_iterator i = _armorTransformations.find(sourceArmor);
+		auto i = _armorTransformations.find(sourceArmor);
 		if (i != _armorTransformations.end())
 		{
 			// cannot switch into a bigger armor size!
