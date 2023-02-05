@@ -152,7 +152,6 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 		RuleItem *rule = _game->getMod()->getItem(itemType);
 		Unit* isVehicle = rule->getVehicleUnit();
 		int cQty = isVehicle ? c->getVehicleCount(itemType) : c->getItems()->getItem(itemType);
-
 		if ((isVehicle || rule->isInventoryItem()) && rule->canBeEquippedToCraftInventory() &&
 			_game->getSavedGame()->isResearched(rule->getRequirements()) &&
 			(_base->getStorageItems()->getItem(itemType) > 0 || cQty > 0))
@@ -325,7 +324,7 @@ void CraftEquipmentState::initList()
 	{
 		RuleItem *rule = _game->getMod()->getItem(itemType);
 
-		Unit* isVehicle = rule->getVehicleUnit();
+		auto isVehicle = rule->getVehicleUnit();
 		int cQty = 0;
 		if (isVehicle)
 		{

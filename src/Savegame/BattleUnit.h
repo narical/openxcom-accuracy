@@ -102,7 +102,11 @@ private:
 	int _walkPhase, _fallPhase;
 	std::vector<BattleUnit *> _visibleUnits, _unitsSpottedThisTurn;
 	std::vector<Tile *> _visibleTiles;
+	std::vector<Tile *> _lofTiles;
+	std::vector<Tile *> _noLofTiles;
 	std::unordered_set<Tile *> _visibleTilesLookup;
+	std::unordered_set<Tile *> _lofTilesLookup;
+	std::unordered_set<Tile *> _noLofTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel, _mana;
 	bool _kneeled, _floating, _dontReselect;
 	bool _haveNoFloorBelow = false;
@@ -124,7 +128,9 @@ private:
 	int _smokeMaxHit;
 	int _moraleRestored;
 	BattleUnit *_charging;
-	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned = 255;
+	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned, _turnsSinceSeenByHostile, _turnsSinceSeenByNeutral, _turnsSinceSeenByPlayer = 255;
+	int _tileLastSpottedByHostile, _tileLastSpottedByNeutral, _tileLastSpottedByPlayer = -1;
+	int _tileLastSpottedForBlindShotByHostile, _tileLastSpottedForBlindShotByNeutral, _tileLastSpottedForBlindShotByPlayer = -1;
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
 	std::string _preferredHandForReactions;
@@ -365,15 +371,35 @@ public:
 	void clearVisibleUnits();
 	/// Add unit to visible tiles.
 	bool addToVisibleTiles(Tile *tile);
+	/// Add tile to units lof-tiles
+	bool addToLofTiles(Tile *tile);
+	/// Add tile to units no-lof-tiles
+	bool addToNoLofTiles(Tile *tile);
 	/// Has this unit marked this tile as within its view?
 	bool hasVisibleTile(Tile *tile) const
 	{
 		return _visibleTilesLookup.find(tile) != _visibleTilesLookup.end(); //find?
 	}
+	/// Has this unit marked this tile as within its lof?
+	bool hasLofTile(Tile *tile) const
+	{
+		return _lofTilesLookup.find(tile) != _lofTilesLookup.end(); // find?
+	}
+	/// Has this unit marked this tile as within its lof?
+	bool hasNoLofTile(Tile *tile) const
+	{
+		return _noLofTilesLookup.find(tile) != _noLofTilesLookup.end(); // find?
+	}
 	/// Get the list of visible tiles.
 	const std::vector<Tile*> *getVisibleTiles();
+	/// Get the list of lof tiles.
+	const std::vector<Tile *> *getLofTiles();
+	/// Get the list of no lof tiles.
+	const std::vector<Tile *> *getNoLofTiles();
 	/// Clear visible tiles.
 	void clearVisibleTiles();
+	/// Clear lof tiles
+	void clearLofTiles();
 	/// Calculate psi attack accuracy.
 	static int getPsiAccuracy(BattleActionAttack::ReadOnly attack);
 	/// Calculate firing accuracy.
@@ -416,6 +442,10 @@ public:
 	AIModule *getAIModule() const;
 	/// Set AI Module.
 	void setAIModule(AIModule *ai);
+	/// Tells the unit whether it wants to end the turn or not
+	void setWantToEndTurn(bool wantToEndTurn);
+	/// Asks the unit's AI whether it wants to end the turn or not
+	bool getWantToEndTurn();
 	/// Set whether this unit is visible
 	void setVisible(bool flag);
 	/// Get whether this unit is visible
@@ -433,7 +463,7 @@ public:
 	/// Gets the item in the specified slot.
 	BattleItem *getItem(RuleInventory *slot, int x = 0, int y = 0) const;
 	/// Gets the item in the main hand.
-	BattleItem *getMainHandWeapon(bool quickest = true) const;
+	BattleItem *getMainHandWeapon(bool quickest = true, bool needammo = true) const;
 	/// Gets a grenade from the belt, if any.
 	BattleItem *getGrenadeFromBelt() const;
 	/// Gets the item from right hand.
@@ -620,6 +650,8 @@ public:
 	int getRandomAggroSound() const;
 	/// Sets the unit's time units.
 	void setTimeUnits(int tu);
+	/// Sets the unit's energy.
+	void setEnergy(int energy);
 	/// Get the faction that killed this unit.
 	UnitFaction killedBy() const;
 	/// Set the faction that killed this unit.
@@ -639,6 +671,14 @@ public:
 	void setTurnsLeftSpottedForSnipers (int turns);
 	/// Get how many turns left snipers know about this target.
 	int  getTurnsLeftSpottedForSnipers() const;
+	/// Set how many turns ago this unit was last seen
+	void setTurnsSinceSeen(int turns, UnitFaction faction);
+	/// Get how many turns ago this unit was last seen
+	int getTurnsSinceSeen(UnitFaction faction) const;
+	/// Set where the unit has last been spotted
+	void setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot = false);
+	/// Get the tile where the unit was last spotted
+	int getTileLastSpotted(UnitFaction faction, bool forBlindShot = false) const;
 	/// Reset how many turns passed since stunned last time.
 	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Increase how many turns passed since stunned last time.
@@ -754,7 +794,7 @@ public:
 	/// Get the unit mind controller's id.
 	int getMindControllerId() const;
 	/// Get the unit leeroyJenkins flag
-	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
+	bool isLeeroyJenkins() const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
 	int getSpotterDuration() const;
 	/// Remembers the unit's XP (used for shotguns).
@@ -801,6 +841,12 @@ public:
 	bool indicatorsAreEnabled() const { return !_disableIndicators; }
 	/// Disable showing indicators for this unit.
 	void disableIndicators();
+	/// Returns whether this unit uses brutal-AI
+	bool isBrutal() const;
+	/// Returns whether this unit is allowed to cheat with knowledge it cannot have
+	bool isCheatOnMovement();
+	/// Returns the targetting mode the unit is allowed to use
+	int aiTargetMode();
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }

@@ -115,7 +115,7 @@ void ProjectileFlyBState::init()
 	// reaction fire
 	if (reactionShoot)
 	{
-		BattleUnit* target = _parent->getSave()->getTile(_action.target)->getUnit();
+		auto target = _parent->getSave()->getTile(_action.target)->getUnit();
 		// target is dead: cancel the shot.
 		if (!target || target->isOut() || target->isOutThresholdExceed() || target != _parent->getSave()->getSelectedUnit())
 		{
@@ -393,7 +393,7 @@ void ProjectileFlyBState::init()
 
 	if (createNewProjectile())
 	{
-		auto* conf = weapon->getActionConf(_action.type);
+		auto conf = weapon->getActionConf(_action.type);
 		if (_parent->getMap()->isAltPressed() || (conf && !conf->followProjectiles))
 		{
 			// temporarily turn off camera following projectiles to prevent annoying flashing effects (e.g. on minigun-like weapons)
@@ -419,7 +419,7 @@ bool ProjectileFlyBState::createNewProjectile()
 {
 	++_action.autoShotCounter;
 
-	// Special handling for "spray" auto-attack, get target positions from the action's waypoints, starting from the back
+	// Special handling for "spray" auto attack, get target positions from the action's waypoints, starting from the back
 	if (_action.sprayTargeting)
 	{
 		// Since we're just spraying, target the middle of the tile
@@ -466,12 +466,12 @@ bool ProjectileFlyBState::createNewProjectile()
 		accuracyDivider = 200.0;
 	}
 
-	BattleActionAttack attack = BattleActionAttack::GetAferShoot(_action, _ammo);
+	auto attack = BattleActionAttack::GetAferShoot(_action, _ammo);
 	if (_action.type == BA_THROW)
 	{
 		_projectileImpact = projectile->calculateThrow(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider);
 		const RuleItem *ruleItem = _action.weapon->getRules();
-		if (_projectileImpact == V_FLOOR || _projectileImpact == V_UNIT || _projectileImpact == V_OBJECT)
+		if (_projectileImpact == V_FLOOR || _projectileImpact == V_UNIT || _projectileImpact == V_OBJECT || _projectileImpact == V_WESTWALL || _projectileImpact == V_NORTHWALL)
 		{
 			if (_unit->getFaction() != FACTION_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
 			{
@@ -642,7 +642,7 @@ void ProjectileFlyBState::think()
 	}
 	else
 	{
-		BattleActionAttack attack = BattleActionAttack::GetAferShoot(_action, _ammo);
+		auto attack = BattleActionAttack::GetAferShoot(_action, _ammo);
 		if (_action.type != BA_THROW && _ammo && _ammo->getRules()->getShotgunPellets() != 0)
 		{
 			// shotgun pellets move to their terminal location instantly as fast as possible
@@ -681,7 +681,7 @@ void ProjectileFlyBState::think()
 				else
 				{
 					_parent->dropItem(pos, _action.weapon);
-					if (_unit->getFaction() != FACTION_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
+					if ((_unit->getFaction() != FACTION_PLAYER || Options::autoCombat) && ruleItem->getBattleType() == BT_GRENADE)
 					{
 						_parent->getTileEngine()->setDangerZone(pos, ruleItem->getExplosionRadius(attack), _action.actor);
 					}
@@ -703,7 +703,7 @@ void ProjectileFlyBState::think()
 			}
 			else
 			{
-				auto* tmpUnit = _parent->getSave()->getTile(_action.target)->getUnit();
+				auto tmpUnit = _parent->getSave()->getTile(_action.target)->getUnit();
 				if (tmpUnit && tmpUnit != _unit)
 				{
 					tmpUnit->getStatistics()->shotAtCounter++; // Only counts for guns, not throws or launches
@@ -1017,6 +1017,19 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->setTurnsSinceSpotted(0);
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
+		}
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction());
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction(), true);
+		for (BattleUnit *friendOfVictim : *(_parent->getSave()->getUnits()))
+		{
+			if (friendOfVictim->isOut())
+				continue;
+			if (friendOfVictim->getFaction() != victim->getFaction())
+				continue;
+			if (!friendOfVictim->getAIModule())
+				continue;
+			friendOfVictim->setWantToEndTurn(false);
+			friendOfVictim->allowReselect();
 		}
 	}
 }

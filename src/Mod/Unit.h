@@ -435,8 +435,9 @@ private:
 	std::vector<std::vector<const RuleItem*> > _builtInWeapons;
 	bool _capturable;
 	bool _canSurrender, _autoSurrender;
-	bool _isLeeroyJenkins;
+	bool _isLeeroyJenkins, _isBrutal, _isCheatOnMovement;
 	bool _waitIfOutsideWeaponRange;
+	int _aiTargetMode;
 	int _pickUpWeaponsMoreActively;
 	bool _vip;
 	bool _cosmetic, _ignoredByAI;
@@ -529,6 +530,12 @@ public:
 	/// Checks if this unit surrenders automatically, if all other units surrendered too.
 	bool autoSurrender() const;
 	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
+	/// Checks if the unit is using brutal-AI
+	bool isBrutal() const { return _isBrutal; };
+	/// Checks if the unit is allowed to cheat on movement
+	bool isCheatOnMovement() const { return _isCheatOnMovement; };
+	/// Which mode of target-selection does the AI use
+	int aiTargetMode() const { return _aiTargetMode; };
 	/// Should the unit get "stuck" trying to fire from outside of weapon range? Vanilla bug, that may serve as "feature" in rare cases.
 	bool waitIfOutsideWeaponRange() { return _waitIfOutsideWeaponRange; };
 	/// Should the unit try to pick up weapons more actively?

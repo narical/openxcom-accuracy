@@ -100,8 +100,7 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
 	{
 		for (auto transferIt = xbase->getTransfers()->begin(); transferIt != xbase->getTransfers()->end();)
 		{
-			Transfer* transfer = (*transferIt);
-			if (transfer->getHours() == 0)
+			if (transferIt->isDelivered())
 			{
 				_base = xbase;
 

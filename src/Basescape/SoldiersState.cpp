@@ -395,7 +395,7 @@ void SoldiersState::initList(size_t scrl)
 	}
 	_txtCraft->setX(_txtRank->getX() + 98 - offset);
 
-	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
+	auto recovery = _base->getSumRecoveryPerDay();
 	unsigned int row = 0;
 	for (auto* soldier : _filteredListOfSoldiers)
 	{

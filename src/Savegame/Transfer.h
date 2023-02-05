@@ -95,6 +95,8 @@ public:
 	std::string getName(Language *lang) const;
 	/// Gets the hours remaining of the transfer.
 	int getHours() const;
+	/// Has the transfer arrived at the destination?
+	bool isDelivered() const { return _delivered; }
 	/// Gets the quantity of the transfer.
 	int getQuantity() const;
 	/// Gets the type of the transfer.

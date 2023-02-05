@@ -81,7 +81,16 @@ int RuleDamageType::getRandomDamage(int power, int mode) const
 int RuleDamageType::getRandomDamage(int power, FuncRef<int(int, int)> randFunc) const
 {
 	ItemDamageRandomType randType = RandomType;
-	if (randType == DRT_UFO_WITH_TWO_DICE)
+	if (randType == DRT_UFO_WITH_FOUR_DICE)
+	{
+		int firstThrow = randFunc(0, power);
+		int secondThrow = randFunc(0, power);
+		int thirdThrow = randFunc(0, power);
+		int fourthThrow = randFunc(0, power);
+
+		return (firstThrow + secondThrow + thirdThrow + fourthThrow) / 2;
+	}
+	else if (randType == DRT_UFO_WITH_TWO_DICE)
 	{
 		int firstThrow = randFunc(0, power);
 		int secondThrow = randFunc(0, power);

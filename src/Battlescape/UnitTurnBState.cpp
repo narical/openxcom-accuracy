@@ -67,14 +67,26 @@ void UnitTurnBState::init()
 	// if the unit has a turret and we are turning during targeting, then only the turret turns
 	_turret = _unit->getTurretType() != -1 && (_action.targeting || _action.strafe);
 
-	_unit->lookAt(_action.target, _turret);
+	if (_unit->getPosition() != _action.target)
+		_unit->lookAt(_action.target, _turret);
 
 	if (_chargeTUs && _unit->getStatus() != STATUS_TURNING)
 	{
 		if (_action.type == BA_NONE)
 		{
 			// try to open a door
+			int visibleTilesBefore = _unit->getVisibleTiles()->size();
 			int door = _parent->getTileEngine()->unitOpensDoor(_unit, true);
+			// when unit sees more tiles than it did before, the door was opened and it shall proceed. When tiles are same or lower it is done.
+			if ((_unit->getFaction() != FACTION_PLAYER || Options::autoCombat) && _unit->getVisibleTiles()->size() > visibleTilesBefore)
+			{
+				if (Options::traceAI)
+				{
+					Log(LOG_INFO) << _unit->getId() << " should now want to continue their turn";
+				}
+				_unit->setWantToEndTurn(false);
+				_unit->allowReselect();
+			}
 			if (door == 0)
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // normal door

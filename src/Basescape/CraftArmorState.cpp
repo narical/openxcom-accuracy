@@ -444,7 +444,7 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 				}
 				else if (s->hasFullHealth())
 				{
-					int space = c->getSpaceAvailable();
+					auto space = c->getSpaceAvailable();
 					if (c->validateAddingSoldier(space, s))
 					{
 						s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
@@ -595,7 +595,7 @@ void CraftArmorState::btnDeequipCraftArmorClick(Action *action)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	int row = 0;
-	for (auto* s : *_base->getSoldiers())
+	for (auto s : *_base->getSoldiers())
 	{
 		if (s->getCraft() == c || s->getCraft() == 0)
 		{

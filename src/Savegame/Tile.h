@@ -69,6 +69,9 @@ public:
 		Uint8 _smoke;
 		Uint8 _fire;
 		Uint8 boolFields;
+		Uint16 _lastExploredByHostile;
+		Uint16 _lastExploredByNeutral;
+		Uint16 _lastExploredByPlayer;
 		Uint32 totalBytes; // per structure, including any data not mentioned here and accounting for all array members!
 	} serializationKey;
 
@@ -128,6 +131,9 @@ protected:
 	Sint16 _EnergyMarker = -1;
 	Sint8 _preview = -1;
 	Uint8 _overlaps = 0;
+	int _lastExploredByPlayer = 0;
+	int _lastExploredByHostile = 0;
+	int _lastExploredByNeutral = 0;
 
 
 public:
@@ -278,6 +284,10 @@ public:
 	int closeUfoDoor();
 	/// Sets the black fog of war status of this tile.
 	void setDiscovered(bool flag, TilePart part);
+	/// Refreshes the exploration-turn of this tile to the current turn for the faction given.
+	void setLastExplored(UnitFaction faction);
+	/// Returns when the given faction has last explored this tile.
+	int getLastExplored(UnitFaction faction);
 	/// Gets the black fog of war status of this tile.
 	bool isDiscovered(TilePart part) const;
 	/// Reset light to zero for this tile.

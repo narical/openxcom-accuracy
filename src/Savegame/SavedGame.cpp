@@ -1185,8 +1185,8 @@ void SavedGame::setGlobeZoom(int zoom)
  */
 void SavedGame::monthlyFunding()
 {
-	int countryFunding = getCountryFunding();
-	int baseMaintenance = getBaseMaintenance();
+	auto countryFunding = getCountryFunding();
+	auto baseMaintenance = getBaseMaintenance();
 	_funds.back() += (countryFunding - baseMaintenance);
 	_funds.push_back(_funds.back());
 	_maintenance.back() = baseMaintenance;
@@ -1564,7 +1564,7 @@ const RuleResearch* SavedGame::selectGetOneFree(const RuleResearch* research)
 			{
 				pick = RNG::generate(0, possibilities.size() - 1);
 			}
-			auto* ret = possibilities.at(pick);
+			auto ret = possibilities.at(pick);
 			return ret;
 		}
 	}
@@ -3209,7 +3209,7 @@ void SavedGame::setDisableSoldierEquipment(bool disableSoldierEquipment)
  */
 bool SavedGame::isManaUnlocked(Mod *mod) const
 {
-	auto& researchName = mod->getManaUnlockResearch();
+	auto researchName = mod->getManaUnlockResearch();
 	if (Mod::isEmptyRuleName(researchName) || isResearched(researchName))
 	{
 		return true;
@@ -3226,7 +3226,7 @@ int SavedGame::getCurrentScore(int monthsPassed) const
 	int scoreTotal = _researchScores.at(invertedEntry);
 	if (monthsPassed > 1)
 		scoreTotal += 400;
-	for (auto* region : _regions)
+	for (auto region : _regions)
 	{
 		scoreTotal += region->getActivityXcom().at(invertedEntry) - region->getActivityAlien().at(invertedEntry);
 	}
@@ -3239,7 +3239,7 @@ int SavedGame::getCurrentScore(int monthsPassed) const
 void SavedGame::clearLinksForAlienBase(AlienBase* alienBase, const Mod* mod)
 {
 	// Take care to remove supply missions for this base.
-	for (auto* am : _activeMissions)
+	for (auto am : _activeMissions)
 	{
 		if (am->getAlienBase() == alienBase)
 		{
@@ -3378,7 +3378,7 @@ bool SavedGame::handleResearchUnlockedByMissions(const RuleResearch* research, c
 		addFinishedResearch(researchVec.back(), mod, base, true);
 	}
 
-	if (auto* bonus = selectGetOneFree(research))
+	if (auto bonus = selectGetOneFree(research))
 	{
 		researchVec.push_back(bonus);
 		addFinishedResearch(bonus, mod, base, true);

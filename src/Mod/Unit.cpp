@@ -32,9 +32,9 @@ namespace OpenXcom
 Unit::Unit(const std::string &type) :
 	_type(type), _liveAlienName(Mod::STR_NULL), _showFullNameInAlienInventory(-1), _armor(nullptr), _standHeight(0), _kneelHeight(0), _floatHeight(0), _value(0),
 	_moraleLossWhenKilled(100), _moveSound(-1), _intelligence(0), _aggression(0),
-	_spotter(0), _sniper(0), _energyRecovery(30), _specab(SPECAB_NONE), _livingWeapon(false),
+	_spotter(0), _sniper(0), _energyRecovery(30), _specab(SPECAB_NONE), _livingWeapon(false), _aiTargetMode(0),
 	_psiWeapon("ALIEN_PSI_WEAPON"), _capturable(true), _canSurrender(false), _autoSurrender(false),
-	_isLeeroyJenkins(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _vip(false), _cosmetic(false), _ignoredByAI(false),
+	_isLeeroyJenkins(false), _isBrutal(false), _isCheatOnMovement(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _vip(false), _cosmetic(false), _ignoredByAI(false),
 	_canPanic(true), _canBeMindControlled(true), _berserkChance(33)
 {
 }
@@ -94,6 +94,9 @@ void Unit::load(const YAML::Node &node, Mod *mod)
 	_canSurrender = node["canSurrender"].as<bool>(_canSurrender);
 	_autoSurrender = node["autoSurrender"].as<bool>(_autoSurrender);
 	_isLeeroyJenkins = node["isLeeroyJenkins"].as<bool>(_isLeeroyJenkins);
+	_isBrutal = node["isBrutal"].as<bool>(_isBrutal);
+	_isCheatOnMovement = node["isCheatOnMovement"].as<bool>(_isCheatOnMovement);
+	_aiTargetMode = node["aiTargetMode"].as<int>(_aiTargetMode);
 	_waitIfOutsideWeaponRange = node["waitIfOutsideWeaponRange"].as<bool>(_waitIfOutsideWeaponRange);
 	_pickUpWeaponsMoreActively = node["pickUpWeaponsMoreActively"].as<int>(_pickUpWeaponsMoreActively);
 	_meleeWeapon = node["meleeWeapon"].as<std::string>(_meleeWeapon);

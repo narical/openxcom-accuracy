@@ -195,7 +195,7 @@ void NewManufactureListState::lstProdClickRight(Action *)
 	{
 		// display either category or requirements
 		_showRequirements = !_showRequirements;
-		RuleBaseFacilityFunctions baseFunc = _base->getProvidedBaseFunc({});
+		auto baseFunc = _base->getProvidedBaseFunc({});
 
 		for (size_t row = 0; row < _lstManufacture->getTexts(); ++row)
 		{

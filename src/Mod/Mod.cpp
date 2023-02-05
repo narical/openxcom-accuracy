@@ -1054,7 +1054,7 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 		return;
 	}
 
-	for (int sprite : sprites)
+	for (auto sprite : sprites)
 	{
 		checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
 	}
@@ -1089,7 +1089,7 @@ void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& s
 
 	auto* s = getSoundSet(set);
 
-	for (int sound : sounds)
+	for (auto sound : sounds)
 	{
 		checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
 	}
@@ -2018,7 +2018,7 @@ void Mod::loadAll()
 		_modCurrent = &_modData.at(i);
 		//if (_modCurrent->info->isMaster())
 		{
-			auto* file = FileMap::getModRuleFile(_modCurrent->info, _modCurrent->info->getResourceConfigFile());
+			auto file = FileMap::getModRuleFile(_modCurrent->info, _modCurrent->info->getResourceConfigFile());
 			if (file)
 			{
 				loadResourceConfigFile(*file);
@@ -2162,7 +2162,7 @@ void Mod::loadAll()
 	{
 		std::vector<int> tmp;
 		tmp.reserve(_soldierBonus.size());
-		for (auto& i : _soldierBonus)
+		for (auto i : _soldierBonus)
 		{
 			tmp.push_back(i.second->getListOrder());
 		}
@@ -2176,10 +2176,10 @@ void Mod::loadAll()
 	}
 
 	// auto-create alternative manufacture rules
-	for (auto& shortcutPair : _manufactureShortcut)
+	for (auto shortcutPair : _manufactureShortcut)
 	{
 		// 1. check if the new project has a unique name
-		auto& typeNew = shortcutPair.first;
+		auto typeNew = shortcutPair.first;
 		auto it = _manufacture.find(typeNew);
 		if (it != _manufacture.end())
 		{
@@ -4377,8 +4377,8 @@ struct compareRule<RuleCraftWeapon>
 
 	bool operator()(const std::string &r1, const std::string &r2) const
 	{
-		auto* rule1 = _mod->getCraftWeapon(r1)->getLauncherItem();
-		auto* rule2 = _mod->getCraftWeapon(r2)->getLauncherItem();
+		auto *rule1 = _mod->getCraftWeapon(r1)->getLauncherItem();
+		auto *rule2 = _mod->getCraftWeapon(r2)->getLauncherItem();
 		return (rule1->getListOrder() < rule2->getListOrder());
 	}
 };
@@ -4477,9 +4477,9 @@ struct compareSection
  */
 void Mod::sortLists()
 {
-	for (auto& rulePair : _ufopaediaArticles)
+	for (auto rulePair : _ufopaediaArticles)
 	{
-		auto* rule = rulePair.second;
+		auto rule = rulePair.second;
 		if (rule->section != UFOPAEDIA_NOT_AVAILABLE)
 		{
 			if (_ufopaediaSections.find(rule->section) == _ufopaediaSections.end())
@@ -4753,7 +4753,7 @@ RuleBaseFacility *Mod::getDestroyedFacility() const
 	if (isEmptyRuleName(_destroyedFacility))
 		return 0;
 
-	auto* temp = getBaseFacility(_destroyedFacility, true);
+	auto temp = getBaseFacility(_destroyedFacility, true);
 	if (temp->getSize() != 1)
 	{
 		throw Exception("Destroyed base facility definition must have size: 1");
@@ -5066,7 +5066,7 @@ void Mod::loadVanillaResources()
 		{
 			// we're here if and only if this is the first mod loading
 			// and it got soundDefs in the ruleset, which basically means it's xcom2.
-			for (auto& i : _soundDefs)
+			for (auto i : _soundDefs)
 			{
 				if (_sounds.find(i.first) == _sounds.end())
 				{
@@ -5077,7 +5077,7 @@ void Mod::loadVanillaResources()
 				if (FileMap::fileExists(fname))
 				{
 					CatFile catfile(fname);
-					for (int j : i.second->getSoundList())
+					for (auto j : i.second->getSoundList())
 					{
 						_sounds[i.first]->loadCatByIndex(catfile, j, true);
 						Log(LOG_VERBOSE) << "TFTD: adding sound " << j << " to " << i.first;
@@ -5614,7 +5614,7 @@ void Mod::loadExtraResources()
 	}
 
 	bool backup_logged = false;
-	for (auto& pal : _palettes)
+	for (auto pal : _palettes)
 	{
 		if (pal.first.find("PAL_") == 0)
 		{

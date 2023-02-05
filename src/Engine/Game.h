@@ -33,6 +33,7 @@ class Mod;
 class ModInfo;
 class FpsCounter;
 class Action;
+class GeoscapeState;
 
 /**
  * The core of the game engine, manages the game's entire contents and structure.
@@ -157,6 +158,9 @@ public:
 	bool getRMBFlag() const { return _rmb; }
 	/// Gets the _mmb flag.
 	bool getMMBFlag() const { return _mmb; }
+
+	/// Gets the geoScapeState
+	GeoscapeState *getGeoscapeState() const;
 };
 
 }

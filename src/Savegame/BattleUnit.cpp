@@ -67,6 +67,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
+	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
@@ -439,6 +441,8 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_visible(false), _exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
 	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
+	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT),
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
 	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
@@ -683,7 +687,16 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_turretType = node["turretType"].as<int>(_turretType);
 	_visible = node["visible"].as<bool>(_visible);
 	_turnsSinceSpotted = node["turnsSinceSpotted"].as<int>(_turnsSinceSpotted);
+	_tileLastSpottedByHostile = node["tileLastSpottedByHostile"].as<int>(_tileLastSpottedByHostile);
+	_tileLastSpottedByNeutral = node["tileLastSpottedByNeutral"].as<int>(_tileLastSpottedByNeutral);
+	_tileLastSpottedByPlayer = node["tileLastSpottedByPlayer"].as<int>(_tileLastSpottedByPlayer);
+	_tileLastSpottedForBlindShotByHostile = node["tileLastSpottedForBlindShotByHostile"].as<int>(_tileLastSpottedForBlindShotByHostile);
+	_tileLastSpottedForBlindShotByNeutral = node["tileLastSpottedForBlindShotByNeutral"].as<int>(_tileLastSpottedForBlindShotByNeutral);
+	_tileLastSpottedForBlindShotByPlayer = node["tileLastSpottedForBlindShotByPlayer"].as<int>(_tileLastSpottedForBlindShotByPlayer);
 	_turnsLeftSpottedForSnipers = node["turnsLeftSpottedForSnipers"].as<int>(_turnsLeftSpottedForSnipers);
+	_turnsSinceSeenByHostile = node["turnsSinceSeenByHostile"].as<int>(_turnsSinceSeenByHostile);
+	_turnsSinceSeenByNeutral = node["turnsSinceSeenByNeutral"].as<int>(_turnsSinceSeenByNeutral);
+	_turnsSinceSeenByPlayer = node["turnsSinceSeenByPlayer"].as<int>(_turnsSinceSeenByPlayer);
 	_turnsSinceStunned = node["turnsSinceStunned"].as<int>(_turnsSinceStunned);
 	_killedBy = (UnitFaction)node["killedBy"].as<int>(_killedBy);
 	_moraleRestored = node["moraleRestored"].as<int>(_moraleRestored);
@@ -791,7 +804,16 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["visible"] = _visible;
 	node["turnsSinceSpotted"] = _turnsSinceSpotted;
 	node["turnsLeftSpottedForSnipers"] = _turnsLeftSpottedForSnipers;
+	node["turnsSinceSeenByHostile"] = _turnsSinceSeenByHostile;
+	node["turnsSinceSeenByNeutral"] = _turnsSinceSeenByNeutral;
+	node["turnsSinceSeenByPlayer"] = _turnsSinceSeenByPlayer;
 	node["turnsSinceStunned"] = _turnsSinceStunned;
+	node["tileLastSpottedByHostile"] = _tileLastSpottedByHostile;
+	node["tileLastSpottedByNeutral"] = _tileLastSpottedByNeutral;
+	node["tileLastSpottedByPlayer"] = _tileLastSpottedByPlayer;
+	node["tileLastSpottedForBlindShotByHostile"] = _tileLastSpottedForBlindShotByHostile;
+	node["tileLastSpottedForBlindShotByNeutral"] = _tileLastSpottedForBlindShotByNeutral;
+	node["tileLastSpottedForBlindShotByPlayer"] = _tileLastSpottedForBlindShotByPlayer;
 	node["rankInt"] = _rankInt;
 	node["moraleRestored"] = _moraleRestored;
 	if (getAIModule())
@@ -2365,6 +2387,7 @@ bool BattleUnit::addToVisibleTiles(Tile *tile)
 	if (_visibleTilesLookup.insert(tile).second)
 	{
 		tile->setVisible(1);
+		tile->setLastExplored(getFaction());
 		_visibleTiles.push_back(tile);
 		return true;
 	}
@@ -2381,6 +2404,54 @@ const std::vector<Tile*> *BattleUnit::getVisibleTiles()
 }
 
 /**
+ * Add this tile to the list of lof tiles.
+ * @param tile that we now have a lof to.
+ * @return true if a new tile.
+ */
+bool BattleUnit::addToLofTiles(Tile *tile)
+{
+	if (_lofTilesLookup.insert(tile).second)
+	{
+		_lofTiles.push_back(tile);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Add this tile to the list of no lof tiles.
+ * @param tile that we don't have a lof to.
+ * @return true if a new tile.
+ */
+bool BattleUnit::addToNoLofTiles(Tile *tile)
+{
+	if (_noLofTilesLookup.insert(tile).second)
+	{
+		_noLofTiles.push_back(tile);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Get the pointer to the vector of lof tiles.
+ * @return pointer to vector.
+ */
+const std::vector<Tile *> *BattleUnit::getLofTiles()
+{
+	return &_lofTiles;
+}
+
+/**
+ * Get the pointer to the vector of nolof tiles.
+ * @return pointer to vector.
+ */
+const std::vector<Tile *> *BattleUnit::getNoLofTiles()
+{
+	return &_noLofTiles;
+}
+
+/**
  * Clears visible tiles. Also reduces the associated visibility counter used by the AI.
  */
 void BattleUnit::clearVisibleTiles()
@@ -2391,6 +2462,18 @@ void BattleUnit::clearVisibleTiles()
 	}
 	_visibleTilesLookup.clear();
 	_visibleTiles.clear();
+	clearLofTiles();
+}
+
+/**
+ * Clears lof-tiles.
+ */
+void BattleUnit::clearLofTiles()
+{
+	_lofTilesLookup.clear();
+	_lofTiles.clear();
+	_noLofTiles.clear();
+	_noLofTilesLookup.clear();
 }
 
 /**
@@ -2719,6 +2802,7 @@ void BattleUnit::prepareNewTurn(bool fullProcess)
 	_hitByFire = false;
 	_dontReselect = false;
 	_motionPoints = 0;
+	setWantToEndTurn(false);
 
 	if (!isOut())
 	{
@@ -3164,6 +3248,26 @@ void BattleUnit::setAIModule(AIModule *ai)
 }
 
 /**
+ * Changes whether the Unit's AI wants to end their turn
+ * @param wantToEndTurn
+ */
+void BattleUnit::setWantToEndTurn(bool wantToEndTurn)
+{
+	if (_currentAIState)
+		_currentAIState->setWantToEndTurn(wantToEndTurn);
+}
+
+/**
+ * Returns whether the unit's AI wants to end their turn
+ */
+bool BattleUnit::getWantToEndTurn()
+{
+	if (_currentAIState)
+		return _currentAIState->getWantToEndTurn();
+	return false;
+}
+
+/**
  * Returns the current AI state.
  * @return Pointer to AI state.
  */
@@ -3361,15 +3465,15 @@ BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
  * @param quickest Whether to get the quickest weapon, default true
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
+BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
 {
 	BattleItem *weaponRightHand = getRightHandWeapon();
 	BattleItem *weaponLeftHand = getLeftHandWeapon();
 
 	// ignore weapons without ammo (rules out grenades)
-	if (!weaponRightHand || !weaponRightHand->haveAnyAmmo())
+	if (!weaponRightHand || (!weaponRightHand->haveAnyAmmo() && needammo))
 		weaponRightHand = 0;
-	if (!weaponLeftHand || !weaponLeftHand->haveAnyAmmo())
+	if (!weaponLeftHand || (!weaponLeftHand->haveAnyAmmo() && needammo))
 		weaponLeftHand = 0;
 
 	// if there is only one weapon, it's easy:
@@ -3455,9 +3559,15 @@ BattleItem *BattleUnit::getGrenadeFromBelt() const
 {
 	for (auto* bi : _inventory)
 	{
-		if (bi->getRules()->getBattleType() == BT_GRENADE)
+		if (isBrutal() && bi->getRules()->getDamageType()->RandomType == DRT_NONE)
+			continue;
+		if (bi)->getRules()->getBattleType() == BT_GRENADE)
 		{
 			return bi;
+		}
+		else if (isBrutal() && (*i)->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
+		{
+			return *i;
 		}
 	}
 	return 0;
@@ -4482,10 +4592,20 @@ int BattleUnit::getRandomAggroSound() const
 /**
  * Set a specific amount of time units.
  * @param tu time units.
+ * @param bool whether the units minimum and maximum time units can be exceeded.
  */
 void BattleUnit::setTimeUnits(int tu)
 {
 	_tu = Clamp(tu, 0, (int)_stats.tu);
+}
+
+/**
+ * Set a specific amount of energy.
+ * @param energy.
+ */
+void BattleUnit::setEnergy(int energy)
+{
+	_energy = energy;
 }
 
 /**
@@ -4574,6 +4694,91 @@ void BattleUnit::setTurnsLeftSpottedForSnipers (int turns)
 int BattleUnit::getTurnsLeftSpottedForSnipers() const
 {
 	return _turnsLeftSpottedForSnipers;
+}
+
+/**
+ * Set how long since this unit was last seen.
+ * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
+ * @param turns number of turns
+ */
+void BattleUnit::setTurnsSinceSeen(int turns, UnitFaction faction)
+{
+	if (faction == FACTION_HOSTILE)
+		_turnsSinceSeenByHostile = turns;
+	else if (faction == FACTION_NEUTRAL)
+		_turnsSinceSeenByNeutral = turns;
+	else
+		_turnsSinceSeenByPlayer = turns;
+}
+
+/**
+ * Get how long since this unit was seen.
+ * @return number of turns
+ */
+int BattleUnit::getTurnsSinceSeen(UnitFaction faction) const
+{
+	if (faction == FACTION_HOSTILE)
+		return _turnsSinceSeenByHostile;
+	else if (faction == FACTION_NEUTRAL)
+		return _turnsSinceSeenByNeutral;
+	else
+		return _turnsSinceSeenByPlayer;
+}
+
+/**
+ * Set how long since this unit was last seen.
+ * Difference to setTurnsSinceSpotted: being hit or killed by a unit does not make it seen and it is not impacted by cheating
+ * @param turns number of turns
+ */
+void BattleUnit::setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot)
+{
+	if (faction == FACTION_HOSTILE)
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByHostile = index;
+		else
+			_tileLastSpottedByHostile = index;
+	}
+	else if (faction == FACTION_NEUTRAL)
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByNeutral = index;
+		else
+			_tileLastSpottedByNeutral = index;
+	}
+	else
+	{
+		if (forBlindShot)
+			_tileLastSpottedForBlindShotByPlayer = index;
+		else
+			_tileLastSpottedByPlayer = index;
+	}
+}
+
+/**
+ * Get how long since this unit was seen.
+ * @return number of turns
+ */
+int BattleUnit::getTileLastSpotted(UnitFaction faction, bool forBlindShot) const
+{
+	if (faction == FACTION_HOSTILE)
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByHostile;
+		return _tileLastSpottedByHostile;
+	}
+	else if (faction == FACTION_NEUTRAL)
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByNeutral;
+		return _tileLastSpottedByNeutral;
+	}
+	else
+	{
+		if (forBlindShot)
+			return _tileLastSpottedForBlindShotByPlayer;
+		return _tileLastSpottedByPlayer;
+	}
 }
 
 /**
@@ -5347,6 +5552,68 @@ void BattleUnit::disableIndicators()
 	_disableIndicators = true;
 }
 
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+bool BattleUnit::isBrutal() const
+{
+	bool brutal = false;
+	if (getFaction() == FACTION_HOSTILE)
+		brutal = Options::brutalAI;
+	else if (getFaction() == FACTION_NEUTRAL)
+		brutal = Options::brutalCivilians;
+	else if (getFaction() == FACTION_PLAYER)
+		brutal = Options::autoCombat;
+	if (_unitRules && _unitRules->isBrutal())
+		brutal = true;
+	return brutal;
+}
+
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+bool BattleUnit::isCheatOnMovement()
+{
+	bool cheat = false;
+	if (getFaction() == FACTION_HOSTILE)
+		cheat = Options::cheatOnMovement;
+	if (_unitRules && _unitRules->isCheatOnMovement())
+		cheat = true;
+	return cheat;
+}
+
+/**
+ * Returns whether the unit should be controlled by brutalAI
+ */
+int BattleUnit::aiTargetMode()
+{
+	// Player and Neutral-AI are locked to mode 3
+	if (getFaction() != FACTION_HOSTILE)
+		return 3;
+	int targetMode = Options::aiTargetMode;
+	if (_unitRules && _unitRules->aiTargetMode() > 0)
+		targetMode = std::max(targetMode, _unitRules->aiTargetMode());
+	targetMode = std::clamp(targetMode, 1, 4);
+	return targetMode;
+}
+
+bool BattleUnit::isLeeroyJenkins() const
+{
+	if (getFaction() == FACTION_PLAYER)
+	{
+		if (Options::autoAggression)
+			return true;
+		else
+			return false;
+	}
+	else if (Options::aiLeeroyMode == 0)
+		return false;
+	else if (Options::aiLeeroyMode == 1)
+		return _isLeeroyJenkins;
+	else if (Options::aiLeeroyMode == 2)
+		return true;
+	return false;
+}
 
 ////////////////////////////////////////////////////////////
 //					Script binding

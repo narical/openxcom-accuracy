@@ -45,7 +45,7 @@ private:
 	constexpr static int dir_z[dir_max] = {  0,  0,  0,  0,  0,  0,  0,  0, +1, -1};
 
 	SavedBattleGame *_save;
-	std::vector<PathfindingNode> _nodes;
+	std::vector<PathfindingNode> _nodes, _altNodes;
 	int _size;
 	BattleUnit *_unit;
 	bool _pathPreviewed;
@@ -55,7 +55,7 @@ private:
 	PathfindingCost _totalTUCost;
 
 	/// Gets the node at certain position.
-	PathfindingNode *getNode(Position pos);
+	PathfindingNode *getNode(Position pos, bool alt = false);
 
 	/// Gets movement type of unit or movement of missile.
 	MovementType getMovementType(const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
@@ -101,6 +101,8 @@ public:
 	~Pathfinding();
 	/// Calculates the shortest path.
 	void calculate(BattleUnit *unit, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
+	/// Overload function to be able to seek paths between positions without units
+	void calculate(BattleUnit *unit, Position startPosition, Position endPosition, BattleActionMove bam, const BattleUnit *missileTarget = 0, int maxTUCost = 1000);
 
 	/**
 	 * Converts direction to a vector. Direction starts north = 0 and goes clockwise.
@@ -164,7 +166,9 @@ public:
 	/// Sets _unit in order to abuse low-level pathfinding functions from outside the class.
 	void setUnit(BattleUnit *unit);
 	/// Gets all reachable tiles, based on cost.
-	std::vector<int> findReachable(const BattleUnit *unit, const BattleActionCost &cost);
+	std::vector<int> findReachable(BattleUnit *unit, const BattleActionCost &cost);
+	/// Gets all reachable tiles, based on cost and returns the associated cost of getting there too
+	std::vector<PathfindingNode*> findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool entireMap = false, const BattleUnit* missileTarget = NULL, const Position* alternateStart = NULL);
 	/// Gets _totalTUCost; finds out whether we can hike somewhere in this turn or not.
 	int getTotalTUCost() const { return _totalTUCost.time; }
 	/// Gets the path preview setting.

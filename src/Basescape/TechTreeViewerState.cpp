@@ -164,11 +164,11 @@ TechTreeViewerState::TechTreeViewerState(const RuleResearch *r, const RuleManufa
 		_alreadyAvailableResearch.insert(discoveredResearchRule->getName());
 		discoveredSum += discoveredResearchRule->getCost();
 	}
-	for (auto& info : _game->getSavedGame()->getResearchRuleStatusRaw())
+	for (auto info : _game->getSavedGame()->getResearchRuleStatusRaw())
 	{
 		if (info.second == RuleResearch::RESEARCH_STATUS_DISABLED)
 		{
-			auto* rr = _game->getMod()->getResearch(info.first, false);
+			auto rr = _game->getMod()->getResearch(info.first, false);
 			if (rr)
 			{
 				_disabledResearch.insert(rr->getName());
@@ -403,10 +403,10 @@ void TechTreeViewerState::initLists()
 			}
 		}
 
-		for (auto& f : _game->getMod()->getBaseFacilitiesList())
+		for (auto &f : _game->getMod()->getBaseFacilitiesList())
 		{
 			RuleBaseFacility *temp = _game->getMod()->getBaseFacility(f);
-			for (auto& i : temp->getRequirements())
+			for (auto &i : temp->getRequirements())
 			{
 				if (i == rule->getName())
 				{
@@ -415,17 +415,17 @@ void TechTreeViewerState::initLists()
 			}
 		}
 
-		for (auto& item : _game->getMod()->getItemsList())
+		for (auto &item : _game->getMod()->getItemsList())
 		{
 			RuleItem *temp = _game->getMod()->getItem(item);
-			for (auto& i : temp->getRequirements())
+			for (auto &i : temp->getRequirements())
 			{
 				if (i == rule)
 				{
 					requiredByItems.push_back(item);
 				}
 			}
-			for (auto& i : temp->getBuyRequirements())
+			for (auto &i : temp->getBuyRequirements())
 			{
 				if (i == rule)
 				{
@@ -446,10 +446,10 @@ void TechTreeViewerState::initLists()
 			}
 		}
 
-		for (auto& c : _game->getMod()->getCraftsList())
+		for (auto &c : _game->getMod()->getCraftsList())
 		{
 			RuleCraft *temp = _game->getMod()->getCraft(c);
-			for (auto& i : temp->getRequirements())
+			for (auto &i : temp->getRequirements())
 			{
 				if (i == rule->getName())
 				{
@@ -1072,7 +1072,7 @@ void TechTreeViewerState::initLists()
 
 		for (auto& arcScriptId : *_game->getMod()->getArcScriptList())
 		{
-			auto* arcScript = _game->getMod()->getArcScript(arcScriptId, false);
+			auto arcScript = _game->getMod()->getArcScript(arcScriptId, false);
 			if (arcScript)
 			{
 				for (auto& trigger : arcScript->getResearchTriggers())
@@ -1089,7 +1089,7 @@ void TechTreeViewerState::initLists()
 		}
 		for (auto& eventScriptId : *_game->getMod()->getEventScriptList())
 		{
-			auto* eventScript = _game->getMod()->getEventScript(eventScriptId, false);
+			auto eventScript = _game->getMod()->getEventScript(eventScriptId, false);
 			if (eventScript)
 			{
 				for (auto& trigger : eventScript->getResearchTriggers())
@@ -1107,7 +1107,7 @@ void TechTreeViewerState::initLists()
 		}
 		for (auto& missionScriptId : *_game->getMod()->getMissionScriptList())
 		{
-			auto* missionScript = _game->getMod()->getMissionScript(missionScriptId, false);
+			auto missionScript = _game->getMod()->getMissionScript(missionScriptId, false);
 			if (missionScript)
 			{
 				for (auto& trigger : missionScript->getResearchTriggers())
@@ -1393,7 +1393,7 @@ void TechTreeViewerState::initLists()
 		}
 
 		// 4b. random outputs
-		auto& randomOutputs = rule->getRandomProducedItems();
+		auto randomOutputs = rule->getRandomProducedItems();
 		if (randomOutputs.size() > 0)
 		{
 			_lstRight->addRow(1, tr("STR_RANDOM_PRODUCTION_DISCLAIMER").c_str());

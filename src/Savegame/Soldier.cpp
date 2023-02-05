@@ -610,7 +610,7 @@ std::string Soldier::getCraftString(Language *lang, const BaseSumDailyRecovery& 
 		std::ostringstream ss;
 		ss << lang->getString("STR_WOUNDED");
 		ss << ">";
-		int days = getNeededRecoveryTime(recovery);
+		auto days = getNeededRecoveryTime(recovery);
 		if (days < 0)
 		{
 			ss << "∞";
@@ -1263,12 +1263,12 @@ void Soldier::replenishStats(const BaseSumDailyRecovery& recovery)
  */
 int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 {
-	int time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
+	auto time = getWoundRecovery(recovery.SickBayAbsoluteBonus, recovery.SickBayRelativeBonus);
 
-	int bonusTime = 0;
+	auto bonusTime = 0;
 	if (_healthMissing > 0)
 	{
-		int t = recoveryTime(
+		auto t = recoveryTime(
 			valueOverThreshold(_healthMissing, _currentStats.health, _rules->getHealthWoundThreshold()),
 			recovery.HealthRecovery
 		);
@@ -1282,7 +1282,7 @@ int Soldier::getNeededRecoveryTime(const BaseSumDailyRecovery& recovery) const
 	}
 	if (_manaMissing > 0)
 	{
-		int t = recoveryTime(
+		auto t = recoveryTime(
 			valueOverThreshold(_manaMissing, _currentStats.mana, _rules->getManaWoundThreshold()),
 			recovery.ManaRecovery
 		);
@@ -1973,13 +1973,13 @@ const std::vector<const RuleSoldierBonus*> *Soldier::getBonuses(const Mod *mod)
 
 		for (const auto& bonusName : _transformationBonuses)
 		{
-			auto* bonusRule = mod->getSoldierBonus(bonusName.first, false);
+			auto bonusRule = mod->getSoldierBonus(bonusName.first, false);
 
 			addSorted(bonusRule);
 		}
-		for (auto* commendation : *_diary->getSoldierCommendations())
+		for (auto commendation : *_diary->getSoldierCommendations())
 		{
-			auto* bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
+			auto bonusRule = commendation->getRule()->getSoldierBonus(commendation->getDecorationLevelInt());
 
 			addSorted(bonusRule);
 		}
@@ -2016,7 +2016,7 @@ bool Soldier::prepareStatsWithBonuses(const Mod *mod)
 	auto basePsiSkill = _currentStats.psiSkill;
 
 	// 2. refresh soldier bonuses
-	auto* bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
+	auto bonuses = getBonuses(mod); // this is the only place where bonus cache is rebuilt
 
 	// 3. apply soldier bonuses
 	for (const auto* bonusRule : *bonuses)

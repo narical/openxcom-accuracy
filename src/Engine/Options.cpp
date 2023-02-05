@@ -176,7 +176,8 @@ void create()
 #endif
 
 	_info.push_back(OptionInfo("geoDragScrollInvert", &geoDragScrollInvert, false, "STR_DRAGSCROLLINVERT", "STR_GEOSCAPE")); // true drags away from the cursor, false drags towards (like a grab)
-	_info.push_back(OptionInfo("aggressiveRetaliation", &aggressiveRetaliation, false, "STR_AGGRESSIVERETALIATION", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo("aggressiveRetaliation", &aggressiveRetaliation, true, "STR_AGGRESSIVERETALIATION", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo("dogfightAI", &dogfightAI, true, "STR_DOGFIGHTAI", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("customInitialBase", &customInitialBase, false, "STR_CUSTOMINITIALBASE", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("allowBuildingQueue", &allowBuildingQueue, false, "STR_ALLOWBUILDINGQUEUE", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("craftLaunchAlways", &craftLaunchAlways, false, "STR_CRAFTLAUNCHALWAYS", "STR_GEOSCAPE"));
@@ -191,7 +192,6 @@ void create()
 	//_info.push_back(OptionInfo("meetingPoint", &meetingPoint, false, "STR_MEETINGPOINT", "STR_GEOSCAPE")); // intentionally disabled in OXCE
 
 	_info.push_back(OptionInfo("battleDragScrollInvert", &battleDragScrollInvert, false, "STR_DRAGSCROLLINVERT", "STR_BATTLESCAPE")); // true drags away from the cursor, false drags towards (like a grab)
-	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleUFOExtenderAccuracy", &battleUFOExtenderAccuracy, false, "STR_BATTLEUFOEXTENDERACCURACY", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("showMoreStatsInInventoryView", &showMoreStatsInInventoryView, false, "STR_SHOWMORESTATSININVENTORYVIEW", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleHairBleach", &battleHairBleach, true, "STR_BATTLEHAIRBLEACH", "STR_BATTLESCAPE"));
@@ -210,6 +210,19 @@ void create()
 	_info.push_back(OptionInfo("skipNextTurnScreen", &skipNextTurnScreen, false, "STR_SKIPNEXTTURNSCREEN", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("noAlienPanicMessages", &noAlienPanicMessages, false, "STR_NOALIENPANICMESSAGES", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("alienBleeding", &alienBleeding, false, "STR_ALIENBLEEDING", "STR_BATTLESCAPE"));
+
+	// AI
+	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_AI"));
+	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
+	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
+	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, true, "STR_CHEATONMOVEMENT", "STR_AI"));
+	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
+	_info.push_back(OptionInfo("strafers", &strafers, false, "STR_STRAFERS", "STR_AI"));
+	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
+	_info.push_back(OptionInfo("aiLeeroyMode", &aiLeeroyMode, 1, "STR_AILEEROYMODE", "STR_AI"));
+	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoAggression", &autoAggression, true, "STR_AUTOAGGRESSION", "STR_AI"));
 
 	// OXCE GUI
 #ifdef __MOBILE__

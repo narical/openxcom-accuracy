@@ -101,7 +101,7 @@ void GeoscapeEventState::eventLogic()
 	if (!rule.getRegionList().empty())
 	{
 		size_t pickRegion = RNG::generate(0, rule.getRegionList().size() - 1);
-		auto& regionName = rule.getRegionList().at(pickRegion);
+		auto regionName = rule.getRegionList().at(pickRegion);
 		regionRule = _game->getMod()->getRegion(regionName, true);
 		std::string place = tr(regionName);
 
@@ -140,7 +140,7 @@ void GeoscapeEventState::eventLogic()
 	// 1. give/take score points
 	if (regionRule)
 	{
-		for (auto* region : *_game->getSavedGame()->getRegions())
+		for (auto region : *_game->getSavedGame()->getRegions())
 		{
 			if (region->getRules() == regionRule)
 			{
@@ -202,7 +202,7 @@ void GeoscapeEventState::eventLogic()
 	// 3. spawn/transfer item into the HQ
 	std::map<std::string, int> itemsToTransfer;
 
-	for (auto& pair : rule.getEveryMultiItemList())
+	for (auto &pair : rule.getEveryMultiItemList())
 	{
 		const RuleItem *itemRule = mod->getItem(pair.first, true);
 		if (itemRule)
@@ -211,7 +211,7 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
-	for (auto& itemName : rule.getEveryItemList())
+	for (auto &itemName : rule.getEveryItemList())
 	{
 		const RuleItem *itemRule = mod->getItem(itemName, true);
 		if (itemRule)
@@ -253,17 +253,18 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
-	for (auto& ti : itemsToTransfer)
+	for (auto &ti : itemsToTransfer)
 	{
 		Transfer *t = new Transfer(1);
 		t->setItems(ti.first, ti.second);
 		hq->getTransfers()->push_back(t);
+		t->advance(hq); // Have the items arrive right away.
 	}
 
 	// 4. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 
-	for (auto& rName : rule.getResearchList())
+	for (auto rName : rule.getResearchList())
 	{
 		const RuleResearch *rRule = mod->getResearch(rName, true);
 		if (!save->isResearched(rRule, false) || save->hasUndiscoveredGetOneFree(rRule, true))
@@ -296,7 +297,7 @@ void GeoscapeEventState::eventLogic()
 			_researchName = alreadyResearched ? "" : lookupResearch->getName();
 		}
 
-		if (auto* bonus = save->selectGetOneFree(eventResearch))
+		if (auto bonus = save->selectGetOneFree(eventResearch))
 		{
 			save->addFinishedResearch(bonus, mod, hq, true);
 			topicsToCheck.push_back(bonus);
@@ -346,13 +347,6 @@ void GeoscapeEventState::init()
 void GeoscapeEventState::btnOkClick(Action *)
 {
 	_game->popState();
-
-	Base *base = _game->getSavedGame()->getBases()->front();
-	if (_game->getSavedGame()->getMonthsPassed() > -1 && Options::storageLimitsEnforced && base != 0 && base->storesOverfull())
-	{
-		_game->pushState(new SellState(base, 0));
-		_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(base->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
-	}
 
 	if (!_bonusResearchName.empty())
 	{

@@ -495,7 +495,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 		}
 		else if (s->hasFullHealth())
 		{
-			int space = c->getSpaceAvailable();
+			auto space = c->getSpaceAvailable();
 			if (c->validateAddingSoldier(space, s))
 			{
 				s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
