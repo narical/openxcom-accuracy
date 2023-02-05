@@ -108,11 +108,11 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 			{
 				_settingsBattle.push_back(optionInfo);
 			}
-			else if (i->category() == "STR_AI")
+			else if (optionInfo.category() == "STR_AI")
 			{
-				_settingsAI.push_back(*i);
+				_settingsAI.push_back(optionInfo);
 			}
-			else if (i->category() == "STR_OXCE")
+			else if (optionInfo.category() == "STR_OXCE")
 			{
 				_settingsOxce.push_back(optionInfo);
 			}

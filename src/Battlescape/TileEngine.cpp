@@ -911,7 +911,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								bu->setVisible(true);
 							}
-							if (((bu->getFaction() == FACTION_HOSTILE && unit->getFaction() != FACTION_HOSTILE)
+							if ((bu->getFaction() == FACTION_HOSTILE && unit->getFaction() != FACTION_HOSTILE)
 								|| ( (bu->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE ))
 								&& !unit->hasVisibleUnit(bu))
 							{
@@ -936,7 +936,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 			}
 			if (unitTilesNotInViewSector == totalUnitTiles)
 			{
-				unit->removeFromVisibleUnits((*i));
+				unit->removeFromVisibleUnits(bu);
 			}
 		}
 	}

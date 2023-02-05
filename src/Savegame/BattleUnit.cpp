@@ -3561,13 +3561,13 @@ BattleItem *BattleUnit::getGrenadeFromBelt() const
 	{
 		if (isBrutal() && bi->getRules()->getDamageType()->RandomType == DRT_NONE)
 			continue;
-		if (bi)->getRules()->getBattleType() == BT_GRENADE)
+		if (bi->getRules()->getBattleType() == BT_GRENADE)
 		{
 			return bi;
 		}
-		else if (isBrutal() && (*i)->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
+		else if (isBrutal() && bi->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
-			return *i;
+			return bi;
 		}
 	}
 	return 0;

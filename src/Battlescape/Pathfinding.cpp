@@ -1373,7 +1373,7 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 	{
 		for (auto& pn : _altNodes)
 		{
-			pn->reset();
+			pn.reset();
 		}
 	}
 	else

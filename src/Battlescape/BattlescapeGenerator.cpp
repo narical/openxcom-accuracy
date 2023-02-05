@@ -667,9 +667,9 @@ void BattlescapeGenerator::nextStage()
 		}
 		for (UnitFaction faction : {UnitFaction::FACTION_PLAYER, UnitFaction::FACTION_HOSTILE, UnitFaction::FACTION_NEUTRAL})
 		{
-			(*j)->setTurnsSinceSeen(255, faction);
-			(*j)->setTileLastSpotted(-1, faction);
-			(*j)->setTileLastSpotted(-1, faction, true);
+			bu->setTurnsSinceSeen(255, faction);
+			bu->setTileLastSpotted(-1, faction);
+			bu->setTileLastSpotted(-1, faction, true);
 		}
 	}
 	if (soldiersPlaced == 0)

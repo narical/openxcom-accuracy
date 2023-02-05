@@ -100,12 +100,12 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
 	{
 		for (auto transferIt = xbase->getTransfers()->begin(); transferIt != xbase->getTransfers()->end();)
 		{
-			if (transferIt->isDelivered())
+			if (transferIt.isDelivered())
 			{
 				_base = xbase;
 
 				// Check if we have an automated use for an item
-				if (transfer->getType() == TRANSFER_ITEM)
+				if (transferIt->getType() == TRANSFER_ITEM)
 				{
 					RuleItem *item = _game->getMod()->getItem(transfer->getItems(), true);
 					if (item->getBattleType() == BT_NONE)
