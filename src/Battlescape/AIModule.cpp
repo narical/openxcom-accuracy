@@ -3404,6 +3404,7 @@ void AIModule::brutalThink(BattleAction* action)
 						lineOfFire = false;
 				}
 			}
+			bool shouldHaveBeenAbleToAttack = pos == _unit->getPosition();
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
@@ -3412,6 +3413,7 @@ void AIModule::brutalThink(BattleAction* action)
 					Tile *targetTile = _save->getTile(targetPosition);
 					if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
 					{
+						shouldHaveBeenAbleToAttack = false;
 						lineOfFire = true;
 						attackTU += 4;
 					}
@@ -3422,7 +3424,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float prio1Score = 0;
 			float prio2Score = 0;
 			float prio3Score = 0;
-			if (!_blaster && !needToFlee && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && _unit->getPosition() != pos)
+			if (!_blaster && !needToFlee && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && !shouldHaveBeenAbleToAttack)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 					prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
