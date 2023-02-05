@@ -3344,6 +3344,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool outOfRangeForShortRangeWeapon = false;
 			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
 				outOfRangeForShortRangeWeapon = true;
+			bool avoidMeleeRange = false;
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3363,6 +3364,10 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;
+				if (shouldAvoidMeleeRange(unit) && unitDist < 2)
+				{
+					avoidMeleeRange = true;
+				}
 				if (unitDist < closestEnemyDist)
 					closestEnemyDist = unitDist;
 				if (unit->hasLofTile(tile) && (brutalValidTarget(unit, true) || _unit->isCheatOnMovement()))
@@ -3488,6 +3493,12 @@ void AIModule::brutalThink(BattleAction* action)
 			if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
 			{
 				prio1Score /= 2;
+				prio2Score /= 10;
+				prio3Score /= 10;
+			}
+			if (avoidMeleeRange)
+			{
+				prio1Score /= 10;
 				prio2Score /= 10;
 				prio3Score /= 10;
 			}
@@ -4338,6 +4349,8 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 					return 0;
 			}
 		}
+		if (shouldAvoidMeleeRange(target) && Position::distance(_unit->getPosition(), target->getPosition()) < 2)
+			return 0;
 	}
 	if (_traceAI)
 	{
@@ -5169,6 +5182,15 @@ bool AIModule::inRangeOfAnyFriend(Position pos)
 		if(maxExtenderRangeWith(ally, getMaxTU(ally)) > Position::distance(ally->getPosition(), pos))
 			return true;
 	}
+	return false;
+}
+
+bool AIModule::shouldAvoidMeleeRange(BattleUnit *enemy)
+{
+	if (_melee)
+		return false;
+	if (_save->getMod()->getEnableCloseQuartersCombat() && !_unit->getArmor()->getIgnoresMeleeThreat() && enemy->getArmor()->getCreatesMeleeThreat())
+		return true;
 	return false;
 }
 

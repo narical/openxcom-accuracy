@@ -203,6 +203,8 @@ public:
 	bool projectileMayHarmFriends(Position startPos, Position targetPos);
 	/// Checks whether at least one of our allies is in range for a good attack
 	bool inRangeOfAnyFriend(Position pos);
+	/// Checks whether we should avoid melee-range against a specific enemy
+	bool shouldAvoidMeleeRange(BattleUnit *enemy);
 };
 
 }
