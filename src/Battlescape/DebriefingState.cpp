@@ -1199,7 +1199,7 @@ void DebriefingState::prepareDebriefing()
 
 	if (!base && save->isIronman())
 	{
-		throw Exception("Your save is corrupted. Try asking someone on the Openxcom forum/discord to fix it for you.");
+		throw Exception("Your save is corrupted. Try asking someone on the Openxcom forum to fix it for you.");
 	}
 
 	// mission site disappears (even when you abort)
