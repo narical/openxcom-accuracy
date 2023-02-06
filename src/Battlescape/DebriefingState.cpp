@@ -2161,7 +2161,8 @@ void DebriefingState::prepareDebriefing()
  */
 void DebriefingState::reequipCraft(Base *base, Craft *craft, bool vehicleItemsCanBeDestroyed)
 {
-	for (const auto& pair : *craft->getItems()->getContents())
+	std::map<std::string, int> craftItemsCopy = *craft->getItems()->getContents();
+	for (const auto& pair : craftItemsCopy)
 	{
 		int qty = base->getStorageItems()->getItem(pair.first);
 		if (qty >= pair.second)
