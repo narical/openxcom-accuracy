@@ -2922,9 +2922,10 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 
 	// Create reachabiliy and turncost-list for the entire map
+	Position myPos = _unit->getPosition();
 	if (Options::traceAI)
 	{
-		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << _unit->getPosition();
+		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos;
 	}
 
 	bool IAmPureMelee = _melee && !_blaster && !_rifle && !_grenade;
@@ -3023,16 +3024,20 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleUnit *unitToWalkTo = NULL;
 	int primeScore = 0;
 	bool amInAnyonesFOW = false;
+	bool amInLoSToFurthestReachable = false;
+	bool amCloserThanFurthestReachable = false;
 	bool haveMindControlled = false;
 
-	Position furthestPositionEnemyCanReach = _unit->getPosition();
+	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
 	bool sweepMode = _unit->isLeeroyJenkins();
+	int lowestTurnsLastSeen = 255;
+	float targetDistanceTofurthestReach = FLT_MAX;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
 			continue;
-		float primeDist = Position::distance(_unit->getPosition(), target->getPosition());
+		float primeDist = Position::distance(myPos, target->getPosition());
 		if (target->getFaction() != target->getOriginalFaction() && target->getOriginalFaction() == _myFaction)
 			haveMindControlled = true;
 		if (!isEnemy(target, true))
@@ -3057,8 +3062,10 @@ void AIModule::brutalThink(BattleAction* action)
 		if (target->getFaction() == _unit->getFaction())
 			continue;
 		Position targetPosition = target->getPosition();
+		int turnsLastSeen = 0;
 		if (!_unit->isCheatOnMovement())
 		{
+			turnsLastSeen = target->getTurnsSinceSeen(_unit->getFaction());
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
 			Tile *targetTile = _save->getTile(targetPosition);
 			bool tileChecked = false;
@@ -3088,7 +3095,7 @@ void AIModule::brutalThink(BattleAction* action)
 		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes, LoFCheckUnitForPath);
 		if (brutalValidTarget(target, true))
 		{
-			Position furthestAttackPositon = furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true);
+			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
 			if (Position::distance(furthestAttackPositon, targetPosition) < maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes, NULL)) || inRangeOfAnyFriend(targetPosition))
 			{
 				sweepMode = true;
@@ -3098,13 +3105,19 @@ void AIModule::brutalThink(BattleAction* action)
 			weKnowRealPosition = true;
 		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
-		float distToPosUnitCouldReach = Position::distance(_unit->getPosition(), posUnitCouldReach);
+		float distToPosUnitCouldReach = Position::distance(myPos, posUnitCouldReach);
 		if (distToPosUnitCouldReach < closestDistanceofFurthestPosition)
 		{
 			furthestPositionEnemyCanReach = posUnitCouldReach;
 			closestDistanceofFurthestPosition = distToPosUnitCouldReach;
+			targetDistanceTofurthestReach = Position::distance(posUnitCouldReach, targetPosition);
 		}
-		if (currentWalkPath < shortestWalkingPath)
+		if (turnsLastSeen < lowestTurnsLastSeen)
+		{
+			lowestTurnsLastSeen = turnsLastSeen;
+			unitToWalkTo = target;
+		}
+		else if (turnsLastSeen == lowestTurnsLastSeen && currentWalkPath < shortestWalkingPath)
 		{
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
@@ -3125,6 +3138,10 @@ void AIModule::brutalThink(BattleAction* action)
 			hideAfterPeaking = false;
 		else
 			rangeTooShortToPeak = true;
+		if (clearSight(myPos, furthestPositionEnemyCanReach))
+			amInLoSToFurthestReachable = true;
+		if (Position::distance(myPos, targetPosition) < closestDistanceofFurthestPosition)
+			amCloserThanFurthestReachable = true;
 	}
 	else if (!_unit->isCheatOnMovement() && _unit->getTimeUnits() == _unit->getBaseStats()->tu)
 	{
@@ -3195,9 +3212,6 @@ void AIModule::brutalThink(BattleAction* action)
 			return;
 		}
 	}
-	//When the enemy is mindcontrolling our units, there's no time to be careful either, we have to find and kill whatever is spotting and mind-controlling our friends
-	if (haveMindControlled)
-		sweepMode = true;
 	bool iHaveLof = false;
 	bool iHaveLofIncludingEncircle = false;
 	bool canReachTargetTileWithAttack = false;
@@ -3218,12 +3232,12 @@ void AIModule::brutalThink(BattleAction* action)
 			canReachTargetTileWithAttack = tuCost <= _unit->getTimeUnits() - BattleActionCost(BA_HIT, _unit, action->weapon).Time;
 		else
 			canReachTargetTileWithAttack = tuCost <= _unit->getTimeUnits() - snapCost.Time;
-		iHaveLof = quickLineOfFire(_unit->getPosition(), unitToWalkTo, false);
-		iHaveLof = iHaveLof || clearSight(_unit->getPosition(), targetPosition);
+		iHaveLof = quickLineOfFire(myPos, unitToWalkTo, false);
+		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
 		if (encircleTile)
 		{
-			bool sight = clearSight(_unit->getPosition(), encircleTile->getPosition());
+			bool sight = clearSight(myPos, encircleTile->getPosition());
 			iHaveLofIncludingEncircle = iHaveLofIncludingEncircle || sight;
 		}
 		for (BattleUnit *teammate : *(_save->getUnits()))
@@ -3244,21 +3258,21 @@ void AIModule::brutalThink(BattleAction* action)
 			if (teammate->getMainHandWeapon() != NULL && teammate->getMainHandWeapon()->getCurrentWaypoints() != 0)
 				continue;
 		}
+		if (myUnitCount > 0)
+		{
+			myMoralAvg /= myUnitCount;
+		}
+		if (enemyUnitCount > 0)
+		{
+			enemyMoralAvg /= enemyUnitCount;
+		}
+		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50 && _save->getTile(targetPosition)->getFloorSpecialTileType() != START_POINT)
+			sweepMode = true;
+		if (_blaster)
+			sweepMode = false;
 	}
-	if (myUnitCount > 0)
-	{
-		myMoralAvg /= myUnitCount;
-	}
-	if (enemyUnitCount > 0)
-	{
-		enemyMoralAvg /= enemyUnitCount;
-	}
-	if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50)
-		sweepMode = true;
-	if (_blaster)
-		sweepMode = false;
 	bool dissolveBlockage = false;
-	if (shortestWalkingPath >= 10000 && _unit->getArmor()->getSize() > 1) //We are probably too fat and block the path for others. Let's flee to make room.
+	if (shortestWalkingPath >= 10000 && _unit->getArmor()->getSize() > 1)
 	{
 		needToFlee = true;
 		dissolveBlockage = true;
@@ -3279,13 +3293,13 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	// Prio 1: I can walk right ontop of the unit or the unit is already a valid target and I can attack it from where I go
 	float bestPrio1Score = 0;
-	Position bestPrio1Position = _unit->getPosition();
+	Position bestPrio1Position = myPos;
 	// Prio 2: I have a roof and am not in any enemies line of fire
 	float bestPrio2Score = 0;
-	Position bestPrio2Position = _unit->getPosition();
+	Position bestPrio2Position = myPos;
 	// Prio 3: I am in the line of fire
 	float bestPrio3Score = 0;
-	Position bestPrio3Position = _unit->getPosition();
+	Position bestPrio3Position = myPos;
 	if (iHaveLof && _blaster)
 		needToFlee = true;
 	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak)
@@ -3295,7 +3309,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool shouldSkip = false;
 	if (_traceAI)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: "<<sweepMode;
-	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode)
+	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable)
 		shouldSkip = true;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
 	{
@@ -3311,13 +3325,13 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!randomScouting && (!sweepMode || _blaster))
 		{
 			Position newTarget = furthestToGoTowards(furthestPositionEnemyCanReach, reserved, _allPathFindingNodes);
-			if (newTarget != _unit->getPosition())
+			if (newTarget != myPos)
 				travelTarget = newTarget;
 		}
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition <<" need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3341,10 +3355,8 @@ void AIModule::brutalThink(BattleAction* action)
 			bool saveFromGrenades = false;
 			float cuddleAvoidModifier = 1;
 			bool eaglesCanFly = false;
-			bool outOfRangeForShortRangeWeapon = false;
-			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
-				outOfRangeForShortRangeWeapon = true;
 			bool avoidMeleeRange = false;
+			bool lineOfFire = false;
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3371,19 +3383,37 @@ void AIModule::brutalThink(BattleAction* action)
 				if (unitDist < closestEnemyDist)
 					closestEnemyDist = unitDist;
 				if (unit->hasLofTile(tile) && (brutalValidTarget(unit, true) || _unit->isCheatOnMovement()))
+				{
 					visibleToEnemy = true;
+					if (!IAmPureMelee)
+					{
+						if (!lineOfFire)
+						{
+							lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
+							if (!_unit->isCheatOnMovement())
+								lineOfFire = lineOfFire || clearSight(pos, unitPosition);
+						}
+						if (lineOfFire)
+						{
+							if (projectileMayHarmFriends(pos, unitPosition))
+								lineOfFire = false;
+						}
+					}
+				}
 			}
+			bool outOfRangeForShortRangeWeapon = false;
+			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
+				outOfRangeForShortRangeWeapon = true;
 			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
 				continue;
 			bool haveTUToAttack = false;
-			bool lineOfFire = false;
 			bool shouldPeak = false;
 			if (peakMode && pu->getTUCost(false).time <= _unit->getTimeUnits() / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
 				shouldPeak = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			if (pos != _unit->getPosition() || _unit->getTimeUnits() >= attackTU) // If I am at a position and think I should be able to attack, it's a false-positive. Otherwise I wouldn't be here and instead be attacking
+			if (pos != myPos && _unit->getTimeUnits() >= attackTU) // If I am at a position and think I should be able to attack, it's a false-positive. Otherwise I wouldn't be here and instead be attacking
 			{
 				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true) || (shouldPeak && unitToWalkTo)))
 				{
@@ -3404,7 +3434,7 @@ void AIModule::brutalThink(BattleAction* action)
 						lineOfFire = false;
 				}
 			}
-			bool shouldHaveBeenAbleToAttack = pos == _unit->getPosition();
+			bool shouldHaveBeenAbleToAttack = pos == myPos;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
@@ -3438,7 +3468,10 @@ void AIModule::brutalThink(BattleAction* action)
 				saveFromGrenades = true;
 			float walkToDist = 20 + tuCostToReachPosition(pos, targetNodes);
 			bool clearSightToEnemyReachableTile = false;
-			if (furthestPositionEnemyCanReach != _unit->getPosition())
+			bool closerThanEnemyCanReach = false;
+			if (closestEnemyDist <= targetDistanceTofurthestReach)
+				closerThanEnemyCanReach = true;
+			if (furthestPositionEnemyCanReach != myPos)
 			{
 				if (clearSight(furthestPositionEnemyCanReach, pos))
 					clearSightToEnemyReachableTile = true;
@@ -3458,7 +3491,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!clearSightToEnemyReachableTile)
 					prio2Score *= 2;
 			}
-			else if (!visibleToEnemy && !lineOfFire && !clearSightToEnemyReachableTile)
+			else if (!visibleToEnemy && !lineOfFire && !clearSightToEnemyReachableTile && !closerThanEnemyCanReach)
 			{
 				prio2Score = 100 / walkToDist;
 			}
@@ -3536,7 +3569,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	Position travelTarget = _unit->getPosition();
+	Position travelTarget = myPos;
 	bool shouldHaveLofAfterMove = false;
 	if (bestPrio1Score > 0)
 	{
@@ -3554,22 +3587,22 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI wants to go from "
-					  << _unit->getPosition()
+					  << myPos
 					  << " to travel-target: " << travelTarget << " Remaining TUs: " << _unit->getTimeUnits() << " TU-cost: " << tuCostToReachPosition(travelTarget, _allPathFindingNodes);
 	}
-	if (travelTarget != _unit->getPosition())
+	if (travelTarget != myPos)
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
 		action->target = furthestToGoTowards(travelTarget, reserved, _allPathFindingNodes);
 	} else
 	{
-		action->target = _unit->getPosition();
+		action->target = myPos;
 	}
 	
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI final goto-position from "
-					  << _unit->getPosition()
+					  << myPos
 					  << " to " << action->target;
 	}
 	shortestDist = 255;
@@ -3630,7 +3663,7 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "My facing now is " << action->finalFacing;
 	}
 	action->updateTU();
-	if (action->target == _unit->getPosition())
+	if (action->target == myPos)
 	{
 		if (action->finalFacing != _unit->getDirection() && action->finalFacing != -1)
 		{
@@ -3642,7 +3675,7 @@ void AIModule::brutalThink(BattleAction* action)
 					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
 				action->target = targetPosition;
 			}
-			if (!iHaveLof && encircleTile && encircleTile->getPosition() != _unit->getPosition())
+			if (!iHaveLof && encircleTile && encircleTile->getPosition() != myPos)
 			{
 				action->target = encircleTile->getPosition();
 			}
@@ -3659,7 +3692,7 @@ void AIModule::brutalThink(BattleAction* action)
 					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
 				action->target = targetPosition;
 			}
-			if (!iHaveLof && encircleTile && encircleTile->getPosition() != _unit->getPosition())
+			if (!iHaveLof && encircleTile && encircleTile->getPosition() != myPos)
 				action->target = encircleTile->getPosition();
 			if (_traceAI)
 			{
@@ -5003,9 +5036,13 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 	Tile *TileToCheckNext = NULL;
 	int LowestTuCost = INT_MAX;
 	int lowestTurnExplored = INT_MAX;
+	float maxDistFromLastSeen = unit->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(unit) / 4;
+	Position lastSpottedPositon = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	for (auto pn : _allPathFindingNodes)
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
+		if (unit->getTileLastSpotted(_unit->getFaction()) != -1 && Position::distance(pn->getPosition(), lastSpottedPositon) > maxDistFromLastSeen)
+			continue;
 		int lastExplored = tile->getLastExplored(_unit->getFaction());
 		if (lastExplored < lowestTurnExplored)
 		{
