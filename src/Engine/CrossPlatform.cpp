@@ -1444,7 +1444,7 @@ void crashDump(void *ex, const std::string &err)
 	std::ostringstream msg;
 	msg << "OpenXcom has crashed: " << error.str() << std::endl;
 	msg << "Log file: " << getLogFileName() << std::endl;
-	msg << "If this error was unexpected, please report it on OpenXcom forum or discord." << std::endl;
+	msg << "If this error was unexpected, please report it on the OpenXcom forum (OXCE board)." << std::endl;
 	msg << "The following can help us solve the problem:" << std::endl;
 	msg << "1. a saved game from just before the crash (helps 98%)" << std::endl;
 	msg << "2. a detailed description how to reproduce the crash (helps 80%)" << std::endl;
