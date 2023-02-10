@@ -1957,64 +1957,7 @@ void GeoscapeState::time30Minutes()
 			}
 
 			// Detection ufo state
-			{
-				auto maskTest = [](UfoDetection value, UfoDetection mask)
-				{
-					return (value & mask) == mask;
-				};
-				auto maskBitOr = [](UfoDetection value, UfoDetection mask)
-				{
-					return (UfoDetection)(value | mask);
-				};
-
-				UfoDetection detected = DETECTION_NONE;
-				bool alreadyTracked = ufo->getDetected();
-				SavedGame* save = _game->getSavedGame();
-
-				for (auto* base : *_game->getSavedGame()->getBases())
-				{
-					detected = maskBitOr(detected, base->detect(ufo, save, alreadyTracked));
-				}
-
-				for (auto* craft : *activeCrafts)
-				{
-					detected = maskBitOr(detected, craft->detect(ufo, save, alreadyTracked));
-				}
-
-				if (!alreadyTracked)
-				{
-					if (maskTest(detected, DETECTION_RADAR))
-					{
-						if (maskTest(detected, DETECTION_HYPERWAVE))
-						{
-							ufo->setHyperDetected(true);
-						}
-						ufo->setDetected(true);
-						// don't show if player said he doesn't want to see this UFO anymore
-						if (!_game->getSavedGame()->isUfoOnIgnoreList(ufo->getId()))
-						{
-							popup(new UfoDetectedState(ufo, this, true, ufo->getHyperDetected()));
-						}
-					}
-				}
-				else
-				{
-					if (maskTest(detected, DETECTION_HYPERWAVE))
-					{
-						ufo->setHyperDetected(true);
-					}
-					// TODO: rethink: hunting UFOs stay visible even outside of radar range?
-					if (!maskTest(detected, DETECTION_RADAR) && !ufo->isHunting())
-					{
-						ufo->setDetected(false);
-						ufo->setHyperDetected(false);
-						if (!ufo->getFollowers()->empty())
-						{
-							popup(new UfoLostState(ufo->getName(_game->getLanguage())));
-						}
-					}
-				}
-			}
+			ufoDetection(ufo, activeCrafts);
 
 			break;
 		case Ufo::CRASHED:
@@ -2063,6 +2006,70 @@ void GeoscapeState::time30Minutes()
 			return ge->isOver();
 		}
 	);
+}
+
+/**
+ * Logic resposible for detecting ufo and its tracking.
+ * @param ufo
+ */
+void GeoscapeState::ufoDetection(Ufo* ufo, const std::vector<Craft*>* activeCrafts)
+{
+	auto maskTest = [](UfoDetection value, UfoDetection mask)
+	{
+		return (value & mask) == mask;
+	};
+	auto maskBitOr = [](UfoDetection value, UfoDetection mask)
+	{
+		return (UfoDetection)(value | mask);
+	};
+
+	auto detected = DETECTION_NONE;
+	auto alreadyTracked = ufo->getDetected();
+	auto save = _game->getSavedGame();
+
+	for (auto* base : *_game->getSavedGame()->getBases())
+	{
+		detected = maskBitOr(detected, base->detect(ufo, save, alreadyTracked));
+	}
+
+	for (auto* craft : *activeCrafts)
+	{
+		detected = maskBitOr(detected, craft->detect(ufo, save, alreadyTracked));
+	}
+
+	if (!alreadyTracked)
+	{
+		if (maskTest(detected, DETECTION_RADAR))
+		{
+			if (maskTest(detected, DETECTION_HYPERWAVE))
+			{
+				ufo->setHyperDetected(true);
+			}
+			ufo->setDetected(true);
+			// don't show if player said he doesn't want to see this UFO anymore
+			if (!_game->getSavedGame()->isUfoOnIgnoreList(ufo->getId()))
+			{
+				popup(new UfoDetectedState(ufo, this, true, ufo->getHyperDetected()));
+			}
+		}
+	}
+	else
+	{
+		if (maskTest(detected, DETECTION_HYPERWAVE))
+		{
+			ufo->setHyperDetected(true);
+		}
+		// TODO: rethink: hunting UFOs stay visible even outside of radar range?
+		if (!maskTest(detected, DETECTION_RADAR) && !ufo->isHunting())
+		{
+			ufo->setDetected(false);
+			ufo->setHyperDetected(false);
+			if (!ufo->getFollowers()->empty())
+			{
+				popup(new UfoLostState(ufo->getName(_game->getLanguage())));
+			}
+		}
+	}
 }
 
 /**
