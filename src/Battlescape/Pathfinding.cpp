@@ -436,7 +436,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		else if (direction >= DIR_UP && !triedStairsDown)
 		{
 			// check if we can go up or down through gravlift or fly
-			if (validateUpDown(unit, startTile[i]->getPosition(), direction, (bam == BAM_MISSILE)))
+			if (validateUpDown(unit, startTile[i]->getPosition(), direction, missileTarget))
 			{
 				cost = 8; // vertical movement by flying suit or grav lift
 			}
