@@ -205,6 +205,8 @@ public:
 	bool inRangeOfAnyFriend(Position pos);
 	/// Checks whether we should avoid melee-range against a specific enemy
 	bool shouldAvoidMeleeRange(BattleUnit *enemy);
+	/// Checks whether a unit has any means to fight
+	bool isArmed(BattleUnit *unit) const;
 };
 
 }

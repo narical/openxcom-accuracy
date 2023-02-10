@@ -3300,6 +3300,8 @@ void AIModule::brutalThink(BattleAction* action)
 	// Prio 3: I am in the line of fire
 	float bestPrio3Score = 0;
 	Position bestPrio3Position = myPos;
+	hideAfterPeaking |= amCloserThanFurthestReachable;
+	hideAfterPeaking |= amInLoSToFurthestReachable;
 	if (iHaveLof && _blaster)
 		needToFlee = true;
 	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak)
@@ -3308,7 +3310,7 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
-		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: "<<sweepMode;
+		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking;
 	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable)
 		shouldSkip = true;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
@@ -3385,7 +3387,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (unit->hasLofTile(tile) && (brutalValidTarget(unit, true) || _unit->isCheatOnMovement()))
 				{
 					visibleToEnemy = true;
-					if (!IAmPureMelee)
+					if (!IAmPureMelee && brutalValidTarget(unit, true))
 					{
 						if (!lineOfFire)
 						{
@@ -5214,6 +5216,21 @@ bool AIModule::shouldAvoidMeleeRange(BattleUnit *enemy)
 	if (_melee)
 		return false;
 	if (_save->getMod()->getEnableCloseQuartersCombat() && !_unit->getArmor()->getIgnoresMeleeThreat() && enemy->getArmor()->getCreatesMeleeThreat())
+		return true;
+	return false;
+}
+
+bool AIModule::isArmed(BattleUnit *unit) const
+{
+	if (unit->getMainHandWeapon())
+		return true;
+	if (unit->getGrenadeFromBelt())
+		return true;
+	if (unit->getUtilityWeapon(BT_PSIAMP))
+		return true;
+	if (unit->getSpecialWeapon(BT_MELEE))
+		return true;
+	if (unit->getSpecialWeapon(BT_FIREARM))
 		return true;
 	return false;
 }
