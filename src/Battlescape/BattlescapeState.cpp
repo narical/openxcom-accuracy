@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include "../fmath.h"
 #include <SDL_gfxPrimitives.h>
 #include "Map.h"
 #include "Camera.h"
@@ -41,7 +42,6 @@
 #include "BriefingState.h"
 #include "ExtendedBattlescapeLinksState.h"
 #include "../lodepng.h"
-#include "../fmath.h"
 #include "../Geoscape/SelectMusicTrackState.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
