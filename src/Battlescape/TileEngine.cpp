@@ -3648,14 +3648,7 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 			auto result = getBlockDir(cache, dir, difference.z);
 			if (result && difference.z == 0 && getBigWallDir(cache, dir))
 			{
-				if (steps<2)
-				{
-					result = false;
-				}
-				else
-				{
-					bigWall = true;
-				}
+				bigWall = true;
 			}
 
 			steps++;
