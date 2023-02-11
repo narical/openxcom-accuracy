@@ -502,6 +502,22 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			cost += 2;
 		}
 
+		if (missileTarget && destinationTile[i]->getUnit())
+		{
+			BattleUnit *unitHere = destinationTile[i]->getUnit();
+			if (unitHere != missileTarget && !unitHere->isOut())
+			{
+				if (unitHere->getFaction() == _unit->getFaction())
+				{
+					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a friendly as being blocked
+				}
+				else if (unitHere->getTurnsSinceSpotted() <= unit->getUnitRules()->getIntelligence())
+				{
+					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a known unit that isn't our target as being blocked
+				}
+			}
+		}
+
 		// Strafing costs +1 for forwards-ish or sidewards, propose +2 for backwards-ish directions
 		// Maybe if flying then it makes no difference?
 		if (_strafeMove && bam == BAM_STRAFE)
@@ -724,7 +740,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 	{
 		if (tile->getMapData(O_OBJECT) &&
 			(tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLWEST ||
-			tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLWESTANDNORTH ))
+			tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLWESTANDNORTH))
 			return true; // blocking part
 		Tile *tileWest = _save->getTile(tile->getPosition() + Position(-1, 0, 0));
 		if (!tileWest) return true;	// do not look outside of map
@@ -737,13 +753,14 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 	{
 		if (tile->getMapData(O_OBJECT) &&
 			(tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLNORTH ||
-			tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLWESTANDNORTH ))
+			 tile->getMapData(O_OBJECT)->getBigWall() == BIGWALLWESTANDNORTH))
 			return true; // blocking part
 		Tile *tileNorth = _save->getTile(tile->getPosition() + Position(0, -1, 0));
-		if (!tileNorth) return true; // do not look outside of map
+		if (!tileNorth)
+			return true; // do not look outside of map
 		if (tileNorth->getMapData(O_OBJECT) &&
 			(tileNorth->getMapData(O_OBJECT)->getBigWall() == BIGWALLSOUTH ||
-			tileNorth->getMapData(O_OBJECT)->getBigWall() == BIGWALLEASTANDSOUTH))
+			 tileNorth->getMapData(O_OBJECT)->getBigWall() == BIGWALLEASTANDSOUTH))
 			return true; // blocking part
 	}
 	if (part == O_FLOOR)
@@ -751,15 +768,17 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 		if (tile->getUnit())
 		{
 			BattleUnit *u = tile->getUnit();
-			if (u == unit || u == missileTarget || u->isOut()) return false;
-			if (missileTarget && u != missileTarget && u->getFaction() == FACTION_HOSTILE)
-				return true;			// AI pathfinding with missiles shouldn't path through their own units
+			if (u == unit || u == missileTarget || u->isOut())
+				return false;
 			if (unit)
 			{
-				if (unit->getFaction() == FACTION_PLAYER && u->getVisible()) return true;		// player know all visible units
-				if (unit->getFaction() == u->getFaction()) return true;
+				if (unit->getFaction() == FACTION_PLAYER && u->getVisible())
+					return true; // player know all visible units
+				if (unit->getFaction() == u->getFaction())
+					return true;
 				if (unit->getFaction() == FACTION_HOSTILE &&
-					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), u) != unit->getUnitsSpottedThisTurn().end()) return true;
+					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), u) != unit->getUnitsSpottedThisTurn().end())
+					return true;
 			}
 		}
 		else if (tile->hasNoFloor(0) && movementType != MT_FLY) // this whole section is devoted to making large units not take part in any kind of falling behaviour
@@ -793,14 +812,16 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 		}
 	}
 	// missiles can't pathfind through closed doors.
-	{ TilePart tp = (TilePart)part;
-	if (missileTarget != 0 && tile->getMapData(tp) &&
-		(tile->isDoor(tp) ||
-		(tile->isUfoDoor(tp) &&
-		!tile->isUfoDoorOpen(tp))))
 	{
-		return true;
-	}}
+		TilePart tp = (TilePart)part;
+		if (missileTarget != 0 && tile->getMapData(tp) &&
+			(tile->isDoor(tp) ||
+			(tile->isUfoDoor(tp) &&
+			!tile->isUfoDoorOpen(tp))))
+		{
+			return true;
+		}
+	}
 	if (tile->getTUCost(part, movementType) == Pathfinding::INVALID_MOVE_COST) return true; // blocking part
 	return false;
 }

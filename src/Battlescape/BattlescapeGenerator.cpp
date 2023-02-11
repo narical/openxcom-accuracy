@@ -1652,8 +1652,8 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 			quantity = dd.highQty;
 		}
 
-		quantity += RNG::generate(0, dd.dQty);
-		quantity += RNG::generate(0, dd.extraQty);
+		quantity += _mod->isDemigod() ? dd.dQty : RNG::generate(0, dd.dQty); // maximium spawns for demigod
+		quantity += _mod->isDemigod() ? dd.extraQty : RNG::generate(0, dd.extraQty);
 
 		for (int i = 0; i < quantity; ++i)
 		{
