@@ -3092,7 +3092,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 		Tile *targetTile = _save->getTile(targetPosition);
-		if (targetTile->getFloorSpecialTileType() == START_POINT || targetTile->getMapData(O_FLOOR)->isGravLift())
+		if (targetTile->getFloorSpecialTileType() == START_POINT || (targetTile->getMapData(O_FLOOR) && targetTile->getMapData(O_FLOOR)->isGravLift()))
 			isAtStartTile = true;
 		if (hasLofTile(target, _unit->getTile()))
 			amInAnyonesFOW = true;
@@ -3152,7 +3152,7 @@ void AIModule::brutalThink(BattleAction* action)
 		else
 			rangeTooShortToPeak = true;
 		assumedTile = _save->getTile(targetPosition);
-		if (assumedTile->getFloorSpecialTileType() == START_POINT || assumedTile->getMapData(O_FLOOR)->isGravLift())
+		if (assumedTile->getFloorSpecialTileType() == START_POINT || (assumedTile->getMapData(O_FLOOR) && assumedTile->getMapData(O_FLOOR)->isGravLift()))
 		{
 			if (clearSight(myPos, furthestPositionEnemyCanReach))
 				amInLoSToFurthestReachable = true;
@@ -3283,7 +3283,10 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			enemyMoralAvg /= enemyUnitCount;
 		}
-		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50 && _save->getTile(targetPosition)->getFloorSpecialTileType() != START_POINT && !_save->getTile(targetPosition)->getMapData(O_FLOOR)->isGravLift())
+		bool targetHasGravLift = false;
+		if (_save->getTile(targetPosition)->getMapData(O_FLOOR) && _save->getTile(targetPosition)->getMapData(O_FLOOR)->isGravLift())
+			targetHasGravLift = true;
+		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50 && _save->getTile(targetPosition)->getFloorSpecialTileType() != START_POINT && !targetHasGravLift)
 			sweepMode = true;
 		if (_blaster)
 			sweepMode = false;
@@ -3491,7 +3494,10 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = 20 + tuCostToReachPosition(pos, targetNodes);
 			bool clearSightToEnemyReachableTile = false;
 			bool closerThanEnemyCanReach = false;
-			if (closestEnemyDist <= targetDistanceTofurthestReach + _save->getMod()->getMaxViewDistance() && assumedTile && (assumedTile->getFloorSpecialTileType() == START_POINT || assumedTile->getMapData(O_FLOOR)->isGravLift()))
+			bool assumedTilehasGravLift = false;
+			if (assumedTile->getMapData(O_FLOOR) && assumedTile->getMapData(O_FLOOR)->isGravLift())
+				assumedTilehasGravLift = true;
+			if (closestEnemyDist <= targetDistanceTofurthestReach + _save->getMod()->getMaxViewDistance() && assumedTile && (assumedTile->getFloorSpecialTileType() == START_POINT || assumedTilehasGravLift))
 				closerThanEnemyCanReach = true;
 			if (furthestPositionEnemyCanReach != myPos)
 			{
