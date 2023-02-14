@@ -47,7 +47,7 @@ namespace OpenXcom
  */
 AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
 	_save(save), _unit(unit), _aggroTarget(0), _knownEnemies(0), _visibleEnemies(0), _spottingEnemies(0),
-	_escapeTUs(0), _ambushTUs(0), _weaponPickedUp(false), _wantToEndTurn(false), _rifle(false), _melee(false), _blaster(false), _grenade(false),
+    _escapeTUs(0), _ambushTUs(0), _weaponPickedUp(false), _wantToEndTurn(false), _rifle(false), _melee(false), _blaster(false), _grenade(false), _ranOutOfTUs(false),
 	_didPsi(false), _AIMode(AI_PATROL), _closestDist(100), _fromNode(node), _toNode(0), _foundBaseModuleToDestroy(false)
 {
 	_traceAI = Options::traceAI;
@@ -215,9 +215,11 @@ void AIModule::think(BattleAction *action)
 	_melee = (_unit->getUtilityWeapon(BT_MELEE) != 0);
 	_rifle = false;
 	_blaster = false;
-	_reachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost());
+	_ranOutOfTUs = false;
+	_reachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost(), _ranOutOfTUs);
 	_wasHitBy.clear();
 	_foundBaseModuleToDestroy = false;
+	bool dummy = false;
 
 	if (_unit->getCharging() && _unit->getCharging()->isOut())
 	{
@@ -273,20 +275,20 @@ void AIModule::think(BattleAction *action)
 				{
 					_blaster = true;
 					if (!_unit->isBrutal())
-						_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon));
+						_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_AIMEDSHOT, _unit, action->weapon), dummy);
 				}
 				else
 				{
 					_rifle = true;
 					if (!_unit->isBrutal())
-						_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_SNAPSHOT, _unit, action->weapon));
+						_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_SNAPSHOT, _unit, action->weapon), dummy);
 				}
 			}
 			else if (rule->getBattleType() == BT_MELEE)
 			{
 				_melee = true;
 				if (!_unit->isBrutal())
-					_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, action->weapon));
+					_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, action->weapon), dummy);
 			}
 		}
 		else
@@ -2785,7 +2787,8 @@ void AIModule::selectMeleeOrRanged()
 		{
 			_rifle = false;
 			_attackAction.weapon = melee;
-			_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, melee));
+			bool dummy = false;
+			_reachableWithAttack = _save->getPathfinding()->findReachable(_unit, BattleActionCost(BA_HIT, _unit, melee), dummy);
 			return;
 		}
 	}
@@ -2868,8 +2871,10 @@ void AIModule::brutalThink(BattleAction* action)
 {
 	// Step 1: Check whether we wait for someone else on our team to move first
 	int visibleToMe = 0;
-	int myReachable = 0;
+	int myReachable = _reachable.size();
+	int myDist = 0;
 	bool weKnowRealPosition = false;
+	Position myPos = _unit->getPosition();
 	for (BattleUnit *seenByMe : *(_unit->getVisibleUnits()))
 	{
 		if (seenByMe->getMainHandWeapon() == NULL)
@@ -2880,7 +2885,18 @@ void AIModule::brutalThink(BattleAction* action)
 			weKnowRealPosition = true;
 		}
 	}
-	myReachable += _reachable.size();
+	for (BattleUnit *enemy : *(_save->getUnits()))
+	{
+		if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || !isEnemy(enemy))
+			continue;
+		Position enemyPos = enemy->getPosition();
+		if (!_unit->isCheatOnMovement())
+		{
+			enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_myFaction));
+		}
+		myDist += Position::distance(myPos, enemyPos);
+	}
+
 	for (BattleUnit *ally : *(_save->getUnits()))
 	{
 		if (ally == _unit)
@@ -2893,6 +2909,8 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		int visibleToAlly = 0;
 		int allyReachable = 0;
+		bool allyRanOutOfTUs = false;
+		int allyDist = 0;
 		for (BattleUnit *seenByAlly : *(ally->getVisibleUnits()))
 		{
 			if (seenByAlly->getMainHandWeapon() == NULL)
@@ -2903,6 +2921,17 @@ void AIModule::brutalThink(BattleAction* action)
 				weKnowRealPosition = true;
 			}
 		}
+		for (BattleUnit *enemy : *(_save->getUnits()))
+		{
+			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || !isEnemy(enemy))
+				continue;
+			Position enemyPos = enemy->getPosition();
+			if (!_unit->isCheatOnMovement())
+			{
+				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_myFaction));
+			}
+			allyDist += Position::distance(ally->getPosition(), enemyPos);
+		}
 		if (visibleToAlly < visibleToMe)
 		{
 			action->type = BA_WAIT;
@@ -2911,18 +2940,33 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		else if(visibleToAlly == visibleToMe)
 		{
-			allyReachable = _save->getPathfinding()->findReachable(_unit, BattleActionCost()).size();
-			if (myReachable < allyReachable)
+			allyReachable = _save->getPathfinding()->findReachable(ally, BattleActionCost(), allyRanOutOfTUs).size();
+			if (_ranOutOfTUs == false)
 			{
-				action->type = BA_WAIT;
-				action->number -= 1;
-				return;
+				if (Options::traceAI)
+				{
+					Log(LOG_INFO) << _unit->getId() << " myReachable " << myReachable << " allyReachable " << allyReachable;
+				}
+				if (myReachable < allyReachable)
+				{
+					action->type = BA_WAIT;
+					action->number -= 1;
+					return;
+				}
+			}
+			else if (_ranOutOfTUs == true && allyRanOutOfTUs == true)
+			{
+				if (myDist > allyDist)
+				{
+					action->type = BA_WAIT;
+					action->number -= 1;
+					return;
+				}
 			}
 		}
 	}
 
 	// Create reachabiliy and turncost-list for the entire map
-	Position myPos = _unit->getPosition();
 	if (Options::traceAI)
 	{
 		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos;
@@ -2983,7 +3027,8 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		return;
 	}
-	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true);
+	bool dummy = false;
+	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true);
 	int explosionRadius = 0;
 	if (_grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled())
 	{
@@ -3350,7 +3395,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (newTarget != myPos)
 				travelTarget = newTarget;
 		}
-		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &travelTarget);
+		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach;
@@ -3680,7 +3725,8 @@ void AIModule::brutalThink(BattleAction* action)
 			Position targetPosition = unitToWalkTo->getPosition();
 			if (!_unit->isCheatOnMovement())
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
-			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, NULL, &action->target);
+			bool dummy = false;
+			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target);
 			Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes));
 			if (lookAtTile && _traceAI)
 				Log(LOG_INFO) << "lookAtTile " << lookAtTile->getPosition() << " action->target: " << action->target;
@@ -4564,7 +4610,8 @@ void AIModule::brutalBlaster()
 	{
 		if ((*i)->isOut() || !brutalValidTarget(*i, true))
 			continue;
-		std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
+		bool dummy = false;
+		std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, *i);
 		bool havePath = false;
 		for (auto node : path)
 		{
@@ -4593,7 +4640,8 @@ void AIModule::brutalBlaster()
 			if (!(*i)->isOut() && isEnemy((*i), true) && !brutalValidTarget(*i, true))
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted(_unit->getFaction(), true));
-				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, *i);
+				bool dummy = false;
+				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, *i);
 				bool havePath = false;
 				for (auto node : path)
 				{
@@ -4622,7 +4670,8 @@ void AIModule::brutalBlaster()
 
 	if (_aggroTarget != 0)
 	{
-		std::vector<PathfindingNode *> missilePaths = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), true, _aggroTarget);
+		bool dummy = false;
+		std::vector<PathfindingNode *> missilePaths = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, _aggroTarget);
 		_attackAction.type = BA_LAUNCH;
 		_attackAction.updateTU();
 		if (!_attackAction.haveTU())

@@ -1337,9 +1337,9 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
  * @param tuMax The maximum cost of the path to each tile.
  * @return An array of reachable tiles, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleActionCost &cost)
+std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs)
 {
-	std::vector<PathfindingNode *> reachable = findReachablePathFindingNodes(unit, cost);
+	std::vector<PathfindingNode *> reachable = findReachablePathFindingNodes(unit, cost, ranOutOfTUs);
 	std::vector<int> tiles;
 	tiles.reserve(reachable.size());
 	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
@@ -1358,7 +1358,7 @@ std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleAction
  * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
+std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
 {
 	_unit = unit;
 	Position start = unit->getPosition();
@@ -1401,7 +1401,10 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 				continue;
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;
 			if (!(totalTuCost <= costMax) && !entireMap) // Run out of TUs/Energy
+			{
+				ranOutOfTUs = true;
 				continue;
+			}
 			PathfindingNode *nextNode = getNode(r.pos, alternateStart);
 			if (nextNode->isChecked()) // Our algorithm means this node is already at minimum cost.
 				continue;

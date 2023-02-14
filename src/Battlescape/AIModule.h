@@ -50,6 +50,7 @@ private:
 	bool _wantToEndTurn;
 	bool _rifle, _melee, _blaster, _grenade;
 	bool _traceAI, _didPsi;
+	bool _ranOutOfTUs;
 	int _AIMode, _intelligence, _closestDist;
 	Node *_fromNode, *_toNode;
 	bool _foundBaseModuleToDestroy;
