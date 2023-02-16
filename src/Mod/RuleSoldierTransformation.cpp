@@ -47,6 +47,7 @@ void RuleSoldierTransformation::load(const YAML::Node &node, Mod* mod, int listO
 	{
 		load(parent, mod, listOrder);
 	}
+
 	_listOrder = node["listOrder"].as<int>(_listOrder);
 	if (!_listOrder)
 	{

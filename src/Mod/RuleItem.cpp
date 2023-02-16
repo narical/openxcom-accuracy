@@ -373,7 +373,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	{
 		load(parent, mod, listOrder, parsers);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_name = node["name"].as<std::string>(_name);
 	_nameAsAmmo = node["nameAsAmmo"].as<std::string>(_nameAsAmmo);
 

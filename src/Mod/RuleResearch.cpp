@@ -40,7 +40,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	{
 		load(parent, mod, parsers, listOrder);
 	}
-	_name = node["name"].as<std::string>(_name);
+
 	_lookup = node["lookup"].as<std::string>(_lookup);
 	_cutscene = node["cutscene"].as<std::string>(_cutscene);
 	_spawnedItem = node["spawnedItem"].as<std::string>(_spawnedItem);

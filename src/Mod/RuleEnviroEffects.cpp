@@ -88,7 +88,7 @@ void RuleEnviroEffects::load(const YAML::Node& node, const Mod* mod)
 	{
 		load(parent, mod);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_environmentalConditions = node["environmentalConditions"].as< std::map<std::string, EnvironmentalCondition> >(_environmentalConditions);
 	mod->loadUnorderedNamesToNames(_type, _paletteTransformations, node["paletteTransformations"]);
 	mod->loadUnorderedNamesToNames(_type, _armorTransformationsName, node["armorTransformations"]);

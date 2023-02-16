@@ -74,7 +74,7 @@ void RuleInventory::load(const YAML::Node &node, int listOrder)
 	{
 		load(parent, listOrder);
 	}
-	_id = node["id"].as<std::string>(_id);
+
 	_x = node["x"].as<int>(_x);
 	_y = node["y"].as<int>(_y);
 	_type = (InventoryType)node["type"].as<int>(_type);

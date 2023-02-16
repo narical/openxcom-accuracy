@@ -54,7 +54,7 @@ void RuleRegion::load(const YAML::Node &node)
 	{
 		load(parent);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_cost = node["cost"].as<int>(_cost);
 
 	if (node["deleteOldAreas"].as<bool>(false))

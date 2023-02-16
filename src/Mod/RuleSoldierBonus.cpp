@@ -40,7 +40,7 @@ void RuleSoldierBonus::load(const YAML::Node &node, const ModScript &parsers, in
 	{
 		load(parent, parsers, listOrder);
 	}
-	_name = node["name"].as<std::string>(_name);
+
 	_visibilityAtDark = node["visibilityAtDark"].as<int>(_visibilityAtDark);
 	_frontArmor = node["frontArmor"].as<int>(_frontArmor);
 	_sideArmor = node["sideArmor"].as<int>(_sideArmor);

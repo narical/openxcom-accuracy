@@ -62,7 +62,7 @@ void RuleUfo::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	{
 		load(parent, parsers, mod);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_size = node["size"].as<std::string>(_size);
 	// sigh
 	if (_size == "STR_MEDIUM")

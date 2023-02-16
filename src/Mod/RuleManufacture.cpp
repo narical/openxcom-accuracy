@@ -47,14 +47,7 @@ void RuleManufacture::load(const YAML::Node &node, Mod* mod, int listOrder)
 	{
 		load(parent, mod, listOrder);
 	}
-	bool same = (1 == _producedItemsNames.size() && _name == _producedItemsNames.begin()->first);
-	_name = node["name"].as<std::string>(_name);
-	if (same)
-	{
-		int value = _producedItemsNames.begin()->second;
-		_producedItemsNames.clear();
-		_producedItemsNames[_name] = value;
-	}
+
 	_category = node["category"].as<std::string>(_category);
 	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);

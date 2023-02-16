@@ -75,10 +75,6 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 	{
 		load(parent, mod, listOrder, parsers);
 	}
-	_type = node["type"].as<std::string>(_type);
-	// Just in case
-	if (_type == "XCOM")
-		_type = "STR_SOLDIER";
 
 	//requires
 	mod->loadUnorderedNames(_type, _requires, node["requires"]);

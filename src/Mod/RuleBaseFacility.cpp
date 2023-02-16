@@ -67,7 +67,7 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod, int listOrder)
 	{
 		load(parent, mod, listOrder);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	mod->loadUnorderedNames(_type, _requires, node["requires"]);
 
 	mod->loadBaseFunction(_type, _requiresBaseFunc, node["requiresBaseFunc"]);

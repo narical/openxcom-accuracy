@@ -77,7 +77,6 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder, const ModS
 	{
 		load(parent, mod, listOrder, parsers);
 	}
-	_type = node["type"].as<std::string>(_type);
 
 	//requires
 	mod->loadUnorderedNames(_type, _requires, node["requires"]);

@@ -49,7 +49,7 @@ void RuleItemCategory::load(const YAML::Node &node, Mod *mod, int listOrder)
 	{
 		load(parent, mod, listOrder);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_replaceBy = node["replaceBy"].as<std::string>(_replaceBy);
 	_hidden = node["hidden"].as<bool>(_hidden);
 

@@ -1460,6 +1460,28 @@ void loadHelper(const std::string &parent, std::vector<std::pair<K, V>>& v, cons
 	}
 }
 
+
+
+const std::string YamlRuleNodeDelete = "delete";
+const std::string YamlRuleNodeNew = "new";
+const std::string YamlRuleNodeOverride = "override";
+const std::string YamlRuleNodeUpdate = "update";
+
+
+void loadRuleInfoHelper(const YAML::Node &node, const char* nodeName, const char* type)
+{
+	if (node.Tag() == InfoTag)
+	{
+		Logger info;
+		info.get() << "Main node names available for " << nodeName << " at line " << node.Mark().line << " are: ";
+		info.get() << " '" << YamlRuleNodeDelete << ":',";
+		info.get() << " '" << YamlRuleNodeNew << ":',";
+		info.get() << " '" << YamlRuleNodeOverride << ":',";
+		info.get() << " '" << YamlRuleNodeUpdate << ":',";
+		info.get() << " '" << type << ":'";
+	}
+}
+
 } // namespace
 
 /**
@@ -2478,7 +2500,17 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		_scriptGlobal->load(extended);
 		_scriptGlobal->getScriptValues().load(extended, parsers.getShared(), "globals");
 	}
-	for (YAML::const_iterator i = doc["countries"].begin(); i != doc["countries"].end(); ++i)
+
+	auto iterateRules = [&](const char* nodeName, const char* type)
+	{
+		const YAML::Node& node = doc[nodeName];
+
+		loadRuleInfoHelper(node, nodeName, type);
+
+		return Collections::rangeValueUncheck(node.begin(), node.end());
+	};
+
+	for (YAML::const_iterator i : iterateRules("countries", "type"))
 	{
 		RuleCountry *rule = loadRule(*i, &_countries, &_countriesIndex);
 		if (rule != 0)
@@ -2486,7 +2518,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["extraGlobeLabels"].begin(); i != doc["extraGlobeLabels"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("extraGlobeLabels", "type"))
 	{
 		RuleCountry *rule = loadRule(*i, &_extraGlobeLabels, &_extraGlobeLabelsIndex);
 		if (rule != 0)
@@ -2494,7 +2526,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["regions"].begin(); i != doc["regions"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("regions", "type"))
 	{
 		RuleRegion *rule = loadRule(*i, &_regions, &_regionsIndex);
 		if (rule != 0)
@@ -2502,7 +2534,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["facilities"].begin(); i != doc["facilities"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("facilities", "type"))
 	{
 		RuleBaseFacility *rule = loadRule(*i, &_facilities, &_facilitiesIndex);
 		if (rule != 0)
@@ -2511,7 +2543,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _facilityListOrder);
 		}
 	}
-	for (YAML::const_iterator i = doc["crafts"].begin(); i != doc["crafts"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("crafts", "type"))
 	{
 		RuleCraft *rule = loadRule(*i, &_crafts, &_craftsIndex);
 		if (rule != 0)
@@ -2520,7 +2552,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _craftListOrder, parsers);
 		}
 	}
-	for (YAML::const_iterator i = doc["craftWeapons"].begin(); i != doc["craftWeapons"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("craftWeapons", "type"))
 	{
 		RuleCraftWeapon *rule = loadRule(*i, &_craftWeapons, &_craftWeaponsIndex);
 		if (rule != 0)
@@ -2528,7 +2560,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["itemCategories"].begin(); i != doc["itemCategories"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("itemCategories", "type"))
 	{
 		RuleItemCategory *rule = loadRule(*i, &_itemCategories, &_itemCategoriesIndex);
 		if (rule != 0)
@@ -2537,7 +2569,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _itemCategoryListOrder);
 		}
 	}
-	for (YAML::const_iterator i = doc["items"].begin(); i != doc["items"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("items", "type"))
 	{
 		RuleItem *rule = loadRule(*i, &_items, &_itemsIndex);
 		if (rule != 0)
@@ -2546,7 +2578,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _itemListOrder, parsers);
 		}
 	}
-	for (YAML::const_iterator i = doc["ufos"].begin(); i != doc["ufos"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("ufos", "type"))
 	{
 		RuleUfo *rule = loadRule(*i, &_ufos, &_ufosIndex);
 		if (rule != 0)
@@ -2554,7 +2586,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, parsers, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["invs"].begin(); i != doc["invs"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("invs", "id"))
 	{
 		RuleInventory *rule = loadRule(*i, &_invs, &_invsIndex, "id");
 		if (rule != 0)
@@ -2563,7 +2595,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, _invListOrder);
 		}
 	}
-	for (YAML::const_iterator i = doc["terrains"].begin(); i != doc["terrains"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("terrains", "name"))
 	{
 		RuleTerrain *rule = loadRule(*i, &_terrains, &_terrainIndex, "name");
 		if (rule != 0)
@@ -2572,7 +2604,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		}
 	}
 
-	for (YAML::const_iterator i = doc["armors"].begin(); i != doc["armors"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("armors", "type"))
 	{
 		Armor *rule = loadRule(*i, &_armors, &_armorsIndex);
 		if (rule != 0)
@@ -2580,7 +2612,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, parsers, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["skills"].begin(); i != doc["skills"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("skills", "type"))
 	{
 		RuleSkill *rule = loadRule(*i, &_skills, &_skillsIndex);
 		if (rule != 0)
@@ -2588,7 +2620,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, parsers);
 		}
 	}
-	for (YAML::const_iterator i = doc["soldiers"].begin(); i != doc["soldiers"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("soldiers", "type"))
 	{
 		RuleSoldier *rule = loadRule(*i, &_soldiers, &_soldiersIndex);
 		if (rule != 0)
@@ -2597,7 +2629,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _soldierListOrder, parsers);
 		}
 	}
-	for (YAML::const_iterator i = doc["units"].begin(); i != doc["units"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("units", "type"))
 	{
 		Unit *rule = loadRule(*i, &_units);
 		if (rule != 0)
@@ -2605,7 +2637,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["alienRaces"].begin(); i != doc["alienRaces"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("alienRaces", "id"))
 	{
 		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id");
 		if (rule != 0)
@@ -2613,7 +2645,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["enviroEffects"].begin(); i != doc["enviroEffects"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("enviroEffects", "type"))
 	{
 		RuleEnviroEffects* rule = loadRule(*i, &_enviroEffects, &_enviroEffectsIndex);
 		if (rule != 0)
@@ -2621,7 +2653,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["startingConditions"].begin(); i != doc["startingConditions"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("startingConditions", "type"))
 	{
 		RuleStartingCondition *rule = loadRule(*i, &_startingConditions, &_startingConditionsIndex);
 		if (rule != 0)
@@ -2629,7 +2661,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["alienDeployments"].begin(); i != doc["alienDeployments"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("alienDeployments", "type"))
 	{
 		AlienDeployment *rule = loadRule(*i, &_alienDeployments, &_deploymentsIndex);
 		if (rule != 0)
@@ -2637,7 +2669,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this);
 		}
 	}
-	for (YAML::const_iterator i = doc["research"].begin(); i != doc["research"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("research", "name"))
 	{
 		RuleResearch *rule = loadRule(*i, &_research, &_researchIndex, "name");
 		if (rule != 0)
@@ -2650,7 +2682,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			}
 		}
 	}
-	for (YAML::const_iterator i = doc["manufacture"].begin(); i != doc["manufacture"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("manufacture", "name"))
 	{
 		RuleManufacture *rule = loadRule(*i, &_manufacture, &_manufactureIndex, "name");
 		if (rule != 0)
@@ -2659,7 +2691,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, _manufactureListOrder);
 		}
 	}
-	for (YAML::const_iterator i = doc["manufactureShortcut"].begin(); i != doc["manufactureShortcut"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("manufactureShortcut", "name"))
 	{
 		RuleManufactureShortcut *rule = loadRule(*i, &_manufactureShortcut, 0, "name");
 		if (rule != 0)
@@ -2667,7 +2699,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["soldierBonuses"].begin(); i != doc["soldierBonuses"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("soldierBonuses", "name"))
 	{
 		RuleSoldierBonus *rule = loadRule(*i, &_soldierBonus, &_soldierBonusIndex, "name");
 		if (rule != 0)
@@ -2676,7 +2708,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, parsers, _soldierBonusListOrder);
 		}
 	}
-	for (YAML::const_iterator i = doc["soldierTransformation"].begin(); i != doc["soldierTransformation"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("soldierTransformation", "name"))
 	{
 		RuleSoldierTransformation *rule = loadRule(*i, &_soldierTransformation, &_soldierTransformationIndex, "name");
 		if (rule != 0)
@@ -2996,7 +3028,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			++num;
 		}
 	}
-	for (YAML::const_iterator i = doc["ufoTrajectories"].begin(); i != doc["ufoTrajectories"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("ufoTrajectories", "id"))
 	{
 		UfoTrajectory *rule = loadRule(*i, &_ufoTrajectories, 0, "id");
 		if (rule != 0)
@@ -3004,7 +3036,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["alienMissions"].begin(); i != doc["alienMissions"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("alienMissions", "type"))
 	{
 		RuleAlienMission *rule = loadRule(*i, &_alienMissions, &_alienMissionsIndex);
 		if (rule != 0)
@@ -3141,7 +3173,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			_mapScripts[type].push_back(mapScript);
 		}
 	}
-	for (YAML::const_iterator i = doc["arcScripts"].begin(); i != doc["arcScripts"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("arcScripts", "type"))
 	{
 		RuleArcScript* rule = loadRule(*i, &_arcScripts, &_arcScriptIndex, "type");
 		if (rule != 0)
@@ -3149,7 +3181,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["eventScripts"].begin(); i != doc["eventScripts"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("eventScripts", "type"))
 	{
 		RuleEventScript* rule = loadRule(*i, &_eventScripts, &_eventScriptIndex, "type");
 		if (rule != 0)
@@ -3157,7 +3189,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["events"].begin(); i != doc["events"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("events", "name"))
 	{
 		RuleEvent* rule = loadRule(*i, &_events, &_eventIndex, "name");
 		if (rule != 0)
@@ -3165,7 +3197,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["missionScripts"].begin(); i != doc["missionScripts"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("missionScripts", "type"))
 	{
 		RuleMissionScript *rule = loadRule(*i, &_missionScripts, &_missionScriptIndex, "type");
 		if (rule != 0)
@@ -3207,7 +3239,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["commendations"].begin(); i != doc["commendations"].end(); ++i)
+	for (YAML::const_iterator i : iterateRules("commendations", "type"))
 	{
 		RuleCommendations *rule = loadRule(*i, &_commendations);
 		if (rule != 0)
@@ -3289,16 +3321,61 @@ template <typename T>
 T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index, const std::string &key) const
 {
 	T *rule = 0;
-	if (node[key])
+
+	auto getNode = [&](const YAML::Node& i, const std::string& nodeName)
 	{
-		std::string type = node[key].as<std::string>();
-
-		if (isEmptyRuleName(type))
+		const auto& n = i[nodeName];
+		return std::make_tuple(nodeName, n, !!n);
+	};
+	auto haveNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		return std::get<bool>(nn);
+	};
+	auto getDescriptionNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		return std::string("'") + std::get<std::string>(nn) + "' at line " + std::to_string(std::get<YAML::Node>(nn).Mark().line);
+	};
+	auto getNameFromNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
+	{
+		auto name = std::get<YAML::Node>(nn).as<std::string>();
+		if (isEmptyRuleName(name))
 		{
-			throw Exception("Invalid value for '" + key + "' at line " + std::to_string(node[key].Mark().line));
+			throw Exception("Invalid value for main node '" + key + "' at line " + std::to_string(node[key].Mark().line));
 		}
+		return name;
+	};
 
-		typename std::map<std::string, T*>::const_iterator i = map->find(type);
+	const auto defaultNode = getNode(node, key);
+	const auto deleteNode = getNode(node, YamlRuleNodeDelete);
+	const auto newNode = getNode(node, YamlRuleNodeNew);
+	const auto overrideNode = getNode(node, YamlRuleNodeOverride);
+	const auto updateNode = getNode(node, YamlRuleNodeUpdate);
+
+	{
+		// check for duplicates
+		const std::tuple<std::string, YAML::Node, bool>* last = nullptr;
+		for (auto* p : { &defaultNode, &deleteNode, &newNode, &updateNode, &overrideNode })
+		{
+			if (haveNode(*p))
+			{
+				if (last)
+				{
+					throw Exception("Conflict of main node " + getDescriptionNode(*last) + " and " + getDescriptionNode(*p));
+				}
+				else
+				{
+					last = p;
+				}
+			}
+		}
+	}
+
+	if (haveNode(defaultNode))
+	{
+		std::string type = getNameFromNode(defaultNode);
+
+
+		auto i = map->find(type);
 		if (i != map->end())
 		{
 			rule = i->second;
@@ -3316,18 +3393,14 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		// protection from self referencing refNode node
 		refNodeTestDeepth(node, type, 0);
 	}
-	else if (node["delete"])
+	else if (haveNode(deleteNode))
 	{
-		std::string type = node["delete"].as<std::string>();
+		std::string type = getNameFromNode(deleteNode);
 
-		if (isEmptyRuleName(type))
-		{
-			throw Exception("Invalid value for 'delete' at line " +  std::to_string(node["delete"].Mark().line));
-		}
-
-		typename std::map<std::string, T*>::iterator i = map->find(type);
+		auto i = map->find(type);
 		if (i != map->end())
 		{
+			delete i->second;
 			map->erase(i);
 		}
 		if (index != 0)
@@ -3339,6 +3412,74 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 			}
 		}
 	}
+	else if (haveNode(newNode))
+	{
+		std::string type = getNameFromNode(newNode);
+
+		auto i = map->find(type);
+		if (i != map->end())
+		{
+			checkForSoftError(true, type, "Rule named '" + type  + "' already used for " + getDescriptionNode(newNode), LOG_ERROR);
+		}
+		else
+		{
+			rule = new T(type);
+			(*map)[type] = rule;
+			if (index != 0)
+			{
+				index->push_back(type);
+			}
+
+			// protection from self referencing refNode node
+			refNodeTestDeepth(node, type, 0);
+		}
+	}
+	else if (haveNode(overrideNode))
+	{
+		std::string type = getNameFromNode(overrideNode);
+
+		auto i = map->find(type);
+		if (i != map->end())
+		{
+			delete i->second;
+			rule = new T(type);
+			(*map)[type] = rule;
+		}
+		else
+		{
+			rule = new T(type);
+			(*map)[type] = rule;
+			if (index != 0)
+			{
+				index->push_back(type);
+			}
+		}
+
+		// protection from self referencing refNode node
+		refNodeTestDeepth(node, type, 0);
+	}
+	else if (haveNode(updateNode))
+	{
+		std::string type = getNameFromNode(updateNode);
+
+		auto i = map->find(type);
+		if (i != map->end())
+		{
+			rule = i->second;
+
+			// protection from self referencing refNode node
+			refNodeTestDeepth(node, type, 0);
+		}
+		else
+		{
+			checkForSoftError(true, type, "Rule named '" + type  + "' do not exist for " + getDescriptionNode(newNode), LOG_ERROR);
+		}
+	}
+	else
+	{
+		//no correct id throw exception?
+	}
+
 	return rule;
 }
 

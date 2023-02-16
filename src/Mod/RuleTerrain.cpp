@@ -57,6 +57,7 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 	{
 		load(parent, mod);
 	}
+
 	bool adding = node["addOnly"].as<bool>(false);
 	if (const YAML::Node &map = node["mapDataSets"])
 	{
@@ -79,7 +80,7 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 			_mapBlocks.push_back(mapBlock);
 		}
 	}
-	_name = node["name"].as<std::string>(_name);
+
 	_enviroEffects = node["enviroEffects"].as<std::string>(_enviroEffects);
 	if (const YAML::Node &civs = node["civilianTypes"])
 	{
