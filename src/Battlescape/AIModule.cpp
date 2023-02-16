@@ -2872,8 +2872,11 @@ void AIModule::brutalThink(BattleAction* action)
 	// Step 1: Check whether we wait for someone else on our team to move first
 	int visibleToMe = 0;
 	int myReachable = _reachable.size();
-	int myDist = 0;
+	float myDist = 0;
 	bool weKnowRealPosition = false;
+	bool IAmMindControlled = false;
+	if (_unit->getFaction() != _unit->getOriginalFaction())
+		IAmMindControlled = true;
 	Position myPos = _unit->getPosition();
 	for (BattleUnit *seenByMe : *(_unit->getVisibleUnits()))
 	{
@@ -2887,12 +2890,12 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	for (BattleUnit *enemy : *(_save->getUnits()))
 	{
-		if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || !isEnemy(enemy))
+		if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
 			continue;
 		Position enemyPos = enemy->getPosition();
 		if (!_unit->isCheatOnMovement())
 		{
-			enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_myFaction));
+			enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
 		}
 		myDist += Position::distance(myPos, enemyPos);
 	}
@@ -2910,7 +2913,10 @@ void AIModule::brutalThink(BattleAction* action)
 		int visibleToAlly = 0;
 		int allyReachable = 0;
 		bool allyRanOutOfTUs = false;
-		int allyDist = 0;
+		float allyDist = 0;
+		bool allyIsMindControlled = false;
+		if (ally->getFaction() != ally->getOriginalFaction())
+			allyIsMindControlled = true;
 		for (BattleUnit *seenByAlly : *(ally->getVisibleUnits()))
 		{
 			if (seenByAlly->getMainHandWeapon() == NULL)
@@ -2923,12 +2929,12 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		for (BattleUnit *enemy : *(_save->getUnits()))
 		{
-			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || !isEnemy(enemy))
+			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
 				continue;
 			Position enemyPos = enemy->getPosition();
 			if (!_unit->isCheatOnMovement())
 			{
-				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_myFaction));
+				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(ally->getFaction()));
 			}
 			allyDist += Position::distance(ally->getPosition(), enemyPos);
 		}
@@ -2943,10 +2949,6 @@ void AIModule::brutalThink(BattleAction* action)
 			allyReachable = _save->getPathfinding()->findReachable(ally, BattleActionCost(), allyRanOutOfTUs).size();
 			if (_ranOutOfTUs == false)
 			{
-				if (Options::traceAI)
-				{
-					Log(LOG_INFO) << _unit->getId() << " myReachable " << myReachable << " allyReachable " << allyReachable;
-				}
 				if (myReachable < allyReachable)
 				{
 					action->type = BA_WAIT;
@@ -3073,7 +3075,6 @@ void AIModule::brutalThink(BattleAction* action)
 	bool amInAnyonesFOW = false;
 	bool amInLoSToFurthestReachable = false;
 	bool amCloserThanFurthestReachable = false;
-	bool haveMindControlled = false;
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
@@ -3086,8 +3087,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (target->isOut())
 			continue;
 		float primeDist = Position::distance(myPos, target->getPosition());
-		if (target->getFaction() != target->getOriginalFaction() && target->getOriginalFaction() == _myFaction)
-			haveMindControlled = true;
 		if (!isEnemy(target, true))
 		{
 			if (primeDist <= explosionRadius && target != _unit)
@@ -3248,12 +3247,10 @@ void AIModule::brutalThink(BattleAction* action)
 			//encircleTile->setTUMarker(_unit->getId() %100);
 		}
 	}
-	bool IAmMindControlled = false;
 	//When I'm mind-controlled I should definitely be reckless
-	if (_unit->getFaction() != _unit->getOriginalFaction())
+	if (IAmMindControlled)
 	{
 		sweepMode = true;
-		IAmMindControlled = true;
 		needToFlee = false;
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm mind-controlled.";
@@ -3329,9 +3326,7 @@ void AIModule::brutalThink(BattleAction* action)
 			enemyMoralAvg /= enemyUnitCount;
 		}
 		bool targetHasGravLift = false;
-		if (_save->getTile(targetPosition) && _save->getTile(targetPosition)->getMapData(O_FLOOR) && _save->getTile(targetPosition)->getMapData(O_FLOOR)->isGravLift())
-			targetHasGravLift = true;
-		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50 && _save->getTile(targetPosition)->getFloorSpecialTileType() != START_POINT && !targetHasGravLift)
+		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50)
 			sweepMode = true;
 		if (_blaster)
 			sweepMode = false;
