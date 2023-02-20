@@ -3081,6 +3081,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool sweepMode = _unit->isLeeroyJenkins();
 	int lowestTurnsLastSeen = 255;
 	float targetDistanceTofurthestReach = FLT_MAX;
+	bool encircleMode = false;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3142,6 +3143,14 @@ void AIModule::brutalThink(BattleAction* action)
 		if (brutalValidTarget(target, true))
 		{
 			weKnowRealPosition = true;
+			encircleMode = true;
+			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
+			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes)) && inRangeOfAnyFriend(targetPosition))
+			{
+				sweepMode = true;
+				if (_traceAI)
+					Log(LOG_INFO) << "Target " << target->getPosition() << " is close enough for me or any of my friends to be attacked. Switching to sweep-mode";
+			}
 		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
 		float distToPosUnitCouldReach = Position::distance(myPos, posUnitCouldReach);
@@ -3234,22 +3243,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm mind-controlled.";
 	}
-	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled)
-	{
-		BattleItem *grenade = _unit->getGrenadeFromBelt();
-		int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
-		if (primeCost <= _unit->getTimeUnits())
-		{
-			_unit->spendTimeUnits(4);
-			_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
-			grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
-			if (_traceAI)
-				Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade because primescore was " << primeScore;
-			action->type = BA_RETHINK;
-			action->number -= 1;
-			return;
-		}
-	}
 	bool iHaveLof = false;
 	bool iHaveLofIncludingEncircle = false;
 	bool canReachTargetTileWithAttack = false;
@@ -3305,7 +3298,7 @@ void AIModule::brutalThink(BattleAction* action)
 			enemyMoralAvg /= enemyUnitCount;
 		}
 		bool targetHasGravLift = false;
-		if (myMoralAvg > enemyMoralAvg && enemyMoralAvg < 50)
+		if (myMoralAvg >= enemyMoralAvg * 4)
 			sweepMode = true;
 		if (_blaster)
 			sweepMode = false;
@@ -3350,6 +3343,25 @@ void AIModule::brutalThink(BattleAction* action)
 	bool shouldSkip = false;
 	if (_traceAI)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking;
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled)
+	{
+		if (!amInAnyonesFOW && !iHaveLof && (!amCloserThanFurthestReachable || !amInLoSToFurthestReachable))
+		{
+			BattleItem *grenade = _unit->getGrenadeFromBelt();
+			int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
+			if (primeCost <= _unit->getTimeUnits())
+			{
+				_unit->spendTimeUnits(4);
+				_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
+				grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
+				if (_traceAI)
+					Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade because primescore was " << primeScore;
+				action->type = BA_RETHINK;
+				action->number -= 1;
+				return;
+			}
+		}
+	}
 	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable)
 		shouldSkip = true;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
@@ -3398,6 +3410,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool eaglesCanFly = false;
 			bool avoidMeleeRange = false;
 			bool lineOfFire = false;
+			float closestAnyOneDist = FLT_MAX;
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3411,6 +3424,8 @@ void AIModule::brutalThink(BattleAction* action)
 					if (unitDist < 5)
 						cuddleAvoidModifier += 5 - unitDist;
 				}
+				if (unitDist < closestAnyOneDist && unit != _unit)
+					closestAnyOneDist = unitDist;
 				if (isAlly(unit))
 					continue;
 				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
@@ -3517,9 +3532,6 @@ void AIModule::brutalThink(BattleAction* action)
 				saveFromGrenades = true;
 			float walkToDist = 20 + tuCostToReachPosition(pos, targetNodes);
 			bool clearSightToEnemyReachableTile = false;
-			bool closerThanEnemyCanReach = false;
-			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
-				closerThanEnemyCanReach = true;
 			if (furthestPositionEnemyCanReach != myPos)
 			{
 				if (clearSight(furthestPositionEnemyCanReach, pos))
@@ -3530,21 +3542,34 @@ void AIModule::brutalThink(BattleAction* action)
 				if (clearSight(encircleTile->getPosition(), pos))
 					clearSightToEnemyReachableTile = true;
 			}
+			bool closerThanEnemyCanReach = false;
+			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
+				closerThanEnemyCanReach = true;
 			if (needToFlee)
 			{
-				prio2Score = closestEnemyDist;
+				if (hideAfterPeaking)
+				{
+					if (!closerThanEnemyCanReach || !lineOfFire && !clearSightToEnemyReachableTile)
+						prio2Score = closestAnyOneDist;
+					if (_save->getTileEngine()->isNextToDoor(tile))
+						prio2Score *= 2;
+					if (saveFromGrenades)
+						prio2Score *= 2;
+				}
+				else
+					prio2Score = closestEnemyDist;
 				if (!lineOfFire)
 					prio2Score *= 4;
 				if (!visibleToEnemy)
 					prio2Score *= 2;
 				if (!clearSightToEnemyReachableTile)
-					prio2Score *= 2;
+					prio2Score *= 1.25;
 			}
-			else if ((!visibleToEnemy && !lineOfFire && !clearSightToEnemyReachableTile && !closerThanEnemyCanReach) || (peakMode && shouldPeak && (!_unit->isCheatOnMovement() || lineOfFire)))
+			else if ((!visibleToEnemy && !lineOfFire && !clearSightToEnemyReachableTile && (encircleMode || !closerThanEnemyCanReach)) || (peakMode && shouldPeak && !_unit->isCheatOnMovement()))
 			{
 				prio2Score = 100 / walkToDist;
 			}
-			else if (!peakMode)
+			else if (!peakMode || _unit->isCheatOnMovement())
 			{
 				prio2Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				if (!lineOfFire)
@@ -3552,9 +3577,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!visibleToEnemy)
 					prio2Score *= 2;
 				if (!clearSightToEnemyReachableTile)
-					prio2Score *= 2;
-				if (!closerThanEnemyCanReach)
-					prio2Score *= 2;
+					prio2Score *= 1.25;
 			}
 			if (saveFromGrenades)
 			{
@@ -3618,7 +3641,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(visibleToEnemy);
+			//	tile->setTUMarker(prio2Score);
 			//}
 		}
 		if (_traceAI)
