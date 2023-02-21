@@ -3096,12 +3096,15 @@ void AIModule::brutalThink(BattleAction* action)
 		// When we see some actual enemies we ignore imaginary ones
 		if (weKnowRealPosition && !brutalValidTarget(target, true))
 			continue;
-		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted(_unit->getFaction()) == -1)
+		if (!_unit->isCheatOnMovement())
 		{
-			if (target->getFaction() == _targetFaction)
-				target->setTileLastSpotted(getClosestSpawnTileId(), _unit->getFaction());
 			if (target->getTileLastSpotted(_unit->getFaction()) == -1)
-				continue;
+			{
+				if (target->getFaction() == _targetFaction)
+					target->setTileLastSpotted(getClosestSpawnTileId(), _unit->getFaction());
+				if (target->getTileLastSpotted(_unit->getFaction()) == -1)
+					continue;
+			}
 		}
 		if (primeDist <= explosionRadius)
 			primeScore++;
@@ -3331,7 +3334,9 @@ void AIModule::brutalThink(BattleAction* action)
 	Position bestPrio2Position = myPos;
 	// Prio 3: I am in the line of fire
 	float bestPrio3Score = 0;
+	float bestPrio4Score = 0;
 	Position bestPrio3Position = myPos;
+	Position bestPrio4Position = myPos;
 	hideAfterPeaking |= amCloserThanFurthestReachable;
 	hideAfterPeaking |= amInLoSToFurthestReachable;
 	if (iHaveLof && _blaster)
@@ -3384,7 +3389,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " encircle-mode: "<<encircleMode<< " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3515,6 +3520,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float prio1Score = 0;
 			float prio2Score = 0;
 			float prio3Score = 0;
+			float prio4Score = 0;
 			if (!_blaster && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && !shouldHaveBeenAbleToAttack)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
@@ -3545,44 +3551,52 @@ void AIModule::brutalThink(BattleAction* action)
 			bool closerThanEnemyCanReach = false;
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
+			int p2t = 0;
 			if (needToFlee)
 			{
 				if (hideAfterPeaking)
 				{
-					if (!closerThanEnemyCanReach || !lineOfFire && !clearSightToEnemyReachableTile)
-						prio2Score = closestAnyOneDist;
+					if (!closerThanEnemyCanReach || !lineOfFire)
+						prio2Score = closestEnemyDist;
 					if (_save->getTileEngine()->isNextToDoor(tile))
 						prio2Score *= 2;
 					if (saveFromGrenades)
 						prio2Score *= 2;
+					p2t = 1;
 				}
 				else
+				{
 					prio2Score = closestEnemyDist;
+					p2t = 2;
+				}
 				if (!lineOfFire)
 					prio2Score *= 4;
 				if (!visibleToEnemy)
 					prio2Score *= 2;
-				if (!clearSightToEnemyReachableTile)
-					prio2Score *= 1.25;
 			}
-			else if ((!visibleToEnemy && !lineOfFire && !clearSightToEnemyReachableTile && (encircleMode || !closerThanEnemyCanReach)) || (peakMode && shouldPeak && !_unit->isCheatOnMovement()))
+			else if ((!visibleToEnemy && !lineOfFire && (encircleMode || (!closerThanEnemyCanReach && _unit->isCheatOnMovement())) || (peakMode && shouldPeak && !_unit->isCheatOnMovement())))
 			{
 				prio2Score = 100 / walkToDist;
+				p2t = 3;
+				if (!clearSightToEnemyReachableTile)
+					prio2Score *= 1.25;
 			}
 			else if (!peakMode || _unit->isCheatOnMovement())
 			{
-				prio2Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
+				p2t = 4;
+				prio3Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				if (!lineOfFire)
-					prio2Score *= 4;
+					prio3Score *= 4;
 				if (!visibleToEnemy)
-					prio2Score *= 2;
+					prio3Score *= 2;
 				if (!clearSightToEnemyReachableTile)
-					prio2Score *= 1.25;
+					prio3Score *= 1.25;
 			}
 			if (saveFromGrenades)
 			{
 				prio1Score *= 1.25;
 				prio2Score *= 1.25;
+				prio3Score *= 1.25;
 			}
 			//If the enemy has produced smoke for us and can't fly, we like being in smoke
 			if (tile->getSmoke() > 0 && !eaglesCanFly)
@@ -3590,10 +3604,12 @@ void AIModule::brutalThink(BattleAction* action)
 				float smokeMod = 1.0 + tile->getSmoke() * 0.02;
 				prio1Score *= smokeMod;
 				prio2Score *= smokeMod;
+				prio3Score *= smokeMod;
 			}
-			prio3Score = 100 / walkToDist;
+			prio4Score = 100 / walkToDist;
 			prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
+			prio4Score /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
@@ -3601,12 +3617,14 @@ void AIModule::brutalThink(BattleAction* action)
 					prio1Score *= 2;
 					prio2Score *= 10;
 					prio3Score *= 10;
+					prio4Score *= 10;
 				}
 				else
 				{
 					prio1Score /= 2;
 					prio2Score /= 10;
 					prio3Score /= 10;
+					prio4Score /= 10;
 				}
 			}
 			// Avoid tiles from which the player can take me with them when retreating
@@ -3615,12 +3633,14 @@ void AIModule::brutalThink(BattleAction* action)
 				prio1Score /= 2;
 				prio2Score /= 10;
 				prio3Score /= 10;
+				prio4Score /= 10;
 			}
 			if (avoidMeleeRange)
 			{
 				prio1Score /= 10;
 				prio2Score /= 10;
 				prio3Score /= 10;
+				prio4Score /= 10;
 			}
 			if (prio1Score > bestPrio1Score)
 			{
@@ -3637,11 +3657,16 @@ void AIModule::brutalThink(BattleAction* action)
 				bestPrio3Score = prio3Score;
 				bestPrio3Position = pos;
 			}
+			if (prio4Score > bestPrio4Score)
+			{
+				bestPrio4Score = prio4Score;
+				bestPrio4Position = pos;
+			}
 			//if (_traceAI)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(prio2Score);
+			//	tile->setTUMarker(p2t);
 			//}
 		}
 		if (_traceAI)
@@ -3658,6 +3683,10 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				Log(LOG_INFO) << "bestPrio3Position: " << bestPrio3Position << " score: " << bestPrio3Score;
 			}
+			if (bestPrio4Score > 0)
+			{
+				Log(LOG_INFO) << "bestPrio4Position: " << bestPrio4Position << " score: " << bestPrio4Score;
+			}
 		}
 	}
 	Position travelTarget = myPos;
@@ -3671,9 +3700,13 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		travelTarget = bestPrio2Position;
 	}
-	else if (bestPrio3Score > 0)
+	else if (bestPrio3Score > 0 && !sweepMode)
 	{
 		travelTarget = bestPrio3Position;
+	}
+	else if (bestPrio4Score > 0)
+	{
+		travelTarget = bestPrio4Position;
 	}
 	if (_traceAI)
 	{
