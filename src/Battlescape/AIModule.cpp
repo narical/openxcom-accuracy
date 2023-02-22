@@ -3470,6 +3470,8 @@ void AIModule::brutalThink(BattleAction* action)
 				outOfRangeForShortRangeWeapon = true;
 			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
 				continue;
+			if (!isPathToPositionSave(pos, true))
+				continue;
 			bool haveTUToAttack = false;
 			bool shouldPeak = false;
 			if (peakMode && pu->getTUCost(false).time <= getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
@@ -3525,7 +3527,6 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 				{
-
 					prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
@@ -3662,12 +3663,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestPrio4Score = prio4Score;
 				bestPrio4Position = pos;
 			}
-			//if (_traceAI)
-			//{
-			//	tile->setMarkerColor(_unit->getId());
-			//	tile->setPreview(10);
-			//	tile->setTUMarker(p2t);
-			//}
+			if (_traceAI)
+			{
+				tile->setMarkerColor(_unit->getId());
+				tile->setPreview(10);
+				tile->setTUMarker(prio1Score);
+			}
 		}
 		if (_traceAI)
 		{
@@ -3720,6 +3721,7 @@ void AIModule::brutalThink(BattleAction* action)
 		action->target = furthestToGoTowards(travelTarget, reserved, _allPathFindingNodes);
 	} else
 	{
+		tryToPickUpGrenade(_unit->getTile(), action);
 		action->target = myPos;
 	}
 	
@@ -4051,7 +4053,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	return _unit->getPosition();
 }
 
-bool AIModule::isPathToPositionSave(Position target, bool checkForComplicated)
+bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 {
 	PathfindingNode *targetNode = NULL;
 	float targetNodeDist = Position::distance(target, _unit->getPosition());
@@ -4068,11 +4070,26 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForComplicated)
 		while (targetNode->getPrevNode() != NULL)
 		{
 			Tile *tile = _save->getTile(targetNode->getPosition());
-			if(checkForComplicated)
+			if (checkForProxies)
 			{
-				Log(LOG_INFO) << "dist of " << targetNode->getPosition() << ": " << Position::distance(targetNode->getPosition(), target) << "/" << targetNodeDist;
-				if (Position::distance(targetNode->getPosition(), target) > targetNodeDist)
-					return false;
+				for (int x = -1; x <= 1; ++x)
+					for (int y = -1; y <= 1; ++y)
+					{
+						Position posToCheck = tile->getPosition();
+						posToCheck.x += x;
+						posToCheck.y += y;
+						Tile *tileToCheck = _save->getTile(posToCheck);
+						if (tileToCheck)
+						{
+							for (BattleItem *item : *(tileToCheck->getInventory()))
+							{
+								if (item->isFuseEnabled())
+								{
+									return false;
+								}
+							}
+						}
+					}
 			}
 			else
 			{
@@ -5341,6 +5358,19 @@ bool AIModule::hasLofTile(BattleUnit *unit, Tile *tile)
 	if (unit->hasLofTile(tile))
 		return true;
 	return false;
+}
+
+void AIModule::tryToPickUpGrenade(Tile *tile, BattleAction *action)
+{
+	for (BattleItem *item : *(tile->getInventory()))
+	{
+		if (item->isFuseEnabled())
+		{
+			if (_save->getBattleGame()->takeItemFromGround(item, action) == 0)
+				if (_traceAI)
+					Log(LOG_INFO) << "Picked up " << item->getRules()->getName() << " from " << tile->getPosition();
+		}
+	}
 }
 
 }

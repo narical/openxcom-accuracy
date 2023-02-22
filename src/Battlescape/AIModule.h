@@ -157,7 +157,7 @@ public:
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
 	/// checks if the path to a position is save
-	bool isPathToPositionSave(Position target, bool checkForComplicated = false);
+	bool isPathToPositionSave(Position target, bool checkForProxies = false);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
 	/// Chooses a firing mode for the AI based on expected damage dealt
@@ -210,6 +210,8 @@ public:
 	bool isArmed(BattleUnit *unit) const;
 	/// Method that combines checking the unit's LoF-tile-cache and storing whether the unit has that tile as a LoF-tile.
 	bool hasLofTile(BattleUnit *unit, Tile *tile);
+	/// Checks whether there's a grenade on the ground and tries to pick it up
+	void tryToPickUpGrenade(Tile* tile, BattleAction* action);
 };
 
 }
