@@ -3148,11 +3148,9 @@ void AIModule::brutalThink(BattleAction* action)
 			weKnowRealPosition = true;
 			encircleMode = true;
 			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
-			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes)) && inRangeOfAnyFriend(targetPosition))
+			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes)))
 			{
 				sweepMode = true;
-				if (_traceAI)
-					Log(LOG_INFO) << "Target " << target->getPosition() << " is close enough for me or any of my friends to be attacked. Switching to sweep-mode";
 			}
 		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
@@ -3470,7 +3468,7 @@ void AIModule::brutalThink(BattleAction* action)
 				outOfRangeForShortRangeWeapon = true;
 			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
 				continue;
-			if (!isPathToPositionSave(pos, true))
+			if (!isPathToPositionSave(pos, true) && !IAmPureMelee)
 				continue;
 			bool haveTUToAttack = false;
 			bool shouldPeak = false;
@@ -3563,12 +3561,10 @@ void AIModule::brutalThink(BattleAction* action)
 						prio2Score *= 2;
 					if (saveFromGrenades)
 						prio2Score *= 2;
-					p2t = 1;
 				}
 				else
 				{
 					prio2Score = closestEnemyDist;
-					p2t = 2;
 				}
 				if (!lineOfFire)
 					prio2Score *= 4;
@@ -3584,7 +3580,6 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (!peakMode || _unit->isCheatOnMovement())
 			{
-				p2t = 4;
 				prio3Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				if (!lineOfFire)
 					prio3Score *= 4;
@@ -3592,6 +3587,11 @@ void AIModule::brutalThink(BattleAction* action)
 					prio3Score *= 2;
 				if (!clearSightToEnemyReachableTile)
 					prio3Score *= 1.25;
+			}
+			if (outOfRangeForShortRangeWeapon && closerThanEnemyCanReach && visibleToEnemy && !dissolveBlockage)
+			{
+				prio2Score = 0;
+				prio3Score = 0;
 			}
 			if (saveFromGrenades)
 			{
