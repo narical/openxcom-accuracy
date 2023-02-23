@@ -3301,7 +3301,7 @@ void AIModule::brutalThink(BattleAction* action)
 			enemyMoralAvg /= enemyUnitCount;
 		}
 		bool targetHasGravLift = false;
-		if (myMoralAvg >= enemyMoralAvg * 4)
+		if (myMoralAvg > enemyMoralAvg * 2)
 			sweepMode = true;
 		if (_blaster)
 			sweepMode = false;
@@ -3663,12 +3663,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestPrio4Score = prio4Score;
 				bestPrio4Position = pos;
 			}
-			if (_traceAI)
-			{
-				tile->setMarkerColor(_unit->getId());
-				tile->setPreview(10);
-				tile->setTUMarker(prio1Score);
-			}
+			//if (_traceAI)
+			//{
+			//	tile->setMarkerColor(_unit->getId());
+			//	tile->setPreview(10);
+			//	tile->setTUMarker(prio1Score);
+			//}
 		}
 		if (_traceAI)
 		{
