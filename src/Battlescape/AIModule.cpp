@@ -3148,6 +3148,8 @@ void AIModule::brutalThink(BattleAction* action)
 			weKnowRealPosition = true;
 			encircleMode = true;
 			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
+			if (_traceAI)
+				Log(LOG_INFO) << "I'm aware of a valid target at: " << targetPosition << " dist after getting closer: " << Position::distance(furthestAttackPositon, targetPosition) << " my attack-range: " << maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes));
 			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes)))
 			{
 				sweepMode = true;
@@ -3163,6 +3165,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (turnsLastSeen < lowestTurnsLastSeen)
 		{
+			shortestWalkingPath = currentWalkPath;
 			lowestTurnsLastSeen = turnsLastSeen;
 			unitToWalkTo = target;
 		}
@@ -5134,7 +5137,11 @@ int AIModule::maxExtenderRangeWith(BattleUnit *unit, int tus)
 	if (weapon == NULL)
 		return 0;
 	if (!Options::battleUFOExtenderAccuracy)
+	{
+		if (weapon->getRules()->getBattleType() == BT_MELEE)
+			return 1;
 		return weapon->getRules()->getMaxRange();
+	}
 	int highestRangeAvailableWithTUs = 0;
 	if (weapon->getRules()->getCostAimed().Time > 0 && unit->getActionTUs(BA_AIMEDSHOT, weapon).Time < tus)
 		highestRangeAvailableWithTUs = weapon->getRules()->getAimRange();
