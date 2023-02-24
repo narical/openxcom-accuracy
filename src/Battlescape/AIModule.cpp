@@ -3743,7 +3743,10 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		if (!_unit->isCheatOnMovement() && weKnowRealPosition && !brutalValidTarget(target, true))
 			continue;
-		float currentDist = Position::distance(action->target, target->getPosition());
+		Position targetPosition = target->getPosition();
+		if (!_unit->isCheatOnMovement())
+			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
+		float currentDist = Position::distance(action->target, targetPosition);
 		if (currentDist < shortestDist)
 		{
 			shortestDist = currentDist;
