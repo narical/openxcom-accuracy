@@ -202,6 +202,20 @@ void UnitWalkBState::think()
 			//tile visibility for this unit is handled later.
 			unitSpotted = (!_action.ignoreSpottedEnemies && !_falling && !_action.desperate && _parent->getPanicHandled() && _numUnitsSpotted != _unit->getUnitsSpottedThisTurn().size());
 
+			// If our friends have already passed, wake them up again:
+			if (unitSpotted)
+			{
+				for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
+				{
+					if (unit->isOut())
+						continue;
+					if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
+						continue;
+					unit->setWantToEndTurn(false);
+					unit->allowReselect();
+				}
+			}
+
 			if (change > 1)
 			{
 				_parent->popState();
