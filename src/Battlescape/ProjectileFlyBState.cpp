@@ -403,6 +403,12 @@ void ProjectileFlyBState::init()
 		_parent->getMap()->setCursorType(CT_NONE);
 		_parent->getMap()->getCamera()->stopMouseScrolling();
 		_parent->getMap()->disableObstacles();
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE);
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE, true);
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER);
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER, true);
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL);
+		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL, true);
 	}
 	else if (isPlayer && (_targetVoxel.z >= 0 || forceEnableObstacles))
 	{
@@ -1018,18 +1024,14 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
 		}
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction());
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), victim->getFaction(), true);
-		for (BattleUnit *friendOfVictim : *(_parent->getSave()->getUnits()))
+		for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
 		{
-			if (friendOfVictim->isOut())
+			if (unit->isOut())
 				continue;
-			if (friendOfVictim->getFaction() != victim->getFaction())
+			if (!unit->getAIModule() || !unit->isBrutal())
 				continue;
-			if (!friendOfVictim->getAIModule())
-				continue;
-			friendOfVictim->setWantToEndTurn(false);
-			friendOfVictim->allowReselect();
+			unit->setWantToEndTurn(false);
+			unit->allowReselect();
 		}
 	}
 }
