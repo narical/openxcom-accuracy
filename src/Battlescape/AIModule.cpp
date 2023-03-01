@@ -4535,7 +4535,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 	BattleUnit *target = targetTile->getUnit();
 	if (target)
 	{
-		if (brutalValidTarget(target, true))
+		if (isEnemy(target))
 			enemiesAffected++;
 		else if (isAlly(target))
 			enemiesAffected--;
@@ -4567,7 +4567,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 			float distMod = float(radius - dist / 2.0) / float(radius);
 			if (collidesWith == V_UNIT && traj.front().toTile() == (*i)->getPosition())
 			{
-				if (brutalValidTarget(*i, true))
+				if (isEnemy(*i))
 				{
 					enemiesAffected += distMod;
 				}
