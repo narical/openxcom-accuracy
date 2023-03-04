@@ -2980,55 +2980,6 @@ void AIModule::brutalThink(BattleAction* action)
 	if (IAmPureMelee)
 		_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 
-	// Phase 1: Check if you can attack anything from where you currently are
-	_attackAction.type = BA_RETHINK;
-	_psiAction.type = BA_NONE;
-	if (brutalPsiAction())
-	{
-		if (_psiAction.type != BA_NONE)
-		{
-			action->type = _psiAction.type;
-			action->target = _psiAction.target;
-			action->number -= 1;
-			action->weapon = _psiAction.weapon;
-			action->updateTU();
-			return;
-		}
-	}
-	if (_blaster)
-	{
-		brutalBlaster();
-	}
-	else if (_attackAction.type == BA_RETHINK)
-		brutalSelectSpottedUnitForSniper();
-	if (_attackAction.type == BA_RETHINK && _grenade)
-		brutalGrenadeAction();
-	if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
-		blindFire();
-
-	if (_attackAction.type != BA_RETHINK)
-	{
-		action->type = _attackAction.type;
-		action->target = _attackAction.target;
-		action->weapon = _attackAction.weapon;
-		action->number -= 1;
-		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE && !action->weapon->isFuseEnabled())
-		{
-			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
-			action->weapon->setFuseTimer(0); //don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
-			_unit->spendTimeUnits(4);
-		}
-		action->updateTU();
-		if (action->type == BA_LAUNCH)
-		{
-			action->waypoints = _attackAction.waypoints;
-		}
-		else if (action->type == BA_AIMEDSHOT || action->type == BA_AUTOSHOT)
-		{
-			action->kneel = _unit->getArmor()->allowsKneeling(false);
-		}
-		return;
-	}
 	bool dummy = false;
 	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true);
 	int explosionRadius = 0;
@@ -3041,18 +2992,9 @@ void AIModule::brutalThink(BattleAction* action)
 		action.actor = _unit;
 		explosionRadius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
 	}
-	// Check if I'm a turret. In this case I can skip everything about walking
-	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
-	{
-		if (_traceAI)
-			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
-		action->type = BA_NONE;
-		setWantToEndTurn(true);
-		return;
-	}
-
 	// Phase 3: Check if there's a tile within your range from where you can attack
-	BattleUnit* unitToFaceTo = NULL;
+
+	BattleUnit *unitToFaceTo = NULL;
 	bool needToFlee = false;
 
 	BattleActionCost costSnap(BA_SNAPSHOT, _unit, action->weapon);
@@ -3136,6 +3078,23 @@ void AIModule::brutalThink(BattleAction* action)
 				if (newIndex == -1)
 					continue;
 			}
+		} else {
+			Position blindFirePosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true));
+			Tile *targetTile = _save->getTile(blindFirePosition);
+			if (targetTile)
+			{
+				bool tileChecked = false;
+				if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target))
+					tileChecked = true;
+				else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
+					tileChecked = true;
+				if (_traceAI)
+					Log(LOG_INFO) << "Clearing blind-fire-target for " << target->getPosition() << " previously assumed to be at " << blindFirePosition << " checked: " << tileChecked << " target-tile last explored: " << targetTile->getLastExplored(_unit->getFaction()) << " current turn: " << _save->getTurn() << " smoke: " << targetTile->getSmoke() << " turns since seen: " << target->getTurnsSinceSeen(_unit->getFaction());
+				if (tileChecked)
+				{
+					target->setTileLastSpotted(-1, _unit->getFaction(), true);
+				}
+			}
 		}
 		if ((_unit->isCheatOnMovement() || target->getTurnsSinceSeen(_unit->getFaction()) == 0) && hasLofTile(target, _unit->getTile()))
 			amInAnyonesFOW = true;
@@ -3174,6 +3133,66 @@ void AIModule::brutalThink(BattleAction* action)
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
 		}
+	}
+
+	// Phase 1: Check if you can attack anything from where you currently are
+	_attackAction.type = BA_RETHINK;
+	_psiAction.type = BA_NONE;
+	if (brutalPsiAction())
+	{
+		if (_psiAction.type != BA_NONE)
+		{
+			action->type = _psiAction.type;
+			action->target = _psiAction.target;
+			action->number -= 1;
+			action->weapon = _psiAction.weapon;
+			action->updateTU();
+			return;
+		}
+	}
+	if (_blaster)
+	{
+		brutalBlaster();
+	}
+	else if (_attackAction.type == BA_RETHINK)
+		brutalSelectSpottedUnitForSniper();
+	if (_attackAction.type == BA_RETHINK && _grenade)
+		brutalGrenadeAction();
+	//if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
+	//	blindFire();
+
+	if (_attackAction.type != BA_RETHINK)
+	{
+		action->type = _attackAction.type;
+		action->target = _attackAction.target;
+		action->weapon = _attackAction.weapon;
+		action->number -= 1;
+		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE && !action->weapon->isFuseEnabled())
+		{
+			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
+			action->weapon->setFuseTimer(0); //don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
+			_unit->spendTimeUnits(4);
+		}
+		action->updateTU();
+		if (action->type == BA_LAUNCH)
+		{
+			action->waypoints = _attackAction.waypoints;
+		}
+		else if (action->type == BA_AIMEDSHOT || action->type == BA_AUTOSHOT)
+		{
+			action->kneel = _unit->getArmor()->allowsKneeling(false);
+		}
+		return;
+	}
+
+	// Check if I'm a turret. In this case I can skip everything about walking
+	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
+	{
+		if (_traceAI)
+			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
+		action->type = BA_NONE;
+		setWantToEndTurn(true);
+		return;
 	}
 
 	bool randomScouting = false;
@@ -4089,7 +4108,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 						{
 							for (BattleItem *item : *(tileToCheck->getInventory()))
 							{
-								if (item->isFuseEnabled())
+								if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
 								{
 									return false;
 								}
