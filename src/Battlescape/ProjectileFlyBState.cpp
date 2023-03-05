@@ -409,6 +409,9 @@ void ProjectileFlyBState::init()
 		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER, true);
 		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL);
 		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL, true);
+		_unit->setTurnsSinceSeen(0, FACTION_HOSTILE);
+		_unit->setTurnsSinceSeen(0, FACTION_PLAYER);
+		_unit->setTurnsSinceSeen(0, FACTION_NEUTRAL);
 	}
 	else if (isPlayer && (_targetVoxel.z >= 0 || forceEnableObstacles))
 	{
