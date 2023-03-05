@@ -1025,6 +1025,8 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 	const std::set<std::string> standardMods = {
 		"Aliens_Pick_Up_Weapons",
 		"Aliens_Pick_Up_Weapons_TFTD",
+		"Demigod_Difficulty",
+		"Demigod_Difficulty_TFTD",
 		"Limit_Craft_Item_Capacities",
 		"Limit_Craft_Item_Capacities_TFTD",
 		"OpenXCom_Unlimited_Waypoints",

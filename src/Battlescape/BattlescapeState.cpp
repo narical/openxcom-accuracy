@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include "../fmath.h"
 #include <SDL_gfxPrimitives.h>
 #include "Map.h"
 #include "Camera.h"
@@ -41,7 +42,6 @@
 #include "BriefingState.h"
 #include "ExtendedBattlescapeLinksState.h"
 #include "../lodepng.h"
-#include "../fmath.h"
 #include "../Geoscape/SelectMusicTrackState.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
@@ -2996,7 +2996,6 @@ void BattlescapeState::saveVoxelView()
 	if (bu==0) return; //no unit selected
 	std::vector<Position> _trajectory;
 
-	double ang_x,ang_y;
 	bool black;
 	Tile *tile = 0;
 	std::ostringstream ss;
@@ -3011,14 +3010,11 @@ void BattlescapeState::saveVoxelView()
 	image.clear();
 	for (int y = -256+32; y < 256+32; ++y)
 	{
-		ang_y = (((double)y)/640*M_PI+M_PI/2);
 		for (int x = -256; x < 256; ++x)
 		{
-			ang_x = ((double)x/1024)*M_PI+dir;
-
-			targetVoxel.x=originVoxel.x + (int)(-sin(ang_x)*1024*sin(ang_y));
-			targetVoxel.y=originVoxel.y + (int)(cos(ang_x)*1024*sin(ang_y));
-			targetVoxel.z=originVoxel.z + (int)(cos(ang_y)*1024);
+			targetVoxel.x=originVoxel.x + (int)(-sin(dir + M_PI_2) * (x*4) + cos(dir + M_PI_2) * (1024 + 512));
+			targetVoxel.y=originVoxel.y + (int)(cos(dir + M_PI_2) * (x*4) + sin(dir + M_PI_2) * (1024 + 512));
+			targetVoxel.z=originVoxel.z + -y*4;
 
 			_trajectory.clear();
 			test = _save->getTileEngine()->calculateLineVoxel(originVoxel, targetVoxel, false, &_trajectory, bu, nullptr, !_debug) +1;
