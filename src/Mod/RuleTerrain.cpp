@@ -73,7 +73,7 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 	{
 		if (!adding)
 		{
-			_mapBlocks.clear();
+			Collections::deleteAll(_mapBlocks);
 		}
 		for (YAML::const_iterator i = map.begin(); i != map.end(); ++i)
 		{
