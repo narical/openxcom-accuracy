@@ -2405,15 +2405,6 @@ const std::string &RuleItem::getZombieUnit(const BattleUnit* victim) const
 }
 
 /**
- * Gets which faction the spawned unit should be.
- * @return The spawned unit's faction.
- */
-int RuleItem::getSpawnUnitFaction() const
-{
-	return _spawnUnitFaction;
-}
-
-/**
  * How much damage does this weapon do when you punch someone in the face with it?
  * @return The weapon's melee power.
  */

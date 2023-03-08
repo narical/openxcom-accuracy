@@ -889,7 +889,7 @@ public:
 	/// Gets the weapon's spawn unit.
 	const Unit* getSpawnUnit() const { return _spawnUnit; }
 	/// Gets which faction the spawned unit should have.
-	int getSpawnUnitFaction() const;
+	int getSpawnUnitFaction() const { return _spawnUnitFaction; }
 	/// Gets the weapon's spawn item.
 	const RuleItem* getSpawnItem() const { return _spawnItem; }
 
