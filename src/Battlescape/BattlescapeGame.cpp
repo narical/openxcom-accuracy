@@ -2596,7 +2596,7 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 	}
 
 	BattleItem *targetItem = 0;
-	int maxWorth = 0;
+	float maxWorth = 0;
 
 	// now select the most suitable candidate depending on attractiveness and distance
 	// (are we still talking about items?)
@@ -2606,7 +2606,7 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 		{
 			continue;
 		}
-		int currentWorth = bi->getRules()->getAttraction() / ((Position::distance2d(action->actor->getPosition(), bi->getTile()->getPosition()) * 2)+1);
+		float currentWorth = bi->getRules()->getAttraction() / ((Position::distance2d(action->actor->getPosition(), bi->getTile()->getPosition()) * 2) + 1);
 		if (currentWorth > maxWorth)
 		{
 			if (bi->getTile()->getTUCost(O_OBJECT, action->actor->getMovementType()) == 255)
