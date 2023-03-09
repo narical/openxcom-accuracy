@@ -33,6 +33,8 @@ RuleTerrain::RuleTerrain(const std::string &name) : _name(name), _mapScript("DEF
 	_ambience(-1), _ambientVolume(0.5), _minAmbienceRandomDelay(20), _maxAmbienceRandomDelay(60),
 	_lastCraftSkinIndex(0)
 {
+	_civilianTypes.push_back("MALE_CIVILIAN");
+	_civilianTypes.push_back("FEMALE_CIVILIAN");
 }
 
 /**
@@ -57,6 +59,7 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 	{
 		load(parent, mod);
 	}
+
 	bool adding = node["addOnly"].as<bool>(false);
 	if (const YAML::Node &map = node["mapDataSets"])
 	{
@@ -70,7 +73,7 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 	{
 		if (!adding)
 		{
-			_mapBlocks.clear();
+			Collections::deleteAll(_mapBlocks);
 		}
 		for (YAML::const_iterator i = map.begin(); i != map.end(); ++i)
 		{
@@ -79,21 +82,10 @@ void RuleTerrain::load(const YAML::Node &node, Mod *mod)
 			_mapBlocks.push_back(mapBlock);
 		}
 	}
-	_name = node["name"].as<std::string>(_name);
+
 	_enviroEffects = node["enviroEffects"].as<std::string>(_enviroEffects);
-	if (const YAML::Node &civs = node["civilianTypes"])
-	{
-		_civilianTypes = civs.as<std::vector<std::string> >(_civilianTypes);
-	}
-	else
-	{
-		_civilianTypes.push_back("MALE_CIVILIAN");
-		_civilianTypes.push_back("FEMALE_CIVILIAN");
-	}
-	for (YAML::const_iterator i = node["music"].begin(); i != node["music"].end(); ++i)
-	{
-		_music.push_back((*i).as<std::string>(""));
-	}
+	mod->loadUnorderedNames(_name, _civilianTypes, node["civilianTypes"]);
+	mod->loadUnorderedNames(_name, _music, node["music"]);
 	if (node["depth"])
 	{
 		_minDepth = node["depth"][0].as<int>(_minDepth);

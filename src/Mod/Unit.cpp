@@ -58,7 +58,7 @@ void Unit::load(const YAML::Node &node, Mod *mod)
 	{
 		load(parent, mod);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	mod->loadNameNull(_type, _civilianRecoveryType, node["civilianRecoveryType"]);
 	mod->loadNameNull(_type, _spawnedPersonName, node["spawnedPersonName"]);
 	mod->loadNameNull(_type, _liveAlienName, node["liveAlien"]);

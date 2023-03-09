@@ -53,7 +53,7 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
 	{
 		load(parent, mod);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	mod->loadUnorderedNamesToNamesToInt(_type, _defaultArmor, node["defaultArmor"]);
 	mod->loadUnorderedNames(_type, _allowedArmors, node["allowedArmors"]);
 	mod->loadUnorderedNames(_type, _forbiddenArmors, node["forbiddenArmors"]);

@@ -54,7 +54,7 @@ class RuleResearch
 	bool _sequentialGetOneFree;
 	std::vector<std::pair<std::string, std::vector<std::string> > > _getOneFreeProtectedName;
 	std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*> > > _getOneFreeProtected;
-	bool _needItem, _destroyItem;
+	bool _needItem, _destroyItem, _unlockFinalMission;
 	int _listOrder;
 
 	ScriptValues<RuleResearch> _scriptValues;
@@ -67,10 +67,10 @@ public:
 	static const int RESEARCH_STATUS_NEW = 0;
 	static const int RESEARCH_STATUS_NORMAL = 1;
 	static const int RESEARCH_STATUS_DISABLED = 2;
-	RuleResearch(const std::string &name);
+	RuleResearch(const std::string &name, int listOrder);
 
 	/// Loads the research from YAML.
-	void load(const YAML::Node& node, Mod* mod, const ModScript& parsers, int listOrder);
+	void load(const YAML::Node& node, Mod* mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 
@@ -86,6 +86,8 @@ public:
 	bool needItem() const;
 	/// Checks if this ResearchProject consumes the corresponding Item when research completes.
 	bool destroyItem() const;
+	/// Check if this ResearchProject is unlocking final mission, it can be only one!
+	bool unlockFinalMission() const { return _unlockFinalMission; }
 	/// Gets the list of ResearchProjects unlocked by this research.
 	const std::vector<const RuleResearch*> &getUnlocked() const;
 	/// Gets the list of ResearchProjects disabled by this research.

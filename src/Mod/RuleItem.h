@@ -403,7 +403,9 @@ private:
 	int _listOrder, _maxRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _shotgunPellets;
 	int _shotgunBehaviorType, _shotgunSpread, _shotgunChoke;
 	std::map<std::string, std::string> _zombieUnitByArmorMale, _zombieUnitByArmorFemale, _zombieUnitByType;
-	std::string _zombieUnit, _spawnUnit;
+	std::string _zombieUnit, _spawnUnitName, _spawnItemName;
+	const Unit* _spawnUnit = nullptr;
+	const RuleItem* _spawnItem = nullptr;
 	int _spawnUnitFaction;
 	int _targetMatrix;
 	bool _LOSRequired, _underwaterOnly, _landOnly, _psiReqiured, _manaRequired;
@@ -443,13 +445,13 @@ public:
 	static void ScriptRegister(ScriptParserBase* parser);
 
 	/// Creates a blank item ruleset.
-	RuleItem(const std::string &type);
+	RuleItem(const std::string &type, int listOrder);
 	/// Cleans up the item ruleset.
 	~RuleItem();
 	/// Updates item categories based on replacement rules.
 	void updateCategories(std::map<std::string, std::string> *replacementRules);
 	/// Loads item data from YAML.
-	void load(const YAML::Node& node, Mod *mod, int listIndex, const ModScript& parsers);
+	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 
@@ -879,15 +881,20 @@ public:
 	int getShotgunSpread() const;
 	/// Get the shotgun choke value.
 	int getShotgunChoke() const;
+
 	/// Gets the weapon's zombie unit.
 	const std::string &getZombieUnit(const BattleUnit* victim) const;
 	const std::map<std::string, std::string> &getZombieUnitByArmorMaleRaw() const { return _zombieUnitByArmorMale; }
 	const std::map<std::string, std::string> &getZombieUnitByArmorFemaleRaw() const { return _zombieUnitByArmorFemale; }
 	const std::map<std::string, std::string> &getZombieUnitByTypeRaw() const { return _zombieUnitByType; }
+
 	/// Gets the weapon's spawn unit.
-	const std::string &getSpawnUnit() const;
+	const Unit* getSpawnUnit() const { return _spawnUnit; }
 	/// Gets which faction the spawned unit should have.
-	int getSpawnUnitFaction() const;
+	int getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	/// Gets the weapon's spawn item.
+	const RuleItem* getSpawnItem() const { return _spawnItem; }
+
 	/// Checks if this item can be used to target a given faction.
 	bool isTargetAllowed(UnitFaction targetFaction) const;
 	int getTargetMatrixRaw() const { return _targetMatrix; }

@@ -47,6 +47,7 @@ void RuleInterface::load(const YAML::Node& node, Mod *mod)
 	{
 		load(parent, mod);
 	}
+
 	_palette = node["palette"].as<std::string>(_palette);
 	_parent = node["parent"].as<std::string>(_parent);
 	_backgroundImage = node["backgroundImage"].as<std::string>(_backgroundImage);

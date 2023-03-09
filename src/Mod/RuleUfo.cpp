@@ -56,13 +56,13 @@ RuleUfo::~RuleUfo()
  * @param node YAML node.
  * @param mod Mod for the UFO.
  */
-void RuleUfo::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
+void RuleUfo::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, parsers, mod);
+		load(parent, mod, parsers);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_size = node["size"].as<std::string>(_size);
 	// sigh
 	if (_size == "STR_MEDIUM")

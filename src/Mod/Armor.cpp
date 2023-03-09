@@ -97,14 +97,14 @@ Armor::~Armor()
  * Loads the armor from a YAML file.
  * @param node YAML node.
  */
-void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
+void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, parsers, mod);
+		load(parent, mod, parsers);
 	}
+
 	_ufopediaType = node["ufopediaType"].as<std::string>(_ufopediaType);
-	_type = node["type"].as<std::string>(_type);
 	_spriteSheet = node["spriteSheet"].as<std::string>(_spriteSheet);
 	_spriteInv = node["spriteInv"].as<std::string>(_spriteInv);
 	_hasInventory = node["allowInv"].as<bool>(_hasInventory);

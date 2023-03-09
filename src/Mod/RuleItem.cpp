@@ -143,7 +143,7 @@ const float TilesToVexels = 16.0f;
  * Creates a blank ruleset for a certain type of item.
  * @param type String defining the type.
  */
-RuleItem::RuleItem(const std::string &type) :
+RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_type(type), _name(type), _vehicleUnit(nullptr), _size(0.0),
 	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(0), _underwaterThrowRange(0),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
@@ -167,7 +167,7 @@ RuleItem::RuleItem(const std::string &type) :
 	_aiUseDelay(-1), _aiMeleeHitCount(25),
 	_recover(true), _recoverCorpse(true), _ignoreInBaseDefense(false), _ignoreInCraftEquip(true), _liveAlien(false),
 	_liveAlienPrisonType(0), _attraction(0), _flatUse(0, 1), _flatThrow(0, 1), _flatPrime(0, 1), _flatUnprime(0, 1), _arcingShot(false),
-	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(0),
+	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(listOrder),
 	_maxRange(200), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _shotgunPellets(0), _shotgunBehaviorType(0), _shotgunSpread(100), _shotgunChoke(100),
 	_spawnUnitFaction(-1),
 	_targetMatrix(7),
@@ -367,13 +367,13 @@ void RuleItem::updateCategories(std::map<std::string, std::string> *replacementR
  * @param mod Mod for the item.
  * @param listOrder The list weight for this item.
  */
-void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModScript& parsers)
+void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod, listOrder, parsers);
+		load(parent, mod, parsers);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_name = node["name"].as<std::string>(_name);
 	_nameAsAmmo = node["nameAsAmmo"].as<std::string>(_nameAsAmmo);
 
@@ -677,7 +677,8 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByArmorFemale, node["zombieUnitByArmorFemale"]);
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByType, node["zombieUnitByType"]);
 	mod->loadNameNull(_type, _zombieUnit, node["zombieUnit"]);
-	mod->loadNameNull(_type, _spawnUnit, node["spawnUnit"]);
+	mod->loadNameNull(_type, _spawnUnitName, node["spawnUnit"]);
+	mod->loadNameNull(_type, _spawnItemName, node["spawnItem"]);
 	_spawnUnitFaction = node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
 	if (node["psiTargetMatrix"])
 	{
@@ -721,11 +722,6 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_scriptValues.load(node, parsers.getShared());
 
 	_battleItemScripts.load(_type, node, parsers.battleItemScripts);
-
-	if (!_listOrder)
-	{
-		_listOrder = listOrder;
-	}
 }
 
 /**
@@ -769,6 +765,8 @@ void RuleItem::afterLoad(const Mod* mod)
 	{
 		_vehicleUnit = mod->getUnit(_type);
 	}
+	mod->linkRule(_spawnUnit, _spawnUnitName);
+	mod->linkRule(_spawnItem, _spawnItemName);
 
 	for (auto& pair : _recoveryTransformationsName)
 	{
@@ -2402,24 +2400,6 @@ const std::string &RuleItem::getZombieUnit(const BattleUnit* victim) const
 	}
 	// fall back
 	return _zombieUnit;
-}
-
-/**
- * Gets the unit that is spawned when this item hits something.
- * @return The weapon's spawn unit.
- */
-const std::string &RuleItem::getSpawnUnit() const
-{
-	return _spawnUnit;
-}
-
-/**
- * Gets which faction the spawned unit should be.
- * @return The spawned unit's faction.
- */
-int RuleItem::getSpawnUnitFaction() const
-{
-	return _spawnUnitFaction;
 }
 
 /**

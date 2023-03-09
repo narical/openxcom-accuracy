@@ -25,7 +25,7 @@
 namespace OpenXcom
 {
 
-RuleResearch::RuleResearch(const std::string &name) : _name(name), _spawnedItemCount(1), _cost(0), _points(0), _sequentialGetOneFree(false), _needItem(false), _destroyItem(false), _listOrder(0)
+RuleResearch::RuleResearch(const std::string &name, int listOrder) : _name(name), _spawnedItemCount(1), _cost(0), _points(0), _sequentialGetOneFree(false), _needItem(false), _destroyItem(false), _unlockFinalMission(false), _listOrder(listOrder)
 {
 }
 
@@ -34,13 +34,13 @@ RuleResearch::RuleResearch(const std::string &name) : _name(name), _spawnedItemC
  * @param node YAML node.
  * @param listOrder The list weight for this research.
  */
-void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parsers, int listOrder)
+void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod, parsers, listOrder);
+		load(parent, mod, parsers);
 	}
-	_name = node["name"].as<std::string>(_name);
+
 	_lookup = node["lookup"].as<std::string>(_lookup);
 	_cutscene = node["cutscene"].as<std::string>(_cutscene);
 	_spawnedItem = node["spawnedItem"].as<std::string>(_spawnedItem);
@@ -62,11 +62,8 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	mod->loadNamesToNames(_name, _getOneFreeProtectedName, node["getOneFreeProtected"]);
 	_needItem = node["needItem"].as<bool>(_needItem);
 	_destroyItem = node["destroyItem"].as<bool>(_destroyItem);
+	_unlockFinalMission = node["unlockFinalMission"].as<bool>(_unlockFinalMission);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
-	if (!_listOrder)
-	{
-		_listOrder = listOrder;
-	}
 	// This is necessary, research code assumes it!
 	if (!_requiresName.empty() && _cost != 0)
 	{

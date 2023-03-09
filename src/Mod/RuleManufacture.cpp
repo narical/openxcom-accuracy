@@ -31,7 +31,7 @@ namespace OpenXcom
  * Creates a new Manufacture.
  * @param name The unique manufacture name.
  */
-RuleManufacture::RuleManufacture(const std::string &name) : _name(name), _space(0), _time(0), _cost(0), _refund(false), _producedCraft(0), _listOrder(0)
+RuleManufacture::RuleManufacture(const std::string &name, int listOrder) : _name(name), _space(0), _time(0), _cost(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
 {
 	_producedItemsNames[name] = 1;
 }
@@ -41,20 +41,13 @@ RuleManufacture::RuleManufacture(const std::string &name) : _name(name), _space(
  * @param node YAML node.
  * @param listOrder The list weight for this manufacture.
  */
-void RuleManufacture::load(const YAML::Node &node, Mod* mod, int listOrder)
+void RuleManufacture::load(const YAML::Node &node, Mod* mod)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod, listOrder);
+		load(parent, mod);
 	}
-	bool same = (1 == _producedItemsNames.size() && _name == _producedItemsNames.begin()->first);
-	_name = node["name"].as<std::string>(_name);
-	if (same)
-	{
-		int value = _producedItemsNames.begin()->second;
-		_producedItemsNames.clear();
-		_producedItemsNames[_name] = value;
-	}
+
 	_category = node["category"].as<std::string>(_category);
 	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
@@ -72,10 +65,6 @@ void RuleManufacture::load(const YAML::Node &node, Mod* mod, int listOrder)
 		_spawnedSoldier = node["spawnedSoldier"];
 	}
 	_listOrder = node["listOrder"].as<int>(_listOrder);
-	if (!_listOrder)
-	{
-		_listOrder = listOrder;
-	}
 }
 
 /**

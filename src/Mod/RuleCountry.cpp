@@ -50,7 +50,7 @@ void RuleCountry::load(const YAML::Node &node)
 	{
 		load(parent);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_signedPactEventName = node["signedPactEvent"].as<std::string>(_signedPactEventName);
 	_rejoinedXcomEventName = node["rejoinedXcomEvent"].as<std::string>(_rejoinedXcomEventName);
 	_fundingBase = node["fundingBase"].as<int>(_fundingBase);

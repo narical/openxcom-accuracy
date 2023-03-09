@@ -100,7 +100,7 @@ void RuleAlienMission::load(const YAML::Node &node)
 	{
 		load(parent);
 	}
-	_type = node["type"].as<std::string>(_type);
+
 	_points = node["points"].as<int>(_points);
 	_waves = node["waves"].as< std::vector<MissionWave> >(_waves);
 	_objective = (MissionObjective)node["objective"].as<int>(_objective);
