@@ -51,6 +51,7 @@
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
 #include "../fallthrough.h"
+#include "../fmath.h"
 #include "../Engine/Language.h"
 
 namespace OpenXcom
@@ -3492,6 +3493,22 @@ void getTileScript(const SavedBattleGame* sbg, const Tile*& t, int x, int y, int
 	}
 }
 
+void setAlienItemLevelScript(SavedBattleGame* sbg, int val)
+{
+	if (sbg)
+	{
+		sbg->setAlienItemLevel(Clamp(val, 0, (int)sbg->getMod()->getAlienItemLevels().size()));
+	}
+}
+
+void setReinforcementsItemLevelScript(SavedBattleGame* sbg, int val)
+{
+	if (sbg)
+	{
+		sbg->setReinforcementsItemLevel(Clamp(val, 0, (int)sbg->getMod()->getAlienItemLevels().size()));
+	}
+}
+
 void tryConcealUnitScript(SavedBattleGame* sbg, BattleUnit* bu, int& val)
 {
 	if (sbg && bu)
@@ -3537,6 +3554,11 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.add<&SavedBattleGame::getTurn>("getTurn", "Current turn, 0 - before battle, 1 - first turn, each stage reset this value.");
 	sbg.add<&SavedBattleGame::getAnimFrame>("getAnimFrame");
 	sbg.add<&getTileScript>("getTile", "Get tile on position x, y, z");
+
+	sbg.add<&SavedBattleGame::getAlienItemLevel>("getAlienItemLevel");
+	sbg.add<&setAlienItemLevelScript>("setAlienItemLevel");
+	sbg.add<&SavedBattleGame::getReinforcementsItemLevel>("getReinforcementsItemLevel");
+	sbg.add<&setReinforcementsItemLevelScript>("setReinforcementsItemLevel");
 
 	sbg.addPair<SavedGame, &getGeoscapeSaveScript, &getGeoscapeSaveScript>("getGeoscapeGame");
 
