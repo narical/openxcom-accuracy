@@ -156,6 +156,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_ecEnabledNeutral = node["ecEnabledNeutral"].as<bool>(_ecEnabledNeutral);
 	_alienCustomDeploy = node["alienCustomDeploy"].as<std::string>(_alienCustomDeploy);
 	_alienCustomMission = node["alienCustomMission"].as<std::string>(_alienCustomMission);
+	_alienItemLevel = node["alienItemLevel"].as<int>(_alienItemLevel);
 	_lastUsedMapScript = node["lastUsedMapScript"].as<std::string>(_lastUsedMapScript);
 	_reinforcementsDeployment = node["reinforcementsDeployment"].as<std::string>(_reinforcementsDeployment);
 	_reinforcementsRace = node["reinforcementsRace"].as<std::string>(_reinforcementsRace);
@@ -553,6 +554,7 @@ YAML::Node SavedBattleGame::save() const
 	node["ecEnabledNeutral"] = _ecEnabledNeutral;
 	node["alienCustomDeploy"] = _alienCustomDeploy;
 	node["alienCustomMission"] = _alienCustomMission;
+	node["alienItemLevel"] = _alienItemLevel;
 	node["lastUsedMapScript"] = _lastUsedMapScript;
 	node["reinforcementsDeployment"] = _reinforcementsDeployment;
 	node["reinforcementsRace"] = _reinforcementsRace;
