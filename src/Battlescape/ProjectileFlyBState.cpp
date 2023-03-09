@@ -671,7 +671,7 @@ void ProjectileFlyBState::think()
 					if (ruleItem->getBattleType() == BT_GRENADE || ruleItem->getBattleType() == BT_PROXIMITYGRENADE)
 					{
 						// it's a hot grenade to explode immediately
-						_parent->statePushFront(new ExplosionBState(_parent, _parent->getMap()->getProjectile()->getPosition(Projectile::ItemDropVoxelOffset), attack));
+						_parent->statePushFront(new ExplosionBState(_parent, _parent->getMap()->getProjectile()->getLastPositions(Projectile::ItemDropVoxelOffset), attack));
 					}
 					else
 					{
@@ -726,7 +726,7 @@ void ProjectileFlyBState::think()
 					}
 
 					_parent->statePushFront(new ExplosionBState(
-						_parent, _parent->getMap()->getProjectile()->getPosition(offset),
+						_parent, _parent->getMap()->getProjectile()->getLastPositions(offset),
 						attack, 0,
 						_action.weapon->haveNextShotsForAction(_action.type, _action.autoShotCounter) || !_action.weapon->getAmmoForAction(_action.type),
 						shotgun ? 0 : _range + _parent->getMap()->getProjectile()->getDistance()

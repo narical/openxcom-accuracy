@@ -136,6 +136,19 @@ inline std::ostream& operator<<(std::ostream& out, const Position& pos)
 
 typedef Position Vector3i;
 
+
+/**
+ * Helper class storing last two position from Projectile
+ */
+struct LastPositions
+{
+	LastPositions(Position l) : last{l}, before{l} {};
+	LastPositions(Position l, Position b) : last{l}, before{b} {};
+
+	Position last;
+	Position before;
+};
+
 }
 
 namespace YAML
