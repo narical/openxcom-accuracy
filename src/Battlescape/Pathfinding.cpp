@@ -507,11 +507,11 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			BattleUnit *unitHere = destinationTile[i]->getUnit();
 			if (unitHere != missileTarget && !unitHere->isOut())
 			{
-				if (unitHere->getFaction() == _unit->getFaction())
+				if (unitHere->getFaction() == unit->getFaction())
 				{
 					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a friendly as being blocked
 				}
-				else if (unitHere->getTurnsSinceSpotted() <= unit->getUnitRules()->getIntelligence())
+				else if (unit->getUnitRules() && unitHere->getTurnsSinceSpotted() <= unit->getUnitRules()->getIntelligence())
 				{
 					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a known unit that isn't our target as being blocked
 				}
