@@ -3321,6 +3321,8 @@ void AIModule::brutalThink(BattleAction* action)
 			enemyMoralAvg /= enemyUnitCount;
 		}
 		bool targetHasGravLift = false;
+		if (myMoralAvg > enemyMoralAvg && !_unit->isCheatOnMovement())
+			sweepMode = true;
 		if (myMoralAvg > enemyMoralAvg * 2)
 			sweepMode = true;
 		if (_blaster)
@@ -3363,7 +3365,7 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = true;
 	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak)
 		peakMode = true;
-	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking)
+	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking && _unit->isCheatOnMovement())
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
