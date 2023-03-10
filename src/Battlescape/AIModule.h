@@ -212,6 +212,8 @@ public:
 	bool hasLofTile(BattleUnit *unit, Tile *tile);
 	/// Checks whether there's a grenade on the ground and tries to pick it up
 	void tryToPickUpGrenade(Tile* tile, BattleAction* action);
+	/// returns a score for how much we like to pick up a specific kind of item
+	float getItemPickUpScore(BattleItem *item);
 };
 
 }

@@ -5404,4 +5404,27 @@ void AIModule::tryToPickUpGrenade(Tile *tile, BattleAction *action)
 	}
 }
 
+float AIModule::getItemPickUpScore(BattleItem* item)
+{
+	if (!_unit->isBrutal())
+		return item->getRules()->getAttraction();
+	if (!_save->canUseWeapon(item, _unit, false, BA_SNAPSHOT))
+		return 0;
+	if (item->haveAnyAmmo())
+		return 10;
+	if (item->getRules()->getBattleType() == BT_AMMO)
+	{
+		for (const auto *bi : *_unit->getInventory())
+		{
+			if (bi->getRules()->getBattleType() == BT_FIREARM)
+			{
+				if (bi->getRules()->getSlotForAmmo(item->getRules()) != -1)
+				{
+					return 10;
+				}
+			}
+		}
+	}
+}
+
 }
