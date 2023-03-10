@@ -1751,7 +1751,15 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 	}
 	else
 	{
-		bool noFollowers = site->getFollowers()->empty();
+		bool noFollowers = true;
+		for (auto follower : site->getCraftFollowers())
+		{
+			if (follower->getNumTotalUnits() > 0 && follower->getRules()->getAllowLanding())
+			{
+				noFollowers = false;
+				break;
+			}
+		}
 		if (site->getRules()->despawnEvenIfTargeted())
 		{
 			for (auto* follower : site->getCraftFollowers())
