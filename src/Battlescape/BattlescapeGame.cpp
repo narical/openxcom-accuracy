@@ -2653,7 +2653,7 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 	}
 	if (Options::traceAI && targetItem != NULL)
 	{
-		Log(LOG_INFO) << "Best item to pick up was " << targetItem->getRules()->getName() << " at "<<targetItem->getTile()->getPosition();
+		Log(LOG_INFO) << "Best item to pick up was " << targetItem->getRules()->getName() << " at " << targetItem->getTile()->getPosition() << " with worth: " << maxWorth;
 	}
 	return targetItem;
 }

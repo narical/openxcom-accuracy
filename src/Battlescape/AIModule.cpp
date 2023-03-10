@@ -5422,7 +5422,12 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 	if (!_save->canUseWeapon(item, _unit, false, BA_SNAPSHOT))
 		return 0;
 	if (item->haveAnyAmmo())
-		return 10;
+	{
+		if (item->getRules()->getBattleType() == BT_FIREARM)
+			return 10;
+		if (item->getRules()->getBattleType() == BT_GRENADE || item->getRules()->getBattleType() == BT_MELEE)
+			return 5;
+	} 
 	if (item->getRules()->getBattleType() == BT_AMMO)
 	{
 		for (const auto *bi : *_unit->getInventory())
@@ -5436,6 +5441,7 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 			}
 		}
 	}
+	return 0;
 }
 
 }
