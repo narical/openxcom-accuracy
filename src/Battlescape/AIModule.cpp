@@ -3071,7 +3071,12 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				int newIndex = getNewTileIDToLookForEnemy(targetPosition, target);
 				if (_traceAI)
+				{
 					Log(LOG_INFO) << "Target " << target->getPosition() << " is no longer where it is suspected at: " << targetPosition << " Guess for new position is: " << _save->getTileCoords(newIndex);
+					//_save->getTile(newIndex)->setMarkerColor(_unit->getId());
+					//_save->getTile(newIndex)->setPreview(10);
+					//_save->getTile(newIndex)->setTUMarker(target->getId());
+				}
 				target->setTileLastSpotted(newIndex, _unit->getFaction());
 				// We clear it for blind-shot in this case, as it makes no sense to still try and shoot there
 				target->setTileLastSpotted(-1, _unit->getFaction(), true);
@@ -3503,7 +3508,13 @@ void AIModule::brutalThink(BattleAction* action)
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			if (pos != myPos && _unit->getTimeUnits() >= attackTU && !lineOfFire)
+			bool justNeedToTurn = false;
+			if (unitToWalkTo)
+			{
+				if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getFaceDirection())
+					justNeedToTurn = true;
+			}
+			if ((pos != myPos || justNeedToTurn) && _unit->getTimeUnits() >= attackTU && !lineOfFire)
 			{
 				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true) || (shouldPeak && unitToWalkTo)))
 				{
@@ -3524,7 +3535,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			bool shouldHaveBeenAbleToAttack = pos == myPos;
+			bool shouldHaveBeenAbleToAttack = pos == myPos || justNeedToTurn;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
