@@ -3376,7 +3376,7 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			BattleItem *grenade = _unit->getGrenadeFromBelt();
 			int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
-			if (primeCost <= _unit->getTimeUnits())
+			if (primeCost <= _unit->getTimeUnits() && !grenade->getRules()->isExplodingInHands())
 			{
 				_unit->spendTimeUnits(4);
 				_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
