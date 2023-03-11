@@ -19,6 +19,7 @@
  */
 #include "Position.h"
 #include "../Mod/RuleItem.h"
+#include "Pathfinding.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -281,7 +282,7 @@ public:
 	/// Tries to find an item and pick it up if possible.
 	bool findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem);
 	/// Checks through all the items on the ground and picks one.
-	BattleItem *surveyItems(BattleAction *action, bool pickUpWeaponsMoreActively);
+	BattleItem *surveyItems(BattleAction *action, bool pickUpWeaponsMoreActively, std::vector<PathfindingNode *> targetNodes);
 	/// Evaluates if it's worthwhile to take this item.
 	bool worthTaking(BattleItem* item, BattleAction *action, bool pickUpWeaponsMoreActively);
 	/// Picks the item up from the ground.

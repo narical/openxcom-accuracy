@@ -2532,8 +2532,10 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 	// terrorists don't have hands.
 	if (action->actor->getRankString() != "STR_LIVE_TERRORIST" || pickUpWeaponsMoreActively)
 	{
+		bool dummy = false;
+		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(action->actor, BattleActionCost(), dummy, true);
 		// pick the best available item
-		BattleItem *targetItem = surveyItems(action, pickUpWeaponsMoreActively);
+		BattleItem *targetItem = surveyItems(action, pickUpWeaponsMoreActively, targetNodes);
 		// make sure it's worth taking
 		if (targetItem && worthTaking(targetItem, action, pickUpWeaponsMoreActively))
 		{
@@ -2575,19 +2577,15 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 			else if (!targetItem->getTile()->getUnit() || targetItem->getTile()->getUnit()->isOut())
 			{
 				// if we're not standing on it, we should try to get to it.
-				_save->getPathfinding()->calculate(action->actor, targetItem->getTile()->getPosition(), BAM_NORMAL);
-				if (_save->getPathfinding()->getStartDirection() != -1 && _save->getPathfinding()->getTotalTUCost() <= action->actor->getTimeUnits())
+				action->target = targetItem->getTile()->getPosition();
+				action->type = BA_WALK;
+				walkToItem = true;
+				if (pickUpWeaponsMoreActively)
 				{
-					action->target = targetItem->getTile()->getPosition();
-					action->type = BA_WALK;
-					walkToItem = true;
-					if (pickUpWeaponsMoreActively)
-					{
-						// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
-						action->finalAction = false;
-						action->desperate = false;
-						action->actor->setHiding(false);
-					}
+					// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
+					action->finalAction = false;
+					action->desperate = false;
+					action->actor->setHiding(false);
 				}
 			}
 		}
@@ -2601,7 +2599,7 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
  * @param action A pointer to the action being performed.
  * @return The item to attempt to take.
  */
-BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeaponsMoreActively)
+BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeaponsMoreActively, std::vector<PathfindingNode *> targetNodes)
 {
 	std::vector<BattleItem*> droppedItems;
 
@@ -2637,8 +2635,10 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 		{
 			continue;
 		}
-		
-		float currentWorth = action->actor->getAIModule()->getItemPickUpScore(bi) / ((Position::distance2d(action->actor->getPosition(), bi->getTile()->getPosition()) * 2) + 1);
+		int tuCost = action->actor->getAIModule()->tuCostToReachPosition(bi->getTile()->getPosition(), targetNodes);
+		float currentWorth = 0;
+		if (tuCost < 10000)
+			currentWorth = action->actor->getAIModule()->getItemPickUpScore(bi) / (tuCost + 1);
 		if (currentWorth > maxWorth)
 		{
 			if (bi->getTile()->getTUCost(O_OBJECT, action->actor->getMovementType()) == 255)
