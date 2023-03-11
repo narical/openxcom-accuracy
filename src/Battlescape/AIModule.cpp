@@ -3399,11 +3399,14 @@ void AIModule::brutalThink(BattleAction* action)
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
 	{
 		Position targetPosition = encircleTile->getPosition();
+		bool justNeedToTurn = false;
 		if (unitToWalkTo)
 		{
 			targetPosition = unitToWalkTo->getPosition();
 			if (!_unit->isCheatOnMovement())
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
+			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection())
+				justNeedToTurn = true;
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
@@ -3416,7 +3419,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " encircle-mode: "<<encircleMode<< " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " encircle-mode: " << encircleMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: "<<justNeedToTurn;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3508,12 +3511,6 @@ void AIModule::brutalThink(BattleAction* action)
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			bool justNeedToTurn = false;
-			if (unitToWalkTo)
-			{
-				if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getFaceDirection())
-					justNeedToTurn = true;
-			}
 			if ((pos != myPos || justNeedToTurn) && _unit->getTimeUnits() >= attackTU && !lineOfFire)
 			{
 				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true) || (shouldPeak && unitToWalkTo)))
@@ -3535,7 +3532,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			bool shouldHaveBeenAbleToAttack = pos == myPos && !justNeedToTurn;
+			bool shouldHaveBeenAbleToAttack = pos == myPos;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
@@ -3556,7 +3553,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float prio2Score = 0;
 			float prio3Score = 0;
 			float prio4Score = 0;
-			if (!_blaster && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && !shouldHaveBeenAbleToAttack)
+			if (!_blaster && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 				{
