@@ -5895,4 +5895,19 @@ bool TileEngine::isNextToDoor(Tile* tile)
 	return false;
 }
 
+int TileEngine::getCoverValue(Tile* tile, BattleUnit* bu)
+{
+	if (tile == NULL)
+		return 0;
+	int cover = 0;
+	for (int direction = 0; direction <= 7; direction+=2)
+	{
+		if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
+			cover++;
+	}
+	if (cover > 3)
+		cover = -1;
+	return cover;
+}
+
 }

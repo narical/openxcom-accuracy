@@ -3582,7 +3582,6 @@ void AIModule::brutalThink(BattleAction* action)
 			bool closerThanEnemyCanReach = false;
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
-			int p2t = 0;
 			if (needToFlee)
 			{
 				if (hideAfterPeaking)
@@ -3606,7 +3605,6 @@ void AIModule::brutalThink(BattleAction* action)
 			else if ((!visibleToEnemy && !lineOfFire && (encircleMode || (!closerThanEnemyCanReach && _unit->isCheatOnMovement())) || (peakMode && shouldPeak && !_unit->isCheatOnMovement())))
 			{
 				prio2Score = 100 / walkToDist;
-				p2t = 3;
 				if (!clearSightToEnemyReachableTile)
 					prio2Score *= 1.25;
 			}
@@ -3631,6 +3629,8 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score *= 1.25;
 				prio3Score *= 1.25;
 			}
+			prio2Score *= 1 + 0.25 * _save->getTileEngine()->getCoverValue(tile, _unit);
+			prio3Score *= 1 + 0.25 * _save->getTileEngine()->getCoverValue(tile, _unit);
 			//If the enemy has produced smoke for us and can't fly, we like being in smoke
 			if (tile->getSmoke() > 0 && !eaglesCanFly)
 			{
@@ -3699,7 +3699,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(lineOfFire);
+			//	tile->setTUMarker(std::max(prio2Score, prio3Score));
 			//}
 		}
 		if (_traceAI)

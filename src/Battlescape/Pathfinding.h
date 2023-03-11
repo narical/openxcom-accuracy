@@ -61,8 +61,6 @@ private:
 	MovementType getMovementType(const BattleUnit *unit, const BattleUnit *missileTarget, BattleActionMove bam) const;
 	/// Determines whether a tile blocks a certain movementType.
 	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, BattleActionMove bam, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;
-	/// Determines whether or not movement between start tile and end tile is possible in the direction.
-	bool isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const;
 	/// Tries to find a straight line path between two positions.
 	bool bresenhamPath(Position origin, Position target, BattleActionMove bam, const BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Tries to find a path between two positions.
@@ -75,6 +73,8 @@ private:
 public:
 	/// Determines whether the unit is going up a stairs.
 	bool isOnStairs(Position startPosition, Position endPosition) const;
+	/// Determines whether or not movement between start tile and end tile is possible in the direction.
+	bool isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const;
 	/// Determines whether or not movement between start tile and end tile is possible in the direction.
 	bool isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction) const;
 

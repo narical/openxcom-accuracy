@@ -274,6 +274,8 @@ public:
 
 	/// Checks if a tile either has a door is next to a door
 	bool isNextToDoor(Tile *tile);
+	/// Counts walls to evaluate the tile's cover
+	int getCoverValue(Tile *tile, BattleUnit* bu);
 };
 
 }
