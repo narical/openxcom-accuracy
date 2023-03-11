@@ -4151,7 +4151,6 @@ int TileEngine::closeUfoDoors()
 int TileEngine::calculateLineTile(Position origin, Position target, std::vector<Position> &trajectory)
 {
 	Position lastPoint = origin;
-	bool bigWall = false;
 	int steps = 0;
 
 	bool hit = calculateLineHelper(origin, target,
@@ -4166,7 +4165,10 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 			auto result = getBlockDir(cache, dir, difference.z);
 			if (result && difference.z == 0 && getBigWallDir(cache, dir))
 			{
-				bigWall = true;
+				if (point == target)
+				{
+					result = false;
+				}
 			}
 
 			steps++;
@@ -4180,7 +4182,7 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 	);
 	if (hit)
 	{
-		return bigWall ? 0 : 256;
+		return 256;
 	}
 	return 0;
 }
