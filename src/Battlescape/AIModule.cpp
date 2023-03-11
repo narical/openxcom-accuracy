@@ -3535,7 +3535,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			bool shouldHaveBeenAbleToAttack = pos == myPos || justNeedToTurn;
+			bool shouldHaveBeenAbleToAttack = pos == myPos && !justNeedToTurn;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
@@ -3702,7 +3702,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(prio1Score);
+			//	tile->setTUMarker(lineOfFire);
 			//}
 		}
 		if (_traceAI)
@@ -5423,7 +5423,7 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 		return 0;
 	if (item->haveAnyAmmo())
 	{
-		if (item->getRules()->getBattleType() == BT_FIREARM)
+		if(item->getRules()->getBattleType() == BT_FIREARM)
 			return 10;
 		if (item->getRules()->getBattleType() == BT_GRENADE || item->getRules()->getBattleType() == BT_MELEE)
 			return 5;
