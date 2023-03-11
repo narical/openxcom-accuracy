@@ -125,6 +125,15 @@ void UnitTurnBState::think()
 		_parent->getTileEngine()->calculateFOV(_unit);
 		if (_chargeTUs && _unit->getFaction() == _parent->getSave()->getSide() && _parent->getPanicHandled() && _action.type == BA_NONE && _unit->getUnitsSpottedThisTurn().size() > unitSpotted)
 		{
+			for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
+			{
+				if (unit->isOut())
+					continue;
+				if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
+					continue;
+				unit->setWantToEndTurn(false);
+				unit->allowReselect();
+			}
 			_unit->abortTurn();
 			_parent->popState();
 		}
