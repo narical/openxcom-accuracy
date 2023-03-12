@@ -871,7 +871,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
 	{
 	case 0:	// north
 		if (isBlocked(unit, startTile, O_NORTHWALL, bam, missileTarget)) return true;
-		if (isBlocked(unit, _save->getTile(currentPosition + oneTileNorth), O_BIGWALL, bam, missileTarget, BIGWALLSOUTH)) return true;
+		if (isBlocked(unit, _save->getTile(currentPosition + oneTileNorth), O_BIGWALL, bam, missileTarget, BIGWALLNORTH)) return true;
 		break;
 	case 1: // north-east
 		if (isBlocked(unit, startTile,O_NORTHWALL, bam, missileTarget)) return true;
@@ -883,7 +883,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
 		break;
 	case 2: // east
 		if (isBlocked(unit, _save->getTile(currentPosition + oneTileEast), O_WESTWALL, bam, missileTarget)) return true;
-		if (isBlocked(unit, _save->getTile(currentPosition + oneTileEast), O_BIGWALL, bam, missileTarget, BIGWALLWEST))	return true;
+		if (isBlocked(unit, _save->getTile(currentPosition + oneTileEast), O_BIGWALL, bam, missileTarget, BIGWALLEAST))	return true;
 		break;
 	case 3: // south-east
 		if (isBlocked(unit, _save->getTile(currentPosition + oneTileEast), O_WESTWALL, bam, missileTarget)) return true;
@@ -895,7 +895,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
 		break;
 	case 4: // south
 		if (isBlocked(unit, _save->getTile(currentPosition + oneTileSouth), O_NORTHWALL, bam, missileTarget)) return true;
-		if (isBlocked(unit, _save->getTile(currentPosition + oneTileSouth), O_BIGWALL, bam, missileTarget, BIGWALLNORTH)) return true;
+		if (isBlocked(unit, _save->getTile(currentPosition + oneTileSouth), O_BIGWALL, bam, missileTarget, BIGWALLSOUTH)) return true;
 		break;
 	case 5: // south-west
 		if (isBlocked(unit, startTile, O_WESTWALL, bam, missileTarget)) return true;
@@ -907,7 +907,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
 		break;
 	case 6: // west
 		if (isBlocked(unit, startTile, O_WESTWALL, bam, missileTarget)) return true;
-		if (isBlocked(unit, _save->getTile(currentPosition + oneTileWest), O_BIGWALL, bam, missileTarget, BIGWALLEAST))	return true;
+		if (isBlocked(unit, _save->getTile(currentPosition + oneTileWest), O_BIGWALL, bam, missileTarget, BIGWALLWEST))	return true;
 		break;
 	case 7: // north-west
 		if (isBlocked(unit, startTile, O_WESTWALL, bam, missileTarget)) return true;
