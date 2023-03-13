@@ -38,7 +38,6 @@
 #include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
 #include "../Mod/RuleSkill.h"
-#include "Pathfinding.h"
 #include "../Engine/Options.h"
 #include "ProjectileFlyBState.h"
 #include "MeleeAttackBState.h"
@@ -5895,21 +5894,6 @@ bool TileEngine::isNextToDoor(Tile* tile)
 	if (tileEast != NULL && (tileEast->isDoor(O_WESTWALL) || tileEast->isUfoDoor(O_WESTWALL)))
 		return true;
 	return false;
-}
-
-int TileEngine::getCoverValue(Tile* tile, BattleUnit* bu)
-{
-	if (tile == NULL)
-		return 0;
-	int cover = 0;
-	for (int direction = 0; direction <= 7; direction+=2)
-	{
-		if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
-			cover++;
-	}
-	if (cover > 3)
-		cover = -1;
-	return cover;
 }
 
 }

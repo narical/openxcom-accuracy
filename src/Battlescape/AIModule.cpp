@@ -3326,8 +3326,6 @@ void AIModule::brutalThink(BattleAction* action)
 			enemyMoralAvg /= enemyUnitCount;
 		}
 		bool targetHasGravLift = false;
-		if (myMoralAvg > enemyMoralAvg && !_unit->isCheatOnMovement())
-			sweepMode = true;
 		if (myMoralAvg > enemyMoralAvg * 2)
 			sweepMode = true;
 		if (_blaster)
@@ -3370,7 +3368,7 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = true;
 	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak)
 		peakMode = true;
-	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking && _unit->isCheatOnMovement())
+	else if (!canReachTargetTileWithAttack && !sweepMode && hideAfterPeaking && (_unit->isCheatOnMovement() || (_unit->getFaction() == FACTION_HOSTILE && !IsEnemyExposedEnough())))
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
@@ -3629,8 +3627,9 @@ void AIModule::brutalThink(BattleAction* action)
 				prio2Score *= 1.25;
 				prio3Score *= 1.25;
 			}
-			prio2Score *= 1 + 0.25 * _save->getTileEngine()->getCoverValue(tile, _unit);
-			prio3Score *= 1 + 0.25 * _save->getTileEngine()->getCoverValue(tile, _unit);
+			int cover = getCoverValue(tile, _unit);
+			prio2Score *= 1 + 0.25 * cover;
+			prio3Score *= 1 + 0.25 * cover;
 			//If the enemy has produced smoke for us and can't fly, we like being in smoke
 			if (tile->getSmoke() > 0 && !eaglesCanFly)
 			{
@@ -3699,7 +3698,10 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(std::max(prio2Score, prio3Score));
+			//	if (tile->getMapData(O_OBJECT))
+			//		tile->setTUMarker(tile->getMapData(O_OBJECT)->getBigWall());
+			//	else
+			//		tile->setTUMarker(0);
 			//}
 		}
 		if (_traceAI)
@@ -5439,6 +5441,53 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 		}
 	}
 	return 0;
+}
+
+bool AIModule::IsEnemyExposedEnough()
+{
+	bool dummy = false;
+	Position startPosition = _unit->getPosition();
+	if (getClosestSpawnTileId() >= 0)
+		startPosition = _save->getTileCoords(getClosestSpawnTileId());
+	std::vector<PathfindingNode *> enemySimulationNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &startPosition);
+	for (BattleUnit *enemy : *(_save->getUnits()))
+	{
+		if (!isEnemy(enemy))
+			continue;
+		if (enemy->isOut())
+			continue;
+		if (visibleToAnyFriend(enemy))
+			return true;
+		if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
+			return false;
+		Position currentAssumedPosition = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
+		if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
+			return false;
+		int requiredTUFromStart = enemy->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(enemy);
+		int neededTUToStart = tuCostToReachPosition(currentAssumedPosition, enemySimulationNodes, enemy);
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << enemy->getId() << ", seen " << enemy->getTurnsSinceSeen(_unit->getFaction()) << " turns ago, needs to be at least " << requiredTUFromStart << " TUs from the starting-location. We assume they should need " << neededTUToStart;
+		}
+		if (requiredTUFromStart < neededTUToStart)
+			return true;
+	}
+	return false;
+}
+
+int AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
+{
+	if (tile == NULL)
+		return 0;
+	int cover = 0;
+	for (int direction = 0; direction <= 7; direction += 2)
+	{
+		if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
+			cover++;
+	}
+	if (cover > 3)
+		cover = -1;
+	return cover;
 }
 
 }

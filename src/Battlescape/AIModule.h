@@ -214,6 +214,10 @@ public:
 	void tryToPickUpGrenade(Tile* tile, BattleAction* action);
 	/// returns a score for how much we like to pick up a specific kind of item
 	float getItemPickUpScore(BattleItem *item);
+	/// Non-cheating-AI needs to be able to determine whether the enemy is doing Triton-shenanigans, where we should prevent exposing ourselves or is exposed enough themselves for us to strike
+	bool IsEnemyExposedEnough();
+	/// Get the cover-value of a tile
+	int getCoverValue(Tile *tile, BattleUnit *bu);
 };
 
 }
