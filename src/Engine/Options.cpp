@@ -215,7 +215,7 @@ void create()
 	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_AI"));
 	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
-	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, true, "STR_CHEATONMOVEMENT", "STR_AI"));
+	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("strafers", &strafers, false, "STR_STRAFERS", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
@@ -258,7 +258,7 @@ void create()
 	_info.push_back(OptionInfo("oxceTogglePersonalLightType", &oxceTogglePersonalLightType, 1)); // per battle
 	_info.push_back(OptionInfo("oxceToggleNightVisionType", &oxceToggleNightVisionType, 1));     // per battle
 	_info.push_back(OptionInfo("oxceToggleBrightnessType", &oxceToggleBrightnessType, 0));       // not persisted
-	_info.push_back(OptionInfo("oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_WARNING));
+	_info.push_back(OptionInfo("oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_FATAL));
 
 	_info.push_back(OptionInfo("oxceEmbeddedOnly", &oxceEmbeddedOnly, true));
 	_info.push_back(OptionInfo("oxceListVFSContents", &oxceListVFSContents, false));
