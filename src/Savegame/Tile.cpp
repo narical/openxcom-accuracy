@@ -1096,6 +1096,8 @@ void Tile::resetObstacle(void)
 
 void Tile::setLastExplored(UnitFaction faction)
 {
+	if (_save->getSide() != faction)
+		return;
 	if (faction == FACTION_PLAYER)
 		_lastExploredByPlayer = _save->getTurn();
 	else if (faction == FACTION_NEUTRAL)
