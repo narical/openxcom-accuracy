@@ -258,7 +258,7 @@ void create()
 	_info.push_back(OptionInfo("oxceTogglePersonalLightType", &oxceTogglePersonalLightType, 1)); // per battle
 	_info.push_back(OptionInfo("oxceToggleNightVisionType", &oxceToggleNightVisionType, 1));     // per battle
 	_info.push_back(OptionInfo("oxceToggleBrightnessType", &oxceToggleBrightnessType, 0));       // not persisted
-	_info.push_back(OptionInfo("oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_FATAL));
+	_info.push_back(OptionInfo("oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_WARNING));
 
 	_info.push_back(OptionInfo("oxceEmbeddedOnly", &oxceEmbeddedOnly, true));
 	_info.push_back(OptionInfo("oxceListVFSContents", &oxceListVFSContents, false));
