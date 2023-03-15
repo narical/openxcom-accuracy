@@ -350,6 +350,15 @@ void UnitWalkBState::think()
 				if (door == 1)
 				{
 					_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::SLIDING_DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // ufo door
+					if (_unit->isBrutal())
+					{
+						if (Options::traceAI)
+						{
+							Log(LOG_INFO) << "I opened a self-closing door. Let's reconsider the situation.";
+						}
+						_pf->abortPath();
+						_parent->popState();
+					}
 					return; // don't start walking yet, wait for the ufo door to open
 				}
 			}
