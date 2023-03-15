@@ -284,7 +284,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 {
 	std::ostringstream ss;
 
-	if (unit->getTimeUnits() <= 5 || unit->getWantToEndTurn())
+	if ((unit->getTimeUnits() <= 5 && !unit->isBrutal()) || unit->getWantToEndTurn())
 	{
 		unit->dontReselect();
 	}
