@@ -156,6 +156,8 @@ public:
 	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* actor = NULL);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
+	/// find the closest Position that isn't our current position which is on the way to a target
+	Position closestToGoTowards(Position target, const std::vector<PathfindingNode *> nodeVector);
 	/// checks if the path to a position is save
 	bool isPathToPositionSave(Position target, bool checkForProxies = false);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration

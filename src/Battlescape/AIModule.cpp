@@ -3114,7 +3114,7 @@ void AIModule::brutalThink(BattleAction* action)
 			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
 			if (_traceAI)
 				Log(LOG_INFO) << "I'm aware of a valid target at: " << targetPosition << " dist after getting closer: " << Position::distance(furthestAttackPositon, targetPosition) << " my attack-range: " << maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes));
-			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes)))
+			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit)))
 			{
 				sweepMode = true;
 			}
@@ -3494,14 +3494,22 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			bool outOfRangeForShortRangeWeapon = false;
-			if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) < closestEnemyDist)
+			if (maxExtenderRangeWith(_unit, getMaxTU(_unit)) < closestEnemyDist)
 				outOfRangeForShortRangeWeapon = true;
-			if (!IAmPureMelee && !isPathToPositionSave(pos) && !needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
-				continue;
+			bool badPath = false;
+			if (!IAmPureMelee && !isPathToPositionSave(pos))
+			{
+				if (needToFlee && !outOfRangeForShortRangeWeapon && !amInAnyonesFOW)
+					continue;
+				else
+					badPath = true;
+			}
 			if (!isPathToPositionSave(pos, true) && !IAmPureMelee)
 				continue;
 			bool haveTUToAttack = false;
 			bool shouldPeak = false;
+			if (targetDist < closestEnemyDist)
+				closestEnemyDist = targetDist;
 			if (peakMode && pu->getTUCost(false).time <= getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
 				shouldPeak = true;
 			if (peakMode && !_unit->isCheatOnMovement() && pu->getTUCost(false).time <= getMaxTU(_unit) / 3.0)
@@ -3582,19 +3590,9 @@ void AIModule::brutalThink(BattleAction* action)
 				closerThanEnemyCanReach = true;
 			if (needToFlee)
 			{
-				if (hideAfterPeaking)
-				{
-					if (!closerThanEnemyCanReach || !lineOfFire)
-						prio2Score = closestEnemyDist;
-					if (_save->getTileEngine()->isNextToDoor(tile))
-						prio2Score *= 2;
-					if (saveFromGrenades)
-						prio2Score *= 2;
-				}
-				else
-				{
-					prio2Score = closestEnemyDist;
-				}
+				prio2Score = closestEnemyDist;
+				if (saveFromGrenades)
+					prio2Score *= 2;
 				if (!lineOfFire)
 					prio2Score *= 4;
 				if (!visibleToEnemy)
@@ -3624,22 +3622,26 @@ void AIModule::brutalThink(BattleAction* action)
 			if (saveFromGrenades)
 			{
 				prio1Score *= 1.25;
-				prio2Score *= 1.25;
+				if (!shouldPeak)
+					prio2Score *= 1.25;
 				prio3Score *= 1.25;
 			}
 			int cover = getCoverValue(tile, _unit);
-			prio2Score *= 1 + 0.25 * cover;
+			if (!shouldPeak)
+				prio2Score *= 1 + 0.25 * cover;
 			prio3Score *= 1 + 0.25 * cover;
 			//If the enemy has produced smoke for us and can't fly, we like being in smoke
 			if (tile->getSmoke() > 0 && !eaglesCanFly)
 			{
 				float smokeMod = 1.0 + tile->getSmoke() * 0.02;
 				prio1Score *= smokeMod;
-				prio2Score *= smokeMod;
+				if (!shouldPeak)
+					prio2Score *= smokeMod;
 				prio3Score *= smokeMod;
 			}
 			prio4Score = 100 / walkToDist;
-			prio2Score /= cuddleAvoidModifier;
+			if (!shouldPeak)
+				prio2Score /= cuddleAvoidModifier;
 			prio3Score /= cuddleAvoidModifier;
 			prio4Score /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
@@ -3667,7 +3669,7 @@ void AIModule::brutalThink(BattleAction* action)
 				prio3Score /= 10;
 				prio4Score /= 10;
 			}
-			if (avoidMeleeRange)
+			if (avoidMeleeRange || badPath)
 			{
 				prio1Score /= 10;
 				prio2Score /= 10;
@@ -3698,10 +3700,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	if (tile->getMapData(O_OBJECT))
-			//		tile->setTUMarker(tile->getMapData(O_OBJECT)->getBigWall());
-			//	else
-			//		tile->setTUMarker(0);
+			//	tile->setTUMarker(prio2Score);
 			//}
 		}
 		if (_traceAI)
@@ -3810,12 +3809,14 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			bool dummy = false;
 			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target);
-			Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes));
+			//Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes, false, NULL));
+			Tile *lookAtTile = _save->getTile(closestToGoTowards(targetPosition, myNodes));
 			if (lookAtTile && _traceAI)
 				Log(LOG_INFO) << "lookAtTile " << lookAtTile->getPosition() << " action->target: " << action->target;
 			if (lookAtTile && lookAtTile->getPosition() != action->target)
 			{
 				action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, lookAtTile->getPosition());
+				encircleTile = lookAtTile;
 				if (_traceAI)
 					Log(LOG_INFO) << "Facing corrected towards " << lookAtTile->getPosition() << " which is " << action->finalFacing;
 			}
@@ -3844,7 +3845,7 @@ void AIModule::brutalThink(BattleAction* action)
 				action->target = encircleTile->getPosition();
 			}
 			if (_traceAI)
-				Log(LOG_INFO) << _unit->getId() << " wants to turn towards " << action->target;
+				Log(LOG_INFO) << "Want to turn towards " << action->target;
 		}
 		else
 		{
@@ -3860,7 +3861,7 @@ void AIModule::brutalThink(BattleAction* action)
 				action->target = encircleTile->getPosition();
 			if (_traceAI)
 			{
-				Log(LOG_INFO) << _unit->getId() << " wants to end their turn.";
+				Log(LOG_INFO) << "Want to end my turn.";
 			}
 		}
 	}
@@ -4090,6 +4091,60 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	return _unit->getPosition();
 }
 
+Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNode *> nodeVector)
+{
+	PathfindingNode *targetNode = NULL;
+	float closestDistToTarget = 255;
+	for (auto pn : nodeVector)
+	{
+		if (target == pn->getPosition())
+		{
+			targetNode = pn;
+			break;
+		}
+		// If we want to get close to the target it must be on the same layer
+		if (target.z != pn->getPosition().z)
+		{
+			if (target.z > pn->getPosition().z)
+			{
+				Tile *targetTile = _save->getTile(target);
+				Tile *tileAbovePathNode = _save->getAboveTile(_save->getTile(pn->getPosition()));
+				if (!targetTile->hasNoFloor() && !tileAbovePathNode->hasNoFloor())
+					continue;
+			}
+			if (target.z < pn->getPosition().z)
+			{
+				Tile *tileAbovetargetTile = _save->getAboveTile(_save->getTile(target));
+				Tile *pathNodeTile = _save->getTile(pn->getPosition());
+				if (!tileAbovetargetTile->hasNoFloor() && !pathNodeTile->hasNoFloor())
+					continue;
+			}
+		}
+		float currDist = Position::distance(target, pn->getPosition());
+		if (currDist < closestDistToTarget)
+		{
+			closestDistToTarget = currDist;
+			targetNode = pn;
+		}
+	}
+	if (targetNode != NULL)
+	{
+		while (targetNode->getPrevNode() != NULL && targetNode->getPrevNode()->getPosition() != _unit->getPosition())
+		{
+			targetNode = targetNode->getPrevNode();
+			//if (_traceAI)
+			//{
+			//	Tile *tile = _save->getTile(targetNode->getPosition());
+			//	tile->setMarkerColor(_unit->getId());
+			//	tile->setPreview(10);
+			//	tile->setTUMarker(targetNode->getPrevDir());
+			//}
+		}
+		return targetNode->getPosition();
+	}
+	return _unit->getPosition();
+}
+
 bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 {
 	PathfindingNode *targetNode = NULL;
@@ -4130,32 +4185,29 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 			}
 			else
 			{
-				if (_unit->isCheatOnMovement())
+				for (BattleUnit *unit : *(_save->getUnits()))
 				{
-					for (BattleUnit *unit : *(_save->getUnits()))
+					if (unit->isOut())
+						continue;
+					if (isAlly(unit))
+						continue;
+					bool suspectReaction = unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu));
+					if (!_unit->isCheatOnMovement())
 					{
-						if (unit->isOut())
-							continue;
-						if (isAlly(unit))
-							continue;
-						bool suspectReaction = unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu));
-						if (!_unit->isCheatOnMovement())
+						if (visibleToAnyFriend(unit))
+							suspectReaction = true;
+						else
+							suspectReaction = false;
+					}
+					if (unit->hasVisibleTile(tile) && suspectReaction)
+					{
+						if (unit->hasVisibleUnit(_unit))
+							return false;
+						else if (targetNode->getPrevNode())
 						{
-							if (visibleToAnyFriend(unit))
-								suspectReaction = true;
-							else
-								suspectReaction = false;
-						}
-						if (unit->hasVisibleTile(tile) && suspectReaction)
-						{
-							if (unit->hasVisibleUnit(_unit))
+							Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
+							if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
 								return false;
-							else if (targetNode->getPrevNode())
-							{
-								Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
-								if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
-									return false;
-							}
 						}
 					}
 				}
@@ -5152,7 +5204,7 @@ Position AIModule::closestPositionEnemyCouldReach(BattleUnit *enemy)
 			break;
 		}
 	}
-	tu -= enemy->getBaseStats()->tu;
+	tu -= getMaxTU(enemy);
 	if (targetNode != NULL)
 	{
 		while (targetNode->getPrevNode() != NULL)
