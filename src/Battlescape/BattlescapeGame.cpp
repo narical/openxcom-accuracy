@@ -175,8 +175,7 @@ bool BattleActionCost::spendTU(std::string *message)
  * @param save Pointer to the save game.
  * @param parentState Pointer to the parent battlescape state.
  */
-BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parentState) :
-	_save(save), _parentState(parentState),
+BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parentState) : _save(save), _parentState(parentState), _nextUnitToSelect(NULL),
 	_playerPanicHandled(true), _AIActionCounter(0), _playedAggroSound(false),
 	_endTurnRequested(false), _endConfirmationHandled(false), _allEnemiesNeutralized(false)
 {
@@ -284,7 +283,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 {
 	std::ostringstream ss;
 
-	if ((unit->getTimeUnits() <= 5 && !unit->isBrutal()) || unit->getWantToEndTurn())
+	if ((unit->getTimeUnits() <= 5 && !unit->isBrutal()) || unit->getTimeUnits() < 1 || unit->getWantToEndTurn())
 	{
 		unit->dontReselect();
 	}
@@ -485,10 +484,16 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 
 	if (action.type == BA_WAIT)
 	{
-		_save->selectNextPlayerUnit(true);
+		if (getNextUnitToSelect() != NULL)
+		{
+			_save->setSelectedUnit(getNextUnitToSelect());
+		}
+		else 
+			_save->selectNextPlayerUnit(true);
 		if (_save->getSelectedUnit())
 		{
 			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
 		}
 	}
 }
@@ -3346,6 +3351,16 @@ void BattlescapeGame::autoEndBattle()
 			requestEndTurn(askForConfirmation);
 		}
 	}
+}
+
+void BattlescapeGame::setNextUnitToSelect(BattleUnit *unit)
+{
+	_nextUnitToSelect = unit;
+}
+
+BattleUnit* BattlescapeGame::getNextUnitToSelect()
+{
+	return _nextUnitToSelect;
 }
 
 }

@@ -2942,6 +2942,7 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			action->type = BA_WAIT;
 			action->number -= 1;
+			_save->getBattleGame()->setNextUnitToSelect(ally);
 			return;
 		}
 		else if(visibleToAlly == visibleToMe)
@@ -2953,6 +2954,7 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					action->type = BA_WAIT;
 					action->number -= 1;
+					_save->getBattleGame()->setNextUnitToSelect(ally);
 					return;
 				}
 			}
@@ -2962,6 +2964,7 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					action->type = BA_WAIT;
 					action->number -= 1;
+					_save->getBattleGame()->setNextUnitToSelect(ally);
 					return;
 				}
 			}

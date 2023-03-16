@@ -166,6 +166,7 @@ class BattlescapeGame
 private:
 	SavedBattleGame *_save;
 	BattlescapeState *_parentState;
+	BattleUnit *_nextUnitToSelect; 
 	std::list<BattleState*> _states, _deleted;
 	bool _playerPanicHandled;
 	int _AIActionCounter;
@@ -321,6 +322,10 @@ public:
 	bool areAllEnemiesNeutralized() const { return _allEnemiesNeutralized; }
 	/// Resets the flag.
 	void resetAllEnemiesNeutralized() { _allEnemiesNeutralized = false; }
+	/// Allows AI to tell us which unit should be selected next
+	void setNextUnitToSelect(BattleUnit *unit);
+	/// Returns which unit the AI wanted to select next
+	BattleUnit *getNextUnitToSelect();
 };
 
 }
