@@ -220,6 +220,8 @@ public:
 	bool IsEnemyExposedEnough();
 	/// Get the cover-value of a tile
 	int getCoverValue(Tile *tile, BattleUnit *bu);
+	/// checks whethere there's any cover in range
+	bool anyCoverInRange(const std::vector<PathfindingNode *> nodeVector);
 };
 
 }
