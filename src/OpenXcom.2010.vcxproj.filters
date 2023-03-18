@@ -1124,6 +1124,9 @@
     <ClCompile Include="Battlescape\ExtendedInventoryLinksState.cpp">
       <Filter>Battlescape</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\GlobalAlienContainmentState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2308,6 +2311,9 @@
     </ClInclude>
     <ClInclude Include="Battlescape\ExtendedInventoryLinksState.h">
       <Filter>Battlescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\GlobalAlienContainmentState.h">
+      <Filter>Basescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
