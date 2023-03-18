@@ -3514,7 +3514,7 @@ void AIModule::brutalThink(BattleAction* action)
 				else
 					badPath = true;
 			}
-			if (!isPathToPositionSave(pos, true) && !IAmPureMelee)
+			if (!isPathToPositionSave(pos, true))
 				continue;
 			bool haveTUToAttack = false;
 			bool shouldPeak = false;
@@ -4168,6 +4168,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 	}
 	if (targetNode != NULL)
 	{
+		bool saveForProxies = true;
 		while (targetNode->getPrevNode() != NULL)
 		{
 			Tile *tile = _save->getTile(targetNode->getPosition());
@@ -4185,9 +4186,13 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 							for (BattleItem *item : *(tileToCheck->getInventory()))
 							{
 								if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
-								{
-									return false;
-								}
+									if (tileToCheck != tile || tileToCheck == tile)
+										if (_save->getPathfinding()->isBlockedDirection(_unit, tileToCheck, _save->getTileEngine()->getDirectionTo(tileToCheck->getPosition(), targetNode->getPosition()), BAM_NORMAL, _unit))
+											saveForProxies = true;
+										else
+											saveForProxies = false;
+									else
+										saveForProxies = false;
 							}
 						}
 					}
@@ -4223,7 +4228,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 			}
 			targetNode = targetNode->getPrevNode();
 		}
-		return true;
+		return saveForProxies;
 	}
 	return false;
 }
@@ -4796,7 +4801,7 @@ void AIModule::brutalBlaster()
 		{
 			if ((*i)->getTileLastSpotted(_unit->getFaction(), true) == -1)
 				continue;
-			if (!(*i)->isOut() && isEnemy((*i), true) && !brutalValidTarget(*i, true))
+			if (!(*i)->isOut() && isEnemy((*i), true) && !brutalValidTarget(*i, true) && (*i)->getTurnsSinceSeen(_unit->getFaction()) < 2)
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted(_unit->getFaction(), true));
 				bool dummy = false;
@@ -4867,12 +4872,12 @@ void AIModule::brutalBlaster()
 			if (blindMode && blindTarget != _aggroTarget->getPosition())
 				_attackAction.waypoints.push_back(target);
 			Tile *tile = _save->getTile(target);
-			if (_traceAI)
-			{
-				tile->setMarkerColor(_unit->getId());
-				tile->setPreview(10);
-				tile->setTUMarker(_attackAction.waypoints.size());
-			}
+			//if (_traceAI)
+			//{
+			//	tile->setMarkerColor(_unit->getId());
+			//	tile->setPreview(10);
+			//	tile->setTUMarker(_attackAction.waypoints.size());
+			//}
 			int lastDirection = -1;
 			while (targetNode->getPrevNode() != NULL)
 			{
@@ -4885,13 +4890,13 @@ void AIModule::brutalBlaster()
 					if (direction != lastDirection || zChange)
 					{
 						_attackAction.waypoints.push_front(targetNode->getPosition());
-						if (_traceAI)
-						{
-							Tile *tile = _save->getTile(targetNode->getPosition());
-							tile->setMarkerColor(_unit->getId());
-							tile->setPreview(10);
-							tile->setTUMarker(_attackAction.waypoints.size());
-						}
+						//if (_traceAI)
+						//{
+						//	Tile *tile = _save->getTile(targetNode->getPosition());
+						//	tile->setMarkerColor(_unit->getId());
+						//	tile->setPreview(10);
+						//	tile->setTUMarker(_attackAction.waypoints.size());
+						//}
 					}
 					lastDirection = direction;
 				}
@@ -5323,6 +5328,8 @@ bool AIModule::isEnemy(BattleUnit* unit, bool ignoreSameOriginalFaction) const
 	if (!unit)
 		return false;
 	if (_unit == unit)
+		return false;
+	if (unit->isIgnoredByAI())
 		return false;
 	UnitFaction faction = unit->getFaction();
 	bool unitIsMindControlled = false;
