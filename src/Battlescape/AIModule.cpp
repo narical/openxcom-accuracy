@@ -3376,13 +3376,13 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (iHaveLof && _blaster)
 		needToFlee = true;
-	if (_unit->getTimeUnits() == getMaxTU(_unit) && !rangeTooShortToPeak && (enemyExposed || !(amCloserThanFurthestReachable && amInLoSToFurthestReachable)))
+	if (!rangeTooShortToPeak && (enemyExposed || !(amCloserThanFurthestReachable && amInLoSToFurthestReachable)))
 		peakMode = true;
 	else if (!canReachTargetTileWithAttack && !sweepMode)
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
-		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking;
+		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking << " enemyExposed: " << enemyExposed << " rangeTooShortToPeak: " << rangeTooShortToPeak;
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled)
 	{
 		if (!amInAnyonesFOW && !iHaveLof && (!amCloserThanFurthestReachable || !amInLoSToFurthestReachable))
@@ -3439,12 +3439,6 @@ void AIModule::brutalThink(BattleAction* action)
 				continue;
 			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
 				continue;
-			if (Options::strafers)
-			{
-				Tile *tileBelow = _save->getBelowTile(tile);
-				if (tileBelow && tileBelow->hasNoFloor() && tile->hasNoFloor())
-					continue;
-			}
 			float closestEnemyDist = FLT_MAX;
 			float targetDist = Position::distance(pos, targetPosition);
 			bool visibleToEnemy = false;
@@ -3487,7 +3481,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (!IAmPureMelee)
 					{
 						bool shouldPeak = false;
-						if (peakMode && (pu->getTUCost(false).time <= getMaxTU(_unit) / 2.0) && unitDist <= _save->getMod()->getMaxViewDistance())
+						if ((pu->getTUCost(false).time <= getMaxTU(_unit) / 2.0) && unitDist <= _save->getMod()->getMaxViewDistance())
 							shouldPeak = true;
 						if (!lineOfFire && brutalValidTarget(unit, true) || shouldPeak)
 						{
@@ -3527,9 +3521,9 @@ void AIModule::brutalThink(BattleAction* action)
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			if ((pos != myPos || justNeedToTurn) && _unit->getTimeUnits() >= attackTU && !lineOfFire)
+			if ((pos != myPos || justNeedToTurn) && !lineOfFire)
 			{
-				if (!IAmPureMelee && (brutalValidTarget(unitToWalkTo, true)))
+				if (!IAmPureMelee && shouldPeak && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true) || closestEnemyDist <= _save->getMod()->getMaxViewDistance()))
 				{
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
@@ -3549,27 +3543,13 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			bool shouldHaveBeenAbleToAttack = pos == myPos;
-			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
-			if (!lineOfFire)
-			{
-				if (_save->getTileEngine()->isNextToDoor(tile) && targetDist < 2)
-				{
-					Tile *targetTile = _save->getTile(targetPosition);
-					if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
-					{
-						shouldHaveBeenAbleToAttack = false;
-						lineOfFire = true;
-						attackTU += 4;
-					}
-				}
-			}
 			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
 				haveTUToAttack = true;
 			float prio1Score = 0;
 			float prio2Score = 0;
 			float prio3Score = 0;
 			float prio4Score = 0;
-			if (!_blaster && lineOfFire && (haveTUToAttack || shouldPeak) && !randomScouting && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
+			if (!_blaster && lineOfFire && haveTUToAttack && !randomScouting && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 				{
@@ -3608,13 +3588,13 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!visibleToEnemy)
 					prio2Score *= 2;
 			}
-			else if ((!visibleToEnemy && !lineOfFire && (encircleMode || (!closerThanEnemyCanReach && _unit->isCheatOnMovement())) || (peakMode && shouldPeak && !_unit->isCheatOnMovement())))
+			else if ((!visibleToEnemy && !lineOfFire && (encircleMode || (!closerThanEnemyCanReach && _unit->isCheatOnMovement())) || (shouldPeak && !_unit->isCheatOnMovement())))
 			{
 				prio2Score = 100 / walkToDist;
 				if (!clearSightToEnemyReachableTile)
 					prio2Score *= 1.25;
 			}
-			else if (!peakMode || _unit->isCheatOnMovement())
+			else if (_unit->isCheatOnMovement())
 			{
 				prio3Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				if (!lineOfFire)
@@ -3785,7 +3765,16 @@ void AIModule::brutalThink(BattleAction* action)
 		Position targetPosition = target->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
+		if (shouldHaveLofAfterMove)
+		{
+			bool haveLof = quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement());
+			if (!_unit->isCheatOnMovement())
+				haveLof = haveLof || clearSight(action->target, targetPosition);
+			if (!haveLof)
+				continue;
+		}
 		float currentDist = Position::distance(action->target, targetPosition);
+		Log(LOG_INFO) << targetPosition << " dist: " << currentDist;
 		if (currentDist < shortestDist)
 		{
 			shortestDist = currentDist;
@@ -4068,8 +4057,22 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 						continue;
 					if (isAlly(unit))
 						continue;
-					if (hasLofTile(unit, tile))
+					if ((_unit->isCheatOnMovement() || brutalValidTarget(unit, true)) && hasLofTile(unit, tile))
 						nodeIsDangerous = true;
+					if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) >= 0)
+					{
+						Position unitPos = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
+						nodeIsDangerous = quickLineOfFire(targetNode->getPosition(), unit, false, !_unit->isCheatOnMovement());
+						nodeIsDangerous = nodeIsDangerous || clearSight(targetNode->getPosition(), unitPos);
+					}
+					if (nodeIsDangerous)
+						break;
+				}
+				if (_traceAI)
+				{
+					tile->setMarkerColor(_unit->getId());
+					tile->setPreview(10);
+					tile->setTUMarker(nodeIsDangerous);
 				}
 				if (nodeIsDangerous)
 					furthestNodeThatWasDangerous = targetNode;
