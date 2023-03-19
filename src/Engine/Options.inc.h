@@ -46,7 +46,7 @@ OPT bool sneakyAI, brutalAI, cheatOnMovement, brutalCivilians, ignoreDelay, allo
 OPT int aiTargetMode, aiLeeroyMode, aiPerformanceOptimizationLevel;
 
 // Extra hotkeys (OXCE)
-OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, keyGeoGlobalResearch, keyGeoGlobalProduction,
+OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, keyGeoGlobalResearch, keyGeoGlobalProduction, keyGeoGlobalAlienContainment,
 	keyGraphsZoomIn, keyGraphsZoomOut,
 	keyToggleQuickSearch,
 	keyCraftLoadoutSave, keyCraftLoadoutLoad,
