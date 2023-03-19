@@ -144,7 +144,7 @@ de:
   STR_AUTOAGGRESSION: "Suchende Spieler-KI"
   STR_AUTOAGGRESSION_DESC: "Zwingt Spieler-Einheiten im automatischen Kampf stets nach Feinden zu suchen. Wenn deaktiviert könnten sie dazu neigen stattdessen an geeigneten Orten zu kampieren."
   STR_AI_PERFORMANCE: "Leistungsoptimierung für riesige Karten"
-  STR_AI_PERFORMANCE_DESC: "Limitiere Navigation Und Kartographie um Rundenzeiten zu verbessern. 0> Kein Limit 1> 28800/60 2> 10000/40 3> 3200/20 4> 900/0"
+  STR_AI_PERFORMANCE_DESC: "Dynamische Limitierung der Navigations- und Kartographie-Fähigkeit der KI um Rundenzeiten zu verbessern. Normalisiert für 60x60x4 mit 30 Gegnern."
   STR_STRAFE: "Alternative Bewegungsart"
   STR_STRAFE_DESC: "Befähigt zum seitlichen Gehen, Rennen, unabhängiger Bewegung der Panzer-Waffe, wenn CTRL gedrückt wird."
   STR_BATTLEEXPLOSIONHEIGHT: "Explosionshöhe"

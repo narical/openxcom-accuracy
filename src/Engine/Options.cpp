@@ -217,7 +217,7 @@ void create()
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
-	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimizationLevel, 0, "STR_AI_PERFORMANCE", "STR_AI"));
+	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, true, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aiLeeroyMode", &aiLeeroyMode, 1, "STR_AILEEROYMODE", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));

@@ -1415,27 +1415,18 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 	PathfindingOpenSet unvisited;
 	unvisited.push(startNode);
 	std::vector<PathfindingNode *> reachable;
-	int maxTilesToReturn = INT_MAX;
-	int maxTilesBeforeSneak = INT_MAX;
-	BattleActionMove bam = BAM_NORMAL;
-	switch (Options::aiPerformanceOptimizationLevel)
+	int maxTilesToReturn = _size;
+	if (Options::aiPerformanceOptimization)
 	{
-	case 1:
-		maxTilesToReturn = 28800;
-		maxTilesBeforeSneak = 14400;
-		break;
-	case 2:
-		maxTilesToReturn = 10000;
-		maxTilesBeforeSneak = 5000;
-		break;
-	case 3:
-		maxTilesToReturn = 3200;
-		maxTilesBeforeSneak = 1600;
-		break;
-	case 4:
-		maxTilesToReturn = 900;
-		maxTilesBeforeSneak = 450;
-		break;
+		int myUnits = 0;
+		for (BattleUnit *bu : *(_save->getUnits()))
+		{
+			if (bu->getFaction() == unit->getFaction() && !bu->isOut())
+				++myUnits;
+		}
+		float scaleFactor = (float)60 * 60 * 4 * 30 / (_save->getMapSizeXYZ() * myUnits);
+		if (scaleFactor < 1)
+			maxTilesToReturn *= scaleFactor;
 	}
 	while (!unvisited.empty())
 	{
@@ -1444,13 +1435,11 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 
 		if (reachable.size() > maxTilesToReturn)
 			entireMap = false;
-		if (reachable.size() > maxTilesBeforeSneak)
-			bam = BAM_SNEAK;
 
 		// Try all reachable neighbours.
 		for (int direction = 0; direction < 10; direction++)
 		{
-			auto r = getTUCost(currentPos, direction, unit, missileTarget, bam);
+			auto r = getTUCost(currentPos, direction, unit, missileTarget, BAM_NORMAL);
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;

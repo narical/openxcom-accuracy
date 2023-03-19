@@ -281,11 +281,6 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 2;
 		}
-		else if (i == &Options::aiPerformanceOptimizationLevel)
-		{
-			min = 0;
-			max = 4;
-		}
 		else if (i == &Options::battleExplosionHeight)
 		{
 			min = 0;

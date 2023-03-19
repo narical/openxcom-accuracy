@@ -144,7 +144,7 @@ en-US:
   STR_AUTOAGGRESSION: "Seeking player-AI"
   STR_AUTOAGGRESSION_DESC: "Forces player-units in automated combat to always search the enemy. When turned off they might decide to just camp if their current position seems suitable for that."
   STR_AI_PERFORMANCE: "Performance optimization for huge maps"
-  STR_AI_PERFORMANCE_DESC: "Limit navigation and cartography to improve turn-processing-performance. 0> No limits 1> 28800/60 2> 10000/40 3> 3200/20 4> 900/0"
+  STR_AI_PERFORMANCE_DESC: "Dynamically limits the AI's navigation- and cartography-capabilities to improve turn-processing-performance. Normalized towards 60x60x4 with 30 opponents."
   STR_STRAFE: "Alternate movement methods"
   STR_STRAFE_DESC: "Enables strafing, running, and independent tank turret movement when holding CTRL."
   STR_BATTLEEXPLOSIONHEIGHT: "Explosion height"
