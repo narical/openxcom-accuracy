@@ -1574,6 +1574,21 @@ interfaces: #done
         border: 1  # white
       - id: button
         color: 1   # white
+  - type: soldierRank
+    backgroundImage: BACK14.SCR
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 1     # white
+      - id: text
+        color: 1     # white
+      - id: list
+        color: 1     # white
+        color2: 244  # green
+        border: 1    # white
+      - id: button
+        color: 1     # white
   - type: soldierAvatar
     backgroundImage: BACK14.SCR
     elements:

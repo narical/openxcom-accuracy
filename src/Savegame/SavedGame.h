@@ -95,17 +95,6 @@ struct SaveInfo
 	bool reserved;
 };
 
-struct PromotionInfo
-{
-	int totalSoldiers;
-	int totalCommanders;
-	int totalColonels;
-	int totalCaptains;
-	int totalSergeants;
-	PromotionInfo(): totalSoldiers(0), totalCommanders(0), totalColonels(0), totalCaptains(0), totalSergeants(0){}
-};
-
-
 /**
  * The game data that gets written to disk when the game is saved.
  * A saved game holds all the variable info in a game like funds,
@@ -355,8 +344,6 @@ public:
 	Soldier *getSoldier(int id) const;
 	/// Handles the higher promotions.
 	bool handlePromotions(std::vector<Soldier*> &participants, const Mod *mod);
-	/// Processes a soldier's promotion.
-	void processSoldier(Soldier *soldier, PromotionInfo &soldierData);
 	/// Checks how many soldiers of a rank exist and which one has the highest score.
 	Soldier *inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector<Soldier*> &participants, int rank);
 	/// Gets the (approximate) number of idle days since the soldier's last mission.
@@ -447,6 +434,8 @@ public:
 	bool wasEventGenerated(const std::string& eventName);
 	/// Gets the list of dead soldiers.
 	std::vector<Soldier*> *getDeadSoldiers();
+	/// Gets a list of all active soldiers.
+	std::vector<Soldier*> getAllActiveSoldiers() const;
 	/// Gets the last selected player base.
 	Base *getSelectedBase();
 	/// Set the last selected player base.
