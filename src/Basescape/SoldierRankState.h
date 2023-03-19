@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
-#include "../SaveGame/Soldier.h"
+#include "../Savegame/Soldier.h"
 
 namespace OpenXcom
 {

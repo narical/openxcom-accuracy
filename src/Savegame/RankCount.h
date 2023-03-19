@@ -58,7 +58,7 @@ class PromotionOpenings : public RankCountBase
 	PromotionOpenings(const std::vector<Soldier*> soldiers, const Mod* mod);
 
 	// check if a soldier can be promoted to a given rank.
-	const bool isManualPromotionPossible(const Soldier* soldier, const SoldierRank newRank) const;
+	bool isManualPromotionPossible(const Soldier* soldier, const SoldierRank newRank) const;
 };
 
 }

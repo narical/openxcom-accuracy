@@ -88,7 +88,7 @@ PromotionOpenings::PromotionOpenings(const std::vector<Soldier*> soldiers, const
  * @param newRank The new rank to promote the soldier to.
  * @return True if the soldier can be promoted to this rank, false otherwise.
  */
-const bool PromotionOpenings::isManualPromotionPossible(const Soldier* soldier, const SoldierRank newRank) const
+bool PromotionOpenings::isManualPromotionPossible(const Soldier* soldier, const SoldierRank newRank) const
 {
 	// check if the soldiers rules allow promotion.
 	const auto* soldierRules = soldier->getRules();
@@ -114,7 +114,7 @@ const bool PromotionOpenings::isManualPromotionPossible(const Soldier* soldier, 
 	// If the rankString for the soldier is not empty, check if the new rank is defined in the rank strings.
 	// If not, it is not allowed. If no rankStrings are defined, we assume default behavior.
 	const size_t rankStringsSize = soldierRules->getRankStrings().size();
-	if (rankStringsSize != 0 && newRank >= rankStringsSize)
+	if (rankStringsSize != 0 && (size_t)newRank >= rankStringsSize)
 	{
 		return false;
 	}
