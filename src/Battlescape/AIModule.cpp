@@ -2980,6 +2980,8 @@ void AIModule::brutalThink(BattleAction* action)
 	bool IAmPureMelee = _melee && !_blaster && !_rifle && !_grenade;
 	if (_unit->getMainHandWeapon() && _unit->getMainHandWeapon()->getRules()->getBattleType() == BT_MELEE)
 		IAmPureMelee = true;
+	if (_unit->isLeeroyJenkins())
+		IAmPureMelee = true;
 	if (IAmPureMelee)
 		_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 
@@ -3007,7 +3009,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getTimeUnits() < costSnap.Time && !IAmPureMelee || unarmed)
 		needToFlee = true;
 
-	if (_unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE)
+	if (_unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE || _unit->isLeeroyJenkins())
 	{
 		needToFlee = false;
 		IAmPureMelee = true;
@@ -3023,7 +3025,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->isLeeroyJenkins();
+	bool sweepMode = _unit->isAggressive();
 	int lowestTurnsLastSeen = 255;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	bool encircleMode = false;
@@ -4360,21 +4362,24 @@ bool AIModule::brutalPsiAction()
 void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF)
 {
 	std::vector<BattleActionType> attackOptions = {};
-	if (costAimed.haveTU())
+	if (!_unit->isLeeroyJenkins())
 	{
-		attackOptions.push_back(BA_AIMEDSHOT);
-	}
-	if (costAuto.haveTU())
-	{
-		attackOptions.push_back(BA_AUTOSHOT);
-	}
-	if (costSnap.haveTU())
-	{
-		attackOptions.push_back(BA_SNAPSHOT);
-	}
-	if (costThrow.haveTU())
-	{
-		attackOptions.push_back(BA_THROW);
+		if (costAimed.haveTU())
+		{
+			attackOptions.push_back(BA_AIMEDSHOT);
+		}
+		if (costAuto.haveTU())
+		{
+			attackOptions.push_back(BA_AUTOSHOT);
+		}
+		if (costSnap.haveTU())
+		{
+			attackOptions.push_back(BA_SNAPSHOT);
+		}
+		if (costThrow.haveTU())
+		{
+			attackOptions.push_back(BA_THROW);
+		}
 	}
 	if (costHit.haveTU())
 	{

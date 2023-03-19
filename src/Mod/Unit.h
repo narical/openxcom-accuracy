@@ -435,7 +435,7 @@ private:
 	std::vector<std::vector<const RuleItem*> > _builtInWeapons;
 	bool _capturable;
 	bool _canSurrender, _autoSurrender;
-	bool _isLeeroyJenkins, _isBrutal, _isCheatOnMovement;
+	bool _isLeeroyJenkins, _isBrutal, _isCheatOnMovement, _isAggressive;
 	bool _waitIfOutsideWeaponRange;
 	int _aiTargetMode;
 	int _pickUpWeaponsMoreActively;
@@ -530,6 +530,8 @@ public:
 	/// Checks if this unit surrenders automatically, if all other units surrendered too.
 	bool autoSurrender() const;
 	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
+	/// Checks if the unit is aggressive
+	bool isAggressive() const { return _isAggressive; };
 	/// Checks if the unit is using brutal-AI
 	bool isBrutal() const { return _isBrutal; };
 	/// Checks if the unit is allowed to cheat on movement

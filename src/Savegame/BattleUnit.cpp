@@ -473,6 +473,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_faceDirection = -1;
 	_capturable = unit->getCapturable();
 	_isLeeroyJenkins = unit->isLeeroyJenkins();
+	_isAggressive = unit->isAggressive();
 	if (unit->getPickUpWeaponsMoreActively() != -1)
 	{
 		_pickUpWeaponsMoreActively = (unit->getPickUpWeaponsMoreActively() != 0);
@@ -5599,6 +5600,11 @@ int BattleUnit::aiTargetMode()
 
 bool BattleUnit::isLeeroyJenkins() const
 {
+	return _isLeeroyJenkins;
+}
+
+bool BattleUnit::isAggressive() const
+{
 	if (getFaction() == FACTION_PLAYER)
 	{
 		if (Options::autoAggression)
@@ -5606,11 +5612,7 @@ bool BattleUnit::isLeeroyJenkins() const
 		else
 			return false;
 	}
-	else if (Options::aiLeeroyMode == 0)
-		return false;
-	else if (Options::aiLeeroyMode == 1)
-		return _isLeeroyJenkins;
-	else if (Options::aiLeeroyMode == 2)
+	else if (Options::aiAggression)
 		return true;
 	return false;
 }

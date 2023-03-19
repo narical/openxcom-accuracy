@@ -167,6 +167,7 @@ private:
 	bool _breathing;
 	bool _hidingForTurn, _floorAbove, _respawn, _alreadyRespawned;
 	bool _isLeeroyJenkins;	// always charges enemy, never retreats.
+	bool _isAggressive;
 	bool _summonedPlayerUnit, _resummonedFakeCivilian;
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;
@@ -795,6 +796,8 @@ public:
 	int getMindControllerId() const;
 	/// Get the unit leeroyJenkins flag
 	bool isLeeroyJenkins() const;
+	/// Get the unit's aggression-flag
+	bool isAggressive() const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
 	int getSpotterDuration() const;
 	/// Remembers the unit's XP (used for shotguns).
