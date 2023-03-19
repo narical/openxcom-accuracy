@@ -4068,12 +4068,6 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 					if (nodeIsDangerous)
 						break;
 				}
-				if (_traceAI)
-				{
-					tile->setMarkerColor(_unit->getId());
-					tile->setPreview(10);
-					tile->setTUMarker(nodeIsDangerous);
-				}
 				if (nodeIsDangerous)
 					furthestNodeThatWasDangerous = targetNode;
 				targetNode = targetNode->getPrevNode();
@@ -4875,12 +4869,6 @@ void AIModule::brutalBlaster()
 			if (blindMode && blindTarget != _aggroTarget->getPosition())
 				_attackAction.waypoints.push_back(target);
 			Tile *tile = _save->getTile(target);
-			//if (_traceAI)
-			//{
-			//	tile->setMarkerColor(_unit->getId());
-			//	tile->setPreview(10);
-			//	tile->setTUMarker(_attackAction.waypoints.size());
-			//}
 			int lastDirection = -1;
 			while (targetNode->getPrevNode() != NULL)
 			{
@@ -4890,16 +4878,14 @@ void AIModule::brutalBlaster()
 					bool zChange = false;
 					if (targetNode->getPosition().z != targetNode->getPrevNode()->getPosition().z)
 						zChange = true;
-					if (direction != lastDirection || zChange)
+					//If we have unlimited way-points for our blaster, we might as well put a way-point on every single node along the path
+					if (_attackAction.weapon->getCurrentWaypoints() == -1)
 					{
 						_attackAction.waypoints.push_front(targetNode->getPosition());
-						//if (_traceAI)
-						//{
-						//	Tile *tile = _save->getTile(targetNode->getPosition());
-						//	tile->setMarkerColor(_unit->getId());
-						//	tile->setPreview(10);
-						//	tile->setTUMarker(_attackAction.waypoints.size());
-						//}
+					}
+					else if (direction != lastDirection || zChange)
+					{
+						_attackAction.waypoints.push_front(targetNode->getPosition());
 					}
 					lastDirection = direction;
 				}
