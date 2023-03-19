@@ -70,6 +70,8 @@ OPT SDLKey keyBasescapeBuildNewBase, keyBasescapeBaseInfo, keyBasescapeSoldiers,
 // OXCE, accessible via GUI
 OPT bool oxceUpdateCheck;
 OPT int autosaveSlots;
+OPT bool oxceManualPromotions;
+OPT bool oxceAutomaticPromotions;
 
 OPT bool oxceLinks;
 OPT bool oxceAlternateCraftEquipmentManagement;

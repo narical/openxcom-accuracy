@@ -49,6 +49,7 @@ set ( basescape_src
   Basescape/SoldierDiaryPerformanceState.cpp
   Basescape/SoldierInfoState.cpp
   Basescape/SoldierMemorialState.cpp
+  Basescape/SoldierRankState.cpp
   Basescape/SoldierSortUtil.cpp
   Basescape/SoldiersState.cpp
   Basescape/SoldierTransformationState.cpp
@@ -359,6 +360,7 @@ set ( savegame_src
   Savegame/MovingTarget.cpp
   Savegame/Node.cpp
   Savegame/Production.cpp
+  Savegame/RankCount.cpp
   Savegame/Region.cpp
   Savegame/ResearchProject.cpp
   Savegame/SaveConverter.cpp

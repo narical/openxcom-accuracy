@@ -747,6 +747,29 @@ void Soldier::promoteRank()
 }
 
 /**
+ * Promotes/demotes a soldier to a specific rank.
+ */
+void Soldier::setRank(const SoldierRank newRank)
+{
+	if (!_rules->getAllowPromotion())
+		return;
+
+	const std::vector<std::string> &rankStrings = _rules->getRankStrings();
+	if (!rankStrings.empty())
+	{
+		// abort if the desired rank is not indexed in the rank strings
+		if ((size_t)newRank >= rankStrings.size())
+		{
+			return;
+		}
+	}
+
+	_rank = newRank;
+
+	// Note: we don't need to show a notification for this style of promotion
+}
+
+/**
  * Returns the soldier's amount of missions.
  * @return Missions.
  */
