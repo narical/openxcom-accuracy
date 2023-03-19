@@ -60,7 +60,7 @@ namespace OpenXcom
  */
 TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingState *debriefingState) :
 	_baseFrom(baseFrom), _baseTo(baseTo), _debriefingState(debriefingState),
-	_sel(0), _total(0), _pQty(0), _cQty(0), _aQty(0), _iQty(0.0), _distance(0.0), _ammoColor(0),
+	_sel(0), _total(0), _pQty(0), _aQty(0), _iQty(0.0), _distance(0.0), _ammoColor(0),
 	_previousSort(TransferSortDirection::BY_LIST_ORDER), _currentSort(TransferSortDirection::BY_LIST_ORDER), _errorShown(false)
 {
 	// Create objects
@@ -824,6 +824,7 @@ void TransferItemsState::increaseByValue(int change)
 	RuleItem *selItem = 0;
 	Craft *craft = 0;
 
+	int p = 0;	
 	switch (getRow().type)
 	{
 	case TRANSFER_SOLDIER:
@@ -836,7 +837,8 @@ void TransferItemsState::increaseByValue(int change)
 		break;
 	case TRANSFER_CRAFT:
 		craft = (Craft*)getRow().rule;
-		if (_cQty + 1 > _baseTo->getAvailableHangars() - _baseTo->getUsedHangars())
+		p = craft->getRules()->getHangarType();
+		if (_tCQty[p] + 1 > _baseTo->getAvailableHangars(p) - _baseTo->getUsedHangars(p))	
 		{
 			errorMessage = tr("STR_NO_FREE_HANGARS_FOR_TRANSFER");
 		}
@@ -883,7 +885,7 @@ void TransferItemsState::increaseByValue(int change)
 			_total += getRow().cost * change;
 			break;
 		case TRANSFER_CRAFT:
-			_cQty++;
+			_tCQty[p]++;
 			_pQty += craft->getNumTotalSoldiers();
 			_iQty += craft->getTotalItemStorageSize(_game->getMod());
 			getRow().amount++;
@@ -945,6 +947,7 @@ void TransferItemsState::decreaseByValue(int change)
 {
 	if (0 >= change || 0 >= getRow().amount) return;
 	Craft *craft = 0;
+	int	p = 0; 
 	change = std::min(getRow().amount, change);
 
 	switch (getRow().type)
@@ -956,7 +959,8 @@ void TransferItemsState::decreaseByValue(int change)
 		break;
 	case TRANSFER_CRAFT:
 		craft = (Craft*)getRow().rule;
-		_cQty--;
+		p = craft->getRules()->getHangarType();		
+		_tCQty[p]--;
 		_pQty -= craft->getNumTotalSoldiers();
 		_iQty -= craft->getTotalItemStorageSize(_game->getMod());
 		break;

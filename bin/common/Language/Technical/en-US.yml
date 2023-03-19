@@ -403,6 +403,7 @@ en-US:
   BFRCT_GREY_MARKET: "go to Grey Market"
   BFRCT_GEOSCAPE: "go to Geoscape"
 #
+  hangarType: "Hangar Type"
   costRent: "Rent cost"
   soldiers: "Cargo space"
   pilots: "Cockpit size"

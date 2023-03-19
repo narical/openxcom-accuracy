@@ -75,7 +75,7 @@ inline constexpr auto allOf(Functions... funcs)
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(base), _parent(parent), _sel(0), _total(0), _pQty(0), _cQty(0), _iQty(0.0), _ammoColor(0)
+PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(base), _parent(parent), _sel(0), _total(0), _pQty(0), _iQty(0.0), _ammoColor(0)
 {
 	_autoBuyDone = false;
 	if (_parent)
@@ -1021,8 +1021,10 @@ void PurchaseState::increaseByValue(int change)
 			}
 			break;
 		case TRANSFER_CRAFT:
+		{	
 			ruleC = (RuleCraft*)getRow().rule;
-			if (_cQty + 1 > _base->getAvailableHangars() - _base->getUsedHangars())
+			int p = ruleC->getHangarType();
+			if (_tCQty[p] + 1 > _base->getAvailableHangars(p) - _base->getUsedHangars(p))	
 			{
 				errorMessage = tr("STR_NO_FREE_HANGARS_FOR_PURCHASE");
 			}
@@ -1036,7 +1038,9 @@ void PurchaseState::increaseByValue(int change)
 				}
 			}
 			break;
+		}			
 		case TRANSFER_ITEM:
+		{
 			rule = (RuleItem*)getRow().rule;
 			if (_base->storesOverfull(_iQty + rule->getSize()))
 			{
@@ -1060,6 +1064,7 @@ void PurchaseState::increaseByValue(int change)
 				}
 			}
 			break;
+		}
 		}
 	}
 
@@ -1098,9 +1103,10 @@ void PurchaseState::increaseByValue(int change)
 					int maxByLimit = std::max(0, ruleC->getMonthlyBuyLimit() - craftPurchaseLimitLog[ruleC->getType()] - getRow().amount);
 					change = std::min(maxByLimit, change);
 				}
-				int maxByHangars = _base->getAvailableHangars() - _base->getUsedHangars() - _cQty;
-				change = std::min(maxByHangars, change);
-				_cQty += change;
+				int p = ruleC->getHangarType();	
+				int maxByHangars = _base->getAvailableHangars(p) - _base->getUsedHangars(p) - _tCQty[p];
+				change = std::min(maxByHangars, change);	
+				_tCQty[p] += change;
 			}
 			break;
 		case TRANSFER_ITEM:
@@ -1169,6 +1175,7 @@ void PurchaseState::decreaseByValue(int change)
 	change = std::min(getRow().amount, change);
 
 	RuleItem *rule = nullptr;
+	RuleCraft *ruleC = nullptr;		
 	switch (getRow().type)
 	{
 	case TRANSFER_SOLDIER:
@@ -1177,7 +1184,8 @@ void PurchaseState::decreaseByValue(int change)
 		_pQty -= change;
 		break;
 	case TRANSFER_CRAFT:
-		_cQty -= change;
+		ruleC = (RuleCraft*)getRow().rule;
+		_tCQty[ruleC->getHangarType()] -= change;	
 		break;
 	case TRANSFER_ITEM:
 		rule = (RuleItem*)getRow().rule;

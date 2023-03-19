@@ -196,6 +196,10 @@ public:
 	int getUsedHangars() const;
 	/// Gets the base's available hangars.
 	int getAvailableHangars() const;
+	/// Gets the base's used hangars of an specific type.
+	int getUsedHangars(int hangarType) const;
+	/// Gets the base's available hangars of an specific type.
+	int getAvailableHangars(int hangarType)  const;		
 	/// Get the number of available space lab (not used by a ResearchProject)
 	int getFreeLaboratories() const;
 	/// Get the number of available space lab (not used by a Production)

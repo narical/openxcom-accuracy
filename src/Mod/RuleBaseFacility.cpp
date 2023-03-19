@@ -44,7 +44,7 @@ RuleBaseFacility::RuleBaseFacility(const std::string &type, int listOrder) :
 	_sightRange(0), _sightChance(0), _radarRange(0), _radarChance(0),
 	_defense(0), _hitRatio(0), _fireSound(0), _hitSound(0), _placeSound(-1), _ammoNeeded(1), _listOrder(listOrder),
 	_trainingRooms(0), _maxAllowedPerBase(0), _sickBayAbsoluteBonus(0.0f), _sickBayRelativeBonus(0.0f),
-	_prisonType(0), _rightClickActionType(0), _verticalLevels(), _removalTime(0), _canBeBuiltOver(false), _destroyedFacility(0)
+	_prisonType(0), _hangarType(-1), _rightClickActionType(0), _verticalLevels(), _removalTime(0), _canBeBuiltOver(false), _destroyedFacility(0)
 {
 }
 
@@ -119,6 +119,7 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod)
 	_sickBayAbsoluteBonus = node["sickBayAbsoluteBonus"].as<float>(_sickBayAbsoluteBonus);
 	_sickBayRelativeBonus = node["sickBayRelativeBonus"].as<float>(_sickBayRelativeBonus);
 	_prisonType = node["prisonType"].as<int>(_prisonType);
+	_hangarType = node["hangarType"].as<int>(_hangarType);	
 	_rightClickActionType = node["rightClickActionType"].as<int>(_rightClickActionType);
 
 	if (const YAML::Node &items = node["buildCostItems"])
@@ -160,6 +161,7 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod)
 	std::sort(_buildOverFacilities.begin(), _buildOverFacilities.end());
 
 	_storageTiles = node["storageTiles"].as<std::vector<Position> >(_storageTiles);
+	_craftSlots = node["craftSlots"].as<std::vector<Position> >(_craftSlots);		
 	_destroyedFacilityName = node["destroyedFacility"].as<std::string>(_destroyedFacilityName);
 }
 
@@ -240,6 +242,14 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 				}
 			}
 		}
+	}
+
+	if (((_crafts > 1) && (_craftSlots.size() != _crafts)) || ((_crafts == 1) && (_craftSlots.size() > 1))){
+		throw Exception("Not enough position vectors for crafts allocation.");
+	}
+
+	if (_craftSlots.empty()){ 
+		_craftSlots.push_back(Position());                     
 	}
 
 	Collections::removeAll(_leavesBehindOnSellNames);
@@ -585,6 +595,16 @@ int RuleBaseFacility::getPrisonType() const
 }
 
 /**
+ * Gets the hangar type
+ * @return 0: garage, 1: craft hangar, 2: minisub dock, 3: rocket hangar, etc...
+ */
+int RuleBaseFacility::getHangarType() const
+{
+	return _hangarType;
+}
+
+
+/**
 * Gets the action type to perform on right click.
 * @return 0=default, 1 = prison, 2 = manufacture, 3 = research, 4 = training, 5 = psi training, 6 = soldiers, 7 = sell
 */
@@ -655,6 +675,16 @@ BasePlacementErrors RuleBaseFacility::getCanBuildOverOtherFacility(const RuleBas
 const std::vector<Position> &RuleBaseFacility::getStorageTiles() const
 {
 	return _storageTiles;
+}
+
+/**
+ * Gets the list of positions where to place craft sprites overthis facility's sprite
+ * If empty, craft sprite will be at the center of the facility sprute
+ * @return the list of positions
+ */
+const std::vector<Position> &RuleBaseFacility::getCraftSlots() const
+{
+	return _craftSlots;
 }
 
 /*

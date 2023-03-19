@@ -467,14 +467,14 @@ void BasescapeState::viewRightClick(Action *)
 	}
 	else if (f->getRules()->getCrafts() > 0)
 	{
-		if (f->getCraftForDrawing() == 0)
+		if (f->getCraftsForDrawing().empty())
 		{
 			_game->pushState(new CraftsState(_base));
 		}
 		else
 			for (size_t craft = 0; craft < _base->getCrafts()->size(); ++craft)
 			{
-				if (f->getCraftForDrawing() == _base->getCrafts()->at(craft))
+				if (_view->getSelectedCraft() == _base->getCrafts()->at(craft))
 				{
 					_game->pushState(new CraftInfoState(_base, craft));
 					break;
@@ -546,9 +546,9 @@ void BasescapeState::viewMouseOver(Action *)
 		else
 		{
 			ss << tr(f->getRules()->getType());
-			if (f->getCraftForDrawing() != 0)
+			if (!(f->getCraftsForDrawing().empty()))
 			{
-				ss << " " << tr("STR_CRAFT_").arg(f->getCraftForDrawing()->getName(_game->getLanguage()));
+				ss << " " << tr("STR_CRAFT_").arg(_view->getSelectedCraft()->getName(_game->getLanguage()));
 			}
 		}
 	}

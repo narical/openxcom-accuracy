@@ -93,6 +93,8 @@ en-US:
   STR_QUICK_SAVE: "Quick Save"
   STR_QUICK_LOAD: "Quick Load"
   STR_ADVANCED: "ADVANCED"
+  STR_SHOW_CRAFT_HANGAR: "Show hangar types for crafts"
+  STR_SHOW_CRAFT_HANGAR_DESC: "Craft entries in UFOPAEDIA will show which hangar can allocate the craft"  
   STR_AGGRESSIVERETALIATION: "Aggressive retaliation"
   STR_AGGRESSIVERETALIATION_DESC: "UFOs will attempt to detect your bases at all times, regardless of their mission parameters."
   STR_STORAGELIMITSENFORCED: "Storage limits for recovered items"

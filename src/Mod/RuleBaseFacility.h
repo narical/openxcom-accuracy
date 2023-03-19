@@ -69,6 +69,7 @@ private:
 	int _healthRecoveryPerDay = 0;
 	float _sickBayAbsoluteBonus, _sickBayRelativeBonus;
 	int _prisonType;
+	int _hangarType;	
 	int _rightClickActionType;
 	std::vector<VerticalLevel> _verticalLevels;
 	std::vector<const RuleBaseFacility*> _leavesBehindOnSell;
@@ -76,6 +77,7 @@ private:
 	bool _canBeBuiltOver;
 	std::vector<const RuleBaseFacility*> _buildOverFacilities;
 	std::vector<Position> _storageTiles;
+	std::vector<Position> _craftSlots;		
 	std::string _destroyedFacilityName;
 	const RuleBaseFacility* _destroyedFacility;
 
@@ -189,6 +191,8 @@ public:
 	float getSickBayRelativeBonus() const { return _sickBayRelativeBonus; }
 	/// Gets the prison type.
 	int getPrisonType() const;
+	/// Gets the hangar type.
+	int getHangarType() const;	
 	/// Gets the action type to perform on right click.
 	int getRightClickActionType() const;
 	/// Gets the vertical levels for this facility map generation.
@@ -205,6 +209,8 @@ public:
 	const std::vector<const RuleBaseFacility*> &getBuildOverFacilities() const { return _buildOverFacilities; }
 	/// Gets a list of which tiles are used to place items stored in this facility
 	const std::vector<Position> &getStorageTiles() const;
+	/// Gets a list of relative positions to place crafts over the facility sprite
+	const std::vector<Position> &getCraftSlots() const;				
 	/// Gets the ruleset for the destroyed version of this facility.
 	const RuleBaseFacility* getDestroyedFacility() const;
 };
