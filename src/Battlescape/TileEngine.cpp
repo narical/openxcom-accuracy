@@ -1533,7 +1533,25 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		}
 	}
 	//Test all tiles within view cone for visibility.
-	for (int x = 0; x <= _save->getMapSizeX(); ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+	int maxDist = _save->getMapSizeX();
+	if (unit->getFaction() != FACTION_PLAYER)
+	{
+		switch (Options::aiPerformanceOptimizationLevel)
+		{
+		case 1:
+			maxDist = std::max(60, _save->getMod()->getMaxViewDistance());
+			break;
+		case 2:
+			maxDist = std::min(40, _save->getMod()->getMaxViewDistance());
+			break;
+		case 3:
+			maxDist = std::min(20, _save->getMod()->getMaxViewDistance());
+			break;
+		case 4:
+			return;
+		}
+	}
+	for (int x = 0; x <= maxDist; ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
 		if (direction & 1)
 		{
@@ -1545,7 +1563,10 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 			y1 = -x;
 			y2 = x;
 		}
-		for (int y = y1; y <= y2; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+		int mayDist = y2;
+		if (unit->getFaction() != FACTION_PLAYER)
+			mayDist = maxDist;
+		for (int y = y1; y <= mayDist; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
 			const int distanceSqr = x*x + y*y;
 			if (distanceSqr >= distanceSqrMin)

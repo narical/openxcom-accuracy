@@ -276,12 +276,17 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 4;
 		}
-		if (i == &Options::aiLeeroyMode)
+		else if (i == &Options::aiLeeroyMode)
 		{
 			min = 0;
 			max = 2;
 		}
-		if (i == &Options::battleExplosionHeight)
+		else if (i == &Options::aiPerformanceOptimizationLevel)
+		{
+			min = 0;
+			max = 4;
+		}
+		else if (i == &Options::battleExplosionHeight)
 		{
 			min = 0;
 			max = 3;
