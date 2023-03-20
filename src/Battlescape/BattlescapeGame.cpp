@@ -360,11 +360,14 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || unit->isBrutal();
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
-	if (!weapon || !weapon->haveAnyAmmo())
+	if (!weapon || !weapon->haveAnyAmmo() || !weapon->canBeUsedInCurrentEnvironment(getDepth()))
 	{
 		if (Options::traceAI)
 		{
-			Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
+			if (weapon && !weapon->canBeUsedInCurrentEnvironment(getDepth()))
+				Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " My weapon cannot be used in the current environment.";
+			else
+				Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
 		}
 		if (unit->getOriginalFaction() != FACTION_PLAYER || Options::autoCombat)
 		{
@@ -2550,7 +2553,8 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 				if(Options::traceAI)
 					Log(LOG_INFO) << "Reached position of " << targetItem->getRules()->getName() << " I want to pick up: " << targetItem->getTile()->getPosition();
 				// Xilmi: Check if the item is a weapon while we have a weapon. If that't the case, we need to drop ours first. The only way this should happen is if our weapon is out of ammo.
-				if (targetItem->haveAnyAmmo() && action->actor->getMainHandWeapon(true, false) != NULL)
+				BattleItem *mainHand = action->actor->getMainHandWeapon(true, false);
+				if (targetItem->haveAnyAmmo() && mainHand != NULL || (mainHand != NULL && !mainHand->canBeUsedInCurrentEnvironment(getDepth())))
 				{
 					if (Options::traceAI)
 						Log(LOG_INFO) << targetItem->getRules()->getName() << " has ammo but my " << action->actor->getMainHandWeapon(true, false)->getRules()->getName() << " doesn't. So I drop mine before picking up the other.";

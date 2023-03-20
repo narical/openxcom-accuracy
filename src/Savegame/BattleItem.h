@@ -233,6 +233,8 @@ public:
 	void setIsAmmo(bool ammo);
 	/// Checks a flag on the item to see if it's a clip in a weapon or not.
 	bool isAmmo() const;
+	/// Checks whether the weapon can be used in the current environment
+	bool canBeUsedInCurrentEnvironment(int depth) const;
 };
 
 }

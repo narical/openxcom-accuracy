@@ -1278,6 +1278,25 @@ bool BattleItem::isAmmo() const
 	return _isAmmo;
 }
 
+bool BattleItem::canBeUsedInCurrentEnvironment(int depth) const
+{
+	if (depth == 0)
+	{
+		if (getRules()->isWaterOnly())
+		{
+			return false;
+		}
+	}
+	else // if (getDepth() != 0)
+	{
+		if (getRules()->isLandOnly())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 
 ////////////////////////////////////////////////////////////
 //					Script binding
