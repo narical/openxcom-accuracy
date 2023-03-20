@@ -918,7 +918,10 @@ int Base::getUsedWorkshops() const
 	int usedWorkShop = 0;
 	for (const auto* prod : _productions)
 	{
-		usedWorkShop += (prod->getAssignedEngineers() + prod->getRules()->getRequiredSpace());
+		int spaceFromProd = 0;
+		if (prod->getAssignedEngineers() > 0 || prod->getTimeSpent() > 0)
+			spaceFromProd = prod->getRules()->getRequiredSpace();
+		usedWorkShop += (prod->getAssignedEngineers() + spaceFromProd);
 	}
 	return usedWorkShop;
 }
