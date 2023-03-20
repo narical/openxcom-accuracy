@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <bitset>
+#include <array>
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/Options.h"
@@ -142,6 +143,12 @@ struct LoadRuleException : Exception
  */
 class Mod
 {
+public:
+	/// Number of color per opacity level.
+	constexpr static int TransparenciesPaletteColors = 256;
+	/// Number of opacity levels.
+	constexpr static int TransparenciesOpacityLevels = 4;
+
 private:
 	Music *_muteMusic;
 	Sound *_muteSound;
@@ -293,7 +300,7 @@ private:
 	std::vector<std::string> _skillsIndex, _soldiersIndex, _soldierTransformationIndex, _soldierBonusIndex;
 	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
-	std::vector<SDL_Color> _transparencies;
+	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder;
 	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
 	std::vector<ModData> _modData;
@@ -1039,8 +1046,6 @@ public:
 	RuleConverter *getConverter() const;
 	/// Gets the list of selective files for insertion into our cat files.
 	const std::map<std::string, SoundDefinition *> *getSoundDefinitions() const;
-	/// Gets the list of transparency colors,
-	const std::vector<SDL_Color> *getTransparencies() const;
 	const std::vector<MapScript*> *getMapScript(const std::string& id) const;
 	const std::map<std::string, std::vector<MapScript*> > &getMapScriptsRaw() const { return _mapScripts; }
 	/// Gets a video for intro/outro etc.

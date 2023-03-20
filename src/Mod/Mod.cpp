@@ -2401,19 +2401,36 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 			const YAML::Node& c = (*i)["colors"];
 			if (c.IsSequence())
 			{
-				for (YAML::const_iterator j = c.begin(); j != c.end(); ++j)
+				for (YAML::const_iterator j = c.begin(); j != c.end(); ++j, ++curr)
 				{
 					if (curr == limit)
 					{
 						throw Exception("transparencyLUTs mod limit reach");
 					}
+
 					SDL_Color color;
-					color.r = (*j)[0].as<int>(0);
-					color.g = (*j)[1].as<int>(0);
-					color.b = (*j)[2].as<int>(0);
+					color.r = (*j)[0].as<int>();
+					color.g = (*j)[1].as<int>();
+					color.b = (*j)[2].as<int>();
 					color.unused = (*j)[3].as<int>(2);
-					// technically it's a breaking change as it always overwrites from offset `start + 0` but no two mods could work correctly before this change.
-					_transparencies[start + curr++] = color;
+
+
+					for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+					{
+						// pseudo interpolation of palette color with tint
+						// for small values `op` its should behave same as original TFTD
+						// but for bigger values it make result closer to tint color
+						const int op = Clamp((opacity+1) * color.unused, 0, 64);
+						const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
+						const float to = op * 1.0f; // 0.0 -> 64.0
+
+						SDL_Color taint;
+						taint.r = color.r * to;
+						taint.g = color.g * to;
+						taint.b = color.b * to;
+						taint.unused = 255 * co;
+						_transparencies[start + curr][opacity] = taint;
+					};
 				}
 			}
 			else
@@ -4849,11 +4866,6 @@ const std::map<std::string, SoundDefinition *> *Mod::getSoundDefinitions() const
 	return &_soundDefs;
 }
 
-const std::vector<SDL_Color> *Mod::getTransparencies() const
-{
-	return &_transparencies;
-}
-
 const std::vector<MapScript*> *Mod::getMapScript(const std::string& id) const
 {
 	auto i = _mapScripts.find(id);
@@ -6079,39 +6091,31 @@ Music* Mod::loadMusic(MusicFormat fmt, RuleMusic* rule, CatFile* adlibcat, CatFi
  */
 void Mod::createTransparencyLUT(Palette *pal)
 {
-	const int opacityMax = 4;
 	const SDL_Color* palColors = pal->getColors(0);
 	std::vector<Uint8> lookUpTable;
 	// start with the color sets
-	lookUpTable.reserve(_transparencies.size() * 256 * opacityMax);
-	for (const auto& tint : _transparencies)
+	lookUpTable.reserve(_transparencies.size() * TransparenciesPaletteColors * TransparenciesOpacityLevels);
+	for (const auto& tintLevels : _transparencies)
 	{
 		// then the opacity levels, using the alpha channel as the step
-		for (int opacity = 1; opacity <= opacityMax; ++opacity)
+		for (const SDL_Color& tint : tintLevels)
 		{
-			// pseudo interpolation of palette color with tint
-			// for small values `op` its should behave same as original TFTD
-			// but for bigger values it make result closer to tint color
-			const int op = Clamp(opacity * tint.unused, 0, 64);
-			const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
-			const float to = op * 1.0f; // 0.0 -> 64.0
-
 			// then the palette itself
-			for (int currentColor = 0; currentColor < 256; ++currentColor)
+			for (int currentColor = 0; currentColor < TransparenciesPaletteColors; ++currentColor)
 			{
 				SDL_Color desiredColor;
 
-				desiredColor.r = std::min(255, (int)Round((palColors[currentColor].r * co) + (tint.r * to)));
-				desiredColor.g = std::min(255, (int)Round((palColors[currentColor].g * co) + (tint.g * to)));
-				desiredColor.b = std::min(255, (int)Round((palColors[currentColor].b * co) + (tint.b * to)));
+				desiredColor.r = std::min(255, (palColors[currentColor].r * tint.unused / 255) + tint.r);
+				desiredColor.g = std::min(255, (palColors[currentColor].g * tint.unused / 255) + tint.g);
+				desiredColor.b = std::min(255, (palColors[currentColor].b * tint.unused / 255) + tint.b);
 
 				Uint8 closest = currentColor;
 				int lowestDifference = INT_MAX;
-				// if opacity is zero then we stay with current color, transparet color will stay same too
-				if (op != 0 && currentColor != 0)
+				// if opacity is zero then we stay with current color, transparent color will stay same too
+				if (tint.unused != 0 && currentColor != 0)
 				{
 					// now compare each color in the palette to find the closest match to our desired one
-					for (int comparator = 1; comparator < 256; ++comparator)
+					for (int comparator = 1; comparator < TransparenciesPaletteColors; ++comparator)
 					{
 						int currentDifference = Sqr(desiredColor.r - palColors[comparator].r) +
 							Sqr(desiredColor.g - palColors[comparator].g) +
@@ -6128,7 +6132,7 @@ void Mod::createTransparencyLUT(Palette *pal)
 			}
 		}
 	}
-	_transparencyLUTs.push_back(lookUpTable);
+	_transparencyLUTs.push_back(std::move(lookUpTable));
 }
 
 StatAdjustment *Mod::getStatAdjustment(int difficulty)
