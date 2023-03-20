@@ -1658,7 +1658,7 @@ BattleType RuleItem::getBattleType() const
 BattleFuseType RuleItem::getFuseTimerType() const
 {
 	if (_fuseType == BFT_SET && Options::instantPrime)
-		return BFT_INSTANT;
+		return BFT_FIX_MIN;
 	return _fuseType;
 }
 
