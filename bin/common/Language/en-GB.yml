@@ -109,6 +109,8 @@ en-GB:
   STR_BATTLEAUTOEND_DESC: "Battles automatically end when the last living enemy is neutralized."
   STR_BATTLEINSTANTGRENADE: "Instant grenades"
   STR_BATTLEINSTANTGRENADE_DESC: "Grenades primed to go off in 0 turns will explode immediately when thrown, instead of at the end of the turn."
+  STR_INSTANTPRIME: "One-click grenade priming"
+  STR_INSTANTPRIME_DESC: "You can no longer select the amount of turns after which grenades shall explode. The timer will just be set to 0 without having to pick a value."
   STR_BATTLEUFOEXTENDERACCURACY: "UFO Extender accuracy"
   STR_BATTLEUFOEXTENDERACCURACY_DESC: "Accuracy of shots drops off after a certain distance, according to shot type. Adjusted accuracy will be displayed on the cursor."
   STR_CANTRANSFERCRAFTSWHILEAIRBORNE: "Airborne transfers"
