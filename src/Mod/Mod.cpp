@@ -2408,29 +2408,54 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 						throw Exception("transparencyLUTs mod limit reach");
 					}
 
-					SDL_Color color;
-					color.r = (*j)[0].as<int>();
-					color.g = (*j)[1].as<int>();
-					color.b = (*j)[2].as<int>();
-					color.unused = (*j)[3].as<int>(2);
-
-
-					for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+					auto loadByteValue = [&](const YAML::Node& n)
 					{
-						// pseudo interpolation of palette color with tint
-						// for small values `op` its should behave same as original TFTD
-						// but for bigger values it make result closer to tint color
-						const int op = Clamp((opacity+1) * color.unused, 0, 64);
-						const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
-						const float to = op * 1.0f; // 0.0 -> 64.0
-
-						SDL_Color taint;
-						taint.r = color.r * to;
-						taint.g = color.g * to;
-						taint.b = color.b * to;
-						taint.unused = 255 * co;
-						_transparencies[start + curr][opacity] = taint;
+						int v = n.as<int>(-1);
+						checkForSoftError(v < 0 || v > 255, "transparencyLUTs", n, "value outside allowed range");
+						return Clamp(v, 0, 255);
 					};
+
+					if ((*j)[0].IsScalar())
+					{
+						SDL_Color color;
+						color.r = loadByteValue((*j)[0]);
+						color.g = loadByteValue((*j)[1]);
+						color.b = loadByteValue((*j)[2]);
+						color.unused = (*j)[3] ? loadByteValue((*j)[3]): 2;
+
+
+						for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+						{
+							// pseudo interpolation of palette color with tint
+							// for small values `op` its should behave same as original TFTD
+							// but for bigger values it make result closer to tint color
+							const int op = Clamp((opacity+1) * color.unused, 0, 64);
+							const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
+							const float to = op * 1.0f; // 0.0 -> 64.0
+
+							SDL_Color taint;
+							taint.r = color.r * to;
+							taint.g = color.g * to;
+							taint.b = color.b * to;
+							taint.unused = 255 * co;
+							_transparencies[start + curr][opacity] = taint;
+						};
+					}
+					else
+					{
+						for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+						{
+							const YAML::Node& n = (*j)[opacity];
+
+							SDL_Color taint;
+							taint.r = loadByteValue(n[0]);
+							taint.g = loadByteValue(n[1]);
+							taint.b = loadByteValue(n[2]);
+							taint.unused = 255 - loadByteValue(n[3]);
+							_transparencies[start + curr][opacity] = taint;
+						};
+						std::reverse(std::begin(_transparencies[start + curr]), std::end(_transparencies[start + curr]));
+					}
 				}
 			}
 			else
