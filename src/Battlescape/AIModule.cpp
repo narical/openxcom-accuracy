@@ -3408,6 +3408,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable && getCoverValue(_unit->getTile(), _unit) > 0)
 		shouldSkip = true;
 	bool winnerWasShouldPeak = false;
+	bool shouldHaveLofAfterMove = false;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
 	{
 		Position targetPosition = encircleTile->getPosition();
@@ -3547,6 +3548,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			bool shouldHaveBeenAbleToAttack = pos == myPos;
+			bool realLineOfFire = lineOfFire;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
@@ -3557,6 +3559,7 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						shouldHaveBeenAbleToAttack = false;
 						lineOfFire = true;
+						realLineOfFire = false;
 						attackTU += 4;
 					}
 				}
@@ -3693,6 +3696,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				bestPrio1Score = prio1Score;
 				bestPrio1Position = pos;
+				shouldHaveLofAfterMove = realLineOfFire;
 			}
 			if (prio2Score > bestPrio2Score)
 			{
@@ -3739,11 +3743,9 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	Position travelTarget = myPos;
-	bool shouldHaveLofAfterMove = false;
 	if (bestPrio1Score > 0)
 	{
 		travelTarget = bestPrio1Position;
-		shouldHaveLofAfterMove = true;
 	}
 	else if (bestPrio2Score > 0 && (!sweepMode || needToFlee) && !(winnerWasShouldPeak && myPos == bestPrio2Position))
 	{
