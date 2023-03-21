@@ -3547,6 +3547,20 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			bool shouldHaveBeenAbleToAttack = pos == myPos;
+			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
+			if (!lineOfFire)
+			{
+				if (_save->getTileEngine()->isNextToDoor(tile) && targetDist == 1)
+				{
+					Tile *targetTile = _save->getTile(targetPosition);
+					if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+					{
+						shouldHaveBeenAbleToAttack = false;
+						lineOfFire = true;
+						attackTU += 4;
+					}
+				}
+			}
 			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
 				haveTUToAttack = true;
 			float prio1Score = 0;
