@@ -5602,7 +5602,7 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 						enemiesInThisDirection++;
 				}
 			}
-			float dirCoverMod = 0.5 + 0.5 * enemiesInThisDirection;
+			float dirCoverMod = 0.2 + 0.8 * enemiesInThisDirection / totalEnemies;
 			std::vector<Position> traj;
 			if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
 				dirCoverMod *= 1.0;
