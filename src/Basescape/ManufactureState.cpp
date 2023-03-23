@@ -265,13 +265,16 @@ void ManufactureState::lstManufactureMousePress(Action *action)
 	if (_game->isCtrlPressed())
 		change = Options::oxceManufactureScrollSpeedWithCtrl;
 
+	Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
 	{
+		int additionalWorkShopsForItemNotWorkingOnYetRequired = 0;
+		if (selectedProject->getAssignedEngineers() == 0 && selectedProject->getTimeSpent() == 0)
+			additionalWorkShopsForItemNotWorkingOnYetRequired = selectedProject->getRules()->getRequiredSpace();
 		change = std::min(change, _base->getAvailableEngineers());
-		change = std::min(change, _base->getFreeWorkshops());
+		change = std::min(change, _base->getFreeWorkshops() - additionalWorkShopsForItemNotWorkingOnYetRequired);
 		if (change > 0)
 		{
-			Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];
 			selectedProject->setAssignedEngineers(selectedProject->getAssignedEngineers() + change);
 			_base->setEngineers(_base->getEngineers() - change);
 			fillProductionList(_lstManufacture->getScroll());
@@ -279,7 +282,6 @@ void ManufactureState::lstManufactureMousePress(Action *action)
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
 	{
-		Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];
 		change = std::min(change, selectedProject->getAssignedEngineers());
 		if (change > 0)
 		{

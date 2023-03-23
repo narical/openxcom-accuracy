@@ -354,6 +354,8 @@ void ManufactureInfoState::moreEngineer(int change)
 	if (change <= 0) return;
 	int availableEngineer = _base->getAvailableEngineers();
 	int availableWorkSpace = _base->getFreeWorkshops();
+	if (_production->getAssignedEngineers() == 0 && _production->getTimeSpent() == 0)
+		availableWorkSpace -= _production->getRules()->getRequiredSpace();
 	if (availableEngineer > 0 && availableWorkSpace > 0)
 	{
 		change = std::min(std::min(availableEngineer, availableWorkSpace), change);
