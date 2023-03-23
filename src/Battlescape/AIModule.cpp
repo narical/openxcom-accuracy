@@ -2870,24 +2870,12 @@ bool AIModule::visibleToAnyFriend(BattleUnit* target) const
 void AIModule::brutalThink(BattleAction* action)
 {
 	// Step 1: Check whether we wait for someone else on our team to move first
-	int visibleToMe = 0;
 	int myReachable = _reachable.size();
 	float myDist = 0;
-	bool weKnowRealPosition = false;
 	bool IAmMindControlled = false;
 	if (_unit->getFaction() != _unit->getOriginalFaction())
 		IAmMindControlled = true;
 	Position myPos = _unit->getPosition();
-	for (BattleUnit *seenByMe : *(_unit->getVisibleUnits()))
-	{
-		if (seenByMe->getMainHandWeapon() == NULL)
-			continue;
-		if (!seenByMe->isOut() && isEnemy(seenByMe))
-		{
-			++visibleToMe;
-			weKnowRealPosition = true;
-		}
-	}
 	for (BattleUnit *enemy : *(_save->getUnits()))
 	{
 		if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
@@ -2910,23 +2898,12 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		if (!ally->reselectAllowed() || !ally->isSelectable(_unit->getFaction(), false, false))
 			continue;
-		int visibleToAlly = 0;
 		int allyReachable = 0;
 		bool allyRanOutOfTUs = false;
 		float allyDist = 0;
 		bool allyIsMindControlled = false;
 		if (ally->getFaction() != ally->getOriginalFaction())
 			allyIsMindControlled = true;
-		for (BattleUnit *seenByAlly : *(ally->getVisibleUnits()))
-		{
-			if (seenByAlly->getMainHandWeapon() == NULL)
-				continue;
-			if (!seenByAlly->isOut() && isEnemy(seenByAlly))
-			{
-				++visibleToAlly;
-				weKnowRealPosition = true;
-			}
-		}
 		for (BattleUnit *enemy : *(_save->getUnits()))
 		{
 			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
@@ -2938,35 +2915,27 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			allyDist += Position::distance(ally->getPosition(), enemyPos);
 		}
-		if (visibleToAlly < visibleToMe)
+
+		//for testing:
+		allyReachable = _save->getPathfinding()->findReachable(ally, BattleActionCost(), allyRanOutOfTUs).size();
+		if (_ranOutOfTUs == false)
 		{
-			action->type = BA_WAIT;
-			action->number -= 1;
-			_save->getBattleGame()->setNextUnitToSelect(ally);
-			return;
-		}
-		else if(visibleToAlly == visibleToMe)
-		{
-			allyReachable = _save->getPathfinding()->findReachable(ally, BattleActionCost(), allyRanOutOfTUs).size();
-			if (_ranOutOfTUs == false)
+			if (myReachable < allyReachable)
 			{
-				if (myReachable < allyReachable)
-				{
-					action->type = BA_WAIT;
-					action->number -= 1;
-					_save->getBattleGame()->setNextUnitToSelect(ally);
-					return;
-				}
+				action->type = BA_WAIT;
+				action->number -= 1;
+				_save->getBattleGame()->setNextUnitToSelect(ally);
+				return;
 			}
-			else if (_ranOutOfTUs == true && allyRanOutOfTUs == true)
+		}
+		else if (_ranOutOfTUs == true && allyRanOutOfTUs == true)
+		{
+			if (myDist > allyDist)
 			{
-				if (myDist > allyDist)
-				{
-					action->type = BA_WAIT;
-					action->number -= 1;
-					_save->getBattleGame()->setNextUnitToSelect(ally);
-					return;
-				}
+				action->type = BA_WAIT;
+				action->number -= 1;
+				_save->getBattleGame()->setNextUnitToSelect(ally);
+				return;
 			}
 		}
 	}
@@ -3040,9 +3009,6 @@ void AIModule::brutalThink(BattleAction* action)
 				primeScore -= 2;
 			continue;
 		}
-		// When we see some actual enemies we ignore imaginary ones
-		if (weKnowRealPosition && !brutalValidTarget(target, true))
-			continue;
 		if (!_unit->isCheatOnMovement())
 		{
 			if (target->getTileLastSpotted(_unit->getFaction()) == -1)
@@ -3114,7 +3080,6 @@ void AIModule::brutalThink(BattleAction* action)
 		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes);
 		if (brutalValidTarget(target, true))
 		{
-			weKnowRealPosition = true;
 			encircleMode = true;
 			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
 			if (_traceAI)
@@ -3379,9 +3344,9 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (iHaveLof && _blaster)
 		needToFlee = true;
-	if ((!iHaveLof || _unit->getTimeUnits() == getMaxTU(_unit)) && !rangeTooShortToPeak && (enemyExposed || !(amCloserThanFurthestReachable && amInLoSToFurthestReachable)) || canReachTargetTileWithAttack)
+	if (!iHaveLof && !rangeTooShortToPeak && (enemyExposed || (!amCloserThanFurthestReachable && !amInLoSToFurthestReachable && _unit->getTimeUnits() == getMaxTU(_unit))) || canReachTargetTileWithAttack)
 		peakMode = true;
-	else if (!sweepMode)
+	else if (!sweepMode && (iHaveLof || !enemyExposed))
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
@@ -3602,10 +3567,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float cover = getCoverValue(tile, _unit);
 			if (needToFlee)
 			{
-				if (coverInRange && !badPath && cover == 0)
-					prio2Score = 0;
-				else
-					prio2Score = closestEnemyDist;
+				prio2Score = closestEnemyDist;
 				if (saveFromGrenades)
 					prio2Score *= 2;
 				if (!lineOfFire)
@@ -3621,8 +3583,8 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (!shouldPeak)
 			{
-				prio3Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
-				if (coverInRange && !badPath && cover == 0)
+				prio3Score = 100 / walkToDist;
+				if ((coverInRange && !badPath && cover == 0) || realLineOfFire)
 					prio3Score = 0;
 				if (!lineOfFire)
 					prio3Score *= 4;
@@ -3787,8 +3749,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!isEnemy(target, true) || target->isOut())
 			continue;
 		if (!_unit->isCheatOnMovement() && target->getTileLastSpotted(_unit->getFaction()) == -1)
-			continue;
-		if (!_unit->isCheatOnMovement() && weKnowRealPosition && !brutalValidTarget(target, true))
 			continue;
 		Position targetPosition = target->getPosition();
 		if (!_unit->isCheatOnMovement())
@@ -5328,6 +5288,8 @@ int AIModule::getMaxTU(BattleUnit *unit)
 int AIModule::getClosestSpawnTileId()
 {
 	int id = -1;
+	if (_save->getMissionType() == "STR_BASE_DEFENSE")
+		return id;
 	for (auto pn : _allPathFindingNodes)
 	{
 		Position tilePositon = pn->getPosition();
@@ -5534,8 +5496,15 @@ bool AIModule::IsEnemyExposedEnough()
 {
 	bool dummy = false;
 	Position startPosition = _unit->getPosition();
+
 	if (getClosestSpawnTileId() >= 0)
 		startPosition = _save->getTileCoords(getClosestSpawnTileId());
+	else
+		return true;
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << "startPos: " << startPosition;
+	}
 	std::vector<PathfindingNode *> enemySimulationNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &startPosition);
 	for (BattleUnit *enemy : *(_save->getUnits()))
 	{
@@ -5548,14 +5517,20 @@ bool AIModule::IsEnemyExposedEnough()
 		if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
 			return false;
 		Position currentAssumedPosition = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
-		if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
+		int turnsSinceSeen = enemy->getTurnsSinceSeen(_unit->getFaction());
+		if (_unit->isCheatOnMovement())
+		{
+			currentAssumedPosition = enemy->getPosition();
+			turnsSinceSeen = 0;
+		}
+		else if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
 			return false;
 		int requiredTUFromStart = enemy->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(enemy);
 		int neededTUToStart = tuCostToReachPosition(currentAssumedPosition, enemySimulationNodes, enemy);
-		//if (_traceAI)
-		//{
-		//	Log(LOG_INFO) << enemy->getId() << ", seen " << enemy->getTurnsSinceSeen(_unit->getFaction()) << " turns ago, needs to be at least " << requiredTUFromStart << " TUs from the starting-location. We assume they should need " << neededTUToStart;
-		//}
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << enemy->getId() << ", seen " << enemy->getTurnsSinceSeen(_unit->getFaction()) << " turns ago, needs to be at least " << requiredTUFromStart << " TUs from the starting-location. We assume they should need " << neededTUToStart;
+		}
 		if (requiredTUFromStart < neededTUToStart)
 			return true;
 	}
@@ -5618,7 +5593,7 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 						enemiesInThisDirection++;
 				}
 			}
-			float dirCoverMod = 0.2 + 0.8 * enemiesInThisDirection / totalEnemies;
+			float dirCoverMod = enemiesInThisDirection / totalEnemies;
 			std::vector<Position> traj;
 			if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
 				dirCoverMod *= 1.0;
