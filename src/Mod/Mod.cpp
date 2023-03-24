@@ -2186,7 +2186,13 @@ void Mod::loadAll()
 		{
 			if (_finalResearch != nullptr)
 			{
-				checkForSoftError(true, "mod", "Both '" + _finalResearch->getName() + "' and '" + r.second->getName() + "' research are marked as 'unlockFinalMission: true'", LOG_WARNING);
+				checkForSoftError(true, "mod", "Both '" + _finalResearch->getName() + "' and '" + r.second->getName() + "' research are marked as 'unlockFinalMission: true'", LOG_INFO);
+
+				// to make old mods semi-compatible with new code we decide that last updated rule will be consider final research. This could make false-positive as last update could not touch this flag.
+				if (getModLastUpdatingRule(r.second)->offset < getModLastUpdatingRule(_finalResearch)->offset)
+				{
+					continue;
+				}
 			}
 			_finalResearch = r.second;
 		}
