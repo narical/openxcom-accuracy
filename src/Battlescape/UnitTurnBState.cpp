@@ -95,6 +95,18 @@ void UnitTurnBState::init()
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::SLIDING_DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // ufo door
 			}
+			if (door == 0 || door == 1)
+			{
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE, true);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER, true);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL);
+				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL, true);
+				_unit->setTurnsSinceSeen(0, FACTION_HOSTILE);
+				_unit->setTurnsSinceSeen(0, FACTION_PLAYER);
+				_unit->setTurnsSinceSeen(0, FACTION_NEUTRAL);
+			}
 			if (door == 4)
 			{
 				_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
