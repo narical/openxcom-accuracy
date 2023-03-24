@@ -3524,27 +3524,16 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		auto i = map->find(type);
 		if (i != map->end())
 		{
-			removeTracking(_ruleCreationTracking, i->second);
-			removeTracking(_ruleLastUpdateTracking, i->second);
-			delete i->second;
-			rule = factory(type);
-			addTracking(_ruleCreationTracking, rule);
-			(*map)[type] = rule;
+			rule = i->second;
+
+			// protection from self referencing refNode node
+			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 		else
 		{
-			rule = factory(type);
-			addTracking(_ruleCreationTracking, rule);
-			(*map)[type] = rule;
-			if (index != 0)
-			{
-				index->push_back(type);
-			}
+			checkForSoftError(true, type, "Rule named '" + type  + "' do not exist for " + getDescriptionNode(overrideNode), LOG_ERROR);
 		}
-
-		// protection from self referencing refNode node
-		refNodeTestDeepth(node, type, 0);
-		addTracking(_ruleLastUpdateTracking, rule);
 	}
 	else if (haveNode(updateNode))
 	{
@@ -3561,7 +3550,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		}
 		else
 		{
-			checkForSoftError(true, type, "Rule named '" + type  + "' do not exist for " + getDescriptionNode(newNode), LOG_ERROR);
+			Log(LOG_INFO) << "Rule named '" << type  << "' do not exist for " << getDescriptionNode(updateNode);
 		}
 	}
 	else
