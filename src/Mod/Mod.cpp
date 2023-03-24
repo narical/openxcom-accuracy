@@ -3387,7 +3387,7 @@ static void refNodeTestDeepth(const YAML::Node &node, const std::string &name, i
  * @return Pointer to new rule if one was created, or NULL if one was removed.
  */
 template <typename T, typename F>
-T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index, const std::string &key, F&& factory) const
+T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index, const std::string &key, F&& factory)
 {
 	T *rule = 0;
 
@@ -3412,6 +3412,14 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 			throw Exception("Invalid value for main node '" + key + "' at line " + std::to_string(node[key].Mark().line));
 		}
 		return name;
+	};
+	auto addTracking = [&](std::unordered_map<const void*, const ModData*>& track, const auto* t)
+	{
+		track[static_cast<const void*>(t)] = _modCurrent;
+	};
+	auto removeTracking = [&]( std::unordered_map<const void*, const ModData*>& track, const auto* t)
+	{
+		track.erase(static_cast<const void*>(t));
 	};
 
 	const auto defaultNode = getNode(node, key);
@@ -3452,6 +3460,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		else
 		{
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 			if (index != 0)
 			{
@@ -3461,6 +3470,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 		// protection from self referencing refNode node
 		refNodeTestDeepth(node, type, 0);
+		addTracking(_ruleLastUpdateTracking, rule);
 	}
 	else if (haveNode(deleteNode))
 	{
@@ -3469,6 +3479,8 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		auto i = map->find(type);
 		if (i != map->end())
 		{
+			removeTracking(_ruleCreationTracking, i->second);
+			removeTracking(_ruleLastUpdateTracking, i->second);
 			delete i->second;
 			map->erase(i);
 		}
@@ -3493,6 +3505,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		else
 		{
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 			if (index != 0)
 			{
@@ -3501,6 +3514,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 			// protection from self referencing refNode node
 			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 	}
 	else if (haveNode(overrideNode))
@@ -3510,13 +3524,17 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		auto i = map->find(type);
 		if (i != map->end())
 		{
+			removeTracking(_ruleCreationTracking, i->second);
+			removeTracking(_ruleLastUpdateTracking, i->second);
 			delete i->second;
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 		}
 		else
 		{
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 			if (index != 0)
 			{
@@ -3526,6 +3544,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 		// protection from self referencing refNode node
 		refNodeTestDeepth(node, type, 0);
+		addTracking(_ruleLastUpdateTracking, rule);
 	}
 	else if (haveNode(updateNode))
 	{
@@ -3538,6 +3557,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 			// protection from self referencing refNode node
 			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 		else
 		{
