@@ -3451,7 +3451,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (!IAmPureMelee)
 					{
 						bool shouldPeak = false;
-						if (peakMode && (_unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0) && unitDist <= _save->getMod()->getMaxViewDistance())
+						if ((peakMode && _unit->isCheatOnMovement()) && (_unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0) && unitDist <= _save->getMod()->getMaxViewDistance())
 							shouldPeak = true;
 						if (!lineOfFire && brutalValidTarget(unit, true) || shouldPeak)
 						{
@@ -3481,19 +3481,20 @@ void AIModule::brutalThink(BattleAction* action)
 			if (!isPathToPositionSave(pos, true))
 				continue;
 			bool haveTUToAttack = false;
-			bool shouldPeak = false;
 			if (targetDist < closestEnemyDist)
 				closestEnemyDist = targetDist;
+			bool shouldPeak = false;
 			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
-				shouldPeak = true;
-			if (peakMode && !_unit->isCheatOnMovement() && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * 2.0 / 3.0)
 				shouldPeak = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
 			if ((pos != myPos || justNeedToTurn))
 			{
-				if (!IAmPureMelee && shouldPeak && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true)))
+				bool shouldPeakForLof = false;
+				if ((peakMode && _unit->isCheatOnMovement()) && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
+					shouldPeakForLof = true;
+				if (!IAmPureMelee && shouldPeakForLof && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true)))
 				{
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
@@ -3506,7 +3507,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (lineOfFire == false || IAmPureMelee)
 				{
-					if (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL))
+					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && _save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL))
 					{
 						lineOfFire = true;
 					}
