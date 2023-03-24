@@ -334,9 +334,20 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			// 2 or more voxels poking into this tile = no go
 			auto overlaping = destinationTile[i]->getOverlappingUnit(_save, TUO_IGNORE_SMALL);
-			if (overlaping && overlaping != unit && overlaping != missileTarget)
+			bool knowsOfOverlapping = false;
+			if (overlaping)
 			{
-				return {{INVALID_MOVE_COST, 0}};
+				if (unit->getFaction() == FACTION_PLAYER && overlaping->getVisible())
+					knowsOfOverlapping = true; // player know all visible units
+				if (unit->getFaction() == overlaping->getFaction())
+					knowsOfOverlapping = true;
+				if (unit->getFaction() == FACTION_HOSTILE &&
+					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), overlaping) != unit->getUnitsSpottedThisTurn().end())
+					knowsOfOverlapping = true;
+				if (overlaping != unit && overlaping != missileTarget && knowsOfOverlapping)
+				{
+					return {{INVALID_MOVE_COST, 0}};
+				}
 			}
 		}
 
