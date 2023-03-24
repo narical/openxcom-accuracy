@@ -1,0 +1,15 @@
+# Remove psi-amplifier
+items:
+  - delete: STR_PSI_AMP
+research:
+  - delete: STR_PSI_AMP
+manufacture:
+  - delete: STR_PSI_AMP
+ufopaedia:
+  - delete: STR_PSI_AMP
+
+# Fixed user-options
+fixedUserOptions:
+  aggressiveRetaliation: true
+  dogfightAI: true
+  brutalAI: true

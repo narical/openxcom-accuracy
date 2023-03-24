@@ -1,0 +1,27 @@
+# Remove molecular-control-disruptor
+items:
+  - delete: STR_MC_DISRUPTOR
+research:
+  - delete: STR_MC_DISRUPTOR
+  - delete: STR_MC_GENERATOR
+manufacture:
+  - delete: STR_MC_DISRUPTOR
+ufopaedia:
+  - delete: STR_MC_DISRUPTOR
+  
+# Since disruptor doesn't exist anymore the generator gets its dependencies
+  - name: STR_MC_GENERATOR
+    cost: 360
+    points: 25
+    dependencies:
+      - STR_MC_READER
+      - STR_MC_DISRUPTOR_DEP
+
+# Fixed user-options
+fixedUserOptions:
+  aggressiveRetaliation: true
+  dogfightAI: true
+  brutalAI: true
+  
+# Slightly decrease score-threshold for losing the game to be same as in UFO-defense on Superhuman
+defeatScore: -1100

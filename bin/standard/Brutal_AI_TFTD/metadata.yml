@@ -1,0 +1,9 @@
+#
+# metadata.yaml for Brutal-AI for TFTD
+
+name: "Brutal AI"
+version: 1.0
+description: "Recommended options for Brutal-AI, decreased score-threshold for losing and removed molecular-control-disruptor."
+author: Xilmi
+
+master: xcom2
