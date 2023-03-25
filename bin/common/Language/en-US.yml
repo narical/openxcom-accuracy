@@ -125,6 +125,8 @@ en-US:
   STR_PLAYINTRO_DESC: "Show the intro cinematic on startup."
   STR_SHOWMORESTATSININVENTORYVIEW: "Inventory Stats"
   STR_SHOWMORESTATSININVENTORYVIEW_DESC: "Show extra information on the selected soldier in the inventory screen."
+  STR_STRICTBLOCKEDCHECKING: "Strict checking for blockages"
+  STR_STRICTBLOCKEDCHECKING_DESC: "Can prevent units from being spawned into walls and helps the AI to find better cover but also may block off areas on the map if the map wasn't built properly."
   STR_SNEAKYAI: "Sneaky AI"
   STR_SNEAKYAI_DESC: "AI avoids exposing themselves to the player whenever possible."
   STR_BRUTALAI: "Brutal AI"

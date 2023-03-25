@@ -125,6 +125,8 @@ de:
   STR_PLAYINTRO_DESC: "Intro-Video bei Spielstart zeigen."
   STR_SHOWMORESTATSININVENTORYVIEW: "Inventar Statistik"
   STR_SHOWMORESTATSININVENTORYVIEW_DESC: "Zeigt zusätzliche Informationen über den ausgewählten Soldaten im Inventar-/Ausrüsten- Bildschirm."
+  STR_STRICTBLOCKEDCHECKING: "Striktes Prüfen von Blockaden"
+  STR_STRICTBLOCKEDCHECKING_DESC: "Kann verhindern, dass Einheiten in Wände gespawnt werden und hilft der KI bessere Deckung zu finden. Kann aber auch ungewollt Areale der Karte von der Wegfindung abschneiden."
   STR_SNEAKYAI: "Hinterlistige KI"
   STR_SNEAKYAI_DESC: "Die künstliche Intelligenz versucht, so gut wie möglich unbeobachtet zu agieren."
   STR_BRUTALAI: "Brutale KI"
