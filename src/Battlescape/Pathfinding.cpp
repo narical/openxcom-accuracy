@@ -1031,8 +1031,13 @@ bool Pathfinding::validateUpDown(const BattleUnit *bu, const Position& startPosi
 	endPosition += startPosition;
 	Tile *startTile = _save->getTile(startPosition);
 	Tile *destinationTile = _save->getTile(endPosition);
-	if (startTile->getMapData(O_FLOOR) && destinationTile && destinationTile->getMapData(O_FLOOR) &&
-		(startTile->getMapData(O_FLOOR)->isGravLift() && destinationTile->getMapData(O_FLOOR)->isGravLift()))
+
+	if (!destinationTile)
+	{
+		return false;
+	}
+
+	if (startTile->hasGravLiftFloor() && destinationTile->hasGravLiftFloor())
 	{
 		if (missile)
 		{
@@ -1052,8 +1057,8 @@ bool Pathfinding::validateUpDown(const BattleUnit *bu, const Position& startPosi
 	{
 		if (bu->getMovementType() == MT_FLY)
 		{
-			if ((direction == DIR_UP && destinationTile && destinationTile->hasNoFloor(_save)) // flying up only possible when there is no roof
-				|| (direction == DIR_DOWN && destinationTile && startTile->hasNoFloor(_save)) // falling down only possible when there is no floor
+			if ((direction == DIR_UP && destinationTile->hasNoFloor(_save)) // flying up only possible when there is no roof
+				|| (direction == DIR_DOWN && startTile->hasNoFloor(_save)) // falling down only possible when there is no floor
 				)
 			{
 				return true;

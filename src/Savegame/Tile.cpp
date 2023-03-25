@@ -69,6 +69,7 @@ Tile::Tile(Position pos, SavedBattleGame* save): _save(save), _pos(pos)
 		_objectsCache[i].discovered = 0;
 	}
 	_cache.isNoFloor = 1;
+	_cache.isGravLift = 0;
 }
 
 /**
@@ -231,10 +232,12 @@ void Tile::setMapData(MapData *dat, int mapDataID, int mapDataSetID, TilePart pa
 		{
 			level = _objects[O_FLOOR]->getTerrainLevel();
 			_cache.isNoFloor = _objects[O_FLOOR]->isNoFloor();
+			_cache.isGravLift = _objects[O_FLOOR]->isGravLift();
 		}
 		else
 		{
 			_cache.isNoFloor = 1;
+			_cache.isGravLift = 0;
 		}
 		// whichever's higher, but not the sum.
 		if (_objects[O_OBJECT])
