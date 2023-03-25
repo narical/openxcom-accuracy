@@ -3224,23 +3224,31 @@ void BattleUnit::updateTileFloorState(SavedBattleGame *saveBattleGame)
 {
 	if (_tile)
 	{
-		auto armorSize = _armor->getSize() - 1;
-		auto newPos = _tile->getPosition();
 		_haveNoFloorBelow = true;
-		for (int x = armorSize; x >= 0; --x)
+
+		if (isBigUnit())
 		{
-			for (int y = armorSize; y >= 0; --y)
+			auto armorSize = _armor->getSize() - 1;
+			auto newPos = _tile->getPosition();
+			for (int x = armorSize; x >= 0; --x)
 			{
-				auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
-				if (t)
+				for (int y = armorSize; y >= 0; --y)
 				{
-					if (!t->hasNoFloor(saveBattleGame))
+					auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
+					if (t)
 					{
-						_haveNoFloorBelow = false;
-						return;
+						if (!t->hasNoFloor(saveBattleGame))
+						{
+							_haveNoFloorBelow = false;
+							return;
+						}
 					}
 				}
 			}
+		}
+		else
+		{
+			_haveNoFloorBelow &= _tile->hasNoFloor(saveBattleGame) && !_tile->hasLadder();
 		}
 	}
 	else
@@ -3279,16 +3287,17 @@ void BattleUnit::setTile(Tile *tile, SavedBattleGame *saveBattleGame)
 	}
 
 	_tile = tile;
+
+	updateTileFloorState(saveBattleGame);
+
 	if (!_tile)
 	{
 		_floating = false;
-		_haveNoFloorBelow = false;
 		return;
 	}
 
 	// Update tiles moved to.
 	auto newPos = _tile->getPosition();
-	_haveNoFloorBelow = true;
 	for (int x = armorSize; x >= 0; --x)
 	{
 		for (int y = armorSize; y >= 0; --y)
@@ -3296,7 +3305,6 @@ void BattleUnit::setTile(Tile *tile, SavedBattleGame *saveBattleGame)
 			auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
 			if (t)
 			{
-				_haveNoFloorBelow &= t->hasNoFloor(saveBattleGame);
 				t->setUnit(this);
 			}
 		}

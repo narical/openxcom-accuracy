@@ -84,8 +84,11 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 {
 	_totalTUCost = {};
 	_path.clear();
+
+	const int size = bam != BAM_MISSILE ? unit->getArmor()->getSize() : 1;
+
 	// i'm DONE with these out of bounds errors.
-	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0) return;
+	if (endPosition.x > _save->getMapSizeX() - size || endPosition.y > _save->getMapSizeY() - size || endPosition.x < 0 || endPosition.y < 0) return;
 
 	bool sneak = Options::sneakyAI && unit->getFaction() == FACTION_HOSTILE;
 
@@ -121,11 +124,14 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	{
 		return; // Icarus is a bad role model for XCom soldiers.
 	}
-	// check if we have floor, else lower destination (for non flying units only, because otherwise they never reached this place)
-	while (canFallDown(destinationTile, _unit->getArmor()->getSize()) && movementType != MT_FLY)
+	if (movementType != MT_FLY && bam != BAM_MISSILE)
 	{
-		endPosition.z--;
-		destinationTile = _save->getTile(endPosition);
+		// check if we have floor, else lower destination (for non flying units only, because otherwise they never reached this place)
+		while (canFallDown(destinationTile, size) && !(size == 1 && destinationTile->hasLadder()))
+		{
+			endPosition.z--;
+			destinationTile = _save->getTile(endPosition);
+		}
 	}
 	// check if destination is not blocked
 	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
@@ -273,6 +279,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{ 1, 1, 0 },
 	};
 	const Tile* startTile[4] = { };
+	const Tile* aboveStart[4] = { };
+	const Tile* belowStart[4] = { };
 	const Tile* destinationTile[4] = { };
 	const Tile* aboveDestination[4] = { };
 	const Tile* belowDestination[4] = { };
@@ -287,6 +295,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			return {{INVALID_MOVE_COST, 0}};
 		}
 		startTile[i] = st;
+		aboveStart[i] = _save->getAboveTile(st);
+		belowStart[i] = _save->getBelowTile(st);
 		destinationTile[i] = dt;
 		aboveDestination[i] = _save->getAboveTile(dt);
 		belowDestination[i] = _save->getBelowTile(dt);
@@ -296,6 +306,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	for (int i = 0; i < numberOfParts; ++i)
 	{
 		const int maskCurrentPart = 1 << i;
+		const bool checkClimbing = (i == 0) && (numberOfParts == 1) &&  movementType != MT_FLY;
+
 		if (direction < DIR_UP && startTile[i]->getTerrainLevel() > - 16)
 		{
 			// check if we can go this way
@@ -324,15 +336,17 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 		}
 
-		const Tile* aboveStart =_save->getAboveTile(startTile[i]);
-		if (aboveStart && aboveStart->hasNoFloor(_save))
+		if (aboveStart[0] && aboveStart[0]->hasNoFloor(_save))
 		{
 			maskOfPartsHoleUp |= maskCurrentPart;
 		}
 		// check if we have floor, else fall down
 		if (movementType != MT_FLY && canFallDown(startTile[i]))
 		{
-			maskOfPartsFalling |= maskCurrentPart;
+			if (!checkClimbing || (!startTile[i]->hasLadder() && !(direction < DIR_UP && belowStart[i] && belowStart[i]->hasLadder() && !canFallDown(destinationTile[i]))))
+			{
+				maskOfPartsFalling |= maskCurrentPart;
+			}
 		}
 		if (movementType == MT_FLY && (canFallDown(startTile[i]) || canFallDown(destinationTile[i])))
 		{
@@ -946,6 +960,7 @@ bool Pathfinding::canFallDown(const Tile *here, int size) const
 				return false;
 		}
 	}
+
 	return true;
 }
 
@@ -1055,7 +1070,7 @@ bool Pathfinding::validateUpDown(const BattleUnit *bu, const Position& startPosi
 	}
 	else
 	{
-		if (bu->getMovementType() == MT_FLY)
+		if (bu->getMovementType() == MT_FLY || startTile->hasLadder())
 		{
 			if ((direction == DIR_UP && destinationTile->hasNoFloor(_save)) // flying up only possible when there is no roof
 				|| (direction == DIR_DOWN && startTile->hasNoFloor(_save)) // falling down only possible when there is no floor
