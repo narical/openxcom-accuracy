@@ -3430,8 +3430,7 @@ void AIModule::brutalThink(BattleAction* action)
 				float unitDist = Position::distance(pos, unitPosition);
 				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 				{
-					if (unitDist < 5 && !sweepMode)
-						cuddleAvoidModifier += 5 - unitDist;
+					cuddleAvoidModifier += 5 - unitDist;
 				}
 				if (unitDist < closestAnyOneDist && unit != _unit)
 					closestAnyOneDist = unitDist;
