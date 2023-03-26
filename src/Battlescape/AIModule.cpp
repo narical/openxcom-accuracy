@@ -2997,7 +2997,6 @@ void AIModule::brutalThink(BattleAction* action)
 	bool sweepMode = _unit->isAggressive();
 	int lowestTurnsLastSeen = 255;
 	float targetDistanceTofurthestReach = FLT_MAX;
-	bool encircleMode = false;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3078,17 +3077,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (_unit->isCheatOnMovement())
 			LoFCheckUnitForPath = target;
 		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes);
-		if (brutalValidTarget(target, true))
-		{
-			encircleMode = true;
-			Position furthestAttackPositon = furthestToGoTowards(targetPosition, costSnap, _allPathFindingNodes, true);
-			if (_traceAI)
-				Log(LOG_INFO) << "I'm aware of a valid target at: " << targetPosition << " dist after getting closer: " << Position::distance(furthestAttackPositon, targetPosition) << " my attack-range: " << maxExtenderRangeWith(_unit, getMaxTU(_unit) - tuCostToReachPosition(furthestAttackPositon, _allPathFindingNodes));
-			if (Position::distance(furthestAttackPositon, targetPosition) > maxExtenderRangeWith(_unit, getMaxTU(_unit)))
-			{
-				sweepMode = true;
-			}
-		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
 		float distToPosUnitCouldReach = Position::distance(myPos, posUnitCouldReach);
 		if (distToPosUnitCouldReach < closestDistanceofFurthestPosition)
@@ -3399,7 +3387,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " encircle-mode: " << encircleMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: "<<justNeedToTurn;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " need to flee: " << needToFlee << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: "<<justNeedToTurn;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -4716,7 +4704,11 @@ bool AIModule::quickLineOfFire(Position pos, BattleUnit* target, bool beOkayWith
 	originVoxel.z -= tile->getTerrainLevel();
 	Position targetPosition = target->getPosition();
 	if (lastLocationMode)
+	{
+		if (target->getTileLastSpotted(_unit->getFaction()) == -1)
+			return false;
 		targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
+	}
 	BattleUnit *unitToIgnore = _unit;
 	if (tile->getUnit() && isAlly(tile->getUnit()))
 		unitToIgnore = tile->getUnit();
@@ -4729,6 +4721,8 @@ bool AIModule::quickLineOfFire(Position pos, BattleUnit* target, bool beOkayWith
 			Position targetVoxel = targetPosition;
 			targetVoxel += Position(x, y, 0);
 			Tile *targetTile = _save->getTile(targetVoxel);
+			if (!targetTile)
+				return false;
 			targetVoxel = targetVoxel.toVoxel();
 			targetVoxel += TileEngine::voxelTileCenter;
 			targetVoxel.z -= targetTile->getTerrainLevel();
