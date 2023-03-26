@@ -3977,7 +3977,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 		reserved.Time -= _unit->getKneelUpCost();
 	}
 	PathfindingNode *targetNode = NULL;
-	float closestDistToTarget = 255;
+	int closestDistToTarget = 255;
 	for (auto pn : nodeVector)
 	{
 		if (target == pn->getPosition())
@@ -4003,7 +4003,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 					continue;
 			}
 		}
-		float currDist = Position::distance(target, pn->getPosition());
+		int currDist = Position::distance(target, pn->getPosition());
 		if (currDist < closestDistToTarget)
 		{
 			closestDistToTarget = currDist;
@@ -4469,7 +4469,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			if (!_save->getTileEngine()->validMeleeRange(originPosition, directionToLook, _unit, target, 0))
 				accuracy = 0;
 		}
-		else if (distance > 2)
+		else if (distance >= 2)
 		{
 			accuracy = 0;
 		}
