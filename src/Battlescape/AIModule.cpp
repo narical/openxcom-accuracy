@@ -3336,10 +3336,10 @@ void AIModule::brutalThink(BattleAction* action)
 	hideAfterPeaking |= amCloserThanFurthestReachable;
 	hideAfterPeaking |= amInLoSToFurthestReachable;
 	bool enemyExposed = IsEnemyExposedEnough();
-	bool coverInRange = anyCoverInRange(_allPathFindingNodes);
+	float coverInRange = highestCoverInRange(_allPathFindingNodes);
 	if (enemyExposed)
 	{
-		if (_unit->getFaction() == FACTION_HOSTILE && !amInAnyonesFOW && !coverInRange)
+		if (_unit->getFaction() == FACTION_HOSTILE && !amInAnyonesFOW && coverInRange == 0)
 			sweepMode = true;
 	}
 	if (iHaveLof && _blaster)
@@ -3587,8 +3587,10 @@ void AIModule::brutalThink(BattleAction* action)
 			else if (!shouldPeak)
 			{
 				prio3Score = 100 / walkToDist;
-				if ((coverInRange && !badPath && cover == 0) || realLineOfFire)
+				if ((coverInRange > 2 * cover) || realLineOfFire)
+				{
 					prio3Score = 0;
+				}
 				if (!lineOfFire)
 					prio3Score *= 4;
 				if (!visibleToEnemy)
@@ -3685,7 +3687,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(tile->isBigWall());
+			//	tile->setTUMarker(10*cover);
 			//}
 		}
 		if (_traceAI)
@@ -5123,7 +5125,6 @@ bool AIModule::validateArcingShot(BattleAction *action, Tile* originTile)
 	action->actor = _unit;
 	if (originTile == NULL)
 		originTile = _unit->getTile();
-	Log(LOG_INFO) << action->weapon->getRules()->getName() << " validating whether we can throw from " << originTile->getPosition() << " to "<<action->target;
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), originTile);
 	Tile *targetTile = _save->getTile(action->target);
 	Position targetVoxel;
@@ -5614,6 +5615,12 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 		Tile *tileInDirection = _save->getTile(posInDirection);
 		if (tileInDirection)
 		{
+			//A unit is not good cover, especially not if it's yourself
+			if (tileInDirection->getUnit())
+			{
+				blockedInAllDirections = false;
+				continue;
+			}
 			float totalEnemies = 0;
 			float enemiesInThisDirection = 0;
 			for (BattleUnit *enemy : *(_save->getUnits()))
@@ -5650,25 +5657,27 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 	return cover;
 }
 
-bool AIModule::anyCoverInRange(const std::vector<PathfindingNode *> nodeVector)
+float AIModule::highestCoverInRange(const std::vector<PathfindingNode *> nodeVector)
 {
+	float highestCover = 0;
 	for (auto pn : nodeVector)
 	{
 		if (pn->getTUCost(false).time > _unit->getTimeUnits() || pn->getTUCost(false).energy > _unit->getEnergy())
 			continue;
 		Tile *tile = _save->getTile(pn->getPosition());
-		if (getCoverValue(tile, _unit) > 0)
+		float cover = getCoverValue(tile, _unit);
+		if (cover > highestCover)
 		{
+			highestCover = cover;
 			//if (_traceAI)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(getCoverValue(tile, _unit));
+			//	tile->setTUMarker(10 * getCoverValue(tile, _unit));
 			//}
-			return true;
 		}
 	}
-	return false;
+	return highestCover;
 }
 
 bool AIModule::isAnyMovementPossible()

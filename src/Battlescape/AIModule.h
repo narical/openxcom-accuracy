@@ -221,7 +221,7 @@ public:
 	/// Get the cover-value of a tile
 	float getCoverValue(Tile *tile, BattleUnit *bu);
 	/// checks whethere there's any cover in range
-	bool anyCoverInRange(const std::vector<PathfindingNode *> nodeVector);
+	float highestCoverInRange(const std::vector<PathfindingNode *> nodeVector);
 	/// runs a very minimalist pathfinding just to see whether the unit could move
 	bool isAnyMovementPossible();
 };
