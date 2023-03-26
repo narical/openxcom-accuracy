@@ -4420,10 +4420,13 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
 	int tuTotal = _unit->getTimeUnits();
+	float dangerMod = 1;
 
 	if (simulationTile)
 	{
 		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes);
+		if (!isPathToPositionSave(simulationTile->getPosition()) || simulationTile->getDangerous() || simulationTile->getFire())
+			dangerMod /= 2;
 	}
 
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
@@ -4606,9 +4609,10 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	{
 		Log(LOG_INFO) << action->weapon->getRules()->getName() << " damage: " << damage << " armor: " << relevantArmor << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: "<< tuTotal
 					  << " from: " << originPosition << " to: "<<action->target
-					  << " distance: " << distance << " score: " << damage * accuracy * numberOfShots;
+					  << " distance: " << distance << " dangerMod: " << dangerMod
+					  << " score: " << damage * accuracy * numberOfShots;
 	}
-	return damage * accuracy * numberOfShots;
+	return damage * accuracy * numberOfShots * dangerMod;
 }
 
 /**
@@ -5664,6 +5668,14 @@ bool AIModule::anyCoverInRange(const std::vector<PathfindingNode *> nodeVector)
 			return true;
 		}
 	}
+	return false;
+}
+
+bool AIModule::isAnyMovementPossible()
+{
+	bool dummy = true;
+	if (_save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, false, NULL, NULL, true).size() > 1)
+		return true;
 	return false;
 }
 
