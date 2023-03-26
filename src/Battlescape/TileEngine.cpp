@@ -1459,9 +1459,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 	}
 	if(unit->getUnitsSpottedThisTurn().size() != oldNumVisibleUnits)
 	{
-		unit->setWantToEndTurn(false);
-		if (unit->getAIModule())
-			unit->allowReselect();
+		unit->checkForReactivation();
 	}
 
 	// we only react when there are at least the same amount of visible units as before AND the checksum is different

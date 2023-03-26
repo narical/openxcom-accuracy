@@ -210,8 +210,7 @@ void UnitWalkBState::think()
 						continue;
 					if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
 						continue;
-					unit->setWantToEndTurn(false);
-					unit->allowReselect();
+					unit->checkForReactivation();
 				}
 			}
 
@@ -469,8 +468,7 @@ void UnitWalkBState::think()
 					continue;
 				if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
 					continue;
-				unit->setWantToEndTurn(false);
-				unit->allowReselect();
+				unit->checkForReactivation();
 			}
 		}
 

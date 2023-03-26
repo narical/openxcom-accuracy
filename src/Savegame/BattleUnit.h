@@ -850,6 +850,8 @@ public:
 	bool isCheatOnMovement();
 	/// Returns the targetting mode the unit is allowed to use
 	int aiTargetMode();
+	/// Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
+	void checkForReactivation();
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }

@@ -84,8 +84,7 @@ void UnitTurnBState::init()
 				{
 					Log(LOG_INFO) << _unit->getId() << " should now want to continue their turn";
 				}
-				_unit->setWantToEndTurn(false);
-				_unit->allowReselect();
+				_unit->checkForReactivation();
 			}
 			if (door == 0)
 			{
@@ -143,8 +142,7 @@ void UnitTurnBState::think()
 					continue;
 				if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
 					continue;
-				unit->setWantToEndTurn(false);
-				unit->allowReselect();
+				unit->checkForReactivation();
 			}
 			_unit->abortTurn();
 			_parent->popState();

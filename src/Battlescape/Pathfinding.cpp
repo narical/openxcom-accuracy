@@ -1400,7 +1400,7 @@ std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleAction
  * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart)
+std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs, bool entireMap, const BattleUnit *missileTarget, const Position *alternateStart, bool justCheckIfAnyMovementIsPossible)
 {
 	_unit = unit;
 	Position start = unit->getPosition();
@@ -1443,6 +1443,7 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 		if (scaleFactor < 1)
 			maxTilesToReturn *= scaleFactor;
 	}
+	int strictMaxTilesToReturn = _size;
 	while (!unvisited.empty())
 	{
 		PathfindingNode *currentNode = unvisited.pop();
@@ -1475,6 +1476,8 @@ std::vector<PathfindingNode *> Pathfinding::findReachablePathFindingNodes(Battle
 		}
 		currentNode->setChecked();
 		reachable.push_back(currentNode);
+		if (justCheckIfAnyMovementIsPossible && reachable.size() > 1)
+			break;
 	}
 	std::sort(reachable.begin(), reachable.end(), MinNodeCosts());
 	return reachable;

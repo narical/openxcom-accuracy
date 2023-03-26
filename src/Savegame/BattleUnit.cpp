@@ -5598,6 +5598,48 @@ int BattleUnit::aiTargetMode()
 	return targetMode;
 }
 
+/**
+ * Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
+ */
+void BattleUnit::checkForReactivation()
+{
+	bool haveTUtoAttack = false;
+	std::vector<BattleItem *> weapons;
+	if (getRightHandWeapon())
+		weapons.push_back(getRightHandWeapon());
+	if (getLeftHandWeapon())
+		weapons.push_back(getLeftHandWeapon());
+	if (getUtilityWeapon(BT_MELEE))
+		weapons.push_back(getUtilityWeapon(BT_MELEE));
+	if (getSpecialWeapon(BT_FIREARM))
+		weapons.push_back(getSpecialWeapon(BT_FIREARM));
+	if (getGrenadeFromBelt())
+		weapons.push_back(getGrenadeFromBelt());
+	for (BattleItem *weapon : weapons)
+	{
+		BattleActionCost costAuto(BA_AUTOSHOT, this, weapon);
+		BattleActionCost costSnap(BA_SNAPSHOT, this, weapon);
+		BattleActionCost costAimed(BA_AIMEDSHOT, this, weapon);
+		BattleActionCost costHit(BA_HIT, this, weapon);
+		BattleActionCost costThrow(BA_THROW, this, weapon);
+		if (costSnap.haveTU())
+			bool haveTUtoAttack = true;
+		else if (costHit.haveTU())
+			bool haveTUtoAttack = true;
+		else if (costAimed.haveTU())
+			bool haveTUtoAttack = true;
+		else if (costAuto.haveTU())
+			bool haveTUtoAttack = true;
+		else if (costThrow.haveTU())
+			bool haveTUtoAttack = true;
+	}
+	if (haveTUtoAttack || (getAIModule() && getAIModule()->isAnyMovementPossible()))
+	{
+		setWantToEndTurn(false);
+		allowReselect();
+	}
+}
+
 bool BattleUnit::isLeeroyJenkins() const
 {
 	return _isLeeroyJenkins;

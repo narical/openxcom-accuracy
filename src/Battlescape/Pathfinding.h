@@ -168,7 +168,7 @@ public:
 	/// Gets all reachable tiles, based on cost.
 	std::vector<int> findReachable(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs);
 	/// Gets all reachable tiles, based on cost and returns the associated cost of getting there too
-	std::vector<PathfindingNode*> findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTus, bool entireMap = false, const BattleUnit* missileTarget = NULL, const Position* alternateStart = NULL);
+	std::vector<PathfindingNode*> findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTus, bool entireMap = false, const BattleUnit* missileTarget = NULL, const Position* alternateStart = NULL, bool justCheckIfAnyMovementIsPossible = false);
 	/// Gets _totalTUCost; finds out whether we can hike somewhere in this turn or not.
 	int getTotalTUCost() const { return _totalTUCost.time; }
 	/// Gets the path preview setting.
