@@ -4553,7 +4553,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		return 0;
 	}
 
-	numberOfShots *= (float)tuTotal / tuCost;
+	numberOfShots *= tuTotal / tuCost;
 	if (numberOfShots < 1)
 		return 0;
 
