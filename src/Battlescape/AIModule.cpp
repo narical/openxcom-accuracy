@@ -3344,6 +3344,8 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (iHaveLof && _blaster)
 		needToFlee = true;
+	if (sweepMode)
+		needToFlee = false;
 	if (!iHaveLof && !rangeTooShortToPeak && (enemyExposed || (!amCloserThanFurthestReachable && !amInLoSToFurthestReachable && _unit->getTimeUnits() == getMaxTU(_unit))) || canReachTargetTileWithAttack)
 		peakMode = true;
 	else if (!sweepMode && (iHaveLof || !enemyExposed))
@@ -3428,7 +3430,7 @@ void AIModule::brutalThink(BattleAction* action)
 				float unitDist = Position::distance(pos, unitPosition);
 				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 				{
-					if (unitDist < 5)
+					if (unitDist < 5 && !sweepMode)
 						cuddleAvoidModifier += 5 - unitDist;
 				}
 				if (unitDist < closestAnyOneDist && unit != _unit)
@@ -3648,10 +3650,11 @@ void AIModule::brutalThink(BattleAction* action)
 				prio3Score /= 10;
 				prio4Score /= 10;
 			}
-			if (avoidMeleeRange || badPath)
+			if (avoidMeleeRange || (badPath && !sweepMode))
 			{
 				prio1Score /= 10;
-				prio2Score /= 10;
+				if (!needToFlee)
+					prio2Score /= 10;
 				prio3Score /= 10;
 				prio4Score /= 10;
 			}
@@ -3682,7 +3685,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(cover);
+			//	tile->setTUMarker(tile->isBigWall());
 			//}
 		}
 		if (_traceAI)
@@ -3891,67 +3894,42 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	if (_attackAction.actor->getGrenadeFromBelt())
 		weapons.push_back(_attackAction.actor->getGrenadeFromBelt());
 
+	float bestScore = 0;
+	BattleAction chosenAction = _attackAction;
+	BattleUnit* chosenTarget = _aggroTarget;
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
 		if (brutalValidTarget(*i))
 		{
-			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
-			_aggroTarget = (*i);
-			_attackAction.type = BA_RETHINK;
-			_attackAction.target = (*i)->getPosition();
 			for (BattleItem *weapon : weapons)
 			{
 				// Get the TU costs for each available attack type
 				_attackAction.weapon = weapon;
+				// Reset the others
+				_aggroTarget = (*i);
+				_attackAction.type = BA_RETHINK;
+				_attackAction.target = (*i)->getPosition();
 				BattleActionCost costAuto(BA_AUTOSHOT, _attackAction.actor,weapon);
 				BattleActionCost costSnap(BA_SNAPSHOT, _attackAction.actor, weapon);
 				BattleActionCost costAimed(BA_AIMEDSHOT, _attackAction.actor, weapon);
 				BattleActionCost costHit(BA_HIT, _attackAction.actor, weapon);
-				brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, true);
-
-				BattleAction chosenAction = _attackAction;
-				if (_attackAction.type != BA_RETHINK)
+				float score = brutalExtendedFireModeChoice(costAuto, costSnap, costAimed, costThrow, costHit, true, bestScore);
+				if (score > bestScore)
 				{
-					std::pair<BattleUnit *, BattleAction> spottedTarget;
-					spottedTarget = std::make_pair((*i), chosenAction);
-					spottedTargets.push_back(spottedTarget);
+					bestScore = score;
+					chosenAction = _attackAction;
+					chosenTarget = _aggroTarget;
 				}
 			}
 		}
 	}
+	_aggroTarget = chosenTarget;
+	_attackAction.type = chosenAction.type;
+	_attackAction.weapon = chosenAction.weapon;
+	_attackAction.target = chosenAction.target;
 
-	int numberOfTargets = static_cast<int>(spottedTargets.size());
-
-	if (numberOfTargets) // Now that we have a list of valid targets, pick one and return.
+	if (bestScore == 0)
 	{
-		float clostestDist = 255;
-		for (auto targetAction : spottedTargets)
-		{
-			float dist = Position::distance(targetAction.first->getPosition(), _unit->getPosition());
-			float score = brutalScoreFiringMode(&targetAction.second, targetAction.first, true);
-			dist /= score;
-			Tile *targetTile = _save->getTile(targetAction.first->getPosition());
-			// deprioritize naded targets but don't ignore them completely
-			if (targetTile->getDangerous())
-			{
-				dist *= 5;
-				// we don't want to nade someone who's already been naded
-				if (targetAction.second.type == BA_THROW)
-					continue;
-			}
-			if (dist < clostestDist)
-			{
-				clostestDist = dist;
-				_aggroTarget = targetAction.first;
-				_attackAction.type = targetAction.second.type;
-				_attackAction.weapon = targetAction.second.weapon;
-				_attackAction.target = _aggroTarget->getPosition();
-			}
-		}
-	}
-	else // We didn't find a suitable target
-	{
-		// Make sure we reset anything we might have changed while testing for targets
 		_aggroTarget = 0;
 		_attackAction.type = BA_RETHINK;
 		_attackAction.weapon = _unit->getMainHandWeapon(false);
@@ -4345,7 +4323,7 @@ bool AIModule::brutalPsiAction()
 	return false;
 }
 
-void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF)
+float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF, float previousHighScore)
 {
 	std::vector<BattleActionType> attackOptions = {};
 	if (!_unit->isLeeroyJenkins())
@@ -4374,26 +4352,45 @@ void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleAc
 
 	BattleActionType chosenAction = BA_RETHINK;
 	BattleAction testAction = _attackAction;
-	int score = 0;
+	BattleAction chosenBattleAction = _attackAction;
+	float score = previousHighScore;
+	Position originPosition = _unit->getPosition();
+	//first check our actions from the current tile
 	for (auto &i : attackOptions)
 	{
 		testAction.type = i;
-		testAction.Time += getTurnCostTowards(_attackAction.target);
-		int newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF);
+		float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF);
 
 		if (newScore > score)
 		{
 			score = newScore;
-			chosenAction = i;
-		}
-
-		if (_traceAI && newScore > 0)
-		{
-			Log(LOG_INFO) << "Evaluate option " << (int)i << " against " << _aggroTarget->getId() << " at " << _aggroTarget->getPosition() << " with weapon " << testAction.weapon->getRules()->getName() << ", score = " << newScore;
+			chosenBattleAction.type = i;
+			chosenBattleAction.weapon = _attackAction.weapon;
 		}
 	}
+	//Now lets check them from the furtest tile each action can be performed from
+	for (auto &i : attackOptions)
+	{
+		testAction.type = i;
+		Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
+		Tile *simulationTile = _save->getTile(simulationPosition);
+		for (auto &j : attackOptions)
+		{
+			testAction.type = j;
+			float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile);
 
-	_attackAction.type = chosenAction;
+			if (newScore > score && simulationPosition != _unit->getPosition())
+			{
+				score = newScore;
+				chosenBattleAction.type = BA_WALK;
+				chosenBattleAction.target = simulationPosition;
+				chosenBattleAction.weapon = _attackAction.weapon;
+				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
+			}
+		}
+	}
+	_attackAction = chosenBattleAction;
+	return score;
 }
 
 /**
@@ -4403,7 +4400,7 @@ void AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleAc
  * @param checkLOF Set to true if you want to check for a valid line of fire
  * @return The calculated score
  */
-int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF)
+float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile)
 {
 	// Sanity check first, if the passed action has no type or weapon, return 0.
 	if (!action->type || !action->weapon)
@@ -4412,11 +4409,22 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	}
 
 	// Get base accuracy for the action
-	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getBattleGame()->getMod());
-	int distanceSq = _unit->distance3dToUnitSq(target);
+	float accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getBattleGame()->getMod());
+
+	Position originPosition = _unit->getPosition();
+	if (simulationTile)
+		originPosition = simulationTile->getPosition();
+	int distanceSq = Position::distanceSq(originPosition, target->getPosition());
 	if (!checkLOF)
-		distanceSq = _unit->distance3dToPositionSq(_save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true)));
+		distanceSq = Position::distanceSq(originPosition, _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true)));
 	int distance = (int)std::ceil(sqrt(float(distanceSq)));
+
+	int tuTotal = _unit->getTimeUnits();
+
+	if (simulationTile)
+	{
+		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes);
+	}
 
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{
@@ -4450,9 +4458,20 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	if (action->type == BA_HIT)
 	{
 		// We can definitely assume we'll be facing the target
-		int directionToLook = _save->getTileEngine()->getDirectionTo(_unit->getPosition(), target->getPosition());
-		if (!_save->getTileEngine()->validMeleeRange(_unit, target, directionToLook))
+		int directionToLook = _save->getTileEngine()->getDirectionTo(originPosition, target->getPosition());
+		if (checkLOF)
+		{
+			if (!_save->getTileEngine()->validMeleeRange(originPosition, directionToLook, _unit, target, 0))
+				accuracy = 0;
+		}
+		else if (distance > 2)
+		{
 			accuracy = 0;
+		}
+	}
+	else if (shouldAvoidMeleeRange(target) && distance < 2)
+	{
+		accuracy = 0;
 	}
 
 	float numberOfShots = 1;
@@ -4474,11 +4493,13 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
-	tuCost += getTurnCostTowards(action->target);
+	tuTotal -= getTurnCostTowards(action->target);
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
 	if (action->type == BA_THROW && _grenade && action->weapon == _unit->getGrenadeFromBelt())
 	{
+		if (target->getTile()->getDangerous())
+			return 0;
 		if (!_unit->getGrenadeFromBelt()->isFuseEnabled())
 		{
 			tuCost += 4;
@@ -4517,11 +4538,11 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 	{
 		relevantArmor = target->getArmor()->getFrontArmor();
 	}
-	damage = (damage * 2 - relevantArmor) / 2.0f;
+	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
+	damage = (damage * damageRange - relevantArmor) / 2.0f;
 	damage = std::max(damage, 1.0f);
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
-	int tuTotal = _unit->getBaseStats()->tu;
 
 	// Return a score of zero if this firing mode doesn't exist for this weapon
 	if (!tuCost)
@@ -4529,7 +4550,16 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 		return 0;
 	}
 
-	Position origin = _save->getTileEngine()->getOriginVoxel((*action), 0);
+	numberOfShots *= (float)tuTotal / tuCost;
+	if (numberOfShots < 1)
+		return 0;
+
+	accuracy /= 100;
+	if (accuracy > 0)
+		accuracy += std::max(1 - accuracy, 0.0f) / distance;
+	accuracy = std::min(1.0f, accuracy);
+
+	Position origin = _save->getTileEngine()->getOriginVoxel((*action), simulationTile);
 	Position targetPosition;
 	if (action->type != BA_HIT) //Melee-attacks have their own validity check. This additional check can cause false negatives!
 	{
@@ -4537,7 +4567,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 		{
 			if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 			{
-				if (!validateArcingShot(action))
+				if (!validateArcingShot(action, simulationTile))
 				{
 					return 0;
 				}
@@ -4556,7 +4586,7 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 		{
 			if (action->weapon->getArcingShot(action->type) || action->type == BA_THROW)
 			{
-				if (!validateArcingShot(action))
+				if (!validateArcingShot(action, simulationTile))
 				{
 					return 0;
 				}
@@ -4571,14 +4601,14 @@ int AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bo
 					return 0;
 			}
 		}
-		if (shouldAvoidMeleeRange(target) && Position::distance(_unit->getPosition(), target->getPosition()) < 2)
-			return 0;
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " damage: " << damage << " armor: " << relevantArmor << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost;
+		Log(LOG_INFO) << action->weapon->getRules()->getName() << " damage: " << damage << " armor: " << relevantArmor << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: "<< tuTotal
+					  << " from: " << originPosition << " to: "<<action->target
+					  << " distance: " << distance << " score: " << damage * accuracy * numberOfShots;
 	}
-	return accuracy * damage * numberOfShots * tuTotal / tuCost;
+	return damage * accuracy * numberOfShots;
 }
 
 /**
@@ -5084,10 +5114,13 @@ void AIModule::blindFire()
 	}
 }
 
-bool AIModule::validateArcingShot(BattleAction *action)
+bool AIModule::validateArcingShot(BattleAction *action, Tile* originTile)
 {
 	action->actor = _unit;
-	Position origin = _save->getTileEngine()->getOriginVoxel((*action), _unit->getTile());
+	if (originTile == NULL)
+		originTile = _unit->getTile();
+	Log(LOG_INFO) << action->weapon->getRules()->getName() << " validating whether we can throw from " << originTile->getPosition() << " to "<<action->target;
+	Position origin = _save->getTileEngine()->getOriginVoxel((*action), originTile);
 	Tile *targetTile = _save->getTile(action->target);
 	Position targetVoxel;
 	std::vector<Position> targets;

@@ -163,9 +163,9 @@ public:
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
 	/// Chooses a firing mode for the AI based on expected damage dealt
-	void brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false);
+	float brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false, float previousHighScore = 0);
 	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
-	int brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
+	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile = NULL);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
 	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
@@ -185,7 +185,7 @@ public:
 	/// Attack tiles where units have been seen before but we are not sure where they are
 	void blindFire();
 	/// Validating the shot of an arcing weapon is way more compliacated than for a throw, that's why there's a separate method
-	bool validateArcingShot(BattleAction *action);
+	bool validateArcingShot(BattleAction *action, Tile* originTile = NULL);
 	/// check if a unit is targetable according to aiTargetMode
 	bool brutalValidTarget(BattleUnit *unit, bool moveMode = false, bool psiMode = false) const;
 	/// check the path to an enemy and then subtracts their movement from the cost
