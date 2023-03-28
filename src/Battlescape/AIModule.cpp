@@ -3419,7 +3419,10 @@ void AIModule::brutalThink(BattleAction* action)
 				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 				{
 					if (unitDist < 5)
-						cuddleAvoidModifier += 5 - unitDist;
+					{
+						if (quickLineOfFire(pos, unit))
+							cuddleAvoidModifier += 5 - unitDist;
+					}
 				}
 				if (unitDist < closestAnyOneDist && unit != _unit)
 					closestAnyOneDist = unitDist;
@@ -3584,7 +3587,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!visibleToEnemy)
 					prio3Score *= 2;
 				if (!clearSightToEnemyReachableTile)
-					prio3Score *= 1.25;
+					prio3Score *= 4;
 			}
 			if (outOfRangeForShortRangeWeapon && closerThanEnemyCanReach && visibleToEnemy && !dissolveBlockage)
 			{
@@ -5625,27 +5628,38 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 				{
 					if (!_unit->isCheatOnMovement() && enemy->getTileLastSpotted(_myFaction) == -1)
 						continue;
-					totalEnemies++;
 					Position pos = _save->getTileCoords(enemy->getTileLastSpotted(_myFaction));
 					if (_unit->isCheatOnMovement())
 						pos = enemy->getPosition();
 					int enemyDir = _save->getTileEngine()->getDirectionTo(tile->getPosition(), pos);
+					float dist = Position::distance(tile->getPosition(), pos);
 					if (direction == enemyDir)
-						enemiesInThisDirection++;
+						enemiesInThisDirection += 1.0 / dist;
+					totalEnemies += 1.0 / dist;
 				}
 			}
 			float dirCoverMod = enemiesInThisDirection / totalEnemies;
 			std::vector<Position> traj;
 			if (_save->getPathfinding()->isBlockedDirection(bu, tile, direction, BAM_NORMAL, bu))
-				dirCoverMod *= 1.0;
+				cover += dirCoverMod;
 			else if (_save->getPathfinding()->getTUCost(tile->getPosition(), direction, bu, bu, BAM_NORMAL).cost.time == 255)
-				dirCoverMod *= 0.5;
+				cover += dirCoverMod * 0.5;
 			else
-			{
 				blockedInAllDirections = false;
-				dirCoverMod = 0;
-			}
-			cover += dirCoverMod;
+			int rightNeighbour = direction + 1;
+			if (rightNeighbour > 7)
+				rightNeighbour = 0;
+			if (_save->getPathfinding()->isBlockedDirection(bu, tile, rightNeighbour, BAM_NORMAL, bu))
+				cover += dirCoverMod * 0.5;
+			else if (_save->getPathfinding()->getTUCost(tile->getPosition(), rightNeighbour, bu, bu, BAM_NORMAL).cost.time == 255)
+				cover += dirCoverMod * 0.25;
+			int leftNeighbour = direction - 1;
+			if (leftNeighbour < 0)
+				leftNeighbour = 7;
+			if (_save->getPathfinding()->isBlockedDirection(bu, tile, rightNeighbour, BAM_NORMAL, bu))
+				cover += dirCoverMod * 0.5;
+			else if (_save->getPathfinding()->getTUCost(tile->getPosition(), rightNeighbour, bu, bu, BAM_NORMAL).cost.time == 255)
+				cover += dirCoverMod * 0.25;
 		}
 	}
 	if (blockedInAllDirections)
