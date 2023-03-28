@@ -5574,6 +5574,8 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 {
 	if (tile == NULL)
 		return 0;
+	bool strictBlockedCheckingBefore = Options::strictBlockedChecking;
+	Options::strictBlockedChecking = true;
 	float cover = 0;
 	bool blockedInAllDirections = true;
 	for (int direction = 0; direction <= 7; ++direction)
@@ -5648,6 +5650,7 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 	}
 	if (blockedInAllDirections)
 		cover = -1;
+	Options::strictBlockedChecking = strictBlockedCheckingBefore;
 	return cover;
 }
 
