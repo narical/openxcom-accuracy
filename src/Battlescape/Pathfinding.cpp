@@ -97,7 +97,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	}
 	_unit = unit;
 
-	Tile *destinationTile = _save->getTile(endPosition);
+	const Tile* destinationTile = _save->getTile(endPosition);
 
 	// check if destination is not blocked
 	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget)) return;
@@ -835,7 +835,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
  * @param missileTarget Target for a missile.
  * @return True if the movement is blocked.
  */
-bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const
+bool Pathfinding::isBlockedDirection(const BattleUnit *unit, const Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const
 {
 
 	// check if the difference in height between start and destination is not too high
@@ -918,7 +918,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
  * @param here The current tile.
  * @return True if a unit can fall down.
  */
-bool Pathfinding::canFallDown(Tile *here) const
+bool Pathfinding::canFallDown(const Tile *here) const
 {
 	if (here->getPosition().z == 0)
 		return false;
@@ -934,7 +934,7 @@ bool Pathfinding::canFallDown(Tile *here) const
  * @param size The size of the unit.
  * @return True if a unit can fall down.
  */
-bool Pathfinding::canFallDown(Tile *here, int size) const
+bool Pathfinding::canFallDown(const Tile *here, int size) const
 {
 	for (int x = 0; x != size; ++x)
 	{
