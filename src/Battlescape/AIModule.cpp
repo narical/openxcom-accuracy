@@ -3500,7 +3500,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (lineOfFire == false || IAmPureMelee)
 				{
-					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && _save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL))
+					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && _melee))
 					{
 						lineOfFire = true;
 					}
