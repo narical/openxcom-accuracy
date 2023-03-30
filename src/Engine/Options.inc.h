@@ -108,6 +108,7 @@ OPT int oxceModValidationLevel;
 OPT bool oxceEmbeddedOnly;
 OPT bool oxceListVFSContents;
 OPT bool oxceRawScreenShots;
+OPT bool oxceFirstPersonViewFisheyeProjection;
 OPT bool oxceThumbButtons;
 
 OPT bool oxceRecommendedOptionsWereSet;
