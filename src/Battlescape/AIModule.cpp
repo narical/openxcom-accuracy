@@ -3678,7 +3678,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(cover*10);
+			//	tile->setTUMarker(cover * 10);
 			//}
 		}
 		if (_traceAI)
@@ -5647,9 +5647,10 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 			float coverFromDir = 0;
 			for (int part = O_FLOOR; part < O_MAX; ++part)
 			{
-				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_NONE);
-				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_HE);
+				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_NONE) / 255.0;
+				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_HE) / 255.0;
 			}
+			coverFromDir += (tileInDirection->getTerrainLevel() * -1 - tile->getTerrainLevel() * -1) / 24.0; 
 			if (coverFromDir > 0)
 				cover += coverFromDir * dirCoverMod;
 			else
@@ -5658,7 +5659,6 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 	}
 	if (blockedInAllDirections)
 		cover = -1;
-	cover /= 255;
 	return cover;
 }
 
