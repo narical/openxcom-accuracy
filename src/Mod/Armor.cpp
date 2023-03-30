@@ -21,7 +21,6 @@
 #include "../Engine/ScriptBind.h"
 #include "Mod.h"
 #include "RuleSoldier.h"
-#include "../Savegame/BattleUnit.h"
 
 namespace OpenXcom
 {
