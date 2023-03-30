@@ -400,11 +400,17 @@ private:
 	int _manaExperience;
 	int _listOrder, _maxRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _shotgunPellets;
 	int _shotgunBehaviorType, _shotgunSpread, _shotgunChoke;
+
 	std::map<std::string, std::string> _zombieUnitByArmorMale, _zombieUnitByArmorFemale, _zombieUnitByType;
 	std::string _zombieUnit, _spawnUnitName, _spawnItemName;
 	const Unit* _spawnUnit = nullptr;
 	const RuleItem* _spawnItem = nullptr;
-	int _spawnUnitFaction;
+	UnitFaction _spawnUnitFaction;
+	UnitFaction _zombieUnitFaction;
+	int _spawnUnitChance = -1;
+	int _zombieUnitChance = -1;
+	int _spawnItemChance = -1;
+
 	int _targetMatrix;
 	bool _LOSRequired, _underwaterOnly, _landOnly, _psiReqiured, _manaRequired;
 	int _meleePower, _specialType, _vaporColor, _vaporDensity, _vaporProbability;
@@ -885,13 +891,22 @@ public:
 	const std::map<std::string, std::string> &getZombieUnitByArmorMaleRaw() const { return _zombieUnitByArmorMale; }
 	const std::map<std::string, std::string> &getZombieUnitByArmorFemaleRaw() const { return _zombieUnitByArmorFemale; }
 	const std::map<std::string, std::string> &getZombieUnitByTypeRaw() const { return _zombieUnitByType; }
+	/// Gets which faction the spawned unit should have.
+	UnitFaction getZombieUnitFaction() const { return _zombieUnitFaction; }
+	/// Gets chance for zombie transformation on attack.
+	int getZombieUnitChance() const { return _zombieUnitChance != -1 ? _zombieUnitChance : _specialChance; }
 
 	/// Gets the weapon's spawn unit.
 	const Unit* getSpawnUnit() const { return _spawnUnit; }
 	/// Gets which faction the spawned unit should have.
-	int getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	UnitFaction getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	/// Gets chance for unit spawn on attack.
+	int getSpawnUnitChance() const { return _spawnUnitChance != -1 ? _spawnUnitChance : _specialChance; }
+
 	/// Gets the weapon's spawn item.
 	const RuleItem* getSpawnItem() const { return _spawnItem; }
+	/// Gets chance for item spawn on attack.
+	int getSpawnItemChance() const { return _spawnItemChance != -1 ? _spawnItemChance : _specialChance; }
 
 	/// Checks if this item can be used to target a given faction.
 	bool isTargetAllowed(UnitFaction targetFaction) const;

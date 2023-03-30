@@ -1720,7 +1720,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		&& !specialDamageTransform->getZombieUnit(this).empty()
 		&& getArmor()->getZombiImmune() == false)
 	{
-		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getSpecialChance() : 0;
+		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getZombieUnitChance() : 0;
 	}
 	else
 	{
@@ -1902,9 +1902,22 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			auto* type = save->getMod()->getUnit(typeName);
 			if (type->getArmor()->getSize() <= getArmor()->getSize())
 			{
+				UnitFaction faction = specialDamageTransform->getZombieUnitFaction();
+				if (faction == FACTION_NONE)
+				{
+					if (attack.attacker)
+					{
+						faction = attack.attacker->getFaction();
+					}
+					else
+					{
+						faction = FACTION_HOSTILE;
+					}
+				}
+
 				// converts the victim to a zombie on death
 				setRespawn(true);
-				setSpawnUnitFaction(FACTION_HOSTILE);
+				setSpawnUnitFaction(faction);
 				setSpawnUnit(type);
 			}
 			else
