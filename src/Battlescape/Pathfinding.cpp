@@ -272,16 +272,16 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{ 0, 1, 0 },
 		{ 1, 1, 0 },
 	};
-	Tile* startTile[4] = { };
-	Tile* destinationTile[4] = { };
-	Tile* aboveDestination[4] = { };
-	Tile* belowDestination[4] = { };
+	const Tile* startTile[4] = { };
+	const Tile* destinationTile[4] = { };
+	const Tile* aboveDestination[4] = { };
+	const Tile* belowDestination[4] = { };
 
 	// init variables
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		Tile* st = _save->getTile(startPosition + offsets[i]);
-		Tile* dt = _save->getTile(pos + offsets[i]);
+		const Tile* st = _save->getTile(startPosition + offsets[i]);
+		const Tile* dt = _save->getTile(pos + offsets[i]);
 		if (!st || !dt)
 		{
 			return {{INVALID_MOVE_COST, 0}};
@@ -295,7 +295,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// check move up or down
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		int maskCurrentPart = 1 << i;
+		const int maskCurrentPart = 1 << i;
 		if (direction < DIR_UP && startTile[i]->getTerrainLevel() > - 16)
 		{
 			// check if we can go this way
@@ -324,7 +324,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 		}
 
-		Tile* aboveStart =_save->getAboveTile(startTile[i]);
+		const Tile* aboveStart =_save->getAboveTile(startTile[i]);
 		if (aboveStart && aboveStart->hasNoFloor(_save))
 		{
 			maskOfPartsHoleUp |= maskCurrentPart;
@@ -378,7 +378,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// don't let tanks phase through doors.
 	if (size)
 	{
-		Tile* t = destinationTile[3];
+		const Tile* t = destinationTile[3];
 		if ((t->isDoor(O_NORTHWALL)) ||
 			(t->isDoor(O_WESTWALL)))
 		{
@@ -548,8 +548,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	if (size)
 	{
 		totalCost /= numberOfParts;
-		Tile *originTile = _save->getTile(pos + Position(1,1,0));
-		Tile *finalTile = _save->getTile(pos);
+		const Tile *originTile = _save->getTile(pos + Position(1,1,0));
+		const Tile *finalTile = _save->getTile(pos);
 		int tmpDirection = 7;
 		if (isBlockedDirection(unit, originTile, tmpDirection, bam, missileTarget))
 			return {{INVALID_MOVE_COST, 0}};
