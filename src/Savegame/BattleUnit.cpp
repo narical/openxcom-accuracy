@@ -1887,6 +1887,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		ModScript::DamageSpecialUnit::Worker work { this, attack.damage_item, attack.weapon_item, attack.attacker, save, attack.skill_rules, damage, orgDamage, bodypart, side, type->ResistType, attack.type, };
 
+		if (attack.damage_item)
+		{
+			work.execute(attack.damage_item->getRules()->getScript<ModScript::DamageSpecialUnitAmmo>(), args);
+		}
+
 		work.execute(this->getArmor()->getScript<ModScript::DamageSpecialUnit>(), args);
 
 
