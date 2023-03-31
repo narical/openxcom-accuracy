@@ -3332,8 +3332,6 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (iHaveLof && _blaster)
 		needToFlee = true;
-	if (sweepMode)
-		needToFlee = false;
 	if (!iHaveLof && !rangeTooShortToPeak && (enemyExposed || (!amCloserThanFurthestReachable && !amInLoSToFurthestReachable && _unit->getTimeUnits() == getMaxTU(_unit))) || canReachTargetTileWithAttack)
 		peakMode = true;
 	else if (!sweepMode && (iHaveLof || !enemyExposed))
@@ -3360,7 +3358,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable && getCoverValue(_unit->getTile(), _unit) > 0)
+	if (!peakMode && !amInAnyonesFOW && !iHaveLof && !sweepMode && !amCloserThanFurthestReachable && !amInLoSToFurthestReachable && getCoverValue(_unit->getTile(), _unit) > coverInRange / 2)
 		shouldSkip = true;
 	bool winnerWasShouldPeak = false;
 	bool shouldHaveLofAfterMove = false;
@@ -3373,7 +3371,7 @@ void AIModule::brutalThink(BattleAction* action)
 			targetPosition = unitToWalkTo->getPosition();
 			if (!_unit->isCheatOnMovement())
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
-			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection())
+			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
@@ -3443,10 +3441,7 @@ void AIModule::brutalThink(BattleAction* action)
 					visibleToEnemy = true;
 					if (!IAmPureMelee)
 					{
-						bool shouldPeak = false;
-						if ((peakMode && _unit->isCheatOnMovement()) && (_unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0) && unitDist <= _save->getMod()->getMaxViewDistance())
-							shouldPeak = true;
-						if (!lineOfFire && brutalValidTarget(unit, true) || shouldPeak)
+						if (!lineOfFire && brutalValidTarget(unit, true))
 						{
 							lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
 							if (!_unit->isCheatOnMovement())
@@ -3477,17 +3472,14 @@ void AIModule::brutalThink(BattleAction* action)
 			if (targetDist < closestEnemyDist)
 				closestEnemyDist = targetDist;
 			bool shouldPeak = false;
-			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
+			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0)
 				shouldPeak = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
 			if ((pos != myPos || justNeedToTurn))
 			{
-				bool shouldPeakForLof = false;
-				if ((peakMode && _unit->isCheatOnMovement()) && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0 && closestEnemyDist <= _save->getMod()->getMaxViewDistance())
-					shouldPeakForLof = true;
-				if (!IAmPureMelee && shouldPeakForLof && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true)))
+				if (!IAmPureMelee && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true)))
 				{
 					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					if (!_unit->isCheatOnMovement())
@@ -3500,7 +3492,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (lineOfFire == false || IAmPureMelee)
 				{
-					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && _melee))
+					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && (_melee || quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement()))))
 					{
 						lineOfFire = true;
 					}
@@ -3569,7 +3561,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!visibleToEnemy)
 					prio2Score *= 2;
 			}
-			else if (shouldPeak && !visibleToEnemy && !lineOfFire && !_unit->isCheatOnMovement())
+			else if (shouldPeak)
 			{
 				prio2Score = 100 / walkToDist;
 				if (!clearSightToEnemyReachableTile)
@@ -5550,8 +5542,6 @@ bool AIModule::IsEnemyExposedEnough()
 			continue;
 		if (visibleToAnyFriend(enemy))
 			return true;
-		if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
-			return false;
 		Position currentAssumedPosition = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
 		int turnsSinceSeen = enemy->getTurnsSinceSeen(_unit->getFaction());
 		if (_unit->isCheatOnMovement())
@@ -5561,7 +5551,8 @@ bool AIModule::IsEnemyExposedEnough()
 		}
 		else if (enemy->getTileLastSpotted(_unit->getFaction()) == -1)
 			return false;
-		int requiredTUFromStart = enemy->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(enemy);
+		turnsSinceSeen = std::max(turnsSinceSeen, 1);
+		int requiredTUFromStart = turnsSinceSeen * getMaxTU(enemy);
 		int neededTUToStart = tuCostToReachPosition(currentAssumedPosition, enemySimulationNodes, enemy);
 		if (_traceAI)
 		{
