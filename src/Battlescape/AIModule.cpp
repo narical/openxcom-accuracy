@@ -3362,6 +3362,7 @@ void AIModule::brutalThink(BattleAction* action)
 		shouldSkip = true;
 	bool winnerWasShouldPeak = false;
 	bool shouldHaveLofAfterMove = false;
+	float tuToSaveForHide = 0.5;
 	if ((unitToWalkTo != NULL || (randomScouting && encircleTile)) && !shouldSkip)
 	{
 		Position targetPosition = encircleTile->getPosition();
@@ -3472,7 +3473,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (targetDist < closestEnemyDist)
 				closestEnemyDist = targetDist;
 			bool shouldPeak = false;
-			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) / 2.0)
+			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide)
 				shouldPeak = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
