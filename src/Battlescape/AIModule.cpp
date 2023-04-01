@@ -4136,7 +4136,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 							{
 								if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
 									if (tileToCheck != tile || tileToCheck == tile)
-										if (_save->getPathfinding()->isBlockedDirection(_unit, tileToCheck, _save->getTileEngine()->getDirectionTo(tileToCheck->getPosition(), targetNode->getPosition()), BAM_NORMAL, _unit))
+										if (_save->getTileEngine()->horizontalBlockage(tileToCheck, tile, DT_HE) >= item->getRules()->getPower())
 											saveForProxies = true;
 										else
 											saveForProxies = false;
