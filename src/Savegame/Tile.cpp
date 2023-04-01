@@ -252,9 +252,13 @@ void Tile::setMapData(MapData *dat, int mapDataID, int mapDataSetID, TilePart pa
 		}
 		_cache.terrainLevel = level;
 	}
-	if (part == O_WESTWALL || part == O_NORTHWALL)
+	if (part == O_WESTWALL || part == O_NORTHWALL || part == O_OBJECT)
 	{
-		_cache.isLadder = (_objects[O_WESTWALL] && _objects[O_WESTWALL]->isGravLift()) || (_objects[O_NORTHWALL] && _objects[O_NORTHWALL]->isGravLift());
+		_cache.isLadder = (
+			(_objects[O_WESTWALL] && _objects[O_WESTWALL]->isGravLift()) ||
+			(_objects[O_NORTHWALL] && _objects[O_NORTHWALL]->isGravLift()) ||
+			(_objects[O_OBJECT] && _objects[O_OBJECT]->isGravLift())
+		);
 	}
 	updateSprite(part);
 }
