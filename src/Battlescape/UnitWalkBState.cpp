@@ -161,7 +161,11 @@ void UnitWalkBState::think()
 		{
 			auto* belowTile = _parent->getSave()->getBelowTile(_unit->getTile());
 			_fallingWhenStopped = _unit->haveNoFloorBelow() && _unit->getPosition().z != 0 && _unit->getMovementType() != MT_FLY && _unit->getWalkingPhase() == 0;
-			_falling = _fallingWhenStopped && !(belowTile && belowTile->hasLadder() && _unit->getPosition() == _unit->getLastPosition()+Position(0,0,1));
+			_falling = _fallingWhenStopped && !(
+				belowTile && belowTile->hasLadder() && // we do not have any footing but "jump" from ladder to reach ledge
+				_unit->getPosition() == _unit->getLastPosition()+Position(0,0,1) && // only vertical move from ladder below
+				_pf->getStartDirection() != -1 // move is not canceled, when you cancel "jump" you should fallback to ladder below
+			);
 
 			if (_falling)
 			{
@@ -231,7 +235,7 @@ void UnitWalkBState::think()
 				return cancelCurentMove();
 			}
 			// check for reaction fire
-			if (!_falling)
+			if (!_falling && !_fallingWhenStopped)
 			{
 				if (_terrain->checkReactionFire(_unit, _action))
 				{
