@@ -2994,7 +2994,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->isAggressive();
+	bool sweepMode = _unit->isAggressive() || _unit->isLeeroyJenkins();
 	int lowestTurnsLastSeen = 255;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	for (BattleUnit *target : *(_save->getUnits()))
