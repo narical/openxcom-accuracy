@@ -6087,6 +6087,7 @@ std::string debugDisplayScript(const BattleUnit* bu)
 		case FACTION_HOSTILE: s += "Hostile"; break;
 		case FACTION_NEUTRAL: s += "Neutral"; break;
 		case FACTION_PLAYER: s += "Player"; break;
+		default: s += "???"; break;
 		}
 		s += " hp: ";
 		s += std::to_string(bu->getHealth());
