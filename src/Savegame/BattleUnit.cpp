@@ -1743,7 +1743,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		&& !specialDamageTransform->getZombieUnit(this).empty()
 		&& getArmor()->getZombiImmune() == false)
 	{
-		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getSpecialChance() : 0;
+		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getZombieUnitChance() : 0;
 	}
 	else
 	{
@@ -1910,6 +1910,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		ModScript::DamageSpecialUnit::Worker work { this, attack.damage_item, attack.weapon_item, attack.attacker, save, attack.skill_rules, damage, orgDamage, bodypart, side, type->ResistType, attack.type, };
 
+		if (attack.damage_item)
+		{
+			work.execute(attack.damage_item->getRules()->getScript<ModScript::DamageSpecialUnitAmmo>(), args);
+		}
+
 		work.execute(this->getArmor()->getScript<ModScript::DamageSpecialUnit>(), args);
 
 
@@ -1925,9 +1930,22 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			auto* type = save->getMod()->getUnit(typeName);
 			if (type->getArmor()->getSize() <= getArmor()->getSize())
 			{
+				UnitFaction faction = specialDamageTransform->getZombieUnitFaction();
+				if (faction == FACTION_NONE)
+				{
+					if (attack.attacker)
+					{
+						faction = attack.attacker->getFaction();
+					}
+					else
+					{
+						faction = FACTION_HOSTILE;
+					}
+				}
+
 				// converts the victim to a zombie on death
 				setRespawn(true);
-				setSpawnUnitFaction(FACTION_HOSTILE);
+				setSpawnUnitFaction(faction);
 				setSpawnUnit(type);
 			}
 			else
@@ -3311,23 +3329,31 @@ void BattleUnit::updateTileFloorState(SavedBattleGame *saveBattleGame)
 {
 	if (_tile)
 	{
-		auto armorSize = _armor->getSize() - 1;
-		auto newPos = _tile->getPosition();
 		_haveNoFloorBelow = true;
-		for (int x = armorSize; x >= 0; --x)
+
+		if (isBigUnit())
 		{
-			for (int y = armorSize; y >= 0; --y)
+			auto armorSize = _armor->getSize() - 1;
+			auto newPos = _tile->getPosition();
+			for (int x = armorSize; x >= 0; --x)
 			{
-				auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
-				if (t)
+				for (int y = armorSize; y >= 0; --y)
 				{
-					if (!t->hasNoFloor(saveBattleGame))
+					auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
+					if (t)
 					{
-						_haveNoFloorBelow = false;
-						return;
+						if (!t->hasNoFloor(saveBattleGame))
+						{
+							_haveNoFloorBelow = false;
+							return;
+						}
 					}
 				}
 			}
+		}
+		else
+		{
+			_haveNoFloorBelow &= _tile->hasNoFloor(saveBattleGame) && !_tile->hasLadder();
 		}
 	}
 	else
@@ -3366,16 +3392,17 @@ void BattleUnit::setTile(Tile *tile, SavedBattleGame *saveBattleGame)
 	}
 
 	_tile = tile;
+
+	updateTileFloorState(saveBattleGame);
+
 	if (!_tile)
 	{
 		_floating = false;
-		_haveNoFloorBelow = false;
 		return;
 	}
 
 	// Update tiles moved to.
 	auto newPos = _tile->getPosition();
-	_haveNoFloorBelow = true;
 	for (int x = armorSize; x >= 0; --x)
 	{
 		for (int y = armorSize; y >= 0; --y)
@@ -3383,7 +3410,6 @@ void BattleUnit::setTile(Tile *tile, SavedBattleGame *saveBattleGame)
 			auto t = saveBattleGame->getTile(newPos + Position(x, y, 0));
 			if (t)
 			{
-				_haveNoFloorBelow &= t->hasNoFloor(saveBattleGame);
 				t->setUnit(this);
 			}
 		}
@@ -6372,6 +6398,7 @@ std::string debugDisplayScript(const BattleUnit* bu)
 		case FACTION_HOSTILE: s += "Hostile"; break;
 		case FACTION_NEUTRAL: s += "Neutral"; break;
 		case FACTION_PLAYER: s += "Player"; break;
+		default: s += "???"; break;
 		}
 		s += " hp: ";
 		s += std::to_string(bu->getHealth());

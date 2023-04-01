@@ -42,7 +42,7 @@ namespace OpenXcom
  * @param parent Pointer to the Battlescape.
  * @param action Pointer to an action.
  */
-UnitWalkBState::UnitWalkBState(BattlescapeGame *parent, BattleAction action) : BattleState(parent, action), _unit(0), _pf(0), _terrain(0), _falling(false), _beforeFirstStep(false), _numUnitsSpotted(0), _preMovementCost(0)
+UnitWalkBState::UnitWalkBState(BattlescapeGame *parent, BattleAction action) : BattleState(parent, action), _unit(0), _pf(0), _terrain(0), _beforeFirstStep(false), _numUnitsSpotted(0), _preMovementCost(0)
 {
 
 }
@@ -106,7 +106,10 @@ void UnitWalkBState::think()
 		}
 		else
 		{
-			_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
+			if (_parent->getPanicHandled())
+			{
+				_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
+			}
 			_pf->abortPath();
 			_parent->popState();
 			return;
@@ -120,6 +123,19 @@ void UnitWalkBState::think()
 		_parent->popState();
 		return;
 	}
+
+	auto cancelCurentMove = [&]
+	{
+		if (_fallingWhenStopped && !_falling)
+		{
+			_falling = true;
+		}
+		else
+		{
+			_pf->abortPath();
+			_parent->popState();
+		}
+	};
 
 	if (_unit->getStatus() == STATUS_WALKING || _unit->getStatus() == STATUS_FLYING)
 	{
@@ -143,7 +159,9 @@ void UnitWalkBState::think()
 		// unit moved from one tile to the other, update the tiles
 		if (_unit->getPosition() != _unit->getLastPosition())
 		{
-			_falling = _unit->haveNoFloorBelow() && _unit->getPosition().z != 0 && _unit->getMovementType() != MT_FLY && _unit->getWalkingPhase() == 0;
+			auto* belowTile = _parent->getSave()->getBelowTile(_unit->getTile());
+			_fallingWhenStopped = _unit->haveNoFloorBelow() && _unit->getPosition().z != 0 && _unit->getMovementType() != MT_FLY && _unit->getWalkingPhase() == 0;
+			_falling = _fallingWhenStopped && !(belowTile && belowTile->hasLadder() && _unit->getPosition() == _unit->getLastPosition()+Position(0,0,1));
 
 			if (_falling)
 			{
@@ -155,6 +173,7 @@ void UnitWalkBState::think()
 						if (otherTileBelow && otherTileBelow->getUnit())
 						{
 							_falling = false;
+							_fallingWhenStopped = false;
 							_pf->dequeuePath();
 							_parent->getSave()->addFallingUnit(_unit);
 							_parent->statePushFront(new UnitFallBState(_parent));
@@ -221,9 +240,7 @@ void UnitWalkBState::think()
 			}
 			if (unitSpotted)
 			{
-				_pf->abortPath();
-				_parent->popState();
-				return;
+				return cancelCurentMove();
 			}
 			// check for reaction fire
 			if (!_falling)
@@ -231,9 +248,7 @@ void UnitWalkBState::think()
 				if (_terrain->checkReactionFire(_unit, _action))
 				{
 					// unit got fired upon - stop walking
-					_pf->abortPath();
-					_parent->popState();
-					return;
+					return cancelCurentMove();
 				}
 			}
 		}
@@ -293,9 +308,7 @@ void UnitWalkBState::think()
 
 			if (tu == Pathfinding::INVALID_MOVE_COST)
 			{
-				_pf->abortPath();
-				_parent->popState();
-				return;
+				return cancelCurentMove();
 			}
 
 			if (tu > _unit->getTimeUnits())
@@ -304,9 +317,7 @@ void UnitWalkBState::think()
 				{
 					_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
 				}
-				_pf->abortPath();
-				_parent->popState();
-				return;
+				return cancelCurentMove();
 			}
 
 			if (energy > _unit->getEnergy())
@@ -315,15 +326,12 @@ void UnitWalkBState::think()
 				{
 					_action.result = "STR_NOT_ENOUGH_ENERGY";
 				}
-				_pf->abortPath();
-				_parent->popState();
-				return;
+				return cancelCurentMove();
 			}
 
 			if (_parent->getPanicHandled() && !_falling && _parent->checkReservedTU(_unit, tu, energy) == false)
 			{
-				_pf->abortPath();
-				return;
+				return cancelCurentMove();
 			}
 
 			// we are looking in the wrong way, turn first (unless strafing)
@@ -398,9 +406,7 @@ void UnitWalkBState::think()
 						>= 28)))  // 4+ voxels poking into the tile above, we don't kick people in the head here at XCom.
 					{
 						_action.clearTU();
-						_pf->abortPath();
-						_parent->popState();
-						return;
+						return cancelCurentMove();
 					}
 				}
 			}
@@ -481,9 +487,8 @@ void UnitWalkBState::think()
 			}
 			if (Options::traceAI) { Log(LOG_INFO) << "Egads! A turn reveals new units! I must pause!"; }
 			_unit->setHiding(false); // not hidden, are we...
-			_pf->abortPath();
 			_unit->abortTurn(); //revert to a standing state.
-			_parent->popState();
+			return cancelCurentMove();
 		}
 	}
 }

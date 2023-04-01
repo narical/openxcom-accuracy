@@ -169,7 +169,7 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_liveAlienPrisonType(0), _attraction(0), _flatUse(0, 1), _flatThrow(0, 1), _flatPrime(0, 1), _flatUnprime(0, 1), _arcingShot(false),
 	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(listOrder),
 	_maxRange(200), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _shotgunPellets(0), _shotgunBehaviorType(0), _shotgunSpread(100), _shotgunChoke(100),
-	_spawnUnitFaction(-1),
+	_spawnUnitFaction(FACTION_NONE), _zombieUnitFaction(FACTION_HOSTILE),
 	_targetMatrix(7),
 	_LOSRequired(false), _underwaterOnly(false), _landOnly(false), _psiReqiured(false), _manaRequired(false),
 	_meleePower(0), _specialType(-1), _vaporColor(-1), _vaporDensity(0), _vaporProbability(15),
@@ -673,13 +673,20 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_shotgunBehaviorType = node["shotgunBehavior"].as<int>(_shotgunBehaviorType);
 	_shotgunSpread = node["shotgunSpread"].as<int>(_shotgunSpread);
 	_shotgunChoke = node["shotgunChoke"].as<int>(_shotgunChoke);
+
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByArmorMale, node["zombieUnitByArmorMale"]);
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByArmorFemale, node["zombieUnitByArmorFemale"]);
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByType, node["zombieUnitByType"]);
 	mod->loadNameNull(_type, _zombieUnit, node["zombieUnit"]);
 	mod->loadNameNull(_type, _spawnUnitName, node["spawnUnit"]);
 	mod->loadNameNull(_type, _spawnItemName, node["spawnItem"]);
-	_spawnUnitFaction = node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
+	_spawnUnitFaction = (UnitFaction)node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
+	_zombieUnitFaction = (UnitFaction)node["zombieUnitFaction"].as<int>(_zombieUnitFaction);
+	loadInt(_spawnUnitChance, node["spawnUnitChance"]);
+	loadInt(_zombieUnitChance, node["zombieUnitChance"]);
+	loadInt(_spawnItemChance, node["spawnItemChance"]);
+
+
 	if (node["psiTargetMatrix"])
 	{
 		// TODO: just backwards-compatibility, remove in 2022, update ruleset validator too

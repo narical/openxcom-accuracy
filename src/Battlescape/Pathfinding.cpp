@@ -101,9 +101,11 @@ void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position e
 {
 	_totalTUCost = {};
 	_path.clear();
+
+	const int size = bam != BAM_MISSILE ? unit->getArmor()->getSize() : 1;
+
 	// i'm DONE with these out of bounds errors.
-	if (endPosition.x > _save->getMapSizeX() - unit->getArmor()->getSize() || endPosition.y > _save->getMapSizeY() - unit->getArmor()->getSize() || endPosition.x < 0 || endPosition.y < 0)
-		return;
+	if (endPosition.x > _save->getMapSizeX() - size || endPosition.y > _save->getMapSizeY() - size || endPosition.x < 0 || endPosition.y < 0) return;
 
 	bool sneak = Options::sneakyAI && unit->getFaction() == FACTION_HOSTILE;
 
@@ -114,7 +116,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position e
 	}
 	_unit = unit;
 
-	Tile *destinationTile = _save->getTile(endPosition);
+	const Tile* destinationTile = _save->getTile(endPosition);
 
 	// check if destination is not blocked
 	if (isBlocked(_unit, destinationTile, O_FLOOR, bam, missileTarget) || isBlocked(_unit, destinationTile, O_OBJECT, bam, missileTarget))
@@ -139,11 +141,14 @@ void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position e
 	{
 		return; // Icarus is a bad role model for XCom soldiers.
 	}
-	// check if we have floor, else lower destination (for non flying units only, because otherwise they never reached this place)
-	while (canFallDown(destinationTile, _unit->getArmor()->getSize()) && movementType != MT_FLY)
+	if (movementType != MT_FLY && bam != BAM_MISSILE)
 	{
-		endPosition.z--;
-		destinationTile = _save->getTile(endPosition);
+		// check if we have floor, else lower destination (for non flying units only, because otherwise they never reached this place)
+		while (canFallDown(destinationTile, size) && !(size == 1 && destinationTile->hasLadder()))
+		{
+			endPosition.z--;
+			destinationTile = _save->getTile(endPosition);
+		}
 	}
 
 	// Strafing move allowed only to adjacent squares on same z. "Same z" rule mainly to simplify walking render.
@@ -288,21 +293,25 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{ 0, 1, 0 },
 		{ 1, 1, 0 },
 	};
-	Tile* startTile[4] = { };
-	Tile* destinationTile[4] = { };
-	Tile* aboveDestination[4] = { };
-	Tile* belowDestination[4] = { };
+	const Tile* startTile[4] = { };
+	const Tile* aboveStart[4] = { };
+	const Tile* belowStart[4] = { };
+	const Tile* destinationTile[4] = { };
+	const Tile* aboveDestination[4] = { };
+	const Tile* belowDestination[4] = { };
 
 	// init variables
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		Tile* st = _save->getTile(startPosition + offsets[i]);
-		Tile* dt = _save->getTile(pos + offsets[i]);
+		const Tile* st = _save->getTile(startPosition + offsets[i]);
+		const Tile* dt = _save->getTile(pos + offsets[i]);
 		if (!st || !dt)
 		{
 			return {{INVALID_MOVE_COST, 0}};
 		}
 		startTile[i] = st;
+		aboveStart[i] = _save->getAboveTile(st);
+		belowStart[i] = _save->getBelowTile(st);
 		destinationTile[i] = dt;
 		aboveDestination[i] = _save->getAboveTile(dt);
 		belowDestination[i] = _save->getBelowTile(dt);
@@ -311,7 +320,9 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// check move up or down
 	for (int i = 0; i < numberOfParts; ++i)
 	{
-		auto maskCurrentPart = 1 << i;
+		const int maskCurrentPart = 1 << i;
+		const bool checkClimbing = (i == 0) && (numberOfParts == 1) &&  movementType != MT_FLY;
+
 		if (direction < DIR_UP && startTile[i]->getTerrainLevel() > - 16)
 		{
 			// check if we can go this way
@@ -351,15 +362,17 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 		}
 
-		auto aboveStart =_save->getAboveTile(startTile[i]);
-		if (aboveStart && aboveStart->hasNoFloor(_save))
+		if (aboveStart[0] && aboveStart[0]->hasNoFloor(_save))
 		{
 			maskOfPartsHoleUp |= maskCurrentPart;
 		}
 		// check if we have floor, else fall down
 		if (movementType != MT_FLY && canFallDown(startTile[i]))
 		{
-			maskOfPartsFalling |= maskCurrentPart;
+			if (!checkClimbing || (!startTile[i]->hasLadder() && !(direction < DIR_UP && belowStart[i] && belowStart[i]->hasLadder() && !canFallDown(destinationTile[i]))))
+			{
+				maskOfPartsFalling |= maskCurrentPart;
+			}
 		}
 		if (movementType == MT_FLY && (canFallDown(startTile[i]) || canFallDown(destinationTile[i])))
 		{
@@ -405,7 +418,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// don't let tanks phase through doors.
 	if (size)
 	{
-		auto t = destinationTile[3];
+		const Tile* t = destinationTile[3];
 		if ((t->isDoor(O_NORTHWALL)) ||
 			(t->isDoor(O_WESTWALL)))
 		{
@@ -575,8 +588,8 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	if (size)
 	{
 		totalCost /= numberOfParts;
-		Tile *originTile = _save->getTile(pos + Position(1,1,0));
-		Tile *finalTile = _save->getTile(pos);
+		const Tile *originTile = _save->getTile(pos + Position(1,1,0));
+		const Tile *finalTile = _save->getTile(pos);
 		int tmpDirection = 7;
 		if (isBlockedDirection(unit, originTile, tmpDirection, bam, missileTarget))
 			return {{INVALID_MOVE_COST, 0}};
@@ -864,7 +877,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
  * @param missileTarget Target for a missile.
  * @return True if the movement is blocked.
  */
-bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const
+bool Pathfinding::isBlockedDirection(const BattleUnit *unit, const Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const
 {
 
 	// check if the difference in height between start and destination is not too high
@@ -955,7 +968,7 @@ bool Pathfinding::isBlockedDirection(const BattleUnit *unit, Tile *startTile, co
  * @param here The current tile.
  * @return True if a unit can fall down.
  */
-bool Pathfinding::canFallDown(Tile *here) const
+bool Pathfinding::canFallDown(const Tile *here) const
 {
 	if (here->getPosition().z == 0)
 		return false;
@@ -971,7 +984,7 @@ bool Pathfinding::canFallDown(Tile *here) const
  * @param size The size of the unit.
  * @return True if a unit can fall down.
  */
-bool Pathfinding::canFallDown(Tile *here, int size) const
+bool Pathfinding::canFallDown(const Tile *here, int size) const
 {
 	for (int x = 0; x != size; ++x)
 	{
@@ -983,6 +996,7 @@ bool Pathfinding::canFallDown(Tile *here, int size) const
 				return false;
 		}
 	}
+
 	return true;
 }
 
@@ -1092,7 +1106,7 @@ bool Pathfinding::validateUpDown(const BattleUnit *bu, const Position& startPosi
 	}
 	else
 	{
-		if (bu->getMovementType() == MT_FLY)
+		if (bu->getMovementType() == MT_FLY || startTile->hasLadder())
 		{
 			if ((direction == DIR_UP && destinationTile->hasNoFloor(_save)) // flying up only possible when there is no roof
 				|| (direction == DIR_DOWN && startTile->hasNoFloor(_save)) // falling down only possible when there is no floor

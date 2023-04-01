@@ -2220,9 +2220,14 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 	if (!type)
 		return;
 
+	if (!RNG::percent(item->getSpawnUnitChance()))
+	{
+		return;
+	}
+
 	// Check which faction the new unit will be
 	UnitFaction faction;
-	if (item->getSpawnUnitFaction() == -1 && attack.attacker)
+	if (item->getSpawnUnitFaction() == FACTION_NONE && attack.attacker)
 	{
 		faction = attack.attacker->getFaction();
 	}
@@ -2321,6 +2326,11 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 
 	if (!type)
 		return;
+
+	if (!RNG::percent(item->getSpawnItemChance()))
+	{
+		return;
+	}
 
 	// Create the item
 	auto* newItem = _save->createTempItem(type);
