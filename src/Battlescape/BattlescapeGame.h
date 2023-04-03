@@ -279,7 +279,7 @@ public:
 	/// Gets the mod.
 	Mod *getMod();
 	/// Returns whether panic has been handled.
-	bool getPanicHandled() const { return _playerPanicHandled; }
+	bool getPanicHandled() const;
 	/// Tries to find an item and pick it up if possible.
 	bool findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem);
 	/// Checks through all the items on the ground and picks one.

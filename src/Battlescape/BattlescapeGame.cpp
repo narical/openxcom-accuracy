@@ -3377,4 +3377,11 @@ BattleUnit* BattlescapeGame::getNextUnitToSelect()
 	return _nextUnitToSelect;
 }
 
+bool BattlescapeGame::getPanicHandled() const
+{
+	if (_save->getSide() != FACTION_PLAYER)
+		return true;
+	return _playerPanicHandled;
+}
+
 }
