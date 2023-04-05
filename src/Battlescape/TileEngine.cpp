@@ -5914,4 +5914,97 @@ bool TileEngine::isNextToDoor(Tile* tile)
 	return false;
 }
 
+std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew)
+{
+	std::set<Tile*> visibleFrom;
+
+	std::vector<Position> _trajectory;
+	bool swap = (direction == 0 || direction == 4);
+	const int signX[8] = {+1, +1, +1, +1, -1, -1, -1, -1};
+	const int signY[8] = {-1, -1, -1, +1, +1, +1, -1, -1};
+	int y1, y2;
+	Position posTest;
+
+	// Test all tiles within view cone for visibility.
+	int maxDist = _save->getMapSizeX();
+	if (Options::aiPerformanceOptimization)
+	{
+		int myUnits = 0;
+		for (BattleUnit* bu : *(_save->getUnits()))
+		{
+			if (bu->getFaction() == unit->getFaction() && !bu->isOut())
+				++myUnits;
+		}
+		float scaleFactor = (float)60 * 60 * 4 * 30 / (_save->getMapSizeXYZ() * myUnits);
+		maxDist = std::max(60, _save->getMod()->getMaxViewDistance());
+		if (scaleFactor < 1)
+			maxDist *= scaleFactor;
+	}
+	setupEventVisibilitySector(pos, Position(-1,-1,-1), 0);
+	for (int x = 0; x <= maxDist; ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+	{
+		if (direction & 1)
+		{
+			y1 = 0;
+			y2 = _save->getMapSizeY();
+		}
+		else
+		{
+			y1 = -x;
+			y2 = x;
+		}
+		int mayDist = maxDist;
+		for (int y = y1; y <= mayDist; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+		{
+			const int distanceSqr = x * x + y * y;
+			if (distanceSqr >= 0)
+			{
+				posTest.x = pos.x + signX[direction] * (swap ? y : x);
+				posTest.y = pos.y + signY[direction] * (swap ? x : y);
+				// Only continue if the column of tiles at (x,y) is within the narrow arc of interest (if enabled)
+				for (int z = 0; z < _save->getMapSizeZ(); z++)
+				{
+					posTest.z = z;
+
+					if (_save->getTile(posTest)) // inside map?
+					{
+						// this sets tiles to discovered if they are in LOS - tile visibility is not calculated in voxelspace but in tilespace
+						// large units have "4 pair of eyes"
+						int size = unit->getArmor()->getSize();
+						for (int xo = 0; xo < size; xo++)
+						{
+							for (int yo = 0; yo < size; yo++)
+							{
+								Position poso = pos + Position(xo, yo, 0);
+								_trajectory.clear();
+								int tst = calculateLineTile(poso, posTest, _trajectory);
+								if (tst > 127)
+								{
+									// Vision impacted something before reaching posTest. Throw away the impact point.
+									_trajectory.pop_back();
+								}
+								// Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
+								for (const auto& posVisited : _trajectory)
+								{
+									// Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
+									//  this bresenham line's period might be different from the one that originally revealed the tile.
+									if (x <= getMaxViewDistance() && y <= getMaxViewDistance() && distanceSqr <= getMaxViewDistanceSq())
+									{
+										Tile* tile = _save->getTile(posVisited);
+										if (!onlyNew || tile->getLastExplored(unit->getFaction()) < _save->getTurn())
+										{
+											visibleFrom.insert(tile);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return visibleFrom;
+}
+
 }

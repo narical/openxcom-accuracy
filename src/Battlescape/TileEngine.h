@@ -274,6 +274,8 @@ public:
 
 	/// Checks if a tile either has a door is next to a door
 	bool isNextToDoor(Tile *tile);
+	/// Returns a vector of tiles that would be visible from a specific location
+	std::set<Tile*> visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew = false);
 };
 
 }
