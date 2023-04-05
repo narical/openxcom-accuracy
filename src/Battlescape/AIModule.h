@@ -224,6 +224,8 @@ public:
 	float highestCoverInRange(const std::vector<PathfindingNode *> nodeVector);
 	/// runs a very minimalist pathfinding just to see whether the unit could move
 	bool isAnyMovementPossible();
+	/// returns how much energy the unit can recover each turn
+	int getEnergyRecovery(BattleUnit* unit);
 };
 
 }
