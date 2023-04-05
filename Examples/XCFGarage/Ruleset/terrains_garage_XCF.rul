@@ -1,0 +1,15 @@
+terrains:
+  - name: XBASE
+    addOnly: true
+    mapDataSets:
+      - BLANKS
+      - XBASE1
+      - XBASE2
+      - XCOMWALL
+      - XCOMBITS
+      - GARAGE_STUFF 
+    mapBlocks:
+      - name: XCFG_00
+        width: 10
+        length: 10
+        height: 2

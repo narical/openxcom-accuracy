@@ -1,0 +1,33 @@
+﻿startingBase:
+  facilities:
+    - type: STR_GENERAL_STORES
+      x: 2
+      y: 0
+    - type: STR_ACCESS_LIFT
+      x: 2
+      y: 2
+    - type: STR_LIVING_QUARTERS
+      x: 2
+      y: 1
+    - type: STR_GARAGE
+      x: 2
+      y: 4
+    - type: STR_GARAGE
+      x: 1
+      y: 4
+    - type: STR_HQ
+      x: 2
+      y: 3
+    - type: STR_PRISON_CELLS
+      x: 0
+      y: 2
+    - type: STR_CORRIDOR
+      x: 1
+      y: 2
+    - type: STR_GYM
+      x: 1
+      y: 3
+    - type: STR_ANIMAL_CAGES
+      x: 3
+      y: 2
+
