@@ -336,7 +336,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 		}
 
-		if (aboveStart[0] && aboveStart[0]->hasNoFloor(_save))
+		if (aboveStart[i] && aboveStart[i]->hasNoFloor(_save))
 		{
 			maskOfPartsHoleUp |= maskCurrentPart;
 		}
