@@ -48,7 +48,7 @@ namespace OpenXcom
 {
 
 AlienMission::AlienMission(const RuleAlienMission &rule) : _rule(rule), _nextWave(0), _nextUfoCounter(0), _spawnCountdown(0), _liveUfos(0),
-	_interrupted(false), _multiUfoRetaliationInProgress(false), _uniqueID(0), _missionSiteZone(-1), _base(0)
+	_interrupted(false), _multiUfoRetaliationInProgress(false), _uniqueID(0), _missionSiteZoneArea(-1), _base(0)
 {
 	// Empty by design.
 }
@@ -106,7 +106,7 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 		}
 		_base = *found;
 	}
-	_missionSiteZone = node["missionSiteZone"].as<int>(_missionSiteZone);
+	_missionSiteZoneArea = node["missionSiteZone"].as<int>(_missionSiteZoneArea);
 
 	// fix invalid saves
 	RuleRegion* region = mod->getRegion(_region, false);
@@ -114,9 +114,9 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 	{
 		Log(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid region: " << _region;
 		_interrupted = true;
-		if (_missionSiteZone > -1)
+		if (_missionSiteZoneArea > -1)
 		{
-			_missionSiteZone = 0;
+			_missionSiteZoneArea = 0;
 		}
 		_region = mod->getRegionsList().front();
 		if (_liveUfos > 0)
@@ -166,7 +166,7 @@ YAML::Node AlienMission::save() const
 	{
 		node["alienBase"] = _base->saveId();
 	}
-	node["missionSiteZone"] = _missionSiteZone;
+	node["missionSiteZone"] = _missionSiteZoneArea;
 	return node;
 }
 
@@ -225,7 +225,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	{
 		RuleRegion* regionRules = mod.getRegion(_region, true);
 		std::vector<MissionArea> areas = regionRules->getMissionZones().at((_rule.getSpawnZone() == -1) ? trajectory.getZone(0) : _rule.getSpawnZone()).areas;
-		MissionArea area = areas.at((_missionSiteZone == -1) ? RNG::generate(0, areas.size() - 1) : _missionSiteZone);
+		MissionArea area = areas.at((_missionSiteZoneArea == -1) ? RNG::generate(0, areas.size() - 1) : _missionSiteZoneArea);
 
 		if (wave.objectiveOnXcomBase)
 		{
@@ -873,13 +873,13 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	else
 	{
 		// UFO landed.
-		if (_missionSiteZone != -1 && wave.objective && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
+		if (_missionSiteZoneArea != -1 && wave.objective && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
 		{
 			// Remove UFO, replace with MissionSite.
 			addScore(ufo.getLongitude(), ufo.getLatitude(), game);
 			ufo.setStatus(Ufo::DESTROYED);
 
-			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZone);
+			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZoneArea);
 			if (wave.objectiveOnTheLandingSite)
 			{
 				// Note: 'area' is a local variable; we're not changing the ruleset
@@ -1182,13 +1182,13 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
 		logMissionError(trajectory.getZone(nextWaypoint), region);
 	}
 
-	if (_missionSiteZone != -1 && wave.objective && trajectory.getZone(nextWaypoint) == (size_t)(_rule.getSpawnZone()))
+	if (_missionSiteZoneArea != -1 && wave.objective && trajectory.getZone(nextWaypoint) == (size_t)(_rule.getSpawnZone()))
 	{
 		if (wave.objectiveOnTheLandingSite)
 		{
-			return getLandPointForMissionSite(globe, region, _rule.getSpawnZone(), _missionSiteZone, ufo);
+			return getLandPointForMissionSite(globe, region, _rule.getSpawnZone(), _missionSiteZoneArea, ufo);
 		}
-		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZone);
+		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZoneArea);
 		return std::make_pair(area->lonMin, area->latMin);
 	}
 
@@ -1399,12 +1399,12 @@ MissionSite *AlienMission::spawnMissionSite(SavedGame &game, const Mod &mod, con
 }
 
 /**
- * Tell the mission which entry in the zone array we're targetting for our missionSite payload.
- * @param zone the number of the zone to target, synonymous with a city.
+ * Tell the mission which entry in the 'areas' array we're targetting for our missionSite payload.
+ * @param area the number of the area to target, synonymous with a city.
  */
-void AlienMission::setMissionSiteZone(int zone)
+void AlienMission::setMissionSiteZoneArea(int area)
 {
-	_missionSiteZone = zone;
+	_missionSiteZoneArea = area;
 }
 
 void AlienMission::logMissionError(int zone, const RuleRegion &region)
