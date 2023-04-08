@@ -125,6 +125,7 @@ private:
 	bool _ironman;
 	GameTime *_time;
 	std::vector<std::string> _userNotes;
+	std::vector<std::string> _geoscapeDebugLog;
 	std::vector<int> _researchScores;
 	std::vector<int64_t> _funds, _maintenance, _incomes, _expenditures;
 	double _globeLon, _globeLat;
@@ -506,6 +507,8 @@ public:
 	void handlePrimaryResearchSideEffects(const std::vector<const RuleResearch*> &topicsToCheck, const Mod* mod, Base* base);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
+	/// Gets the list of geoscape debug log entries.
+	std::vector<std::string>& getGeoscapeDebugLog() { return _geoscapeDebugLog; }
 };
 
 }

@@ -128,6 +128,7 @@ OPT bool oxceDisableHitLog;
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableInventoryTuCost;
 OPT bool oxceShowBaseNameInPopups;
+OPT int oxceGeoscapeDebugLogMaxEntries;
 
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;

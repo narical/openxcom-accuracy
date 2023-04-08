@@ -1703,7 +1703,7 @@ void GeoscapeState::baseHunting()
 									mission->setRace(ab->getAlienRace());
 								}
 								mission->setAlienBase(ab);
-								int targetZone = -1;
+								int targetArea = -1;
 								if (mission->getRules().getObjective() == OBJECTIVE_SITE)
 								{
 									int missionZone = mission->getRules().getSpawnZone();
@@ -1711,10 +1711,10 @@ void GeoscapeState::baseHunting()
 									const std::vector<MissionArea> areas = regionRules->getMissionZones().at(missionZone).areas;
 									if (!areas.empty())
 									{
-										targetZone = RNG::generate(0, areas.size() - 1);
+										targetArea = RNG::generate(0, areas.size() - 1);
 									}
 								}
-								mission->setMissionSiteZone(targetZone);
+								mission->setMissionSiteZoneArea(targetArea);
 								mission->start(*_game, *_globe);
 								_game->getSavedGame()->getAlienMissions().push_back(mission);
 
@@ -2281,7 +2281,7 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
 				mission->setRace(base->getAlienRace());
 			}
 			mission->setAlienBase(base);
-			int targetZone = -1;
+			int targetArea = -1;
 			if (mission->getRules().getObjective() == OBJECTIVE_SITE)
 			{
 				int missionZone = mission->getRules().getSpawnZone();
@@ -2289,10 +2289,10 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
 				const std::vector<MissionArea> areas = regionRules->getMissionZones().at(missionZone).areas;
 				if (!areas.empty())
 				{
-					targetZone = RNG::generate(0, areas.size() - 1);
+					targetArea = RNG::generate(0, areas.size() - 1);
 				}
 			}
-			mission->setMissionSiteZone(targetZone);
+			mission->setMissionSiteZoneArea(targetArea);
 			mission->start(_engine, _globe);
 			base->setGenMissionCount(base->getGenMissionCount() + 1); // increase counter, used to check mission limit
 			_save.getAlienMissions().push_back(mission);
@@ -3973,16 +3973,29 @@ void GeoscapeState::determineAlienMissions()
 			auto upgrade = mod->getDeployment(upgradeId, false);
 			if (upgrade && upgrade != alienBase->getDeployment())
 			{
+				std::ostringstream ss;
+				ss << "month: " << month;
+				ss << " baseId: " << alienBase->getId();
+				ss << " baseType: " << alienBase->getType();
 				if (alienBase->getDeployment()->resetAlienBaseAgeAfterUpgrade() || upgrade->resetAlienBaseAge())
 				{
 					// reset base age to zero
 					alienBase->setStartMonth(month);
+					ss << "; base age was reset;";
 				}
+				ss << " old deployment: " << alienBase->getDeployment()->getType();
 				alienBase->setDeployment(upgrade);
+				ss << " new deployment: " << alienBase->getDeployment()->getType();
 				auto* upgradeRace = mod->getAlienRace(upgrade->getUpgradeRace(), false);
 				if (upgradeRace)
 				{
+					ss << " old race: " << alienBase->getAlienRace();
 					alienBase->setAlienRace(upgradeRace->getId());
+					ss << " new race: " << alienBase->getAlienRace();
+				}
+				if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+				{
+					save->getGeoscapeDebugLog().push_back(ss.str());
 				}
 			}
 		}
@@ -4005,7 +4018,8 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	const RuleAlienMission *missionRules;
 	std::string missionType;
 	std::string missionRace;
-	int targetZone = -1;
+	int targetZoneNumber = -1;
+	int targetAreaNumber = -1;
 
 	// terror mission type deal? this will require special handling.
 	if (command->getSiteType())
@@ -4033,7 +4047,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 			// we'll use the regions listed in the command, if any, otherwise check all the regions in the ruleset looking for matches
 			std::vector<std::string> regions = (command->hasRegionWeights()) ? command->getRegions(month) : mod->getRegionsList();
 			missionRules = mod->getAlienMission(missionType, true);
-			targetZone = missionRules->getSpawnZone();
+			targetZoneNumber = missionRules->getSpawnZone();
 
 			if (targetBase)
 			{
@@ -4119,9 +4133,9 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 				// ok, we found a region that doesn't have our mission in it, let's see if it has an appropriate landing zone.
 				// if it does, let's add it to our list of valid areas, taking note of which mission area(s) matched.
 				RuleRegion *region = mod->getRegion((*regionNameIt), true);
-				if ((int)(region->getMissionZones().size()) > targetZone)
+				if ((int)(region->getMissionZones().size()) > targetZoneNumber)
 				{
-					std::vector<MissionArea> areas = region->getMissionZones()[targetZone].areas;
+					std::vector<MissionArea> areas = region->getMissionZones()[targetZoneNumber].areas;
 					int counter = 0;
 					for (const auto& area : areas)
 					{
@@ -4162,10 +4176,9 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 			// this command cannot run this month, we have failed, forgive us senpai.
 			return false;
 		}
-		// reset this, we may have used it earlier, it longer represents the target zone type, but the target zone number within that type
-		targetZone = -1;
+
 		// everything went according to plan: we can now pick a city/whatever to attack.
-		while (targetZone == -1)
+		while (targetAreaNumber == -1)
 		{
 			if (command->hasRegionWeights())
 			{
@@ -4204,11 +4217,11 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 			if (min != -1)
 			{
 				// we have our random range, we can make a selection, and we're done.
-				targetZone = validAreas[RNG::generate(min, max)].second;
+				targetAreaNumber = validAreas[RNG::generate(min, max)].second;
 			}
 		}
 		// now add that city to the list of sites we've hit, store the array, etc.
-		strategy.addMissionLocation(command->getVarName(), targetRegion, targetZone, command->getRepeatAvoidance());
+		strategy.addMissionLocation(command->getVarName(), targetRegion, targetAreaNumber, command->getRepeatAvoidance());
 	}
 	else if (RNG::percent(command->getTargetBaseOdds()))
 	{
@@ -4366,7 +4379,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	mission->setRace(missionRace);
 	mission->setId(_game->getSavedGame()->getId("ALIEN_MISSIONS"));
 	mission->setRegion(targetRegion, *_game->getMod());
-	mission->setMissionSiteZone(targetZone);
+	mission->setMissionSiteZoneArea(targetAreaNumber);
 	strategy.addMissionRun(command->getVarName());
 	mission->start(*_game, *_globe, command->getDelay());
 	_game->getSavedGame()->getAlienMissions().push_back(mission);
@@ -4374,6 +4387,19 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	if (command->getUseTable())
 	{
 		strategy.removeMission(targetRegion, missionType);
+	}
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "month: " << month;
+		ss << " id: " << mission->getId();
+		ss << " type: " << mission->getRules().getType();
+		ss << " race: " << mission->getRace();
+		ss << " region: " << targetRegion; /* << " / " << mission->getRegion() */
+		ss << " targetZone: " << targetZoneNumber;
+		ss << " targetArea: " << targetAreaNumber;
+		save->getGeoscapeDebugLog().push_back(ss.str());
 	}
 
 	// we did it, we can go home now.

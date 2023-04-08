@@ -440,6 +440,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	_funds = doc["funds"].as< std::vector<int64_t> >(_funds);
 	_maintenance = doc["maintenance"].as< std::vector<int64_t> >(_maintenance);
 	_userNotes = doc["userNotes"].as< std::vector<std::string> >(_userNotes);
+	_geoscapeDebugLog = doc["geoscapeDebugLog"].as<std::vector<std::string> >(_geoscapeDebugLog);
 	_researchScores = doc["researchScores"].as< std::vector<int> >(_researchScores);
 	_incomes = doc["incomes"].as< std::vector<int64_t> >(_incomes);
 	_expenditures = doc["expenditures"].as< std::vector<int64_t> >(_expenditures);
@@ -849,6 +850,20 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["funds"] = _funds;
 	node["maintenance"] = _maintenance;
 	node["userNotes"] = _userNotes;
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		if (_geoscapeDebugLog.size() > (size_t)Options::oxceGeoscapeDebugLogMaxEntries)
+		{
+			for (size_t j = _geoscapeDebugLog.size() - (size_t)Options::oxceGeoscapeDebugLogMaxEntries; j < _geoscapeDebugLog.size(); ++j)
+			{
+				node["geoscapeDebugLog"].push_back(_geoscapeDebugLog[j]);
+			}
+		}
+		else
+		{
+			node["geoscapeDebugLog"] = _geoscapeDebugLog;
+		}
+	}
 	node["researchScores"] = _researchScores;
 	node["incomes"] = _incomes;
 	node["expenditures"] = _expenditures;
@@ -3253,6 +3268,15 @@ bool SavedGame::spawnEvent(const RuleEvent* eventRules)
 
 	// remember that it has been generated
 	addGeneratedEvent(eventRules);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << _time->getFullString();
+		ss << " eventSpawn: " << newEvent->getRules().getName();
+		ss << " days/hours: " << (minutes / 60) / 24 << "/" << (minutes / 60) % 24;
+		_geoscapeDebugLog.push_back(ss.str());
+	}
 
 	return true;
 }
