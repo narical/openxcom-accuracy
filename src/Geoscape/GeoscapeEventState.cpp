@@ -316,6 +316,14 @@ void GeoscapeEventState::eventLogic()
 	// 2. handle items spawned by research
 	// 3. handle events spawned by research
 	save->handlePrimaryResearchSideEffects(topicsToCheck, mod, hq);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << save->getTime()->getFullString();
+		ss << " eventPopup: " << rule.getName();
+		save->getGeoscapeDebugLog().push_back(ss.str());
+	}
 }
 
 /**

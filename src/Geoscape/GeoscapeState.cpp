@@ -3974,16 +3974,29 @@ void GeoscapeState::determineAlienMissions()
 			AlienDeployment* upgrade = mod->getDeployment(upgradeId, false);
 			if (upgrade && upgrade != alienBase->getDeployment())
 			{
+				std::ostringstream ss;
+				ss << "month: " << month;
+				ss << " baseId: " << alienBase->getId();
+				ss << " baseType: " << alienBase->getType();
 				if (alienBase->getDeployment()->resetAlienBaseAgeAfterUpgrade() || upgrade->resetAlienBaseAge())
 				{
 					// reset base age to zero
 					alienBase->setStartMonth(month);
+					ss << "; base age was reset;";
 				}
+				ss << " old deployment: " << alienBase->getDeployment()->getType();
 				alienBase->setDeployment(upgrade);
+				ss << " new deployment: " << alienBase->getDeployment()->getType();
 				auto* upgradeRace = mod->getAlienRace(upgrade->getUpgradeRace(), false);
 				if (upgradeRace)
 				{
+					ss << " old race: " << alienBase->getAlienRace();
 					alienBase->setAlienRace(upgradeRace->getId());
+					ss << " new race: " << alienBase->getAlienRace();
+				}
+				if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+				{
+					save->getGeoscapeDebugLog().push_back(ss.str());
 				}
 			}
 		}
@@ -4375,6 +4388,19 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	if (command->getUseTable())
 	{
 		strategy.removeMission(targetRegion, missionType);
+	}
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "month: " << month;
+		ss << " id: " << mission->getId();
+		ss << " type: " << mission->getRules().getType();
+		ss << " race: " << mission->getRace();
+		ss << " region: " << targetRegion; /* << " / " << mission->getRegion() */
+		ss << " targetZone: " << targetZoneNumber;
+		ss << " targetArea: " << targetAreaNumber;
+		save->getGeoscapeDebugLog().push_back(ss.str());
 	}
 
 	// we did it, we can go home now.

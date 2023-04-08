@@ -481,6 +481,27 @@ Base* AlienMission::selectXcomBase(SavedGame& game, const RuleRegion& regionRule
  */
 Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe, const MissionWave &wave, const UfoTrajectory &trajectory)
 {
+	auto logUfo = [](Ufo* u, SavedGame& g, AlienMission* a)
+	{
+		if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+		{
+			std::ostringstream ss;
+			ss << "gameTime: " << g.getTime()->getFullString();
+			ss << " ufoId: " << u->getUniqueId();
+			ss << " ufoType: " << u->getRules()->getType();
+			ss << " race: " << u->getAlienRace();
+			ss << " region: " << a->getRegion();
+			ss << " trajectory: " << u->getTrajectory().getID();
+			if (u->isHunterKiller())
+			{
+				ss << " hk: true";
+			}
+			ss << " missionId: " << a->getId();
+			ss << " missionType: " << a->getRules().getType();
+			g.getGeoscapeDebugLog().push_back(ss.str());
+		}
+	};
+
 	RuleUfo *ufoRule = mod.getUfo(wave.ufoType);
 	int hunterKillerPercentage = wave.hunterKillerPercentage;
 	if (hunterKillerPercentage == -1 && ufoRule)
@@ -535,6 +556,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			wp->setLongitude(xcombase->getLongitude());
 			wp->setLatitude(xcombase->getLatitude());
 			ufo->setDestination(wp);
+			logUfo(ufo, game, this);
 			return ufo;
 		}
 		else if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
@@ -625,6 +647,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 				}
 			}
 		}
+		logUfo(ufo, game, this);
 		return ufo;
 	}
 	if (ufoRule == 0)
@@ -685,6 +708,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			}
 		}
 	}
+	logUfo(ufo, game, this);
 	return ufo;
 }
 
@@ -1114,6 +1138,21 @@ AlienBase *AlienMission::spawnAlienBase(Country *pactCountry, Game &engine, std:
 	ab->setLatitude(pos.second);
 	game.getAlienBases()->push_back(ab);
 	addScore(ab->getLongitude(), ab->getLatitude(), game);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << game.getTime()->getFullString();
+		ss << " baseId: " << ab->getId();
+		ss << " baseType: " << ab->getType();
+		ss << " race: " << _race;
+		ss << " region: " << _region;
+		ss << " deployment: " << deployment->getType();
+		ss << " missionId: " << _uniqueID;
+		ss << " missionType: " << _rule.getType();
+		game.getGeoscapeDebugLog().push_back(ss.str());
+	}
+
 	return ab;
 }
 
@@ -1393,6 +1432,29 @@ MissionSite *AlienMission::spawnMissionSite(SavedGame &game, const Mod &mod, con
 		missionSite->setTexture(area.texture);
 		missionSite->setCity(area.name);
 		game.getMissionSites()->push_back(missionSite);
+
+		if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+		{
+			std::ostringstream ss;
+			ss << "gameTime: " << game.getTime()->getFullString();
+			ss << " siteId: " << missionSite->getId();
+			ss << " siteType: " << missionSite->getType();
+			ss << " race: " << _race;
+			ss << " region: " << _region;
+			if (!missionSite->getCity().empty())
+			{
+				ss << " city: " << missionSite->getCity();
+			}
+			ss << " deployment: " << deployment->getType();
+			if (alienCustomDeploy)
+			{
+				ss << " / " << alienCustomDeploy->getType();
+			}
+			ss << " missionId: " << _uniqueID;
+			ss << " missionType: " << _rule.getType();
+			game.getGeoscapeDebugLog().push_back(ss.str());
+		}
+
 		return missionSite;
 	}
 	return 0;
