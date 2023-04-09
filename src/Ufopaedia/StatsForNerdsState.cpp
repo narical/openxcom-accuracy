@@ -3180,6 +3180,7 @@ void StatsForNerdsState::initCraftList()
 
 	addVectorOfStrings(ss, craftRule->getRequirements(), "requires");
 	addVectorOfStrings(ss, mod->getBaseFunctionNames(craftRule->getRequiresBuyBaseFunc()), "requiresBuyBaseFunc");
+	addSingleString(ss, craftRule->getRequiresBuyCountry(), "requiresBuyCountry");
 
 	addInteger(ss, craftRule->getBuyCost(), "costBuy", 0, true);
 	addInteger(ss, craftRule->getMonthlyBuyLimit(), "monthlyBuyLimit");
