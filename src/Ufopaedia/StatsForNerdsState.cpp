@@ -2568,7 +2568,7 @@ void StatsForNerdsState::addForcedTorso(std::ostringstream &ss, const ForcedTors
 	}
 	if (_showIds)
 	{
-		ss << " [" << value << "]";
+		ss << " [" << (int)value << "]";
 	}
 	_lstRawData->addRow(2, trp(propertyName).c_str(), ss.str().c_str());
 	++_counter;
