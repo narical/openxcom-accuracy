@@ -1680,7 +1680,7 @@ void GeoscapeState::baseHunting()
 				for (auto craft : *activeCrafts)
 				{
 					// Craft is flying (i.e. not in base)
-					if (craft->getStatus() == "STR_OUT" && !craft->isDestroyed() && !craft->getRules()->isUndetectable())
+					if (craft->getStatus() == "STR_OUT" && !craft->isDestroyed() && !craft->getRules()->isUndetectable() && !craft->isIgnoredByHK())
 					{
 						// Craft is close enough and RNG is in our favour
 						if (craft->getDistance(ab) < Nautical(ab->getDeployment()->getBaseDetectionRange()) && RNG::percent(ab->getDeployment()->getBaseDetectionChance()))
