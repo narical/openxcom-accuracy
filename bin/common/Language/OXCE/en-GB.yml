@@ -444,6 +444,9 @@ en-GB:
 #MainMenuState.cpp
   STR_UPDATE: "Update"
   STR_LATEST_VERSION_INFO: "You are using the latest OpenXcom version."
+#ModConfirmExtendedState.cpp
+  STR_MASTER_MOD_VERSION_REQUIRED_QUESTION: "This mod requires base game v{0} to run correctly. Enable this mod?"
+  STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
 #NotesState.cpp
   STR_NOTES: "Notes"
   STR_NEW_NOTE: "<NEW NOTE>"
@@ -463,12 +466,6 @@ en-GB:
   STR_USER_FOLDER_DESC: "The log file ('openxcom.log') is stored here. All custom mods belong here too (in the 'mods' sub-folder)."
   STR_SAVE_FOLDER_DESC: "Your saved games are located here. Also, the mission generator settings ('battle.cfg') can be found here."
   STR_CONFIG_FOLDER_DESC: "This is where OpenXcom settings ('options.cfg') are stored. Normally the same as the User Folder."
-#OptionsInformExtendedState.cpp
-  STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
-#OptionsVideoState.cpp
-  STR_FOURTH_DISPLAY: "1/4 Display"
-  STR_FIFTH_DISPLAY: "1/5 Display"
-  STR_SIXTH_DISPLAY: "1/6 Display"
 #TestState.cpp
   STR_TEST_SCREEN: "TEST SCREEN"
   STR_PALETTE: "Palette:"
