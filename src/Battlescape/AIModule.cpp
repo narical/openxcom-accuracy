@@ -4447,6 +4447,8 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes);
 		if (!isPathToPositionSave(simulationTile->getPosition()) || simulationTile->getDangerous() || simulationTile->getFire())
 			dangerMod /= 2;
+		if (!isPathToPositionSave(simulationTile->getPosition(), true))
+			return 0;
 	}
 
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
