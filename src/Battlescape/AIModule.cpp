@@ -3343,6 +3343,8 @@ void AIModule::brutalThink(BattleAction* action)
 		if (_unit->getFaction() == FACTION_HOSTILE && !amInAnyonesFOW && coverInRange == 0)
 			sweepMode = true;
 	}
+	if (coverInRange == 0 && iHaveLof)
+		sweepMode = true;
 	if (iHaveLof && _blaster)
 		needToFlee = true;
 	bool shouldSaveEnergy = _unit->getEnergy() + getEnergyRecovery(_unit) < _unit->getBaseStats()->stamina;
@@ -3354,7 +3356,7 @@ void AIModule::brutalThink(BattleAction* action)
 		needToFlee = true;
 	bool shouldSkip = false;
 	if (_traceAI)
-		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking << " enemyExposed: " << enemyExposed << " rangeTooShortToPeak: " << rangeTooShortToPeak << " energy-recovery: " << getEnergyRecovery(_unit) << " contact: " << contact;
+		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " hide after peeking: " << hideAfterPeaking << " enemyExposed: " << enemyExposed << " rangeTooShortToPeak: " << rangeTooShortToPeak << " energy-recovery: " << getEnergyRecovery(_unit) << " contact: " << contact << " coverInRange: " << coverInRange;
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled)
 	{
 		if (!amInAnyonesFOW && !iHaveLof && (!amCloserThanFurthestReachable || !amInLoSToFurthestReachable) && !canReachTargetTileWithAttack)
@@ -5607,9 +5609,15 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 		return 0;
 	float cover = 0;
 	bool blockedInAllDirections = true;
+	Tile* tileFrom = tile;
+	int peakOver = tile->getTerrainLevel() * -1 + bu->getHeight() - 24;
+	if (peakOver > 0)
+		tileFrom = _save->getAboveTile(tile);
+	if (tileFrom == NULL)
+		tileFrom = tile;
 	for (int direction = 0; direction <= 7; ++direction)
 	{
-		Position posInDirection = tile->getPosition();
+		Position posInDirection = tileFrom->getPosition();
 		switch (direction)
 		{
 		case 0:
@@ -5675,10 +5683,10 @@ float AIModule::getCoverValue(Tile *tile, BattleUnit *bu)
 			float coverFromDir = 0;
 			for (int part = O_FLOOR; part < O_MAX; ++part)
 			{
-				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_NONE) / 255.0;
-				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tile, DT_HE) / 255.0;
+				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tileFrom, DT_NONE) / 255.0;
+				if (coverFromDir >= 1)
+					coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tileFrom, DT_HE) / 255.0;
 			}
-			coverFromDir += (tileInDirection->getTerrainLevel() * -1 - tile->getTerrainLevel() * -1) / 24.0; 
 			if (coverFromDir > 0)
 				cover += coverFromDir * dirCoverMod;
 			else
