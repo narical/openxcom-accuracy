@@ -1068,7 +1068,6 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 			}
 		);
 		_game->pushState(new CannotReequipState(_missingItems, _base));
-		_reload = false;
 	}
 
 	// turn back the original setting
