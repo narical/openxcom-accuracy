@@ -96,6 +96,7 @@ OPT bool oxceManufactureFilterSuppliesOK;
 OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
+OPT int maxNumberOfBases;
 /**
  * Verification level of mod data.
  * Same levels supported as `SeverityLevel`.

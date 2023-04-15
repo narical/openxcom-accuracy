@@ -39,7 +39,7 @@ class BasescapeState : public State
 private:
 	BaseView *_view;
 	MiniBaseView *_mini;
-	Text *_txtFacility, *_txtLocation, *_txtFunds;
+	Text *_txtFacility, *_txtLocation, *_txtFunds, *_leftArrow, *_rightArrow;
 	TextEdit *_edtBase;
 	TextButton *_btnNewBase, *_btnBaseInfo, *_btnSoldiers, *_btnCrafts, *_btnFacilities, *_btnResearch, *_btnManufacture, *_btnTransfer, *_btnPurchase, *_btnSell, *_btnGeoscape;
 	Base *_base;
@@ -89,10 +89,14 @@ public:
 	void miniLeftClick(Action *action);
 	/// Handler for clicking the mini base view (right button).
 	void miniRightClick(Action *action);
+	/// Handler for clicking the mini base view (middle button).
+	void miniMiddleClick(Action *action);	
 	/// Handler for changing the text on the Name edit.
 	void edtBaseChange(Action *action);
 	/// Handler for pressing a base selection hotkey.
 	void handleKeyPress(Action *action);
+	/// Update arrows visibility
+	void updateArrows();
 };
 
 }

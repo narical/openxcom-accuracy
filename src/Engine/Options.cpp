@@ -259,6 +259,7 @@ void create()
 
 	_info.push_back(OptionInfo("oxceRecommendedOptionsWereSet", &oxceRecommendedOptionsWereSet, false));
 	_info.push_back(OptionInfo("password", &password, "secret"));
+	_info.push_back(OptionInfo("oxceMaxBases", &maxNumberOfBases, 8, "", "HIDDEN"));
 
 	// OXCE hidden but moddable
 	_info.push_back(OptionInfo("oxceStartUpTextMode", &oxceStartUpTextMode, 0, "", "HIDDEN"));

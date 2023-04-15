@@ -12,13 +12,27 @@ and the [wiki](https://www.ufopaedia.org/index.php/OpenXcom).
 
 Uses modified code from SDL\_gfx (LGPL) with permission from author.
 
-## 'Hangars Reworked' fork
+## 'Rejected features' fork
 
-OpenXcom "Hangars reworked" is a fork from official master of OXCE+ which allows 
-some new features related to Hangars' behavior. In this fork, every hangar and 
-craft has a "hangarType" tag, so a Hangar with an specific "hangarType" value can
-only store crafts with the same "hangarType". "hangaType" tag can be given at both,
-facilities and crafts, in their corresponding YAML ruleset. If no tag is given, 
+This is a fork from official master of OXCE+ which allows some new features which
+have been rejected by official OXCE+ developers. Currently there are 2 new features
+implemented:
+
+### More than 8 bases
+
+Now, player can choose the limit of available bases to build using a new entry in
+file 'openxcom.cfg': 
+
+oxceMaxBases= maxNumBases
+
+Default is 8 bases.
+If more than the 8 visible bases, player can scroll bases miniview using RMB at the 
+edges of the miniview. A blue arrow appears when there are more bases at either edge.
+ 
+### Hangars reworked 
+Every hangar and craft has a "hangarType" tag, so a Hangar with an specific "hangarType"
+value can only store crafts with the same "hangarType". "hangaType" tag can be given 
+at both facilities and crafts, in their corresponding YAML ruleset. If no tag is given, 
 that craft/hangar will have a "-1" default tag, so their behavior will be the same
 as in vanilla engine.
 Another feature added is the possibility of allocate more than 1 craft at an specific
@@ -32,20 +46,18 @@ they want to place crafts in an hangar which allows more than one.
 
 An "example MOD" is included in "Examples" folder. Though this mod is a submod of the
 fantastic master mod "The Xcom Files", you can adapt it to any other mod or vanilla 
-game, which needs using differentiated hangars and/or more than 1 craft per hangar.
+game, which needed using differentiated hangars and/or more than 1 craft per hangar.
+
+### Windows Binary
 
 For convenience, a windows binary has been added to folder 'WindowsBinaries'. This exe 
 has been tested to work in a Windows10 machine (64 bits), thought it has not been
 intensively tested 
 
-[Link to Windows Binaryt](WindowsBinaries/openxcomHangars.exe)
+[Link to Windows Binary](/WindowsBinaries/openxcomRFeatured.exe)
 
 You can just place this binary in the same folder than the original one, and just click
-it when you want start the game with HangarsReworked features.
-
-OXCE+ developers are working hard to add similar features to official OXCE, so when 
-they are done, this fork will be left over obsolete. But meanwhile, you can enjoy
-testing new possibilities for your mods or regular playthroughs. 
+it when you want start the game with these new features.
 
 ## Installation
 
