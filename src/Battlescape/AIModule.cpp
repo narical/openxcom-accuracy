@@ -5014,6 +5014,7 @@ void AIModule::brutalGrenadeAction()
 							bestScore = currentEfficacy;
 						}
 					}
+					action.Time -= getTurnCostTowards(currentPosition);
 				}
 			}
 		}
