@@ -132,7 +132,13 @@ OptionsFoldersState::~OptionsFoldersState()
 void OptionsFoldersState::txtClick(Action* action)
 {
 	Text* sender = (Text*)action->getSender();
-	CrossPlatform::openExplorer(sender->getText());
+	std::string path = sender->getText();
+	if (Options::getDataFolder().empty() && path.size() < 10)
+	{
+		// "UFO/", "TFTD/", "common/", "standard/"
+		path = CrossPlatform::getExeFolder() + path;
+	}
+	CrossPlatform::openExplorer(path);
 }
 
 }
