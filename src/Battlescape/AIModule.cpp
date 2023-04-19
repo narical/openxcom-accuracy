@@ -5594,11 +5594,17 @@ bool AIModule::IsEnemyExposedEnough()
 		turnsSinceSeen = std::max(turnsSinceSeen, 1);
 		int requiredTUFromStart = turnsSinceSeen * getMaxTU(enemy);
 		int neededTUToStart = tuCostToReachPosition(currentAssumedPosition, enemySimulationNodes, enemy);
+		bool inSmoke = false;
+		if (_save->getTile(currentAssumedPosition) && _save->getTile(currentAssumedPosition)->getSmoke() > 0)
+			inSmoke = true;
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << enemy->getId() << ", seen " << enemy->getTurnsSinceSeen(_unit->getFaction()) << " turns ago, needs to be at least " << requiredTUFromStart << " TUs from the starting-location. We assume they should need " << neededTUToStart;
+			Log(LOG_INFO) << enemy->getId() << ", seen " << enemy->getTurnsSinceSeen(_unit->getFaction()) << " turns ago, needs to be at least " << requiredTUFromStart << " TUs from the starting-location. We assume they should need " << neededTUToStart << " in smoke: "<<inSmoke;
 		}
-		if (requiredTUFromStart < neededTUToStart)
+		//If I'm in smoke myself, I have the same advantage as the enemy and thus don't care whether they are in smoke
+		if (_unit->getTile()->getSmoke() > 0)
+			inSmoke = false;
+		if (requiredTUFromStart < neededTUToStart && !inSmoke)
 			return true;
 	}
 	return false;
