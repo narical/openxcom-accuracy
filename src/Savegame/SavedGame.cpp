@@ -2425,7 +2425,7 @@ Soldier *SavedGame::inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector
 /**
  * Gets the (approximate) number of idle days since the soldier's last mission.
  */
-int SavedGame::getSoldierIdleDays(Soldier *soldier)
+int SavedGame::getSoldierIdleDays(const Soldier *soldier)
 {
 	int lastMissionId = -1;
 	int idleDays = 999;
@@ -2463,7 +2463,7 @@ int SavedGame::getSoldierIdleDays(Soldier *soldier)
  */
 int SavedGame::getSoldierScore(Soldier *soldier)
 {
-	UnitStats *s = soldier->getCurrentStats();
+	const UnitStats *s = soldier->getCurrentStats();
 	int v1 = 2 * s->health + 2 * s->stamina + 4 * s->reactions + 4 * s->bravery;
 	int v2 = v1 + 3*( s->tu + 2*( s->firing ) );
 	int v3 = v2 + s->melee + s->throwing + s->strength;

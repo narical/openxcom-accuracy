@@ -3829,7 +3829,7 @@ bool BattleUnit::postMissionProcedures(const Mod *mod, SavedGame *geoscape, Save
 
 	updateGeoscapeStats(s);
 
-	UnitStats *stats = s->getCurrentStats();
+	UnitStats *stats = s->getCurrentStatsEditable();
 	StatAdjustment statsOld = { };
 	statsOld.statGrowth = (*stats);
 	statsDiff.statGrowth = -(*stats);        // subtract old stat
