@@ -2594,7 +2594,7 @@ void DogfightState::awardExperienceToPilots()
 			{
 				if (RNG::percent(pilot->getRules()->getDogfightExperience().firing))
 				{
-					pilot->getCurrentStats()->firing++;
+					pilot->getCurrentStatsEditable()->firing++;
 					pilot->getDailyDogfightExperienceCache()->firing++;
 				}
 			}
@@ -2602,7 +2602,7 @@ void DogfightState::awardExperienceToPilots()
 			{
 				if (RNG::percent(pilot->getRules()->getDogfightExperience().reactions))
 				{
-					pilot->getCurrentStats()->reactions++;
+					pilot->getCurrentStatsEditable()->reactions++;
 					pilot->getDailyDogfightExperienceCache()->reactions++;
 				}
 			}
@@ -2610,7 +2610,7 @@ void DogfightState::awardExperienceToPilots()
 			{
 				if (RNG::percent(pilot->getRules()->getDogfightExperience().bravery))
 				{
-					pilot->getCurrentStats()->bravery += 10; // increase by 10 to keep OCD at bay
+					pilot->getCurrentStatsEditable()->bravery += 10; // increase by 10 to keep OCD at bay
 					pilot->getDailyDogfightExperienceCache()->bravery += 10;
 				}
 			}

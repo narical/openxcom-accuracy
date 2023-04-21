@@ -1029,7 +1029,12 @@ void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const
 		return;
 	}
 
-	checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+	checkForSoftError(
+		sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr,
+		parent,
+		"Wrong index " + std::to_string(sprite) + " for surface set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+		LOG_ERROR
+	);
 }
 
 /**
@@ -1056,7 +1061,12 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 
 	for (auto sprite : sprites)
 	{
-		checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+		checkForSoftError(
+			sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr,
+			parent,
+			"Wrong index " + std::to_string(sprite) + " for surface set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+			LOG_ERROR
+		);
 	}
 }
 
@@ -1073,7 +1083,12 @@ void Mod::verifySoundOffset(const std::string &parent, const int& sound, const s
 
 	auto* s = getSoundSet(set);
 
-	checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+	checkForSoftError(
+		sound != Mod::NO_SOUND && s->getSound(sound) == nullptr,
+		parent,
+		"Wrong index " + std::to_string(sound) + " for sound set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+		LOG_ERROR
+	);
 }
 
 /**
@@ -1091,7 +1106,12 @@ void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& s
 
 	for (auto sound : sounds)
 	{
-		checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+		checkForSoftError(
+			sound != Mod::NO_SOUND && s->getSound(sound) == nullptr,
+			parent,
+			"Wrong index " + std::to_string(sound) + " for sound set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+			LOG_ERROR
+		);
 	}
 }
 

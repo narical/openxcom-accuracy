@@ -397,7 +397,7 @@ void SoldiersState::initList(size_t scrl)
 
 	auto recovery = _base->getSumRecoveryPerDay();
 	unsigned int row = 0;
-	for (auto* soldier : _filteredListOfSoldiers)
+	for (const auto* soldier : _filteredListOfSoldiers)
 	{
 		std::string craftString = soldier->getCraftString(_game->getLanguage(), recovery);
 

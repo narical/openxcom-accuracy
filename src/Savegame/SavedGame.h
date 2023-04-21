@@ -348,7 +348,7 @@ public:
 	/// Checks how many soldiers of a rank exist and which one has the highest score.
 	Soldier *inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector<Soldier*> &participants, int rank);
 	/// Gets the (approximate) number of idle days since the soldier's last mission.
-	int getSoldierIdleDays(Soldier *soldier);
+	int getSoldierIdleDays(const Soldier *soldier);
 	///  Returns the list of alien bases.
 	std::vector<AlienBase*> *getAlienBases();
 	/// Sets debug mode.
