@@ -363,7 +363,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 			_nextWave = 0;
 		}
 	}
-	if (_rule.getObjective() == OBJECTIVE_BASE && _nextWave == _rule.getWaveCount())
+	if (_rule.getObjective() == OBJECTIVE_BASE && _nextWave == _rule.getWaveCount() && !wave.objectiveOnTheLandingSite)
 	{
 		RuleRegion *region = mod.getRegion(_region, true);
 		std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
@@ -963,6 +963,19 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 				if (ufo.getDetected() && ufo.getLandId() == 0)
 				{
 					ufo.setLandId(engine.getSavedGame()->getId("STR_LANDING_SITE"));
+				}
+
+				// Many players wanted this over the years... you're welcome
+				if (_rule.getObjective() == OBJECTIVE_BASE && wave.objectiveOnTheLandingSite && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
+				{
+					std::pair<double, double> pos;
+					pos.first = ufo.getLongitude();
+					pos.second = ufo.getLatitude();
+
+					MissionArea dummyArea;
+					AlienDeployment* alienBaseType = chooseAlienBaseType(mod, dummyArea);
+
+					AlienBase* ab = spawnAlienBase(0, engine, pos, alienBaseType);
 				}
 			}
 			else
