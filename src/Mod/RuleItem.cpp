@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <algorithm>
+#include "LoadYaml.h"
 #include "Mod.h"
 #include "Armor.h"
 #include "Unit.h"
@@ -258,58 +259,6 @@ void RuleItem::loadAmmoSlotChecked(int& result, const YAML::Node& node, const st
 		else
 		{
 			result = s;
-		}
-	}
-}
-
-/**
- * Load nullable bool value and store it in int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadBool(bool& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		a = node.as<bool>();
-	}
-}
-/**
- * Load nullable bool value and store it in int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadTriBool(int& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		if (node.IsNull())
-		{
-			a = -1;
-		}
-		else
-		{
-			a = node.as<bool>();
-		}
-	}
-}
-
-/**
- * Load nullable int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadInt(int& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		if (node.IsNull())
-		{
-			a = -1;
-		}
-		else
-		{
-			a = node.as<int>();
 		}
 	}
 }
@@ -559,7 +508,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_costPrime.loadCost(node, "Prime");
 	_costUnprime.loadCost(node, "Unprime");
 
-	loadTriBool(_flatUse.Time, node["flatRate"]);
+	loadBoolNullable(_flatUse.Time, node["flatRate"]);
 
 	_confAimed.flat.loadPercent(node, "Aimed");
 	_confAuto.flat.loadPercent(node, "Auto");
@@ -683,9 +632,9 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	mod->loadNameNull(_type, _spawnItemName, node["spawnItem"]);
 	_spawnUnitFaction = (UnitFaction)node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
 	_zombieUnitFaction = (UnitFaction)node["zombieUnitFaction"].as<int>(_zombieUnitFaction);
-	loadInt(_spawnUnitChance, node["spawnUnitChance"]);
-	loadInt(_zombieUnitChance, node["zombieUnitChance"]);
-	loadInt(_spawnItemChance, node["spawnItemChance"]);
+	loadIntNullable(_spawnUnitChance, node["spawnUnitChance"]);
+	loadIntNullable(_zombieUnitChance, node["zombieUnitChance"]);
+	loadIntNullable(_spawnItemChance, node["spawnItemChance"]);
 
 
 	if (node["psiTargetMatrix"])
