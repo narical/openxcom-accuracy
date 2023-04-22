@@ -104,6 +104,8 @@ BattlescapeState::BattlescapeState() :
 	_autosave(0),
 	_numberOfDirectlyVisibleUnits(0), _numberOfEnemiesTotal(0), _numberOfEnemiesTotalPlusWounded(0)
 {
+	_save = _game->getSavedGame()->getSavedBattle();
+
 	std::fill_n(_visibleUnit, 10, (BattleUnit*)(0));
 
 	const int screenWidth = Options::baseXResolution;
@@ -246,7 +248,7 @@ BattlescapeState::BattlescapeState() :
 	_txtTooltip = new Text(300, 10, x + 2, y - 10);
 
 	// Palette transformations
-	auto* enviro = _game->getSavedGame()->getSavedBattle()->getEnviroEffects();
+	auto* enviro = _save->getEnviroEffects();
 	if (enviro)
 	{
 		for (auto& change : enviro->getPaletteTransformations())
@@ -262,7 +264,7 @@ BattlescapeState::BattlescapeState() :
 	}
 
 	// Set palette
-	_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
+	_save->setPaletteByDepth(this);
 
 	if (_game->getMod()->getInterface("battlescape")->getElement("pathfinding"))
 	{
@@ -405,7 +407,6 @@ BattlescapeState::BattlescapeState() :
 	_btnMMB->initSurfaces(_game->getMod()->getSurfaceSet("Touch")->getFrame(9));
 
 	// Set up objects
-	_save = _game->getSavedGame()->getSavedBattle();
 	_map->init();
 	_map->onMouseOver((ActionHandler)&BattlescapeState::mapOver);
 	_map->onMousePress((ActionHandler)&BattlescapeState::mapPress);
@@ -752,7 +753,7 @@ void BattlescapeState::init()
 		_paletteResetRequested = false;
 
 		resetPalettes();
-		_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
+		_save->setPaletteByDepth(this);
 		for (auto* surface : _surfaces)
 		{
 			surface->setPalette(_palette);
@@ -3513,7 +3514,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 		if (weaponRule->getBattleType() == BT_MEDIKIT)
 		{
 			BattleUnit *targetUnit = 0;
-			TileEngine *tileEngine = _game->getSavedGame()->getSavedBattle()->getTileEngine();
+			TileEngine *tileEngine = _save->getTileEngine();
 
 			// search for target on the ground
 			bool onGround = false;
@@ -3548,7 +3549,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 					selectedUnit,
 					0, &dest, false))
 				{
-					Tile *tile = _game->getSavedGame()->getSavedBattle()->getTile(dest);
+					Tile *tile = _save->getTile(dest);
 					if (tile != 0 && tile->getUnit() && (tile->getUnit()->isWoundable() || weaponRule->getAllowTargetImmune()))
 					{
 						if ((weaponRule->getAllowTargetFriendStanding() && tile->getUnit()->getOriginalFaction() == FACTION_PLAYER) ||
