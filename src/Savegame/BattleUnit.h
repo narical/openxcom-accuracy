@@ -786,6 +786,8 @@ public:
 	bool isBannedInNextStage() const { return _bannedInNextStage; }
 	/// Is the unit eagerly picking up weapons?
 	bool getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
+	/// Is the unit afraid to pathfind through fire?
+	bool avoidsFire() const;
 	/// Show indicators for this unit or not?
 	bool indicatorsAreEnabled() const { return !_disableIndicators; }
 	/// Disable showing indicators for this unit.

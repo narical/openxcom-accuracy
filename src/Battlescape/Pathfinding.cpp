@@ -403,7 +403,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// pre-calculate fire penalty (to make it consistent for 2x2 units)
 	int firePenaltyCost = 0;
 	if (unit->getFaction() != FACTION_PLAYER &&
-		unit->getSpecialAbility() < SPECAB_BURNFLOOR)
+		unit->avoidsFire())
 	{
 		for (int i = 0; i < numberOfParts; ++i)
 		{

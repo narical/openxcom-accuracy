@@ -5366,6 +5366,19 @@ bool BattleUnit::isIgnoredByAI() const
 }
 
 /**
+ * Is the unit afraid to pathfind through fire?
+ * @return True if this unit has a penalty when pathfinding through fire.
+ */
+bool BattleUnit::avoidsFire() const
+{
+	if (_unitRules)
+	{
+		return _unitRules->avoidsFire();
+	}
+	return _specab < SPECAB_BURNFLOOR;
+}
+
+/**
  * Disable showing indicators for this unit.
  */
 void BattleUnit::disableIndicators()
