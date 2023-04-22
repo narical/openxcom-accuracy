@@ -2738,7 +2738,7 @@ inline void BattlescapeState::handle(Action *action)
 					{
 						Position newPos;
 						_map->getSelectorPosition(&newPos);
-						if (_save->getBattleGame()->getTileEngine()->isPositionValidForUnit(newPos, unit))
+						if (_save->getTileEngine()->isPositionValidForUnit(newPos, unit))
 						{
 							debug("Beam me up Scotty");
 							_save->getPathfinding()->removePreview();
@@ -2996,7 +2996,7 @@ void BattlescapeState::saveVoxelView()
 	std::ostringstream ss;
 	std::vector<unsigned char> image;
 	int test;
-	Position originVoxel = getBattleGame()->getTileEngine()->getSightOriginVoxel(bu);
+	Position originVoxel = _save->getTileEngine()->getSightOriginVoxel(bu);
 
 	Position targetVoxel,hitPos;
 	double dist = 0;
@@ -3514,7 +3514,6 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 		if (weaponRule->getBattleType() == BT_MEDIKIT)
 		{
 			BattleUnit *targetUnit = 0;
-			TileEngine *tileEngine = _save->getTileEngine();
 
 			// search for target on the ground
 			bool onGround = false;
@@ -3543,7 +3542,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 			if (!targetUnit && weaponRule->getAllowTargetStanding())
 			{
 				Position dest;
-				if (tileEngine->validMeleeRange(
+				if (_save->getTileEngine()->validMeleeRange(
 					selectedUnit->getPosition(),
 					selectedUnit->getDirection(),
 					selectedUnit,
