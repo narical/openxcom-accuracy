@@ -317,6 +317,7 @@ public:
 	static void loadAmmoSlotChecked(int& result, const YAML::Node& node, const std::string& parentName);
 
 private:
+	std::string _ufopediaType;
 	std::string _type, _name, _nameAsAmmo; // two types of objects can have the same name
 	std::string _requiresBuyCountry;
 	std::vector<std::string> _requiresName;
@@ -458,6 +459,9 @@ public:
 	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
+
+	/// Gets the custom name of the Ufopedia article related to this item.
+	const std::string& getUfopediaType() const;
 
 	/// Gets the item's type.
 	const std::string &getType() const;

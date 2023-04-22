@@ -374,6 +374,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 		load(parent, mod, parsers);
 	}
 
+	_ufopediaType = node["ufopediaType"].as<std::string>(_ufopediaType);
 	_name = node["name"].as<std::string>(_name);
 	_nameAsAmmo = node["nameAsAmmo"].as<std::string>(_nameAsAmmo);
 
@@ -836,6 +837,18 @@ void RuleItem::afterLoad(const Mod* mod)
 	Collections::removeAll(_requiresBuyName);
 	Collections::removeAll(_recoveryTransformationsName);
 	Collections::removeAll(_compatibleAmmoNames);
+}
+
+/**
+ * Gets the custom name of the Ufopedia article related to this item.
+ * @return The ufopedia article name.
+ */
+const std::string& RuleItem::getUfopediaType() const
+{
+	if (!_ufopediaType.empty())
+		return _ufopediaType;
+
+	return _type;
 }
 
 /**

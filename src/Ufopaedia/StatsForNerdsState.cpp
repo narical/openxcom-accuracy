@@ -2185,6 +2185,7 @@ void StatsForNerdsState::initItemList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, itemRule->getType(), "type");
+		addSingleString(ss, itemRule->getUfopediaType(), "ufopediaType");
 		addSingleString(ss, itemRule->getName(), "name", itemRule->getType());
 		addSingleString(ss, itemRule->getNameAsAmmo(), "nameAsAmmo");
 		addInteger(ss, itemRule->getListOrder(), "listOrder");

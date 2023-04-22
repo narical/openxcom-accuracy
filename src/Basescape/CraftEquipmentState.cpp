@@ -624,7 +624,7 @@ void CraftEquipmentState::lstEquipmentMousePress(Action *action)
 	{
 		_lstScroll = _lstEquipment->getScroll();
 		RuleItem *rule = _game->getMod()->getItem(_items[_sel]);
-		std::string articleId = rule->getType();
+		std::string articleId = rule->getUfopediaType();
 		Ufopaedia::openArticle(_game, articleId);
 	}
 }
