@@ -2749,7 +2749,7 @@ inline void BattlescapeState::handle(Action *action)
 							//free refresh as bonus
 							unit->updateUnitStats(true, false);
 							_save->getTileEngine()->calculateLighting(LL_UNITS);
-							_save->getBattleGame()->handleState();
+							_battleGame->handleState();
 							updateSoldierInfo(true);
 						}
 					}
@@ -2816,8 +2816,8 @@ inline void BattlescapeState::handle(Action *action)
 								}
 							}
 						}
-						_save->getBattleGame()->checkForCasualties(nullptr, BattleActionAttack{}, true, false);
-						_save->getBattleGame()->handleState();
+						_battleGame->checkForCasualties(nullptr, BattleActionAttack{}, true, false);
+						_battleGame->handleState();
 					}
 					// f11 - voxel map dump
 					else if (key == SDLK_F11)
