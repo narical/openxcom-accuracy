@@ -4398,6 +4398,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	{
 		std::ostringstream ss;
 		ss << "month: " << month;
+		ss << " script: " << command->getType();
 		ss << " id: " << mission->getId();
 		ss << " type: " << mission->getRules().getType();
 		ss << " race: " << mission->getRace();
