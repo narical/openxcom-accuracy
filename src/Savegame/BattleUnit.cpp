@@ -3803,6 +3803,11 @@ void BattleUnit::addMeleeExp()
  */
 bool BattleUnit::hasGainedAnyExperience()
 {
+	if (!Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+	{
+		// vanilla compatibility (throwing doesn't count)
+		return _exp.bravery || _exp.reactions || _exp.firing || _exp.psiSkill || _exp.psiStrength || _exp.melee || _exp.mana;
+	}
 	return _exp.bravery || _exp.reactions || _exp.firing || _exp.psiSkill || _exp.psiStrength || _exp.melee || _exp.throwing || _exp.mana;
 }
 

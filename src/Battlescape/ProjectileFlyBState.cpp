@@ -484,6 +484,11 @@ bool ProjectileFlyBState::createNewProjectile()
 				_parent->getTileEngine()->calculateFOV(_unit->getPosition(), _action.weapon->getGlowRange(), false);
 			}
 			_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::ITEM_THROW)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition()));
+			if (!Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+			{
+				// vanilla compatibility (throwing anything anywhere gives throwing exp)
+				_unit->addThrowingExp();
+			}
 		}
 		else
 		{
