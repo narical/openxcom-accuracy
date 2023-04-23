@@ -2930,6 +2930,8 @@ void BattlescapeState::saveAIMap()
 					case FACTION_NEUTRAL:
 						characterRGBA(img, r.x, r.y, (tilePos.z - z) ? 'c' : 'C', 255, 127, 127, 0xff);
 						break;
+					case FACTION_NONE:
+						break;
 					}
 					break;
 				}

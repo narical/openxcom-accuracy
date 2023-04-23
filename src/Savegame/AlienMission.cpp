@@ -975,7 +975,7 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 					MissionArea dummyArea;
 					AlienDeployment* alienBaseType = chooseAlienBaseType(mod, dummyArea);
 
-					AlienBase* ab = spawnAlienBase(0, engine, pos, alienBaseType);
+					spawnAlienBase(0, engine, pos, alienBaseType);
 				}
 			}
 			else
