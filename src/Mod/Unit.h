@@ -450,6 +450,7 @@ private:
 	bool _waitIfOutsideWeaponRange;
 	int _aiTargetMode;
 	int _pickUpWeaponsMoreActively;
+	Sint8 _avoidsFire;
 	bool _vip;
 	bool _cosmetic, _ignoredByAI;
 	bool _canPanic;
@@ -553,6 +554,8 @@ public:
 	bool waitIfOutsideWeaponRange() { return _waitIfOutsideWeaponRange; };
 	/// Should the unit try to pick up weapons more actively?
 	int getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
+	/// Is the unit afraid to pathfind through fire?
+	bool avoidsFire() const;
 	/// Should alien inventory show full name (e.g. Sectoid Leader) or just the race (e.g. Sectoid)?
 	bool getShowFullNameInAlienInventory(Mod *mod) const;
 	/// Is this a VIP unit?

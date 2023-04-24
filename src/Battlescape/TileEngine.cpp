@@ -2901,8 +2901,16 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
 		// GRENADES AND PROXIES
 		if (weapon->getRules()->getBattleType() == BT_GRENADE || weapon->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
-			expType = ETM_THROWING_100;
-			expFuncA = &BattleUnit::addThrowingExp; // e.g. acid grenade, stun grenade, HE grenade, smoke grenade, proxy grenade, ...
+			if (Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+			{
+				expType = ETM_THROWING_100;
+				expFuncA = &BattleUnit::addThrowingExp; // e.g. acid grenade, stun grenade, HE grenade, smoke grenade, proxy grenade, ...
+			}
+			else
+			{
+				expType = ETM_FIRING_100;
+				expFuncA = &BattleUnit::addFiringExp; // vanilla compatibility
+			}
 		}
 		// MELEE
 		else if (weapon->getRules()->getBattleType() == BT_MELEE)
@@ -2923,6 +2931,11 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
 			{
 				expType = ETM_MELEE_100;
 				expFuncA = &BattleUnit::addMeleeExp; // e.g. rifle/shotgun gun butt, ...
+			}
+			else if (!Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+			{
+				expType = ETM_FIRING_100;
+				expFuncA = &BattleUnit::addFiringExp; // vanilla compatibility
 			}
 			else if (weapon->getArcingShot(attack.type))
 			{
@@ -2960,8 +2973,11 @@ bool TileEngine::awardExperience(BattleActionAttack attack, BattleUnit *target, 
 		// only enemies count, not friends or neutrals
 		if (target->getOriginalFaction() != FACTION_HOSTILE) expMultiply = 0;
 
-		// mind-controlled enemies don't count though!
-		if (target->getFaction() != FACTION_HOSTILE) expMultiply = 0;
+		if (Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+		{
+			// mind-controlled enemies don't count though!
+			if (target->getFaction() != FACTION_HOSTILE) expMultiply = 0;
+		}
 	}
 
 	expMultiply = ModScript::scriptFunc2<ModScript::AwardExperience>(

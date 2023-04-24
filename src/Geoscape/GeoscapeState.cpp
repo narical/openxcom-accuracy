@@ -958,6 +958,8 @@ void GeoscapeState::time5Seconds()
 					}
 
 					// If not, interrupt all other (regular) interceptions to prevent a dead-lock (and other possible side effects)
+					for (auto* f : _dogfights) if (f->getCraft()) { f->getCraft()->setInDogfight(false); f->getCraft()->setInterceptionOrder(0); }
+					for (auto* g : _dogfightsToBeStarted) if (g->getCraft()) { g->getCraft()->setInDogfight(false); g->getCraft()->setInterceptionOrder(0); }
 					Collections::deleteAll(_dogfights);
 					Collections::deleteAll(_dogfightsToBeStarted);
 					_minimizedDogfights = 0;
@@ -1244,6 +1246,8 @@ void GeoscapeState::time5Seconds()
 								}
 
 								// If not, interrupt all other (regular) interceptions to prevent a dead-lock (and other possible side effects)
+								for (auto* f : _dogfights) if (f->getCraft()) { f->getCraft()->setInDogfight(false); f->getCraft()->setInterceptionOrder(0); }
+								for (auto* g : _dogfightsToBeStarted) if (g->getCraft()) { g->getCraft()->setInDogfight(false); g->getCraft()->setInterceptionOrder(0); }
 								Collections::deleteAll(_dogfights);
 								Collections::deleteAll(_dogfightsToBeStarted);
 								_minimizedDogfights = 0;
@@ -4393,6 +4397,7 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 	{
 		std::ostringstream ss;
 		ss << "month: " << month;
+		ss << " script: " << command->getType();
 		ss << " id: " << mission->getId();
 		ss << " type: " << mission->getRules().getType();
 		ss << " race: " << mission->getRace();

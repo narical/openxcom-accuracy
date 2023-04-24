@@ -151,6 +151,7 @@ bool Mod::EXTENDED_HWP_LOAD_ORDER;
 int Mod::EXTENDED_MELEE_REACTIONS;
 int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
+bool Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
 constexpr size_t MaxDifficultyLevels = 5;
 
@@ -248,6 +249,7 @@ void Mod::resetGlobalStatics()
 	EXTENDED_MELEE_REACTIONS = 0;
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
+	EXTENDED_EXPERIENCE_AWARD_SYSTEM = true; // FIXME: change default to false in OXCE v8.0+ ?
 }
 
 /**
@@ -2549,6 +2551,7 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_MELEE_REACTIONS = node["extendedMeleeReactions"].as<int>(EXTENDED_MELEE_REACTIONS);
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
 	EXTENDED_UNDERWATER_THROW_FACTOR = node["extendedUnderwaterThrowFactor"].as<int>(EXTENDED_UNDERWATER_THROW_FACTOR);
+	EXTENDED_EXPERIENCE_AWARD_SYSTEM = node["extendedExperienceAwardSystem"].as<bool>(EXTENDED_EXPERIENCE_AWARD_SYSTEM);
 }
 
 /**

@@ -3914,6 +3914,11 @@ void BattleUnit::addMeleeExp()
  */
 bool BattleUnit::hasGainedAnyExperience()
 {
+	if (!Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM)
+	{
+		// vanilla compatibility (throwing doesn't count)
+		return _exp.bravery || _exp.reactions || _exp.firing || _exp.psiSkill || _exp.psiStrength || _exp.melee || _exp.mana;
+	}
 	return _exp.bravery || _exp.reactions || _exp.firing || _exp.psiSkill || _exp.psiStrength || _exp.melee || _exp.throwing || _exp.mana;
 }
 
@@ -5569,6 +5574,19 @@ bool BattleUnit::isCosmetic() const
 bool BattleUnit::isIgnoredByAI() const
 {
 	return _unitRules && _unitRules->isIgnoredByAI();
+}
+
+/**
+ * Is the unit afraid to pathfind through fire?
+ * @return True if this unit has a penalty when pathfinding through fire.
+ */
+bool BattleUnit::avoidsFire() const
+{
+	if (_unitRules)
+	{
+		return _unitRules->avoidsFire();
+	}
+	return _specab < SPECAB_BURNFLOOR;
 }
 
 /**
