@@ -3318,7 +3318,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (coverInRange == 0 && iHaveLof)
 		sweepMode = true;
 	bool shouldSaveEnergy = _unit->getEnergy() + getEnergyRecovery(_unit) < _unit->getBaseStats()->stamina;
-	if (myMoralAvg > enemyMoralAvg * 2)
+	if (myMoralAvg > enemyMoralAvg * 3)
 		sweepMode = true;
 	if (_unit->getArmor()->getSize() > 1 && !dissolveBlockage)
 		sweepMode = true;
