@@ -219,7 +219,7 @@ public:
 	/// Non-cheating-AI needs to be able to determine whether the enemy is doing Triton-shenanigans, where we should prevent exposing ourselves or is exposed enough themselves for us to strike
 	bool IsEnemyExposedEnough();
 	/// Get the cover-value of a tile
-	float getCoverValue(Tile *tile, BattleUnit *bu);
+	float getCoverValue(Tile *tile, BattleUnit *bu, int coverQuality = 1);
 	/// checks whethere there's any cover in range
 	float highestCoverInRange(const std::vector<PathfindingNode *> nodeVector);
 	/// runs a very minimalist pathfinding just to see whether the unit could move
