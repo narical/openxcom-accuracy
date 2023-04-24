@@ -3018,7 +3018,7 @@ void AIModule::brutalThink(BattleAction* action)
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
 			Tile *targetTile = _save->getTile(targetPosition);
 			bool tileChecked = false;
-			if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target))
+			if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target) && targetTile->getSmoke() == 0)
 				tileChecked = true;
 			else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
 				tileChecked = true;
@@ -3206,12 +3206,15 @@ void AIModule::brutalThink(BattleAction* action)
 	float enemyUnitCount = 0;
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	BattleActionCost hitCost = BattleActionCost(BA_HIT, _unit, action->weapon);
+	bool targetIsInSmoke = false;
 	if (unitToWalkTo != NULL)
 	{
 		Position targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 		Tile* tileOfTarget = _save->getTile(targetPosition);
+		if (tileOfTarget->getSmoke() > 0)
+			targetIsInSmoke = true;
 		int tuCost = tuCostToReachPosition(targetPosition, _allPathFindingNodes);
 		if (IAmPureMelee && _melee)
 			canReachTargetTileWithAttack = tuCost <= _unit->getTimeUnits() - BattleActionCost(BA_HIT, _unit, action->weapon).Time;
@@ -3557,7 +3560,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (cover2 > 0)
 					prio4Score = cover2;
 			}
-			if (sweepMode)
+			if (sweepMode || targetIsInSmoke)
 				prio5Score = 100 / walkToDist;
 			else if (peakLoF && shouldPeak)
 				prio5Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
@@ -3776,15 +3779,10 @@ void AIModule::brutalThink(BattleAction* action)
 		Position targetPosition = target->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
-		if (shouldHaveLofAfterMove)
-		{
-			bool haveLof = quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement()) || shouldHaveLofAfterMove;
-			if (!_unit->isCheatOnMovement())
-				haveLof = haveLof || clearSight(action->target, targetPosition);
-			if (!haveLof)
-				continue;
-		}
-		else
+		bool haveLof = quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement()) || shouldHaveLofAfterMove;
+		if (!_unit->isCheatOnMovement())
+			haveLof = haveLof || clearSight(action->target, targetPosition);
+		if (!haveLof)
 			continue;
 		float currentDist = Position::distance(action->target, targetPosition);
 		if (currentDist < shortestDist)
