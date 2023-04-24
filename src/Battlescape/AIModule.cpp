@@ -3355,6 +3355,7 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		Position targetPosition = encircleTile->getPosition();
 		bool justNeedToTurn = false;
+		std::unordered_set<int> enemyReachable;
 		if (unitToWalkTo)
 		{
 			targetPosition = unitToWalkTo->getPosition();
@@ -3362,6 +3363,7 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
+			enemyReachable = getReachableBy(unitToWalkTo);
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
@@ -3553,7 +3555,7 @@ void AIModule::brutalThink(BattleAction* action)
 				shouldPeak = true;
 			if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack)
 			{
-				if (cover1 > 0 && !clearSightToEnemyReachableTile)
+				if (cover1 > 0 && !clearSightToEnemyReachableTile && enemyReachable.find(_save->getTileIndex(pos)) == enemyReachable.end())
 					prio2Score = 100 / walkToDist;
 				if (cover1 > 0)
 					prio3Score = cover1;
