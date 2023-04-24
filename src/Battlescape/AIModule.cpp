@@ -3106,8 +3106,8 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	else if (_attackAction.type == BA_RETHINK)
 		brutalSelectSpottedUnitForSniper();
-	if (_attackAction.type == BA_RETHINK && _grenade)
-		brutalGrenadeAction();
+	//if (_attackAction.type == BA_RETHINK && _grenade)
+	//	brutalGrenadeAction();
 	//if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
 	//	blindFire();
 
@@ -3562,7 +3562,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (cover2 > 0)
 					prio4Score = cover2;
 			}
-			if (sweepMode || targetIsInSmoke)
+			if (sweepMode || (targetIsInSmoke && shouldPeak))
 				prio5Score = 100 / walkToDist;
 			else if (peakLoF && shouldPeak)
 				prio5Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
