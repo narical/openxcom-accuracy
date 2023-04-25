@@ -3314,6 +3314,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float bestPrio7Score = 0;
 	Position bestPrio7Position = myPos;
 	float coverInRange = highestCoverInRange(_allPathFindingNodes);
+	float current2Cover = getCoverValue(_unit->getTile(), _unit, 2);
 	float tuToSaveForHide = 0.5;
 	if (coverInRange == 0 && iHaveLof)
 		sweepMode = true;
@@ -3356,6 +3357,7 @@ void AIModule::brutalThink(BattleAction* action)
 		Position targetPosition = encircleTile->getPosition();
 		bool justNeedToTurn = false;
 		std::unordered_set<int> enemyReachable;
+		Position peakPosition;
 		if (unitToWalkTo)
 		{
 			targetPosition = unitToWalkTo->getPosition();
@@ -3364,6 +3366,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
 			enemyReachable = getReachableBy(unitToWalkTo);
+			peakPosition = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
@@ -3376,7 +3379,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
 		for (auto pu : _allPathFindingNodes)
 		{
@@ -3422,9 +3425,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (unit == unitToWalkTo)
 				{
-					std::vector<Position> _trajectory;
-					_trajectory.clear();
-					if (!_save->getTileEngine()->calculateLineTile(unitPosition, tile->getPosition(), _trajectory))
+					if (hasTileSight(unitPosition, pos))
 						peakLoF = true;
 				}
 				if (unit->haveNoFloorBelow())
@@ -3553,7 +3554,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool shouldPeak = false;
 			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide)
 				shouldPeak = true;
-			if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack)
+			if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack && current2Cover == 0)
 			{
 				if (cover1 > 0 && !clearSightToEnemyReachableTile && enemyReachable.find(_save->getTileIndex(pos)) == enemyReachable.end())
 					prio2Score = 100 / walkToDist;
@@ -3566,20 +3567,25 @@ void AIModule::brutalThink(BattleAction* action)
 				prio5Score = 100 / walkToDist;
 			else if (peakLoF && shouldPeak)
 				prio5Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
-			if (clearSightToEnemyReachableTile && shouldPeak)
+			if (hasTileSight(pos, peakPosition) && shouldPeak)
 				prio6Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
-			prio7Score = closestEnemyDist;
+			if (amInAnyonesFOW)
+				prio7Score = closestEnemyDist;
 			if (saveFromGrenades)
-				prio7Score *= 2;
+			{
+				prio3Score *= 1.25;
+				prio4Score *= 1.25;
+				prio7Score *= 1.25;
+			}
 			if (!lineOfFire)
 				prio7Score *= 4;
-			if (!visibleToEnemy)
-				prio7Score *= 2;
 			prio7Score *= 1 + 0.25 * cover2;
 			// If the enemy has produced smoke for us and can't fly, we like being in smoke
 			if (tile->getSmoke() > 0 && !eaglesCanFly)
 			{
 				float smokeMod = 1.0 + tile->getSmoke() * 0.02;
+				prio3Score *= smokeMod;
+				prio4Score *= smokeMod;
 				prio7Score *= smokeMod;
 			}
 			prio2Score /= cuddleAvoidModifier;
@@ -3782,8 +3788,12 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
 		bool haveLof = quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement()) || shouldHaveLofAfterMove;
+		std::vector<Position> _trajectory;
+		_trajectory.clear();
+		if (!_save->getTileEngine()->calculateLineTile(action->target, targetPosition, _trajectory))
+			haveLof = true;
 		if (!_unit->isCheatOnMovement())
-			haveLof = haveLof || clearSight(action->target, targetPosition);
+			haveLof = haveLof || clearSight(action->target, targetPosition) || target->hasLofTile(_save->getTile(action->target));
 		if (!haveLof)
 			continue;
 		float currentDist = Position::distance(action->target, targetPosition);
@@ -3820,7 +3830,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool dummy = false;
 			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target);
 			//Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes, false, NULL));
-			Tile *lookAtTile = _save->getTile(closestToGoTowards(targetPosition, myNodes));
+			Tile* lookAtTile = _save->getTile(closestToGoTowards(targetPosition, myNodes, action->target));
 			if (lookAtTile && _traceAI)
 				Log(LOG_INFO) << "lookAtTile " << lookAtTile->getPosition() << " action->target: " << action->target;
 			if (lookAtTile && lookAtTile->getPosition() != action->target)
@@ -4083,7 +4093,7 @@ Position AIModule::furthestToGoTowards(Position target, BattleActionCost reserve
 	return _unit->getPosition();
 }
 
-Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNode *> nodeVector)
+Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNode *> nodeVector, Position myPos, bool peakMode)
 {
 	PathfindingNode *targetNode = NULL;
 	float closestDistToTarget = 255;
@@ -4121,8 +4131,10 @@ Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNo
 	}
 	if (targetNode != NULL)
 	{
-		while (targetNode->getPrevNode() != NULL && targetNode->getPrevNode()->getPosition() != _unit->getPosition())
+		while (targetNode->getPrevNode() != NULL && targetNode->getPrevNode()->getPosition() != myPos)
 		{
+			if (peakMode && hasTileSight(myPos, targetNode->getPrevNode()->getPosition()))
+				return targetNode->getPosition();
 			targetNode = targetNode->getPrevNode();
 			//if (_traceAI)
 			//{
@@ -4134,7 +4146,7 @@ Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNo
 		}
 		return targetNode->getPosition();
 	}
-	return _unit->getPosition();
+	return myPos;
 }
 
 bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
@@ -5611,6 +5623,8 @@ float AIModule::getCoverValue(Tile* tile, BattleUnit* bu, int coverQuality)
 		if (_save->getAboveTile(tile) && _save->getAboveTile(tile)->hasNoFloor())
 			return 0;
 	}
+	if (coverQuality < 3 && _save->getTileEngine()->isNextToDoor(tile))
+		return 0;
 	float cover = 0;
 	Tile* tileFrom = tile;
 	int peakOver = tile->getTerrainLevel() * -1 + bu->getHeight() - 24;
@@ -5747,6 +5761,15 @@ std::unordered_set<int> AIModule::getReachableBy(BattleUnit* unit)
 		tiles.insert(_save->getTileIndex((*it)->getPosition()));
 	}
 	return tiles;
+}
+
+bool AIModule::hasTileSight(Position from, Position to)
+{
+	std::vector<Position> _trajectory;
+	_trajectory.clear();
+	if (_save->getTileEngine()->calculateLineTile(from, to, _trajectory) > 0)
+		return false;
+	return true;
 }
 
 }

@@ -157,7 +157,7 @@ public:
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
 	/// find the closest Position that isn't our current position which is on the way to a target
-	Position closestToGoTowards(Position target, const std::vector<PathfindingNode *> nodeVector);
+	Position closestToGoTowards(Position target, const std::vector<PathfindingNode *> nodeVector, Position myPos, bool peakMode = false);
 	/// checks if the path to a position is save
 	bool isPathToPositionSave(Position target, bool checkForProxies = false);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
@@ -228,6 +228,8 @@ public:
 	int getEnergyRecovery(BattleUnit* unit);
 	/// returns reachable tile-Ids by a particular unit
 	std::unordered_set<int> getReachableBy(BattleUnit* unit);
+	/// checks whether it would be possible to see one tile from another
+	bool hasTileSight(Position from, Position to);
 };
 
 }
