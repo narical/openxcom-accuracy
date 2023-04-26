@@ -3255,7 +3255,6 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			enemyMoralAvg /= enemyUnitCount;
 		}
-		bool targetHasGravLift = false;
 	}
 
 	BattleActionCost costSnap(BA_SNAPSHOT, _unit, action->weapon);
@@ -3294,25 +3293,20 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	// Prio 1: I can walk right ontop of the unit or the unit is already a valid target and I can attack it from where I go
-	float bestPrio1Score = 0;
-	Position bestPrio1Position = myPos;
-	// Prio 2-4: Find a good spot to approach the enemy but without exposing yourself
-	float bestPrio2Score = 0;
-	Position bestPrio2Position = myPos;
-	float bestPrio3Score = 0;
-	Position bestPrio3Position = myPos;
-	float bestPrio4Score = 0;
-	Position bestPrio4Position = myPos;
-	// Prio 5: Rush the enemy / peak at lof-tile
-	float bestPrio5Score = 0;
-	Position bestPrio5Position = myPos;
-	// Prio 6: peak at encircle-tile
-	float bestPrio6Score = 0;
-	Position bestPrio6Position = myPos;
-	// Prio 7: Find a good hiding-spot
-	float bestPrio7Score = 0;
-	Position bestPrio7Position = myPos;
+	float bestAttackScore = 0;
+	Position bestAttackPosition = myPos;
+	float bestGreatCoverScore = 0;
+	Position bestGreatCoverPosition = myPos;
+	float bestGoodCoverScore = 0;
+	Position bestGoodCoverPosition = myPos;
+	float bestOkayCoverScore = 0;
+	Position bestOkayCoverPosition = myPos;
+	float bestDirectPeakScore = 0;
+	Position bestDirectPeakPosition = myPos;
+	float bestIndirectPeakScore = 0;
+	Position bestIndirectPeakPosition = myPos;
+	float bestFallbackScore = 0;
+	Position bestFallbackPosition = myPos;
 	float coverInRange = highestCoverInRange(_allPathFindingNodes);
 	float current2Cover = getCoverValue(_unit->getTile(), _unit, 2);
 	float tuToSaveForHide = 0.5;
@@ -3323,6 +3317,8 @@ void AIModule::brutalThink(BattleAction* action)
 		sweepMode = true;
 	if (_unit->getArmor()->getSize() > 1 && !dissolveBlockage)
 		sweepMode = true;
+	if (_blaster)
+		sweepMode = false;
 	if (!shouldSaveEnergy && (!iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit) || canReachTargetTileWithAttack))
 		peakMode = true;
 	bool shouldSkip = false;
@@ -3356,7 +3352,6 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		Position targetPosition = encircleTile->getPosition();
 		bool justNeedToTurn = false;
-		std::unordered_set<int> enemyReachable;
 		Position peakPosition;
 		if (unitToWalkTo)
 		{
@@ -3365,7 +3360,6 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
-			enemyReachable = getReachableBy(unitToWalkTo);
 			peakPosition = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
@@ -3498,33 +3492,42 @@ void AIModule::brutalThink(BattleAction* action)
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire)
 			{
-				if (_save->getTileEngine()->isNextToDoor(tile) && targetDist == 1)
+				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 				{
-					Tile *targetTile = _save->getTile(targetPosition);
-					if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+					for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
 					{
-						shouldHaveBeenAbleToAttack = false;
-						lineOfFire = true;
-						realLineOfFire = false;
-						attackTU += 4;
-						specialDoorCase = true;
+						Position checkPos = pos;
+						checkPos += Position(x, y, 0);
+						Tile* targetTile = _save->getTile(checkPos);
+						if (_save->getTileEngine()->isNextToDoor(targetTile) && targetDist < 1 + _unit->getArmor()->getSize() && targetPosition.z == checkPos.z)
+						{
+							Tile* targetTile = _save->getTile(targetPosition);
+							if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+							{
+								shouldHaveBeenAbleToAttack = false;
+								lineOfFire = true;
+								realLineOfFire = false;
+								attackTU += 4;
+								specialDoorCase = true;
+							}
+						}
 					}
 				}
 			}
 			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
 				haveTUToAttack = true;
-			float prio1Score = 0;
-			float prio2Score = 0;
-			float prio3Score = 0;
-			float prio4Score = 0;
-			float prio5Score = 0;
-			float prio6Score = 0;
-			float prio7Score = 0;
+			float attackScore = 0;
+			float greatCoverScore = 0;
+			float goodCoverScore = 0;
+			float okayCoverScore = 0;
+			float directPeakScore = 0;
+			float indirectPeakScore = 0;
+			float fallbackScore = 0;
 			if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 				{
-					prio1Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					attackScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
 			Tile *tileAbove = _save->getAboveTile(tile);
@@ -3549,146 +3552,135 @@ void AIModule::brutalThink(BattleAction* action)
 			bool closerThanEnemyCanReach = false;
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
-			float cover1 = getCoverValue(tile, _unit, 2);
-			float cover2 = getCoverValue(tile, _unit, 3);
+			float cover1 = getCoverValue(tile, _unit, 1);
+			float cover2 = getCoverValue(tile, _unit, 2);
+			float cover3 = getCoverValue(tile, _unit, 3);
 			bool shouldPeak = false;
 			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide)
 				shouldPeak = true;
-			if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack && current2Cover == 0)
+			if (dissolveBlockage)
+				greatCoverScore = closestEnemyDist;
+			else if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack)
 			{
-				if (cover1 > 0 && !clearSightToEnemyReachableTile && enemyReachable.find(_save->getTileIndex(pos)) == enemyReachable.end())
-					prio2Score = 100 / walkToDist;
 				if (cover1 > 0)
-					prio3Score = cover1;
+					greatCoverScore = 100 / walkToDist;
 				if (cover2 > 0)
-					prio4Score = cover2;
+					goodCoverScore = 100 / walkToDist;
+				if (cover3 > 0)
+					okayCoverScore = 100 / walkToDist;
 			}
-			if (sweepMode || (targetIsInSmoke && shouldPeak))
-				prio5Score = 100 / walkToDist;
-			else if (peakLoF && shouldPeak)
-				prio5Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
-			if (hasTileSight(pos, peakPosition) && shouldPeak)
-				prio6Score = _unit->getTimeUnits() - pu->getTUCost(false).time;
-			if (amInAnyonesFOW)
-				prio7Score = closestEnemyDist;
-			if (saveFromGrenades)
+			if (current2Cover > 0)
 			{
-				prio3Score *= 1.25;
-				prio4Score *= 1.25;
-				prio7Score *= 1.25;
+				if (sweepMode || (targetIsInSmoke && shouldPeak))
+					directPeakScore = 100 / walkToDist;
+				else if (peakLoF && shouldPeak)
+					directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+				if (hasTileSight(pos, peakPosition) && shouldPeak)
+					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
-			if (!lineOfFire)
-				prio7Score *= 4;
-			prio7Score *= 1 + 0.25 * cover2;
+			fallbackScore = 100 / walkToDist;
 			// If the enemy has produced smoke for us and can't fly, we like being in smoke
-			if (tile->getSmoke() > 0 && !eaglesCanFly)
-			{
-				float smokeMod = 1.0 + tile->getSmoke() * 0.02;
-				prio3Score *= smokeMod;
-				prio4Score *= smokeMod;
-				prio7Score *= smokeMod;
-			}
-			prio2Score /= cuddleAvoidModifier;
-			prio3Score /= cuddleAvoidModifier;
-			prio4Score /= cuddleAvoidModifier;
-			prio5Score /= cuddleAvoidModifier;
-			prio6Score /= cuddleAvoidModifier;
-			prio7Score /= cuddleAvoidModifier;
+			greatCoverScore /= cuddleAvoidModifier;
+			goodCoverScore /= cuddleAvoidModifier;
+			okayCoverScore /= cuddleAvoidModifier;
+			directPeakScore /= cuddleAvoidModifier;
+			indirectPeakScore /= cuddleAvoidModifier;
+			fallbackScore /= cuddleAvoidModifier;
 			if (tile->getDangerous() || tile->getFire())
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
 				{
-					prio1Score *= 2;
-					prio2Score *= 10;
-					prio3Score *= 10;
-					prio4Score *= 10;
-					prio5Score *= 10;
-					prio6Score *= 10;
-					prio7Score *= 10;
+					attackScore *= 2;
+					greatCoverScore *= 10;
+					goodCoverScore *= 10;
+					okayCoverScore *= 10;
+					directPeakScore *= 10;
+					indirectPeakScore *= 10;
+					fallbackScore *= 10;
 				}
 				else
 				{
-					prio1Score /= 2;
+					attackScore /= 2;
 					if (_unit->getTile()->getDangerous() || _unit->getTile()->getFire())
 					{
-						prio2Score /= 10;
-						prio3Score /= 10;
-						prio4Score /= 10;
-						prio5Score /= 10;
-						prio6Score /= 10;
-						prio7Score /= 10;
+						greatCoverScore /= 10;
+						goodCoverScore /= 10;
+						okayCoverScore /= 10;
+						directPeakScore /= 10;
+						indirectPeakScore /= 10;
+						fallbackScore /= 10;
 					}
 					else
 					{
-						prio2Score = 0;
-						prio3Score = 0;
-						prio4Score = 0;
-						prio5Score = 0;
-						prio6Score = 0;
-						prio7Score = 0;
+						greatCoverScore = 0;
+						goodCoverScore = 0;
+						okayCoverScore = 0;
+						directPeakScore = 0;
+						indirectPeakScore = 0;
+						fallbackScore = 0;
 					}
 				}
 			}
 			// Avoid tiles from which the player can take me with them when retreating
 			if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
 			{
-				prio1Score /= 2;
-				prio2Score /= 10;
-				prio3Score /= 10;
-				prio4Score /= 10;
-				prio5Score /= 10;
-				prio6Score /= 10;
-				prio7Score /= 10;
+				attackScore /= 2;
+				greatCoverScore /= 10;
+				goodCoverScore /= 10;
+				okayCoverScore /= 10;
+				directPeakScore /= 10;
+				indirectPeakScore /= 10;
+				fallbackScore /= 10;
 			}
 			if (avoidMeleeRange || (badPath && !sweepMode))
 			{
-				prio1Score /= 10;
-				prio2Score /= 10;
-				prio3Score /= 10;
-				prio4Score /= 10;
-				prio5Score /= 10;
-				prio6Score /= 10;
+				attackScore /= 10;
+				greatCoverScore /= 10;
+				goodCoverScore /= 10;
+				okayCoverScore /= 10;
+				directPeakScore /= 10;
+				indirectPeakScore /= 10;
 			}
-			if (prio1Score > bestPrio1Score)
+			if (attackScore > bestAttackScore)
 			{
-				bestPrio1Score = prio1Score;
-				bestPrio1Position = pos;
+				bestAttackScore = attackScore;
+				bestAttackPosition = pos;
 				shouldHaveLofAfterMove = realLineOfFire;
 				winnerWasSpecialDoorCase = specialDoorCase;
 			}
-			if (prio2Score > bestPrio2Score)
+			if (greatCoverScore > bestGreatCoverScore)
 			{
-				bestPrio2Score = prio2Score;
-				bestPrio2Position = pos;
+				bestGreatCoverScore = greatCoverScore;
+				bestGreatCoverPosition = pos;
 			}
-			if (prio3Score > bestPrio3Score)
+			if (goodCoverScore > bestGoodCoverScore)
 			{
-				bestPrio3Score = prio3Score;
-				bestPrio3Position = pos;
+				bestGoodCoverScore = goodCoverScore;
+				bestGoodCoverPosition = pos;
 			}
-			if (prio4Score > bestPrio4Score)
+			if (okayCoverScore > bestOkayCoverScore)
 			{
-				bestPrio4Score = prio4Score;
-				bestPrio4Position = pos;
+				bestOkayCoverScore = okayCoverScore;
+				bestOkayCoverPosition = pos;
 			}
-			if (prio5Score > bestPrio5Score)
+			if (directPeakScore > bestDirectPeakScore)
 			{
-				bestPrio5Score = prio5Score;
-				bestPrio5Position = pos;
+				bestDirectPeakScore = directPeakScore;
+				bestDirectPeakPosition = pos;
 				if (pu->getPrevNode() && !sweepMode)
 					peakDirection = _save->getTileEngine()->getDirectionTo(pu->getPrevNode()->getPosition(), pos);
 			}
-			if (bestPrio5Score == 0 && prio6Score > bestPrio6Score)
+			if (bestDirectPeakScore == 0 && indirectPeakScore > bestIndirectPeakScore)
 			{
-				bestPrio6Score = prio6Score;
-				bestPrio6Position = pos;
+				bestIndirectPeakScore = indirectPeakScore;
+				bestIndirectPeakPosition = pos;
 				if (pu->getPrevNode())
 					peakDirection = _save->getTileEngine()->getDirectionTo(pu->getPrevNode()->getPosition(), pos);
 			}
-			if (prio7Score > bestPrio7Score)
+			if (fallbackScore > bestFallbackScore)
 			{
-				bestPrio7Score = prio7Score;
-				bestPrio7Position = pos;
+				bestFallbackScore = fallbackScore;
+				bestFallbackPosition = pos;
 			}
 			//if (_traceAI)
 			//{
@@ -3699,60 +3691,60 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (_traceAI)
 		{
-			if (bestPrio1Score > 0)
+			if (bestAttackScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio1Position: " << bestPrio1Position << " score: " << bestPrio1Score;
+				Log(LOG_INFO) << "bestAttackPosition: " << bestAttackPosition << " score: " << bestAttackScore;
 			}
-			if (bestPrio2Score > 0)
+			if (bestGreatCoverScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio2Position: " << bestPrio2Position << " score: " << bestPrio2Score;
+				Log(LOG_INFO) << "bestGreatCoverPosition: " << bestGreatCoverPosition << " score: " << bestGreatCoverScore;
 			}
-			if (bestPrio3Score > 0)
+			if (bestGoodCoverScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio3Position: " << bestPrio3Position << " score: " << bestPrio3Score;
+				Log(LOG_INFO) << "bestGoodCoverPosition: " << bestGoodCoverPosition << " score: " << bestGoodCoverScore;
 			}
-			if (bestPrio4Score > 0)
+			if (bestOkayCoverScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio4Position: " << bestPrio4Position << " score: " << bestPrio4Score;
+				Log(LOG_INFO) << "bestOkayCoverPosition: " << bestOkayCoverPosition << " score: " << bestOkayCoverScore;
 			}
-			if (bestPrio5Score > 0)
+			if (bestDirectPeakScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio5Position: " << bestPrio5Position << " score: " << bestPrio5Score;
+				Log(LOG_INFO) << "bestDirectPeakPosition: " << bestDirectPeakPosition << " score: " << bestDirectPeakScore;
 			}
-			if (bestPrio6Score > 0)
+			if (bestIndirectPeakScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio6Position: " << bestPrio6Position << " score: " << bestPrio6Score;
+				Log(LOG_INFO) << "bestIndirectPeakPosition: " << bestIndirectPeakPosition << " score: " << bestIndirectPeakScore;
 			}
-			if (bestPrio7Score > 0)
+			if (bestFallbackScore > 0)
 			{
-				Log(LOG_INFO) << "bestPrio7Position: " << bestPrio7Position << " score: " << bestPrio7Score;
+				Log(LOG_INFO) << "bestFallbackPosition: " << bestFallbackPosition << " score: " << bestFallbackScore;
 			}
 		}
 	}
 	Position travelTarget = myPos;
-	if (bestPrio1Score > 0)
+	if (bestAttackScore > 0)
 	{
-		travelTarget = bestPrio1Position;
+		travelTarget = bestAttackPosition;
 	}
-	else if (bestPrio2Score > 0 && (myPos != bestPrio2Position || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
-		travelTarget = bestPrio2Position;
-	else if (bestPrio2Score == 0 && bestPrio3Score > 0 && (myPos != bestPrio3Position || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
-		travelTarget = bestPrio3Position;
-	else if (bestPrio2Score == 0 && bestPrio3Score == 0 && bestPrio4Score > 0 && (myPos != bestPrio4Position || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
-		travelTarget = bestPrio4Position;
-	else if (bestPrio5Score > 0 && !dissolveBlockage)
+	else if (bestDirectPeakScore > 0 && !dissolveBlockage)
 	{
-		if (_save->getTileEngine()->visibleTilesFrom(_unit, bestPrio5Position, peakDirection, true).size() > 0 || sweepMode)
-			travelTarget = bestPrio5Position;
+		if (_save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, peakDirection, true).size() > 0 || sweepMode)
+			travelTarget = bestDirectPeakPosition;
 	}
-	else if (bestPrio6Score > 0 && !dissolveBlockage)
+	else if (bestIndirectPeakScore > 0 && !dissolveBlockage)
 	{
-		if (_save->getTileEngine()->visibleTilesFrom(_unit, bestPrio6Position, peakDirection, true).size() > 0)
-			travelTarget = bestPrio6Position;
+		if (_save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, peakDirection, true).size() > 0)
+			travelTarget = bestIndirectPeakPosition;
 	}
-	else if (bestPrio7Score > 0)
+	else if (bestGreatCoverScore > 0 && (myPos != bestGreatCoverPosition || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
+		travelTarget = bestGreatCoverPosition;
+	else if (bestGreatCoverScore == 0 && bestGoodCoverScore > 0 && (myPos != bestGoodCoverPosition || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
+		travelTarget = bestGoodCoverPosition;
+	else if (bestGreatCoverScore == 0 && bestGoodCoverScore == 0 && bestOkayCoverScore > 0 && (myPos != bestOkayCoverPosition || _unit->getTimeUnits() < getMaxTU(_unit)) && !sweepMode)
+		travelTarget = bestOkayCoverPosition;
+	else if (bestFallbackScore > 0)
 	{
-		travelTarget = bestPrio7Position;
+		travelTarget = bestFallbackPosition;
 	}
 	if (_traceAI)
 	{
@@ -5360,8 +5352,6 @@ int AIModule::getMaxTU(BattleUnit *unit)
 int AIModule::getClosestSpawnTileId()
 {
 	int id = -1;
-	if (_save->getMissionType() == "STR_BASE_DEFENSE")
-		return id;
 	for (auto pn : _allPathFindingNodes)
 	{
 		Position tilePositon = pn->getPosition();
@@ -5695,7 +5685,7 @@ float AIModule::getCoverValue(Tile* tile, BattleUnit* bu, int coverQuality)
 			std::vector<Position> traj;
 			float coverFromDir = 0;
 			coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tileFrom, DT_NONE) / 255.0;
-			if (coverFromDir >= 1 || coverQuality > 2)
+			if (coverFromDir >= 1 || coverQuality > 3)
 				coverFromDir += _save->getTileEngine()->horizontalBlockage(tileInDirection, tileFrom, DT_HE) / 255.0;
 			if (coverFromDir > 0)
 				cover += coverFromDir * dirCoverMod;
