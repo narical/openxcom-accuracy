@@ -88,6 +88,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
+	_moveCostBaseClimb = _armor->getMoveCostBaseClimb();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
 
 	// armor and soldier bonuses may modify effective stats
@@ -209,6 +210,7 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
+	_moveCostBaseClimb = _armor->getMoveCostBaseClimb();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
 
 	// armor and soldier bonuses may modify effective stats
@@ -488,6 +490,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
+	_moveCostBaseClimb = _armor->getMoveCostBaseClimb();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
 
 	_stats += *_armor->getStats();	// armors may modify effective stats
@@ -596,6 +599,7 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	_originalMovementType = _movementType = _armor->getMovementTypeByDepth(depth);
 	_moveCostBase = _armor->getMoveCostBase();
 	_moveCostBaseFly = _armor->getMoveCostBaseFly();
+	_moveCostBaseClimb = _armor->getMoveCostBaseClimb();
 	_moveCostBaseNormal = _armor->getMoveCostBaseNormal();
 
 	_stats = *_unitRules->getStats();
@@ -734,6 +738,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	{
 		_moveCostBase.load(p["basePercent"]);
 		_moveCostBaseFly.load(p["baseFlyPercent"]);
+		_moveCostBaseClimb.load(p["baseClimbPercent"]);
 		_moveCostBaseNormal.load(p["baseNormalPercent"]);
 	}
 	_vip = node["vip"].as<bool>(_vip);
@@ -862,6 +867,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		if (_moveCostBaseFly != _armor->getMoveCostBaseFly())
 		{
 			_moveCostBaseFly.save(p, "baseFlyPercent");
+		}
+		if (_moveCostBaseClimb != _armor->getMoveCostBaseClimb())
+		{
+			_moveCostBaseClimb.save(p, "baseClimbPercent");
 		}
 		if (_moveCostBaseNormal != _armor->getMoveCostBaseNormal())
 		{
@@ -6237,6 +6246,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addField<&BattleUnit::_moveCostBase, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseEnergyPercent", "MoveCost.setBaseEnergyPercent");
 	bu.addField<&BattleUnit::_moveCostBaseFly, &ArmorMoveCost::TimePercent>("MoveCost.getBaseFlyTimePercent", "MoveCost.setBaseFlyTimePercent");
 	bu.addField<&BattleUnit::_moveCostBaseFly, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseFlyEnergyPercent", "MoveCost.setBaseFlyEnergyPercent");
+	bu.addField<&BattleUnit::_moveCostBaseClimb, &ArmorMoveCost::TimePercent>("MoveCost.getBaseClimbTimePercent", "MoveCost.setBaseClimbTimePercent");
+	bu.addField<&BattleUnit::_moveCostBaseClimb, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseClimbEnergyPercent", "MoveCost.setBaseClimbEnergyPercent");
 	bu.addField<&BattleUnit::_moveCostBaseNormal, &ArmorMoveCost::TimePercent>("MoveCost.getBaseNormalTimePercent", "MoveCost.setBaseNormalTimePercent");
 	bu.addField<&BattleUnit::_moveCostBaseNormal, &ArmorMoveCost::EnergyPercent>("MoveCost.getBaseNormalEnergyPercent", "MoveCost.setBaseNormalEnergyPercent");
 

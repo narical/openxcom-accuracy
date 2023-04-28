@@ -157,6 +157,7 @@ private:
 	MovementType _originalMovementType;
 	ArmorMoveCost _moveCostBase = { 0, 0 };
 	ArmorMoveCost _moveCostBaseFly = { 0, 0 };
+	ArmorMoveCost _moveCostBaseClimb = { 0, 0 };
 	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	bool _capturable;
@@ -797,6 +798,8 @@ public:
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }
 	/// Multiplier of fly move cost.
 	ArmorMoveCost getMoveCostBaseFly() const { return _moveCostBaseFly; }
+	/// Multiplier of climb move cost.
+	ArmorMoveCost getMoveCostBaseClimb() const { return _moveCostBaseClimb; }
 	/// Multiplier of normal move cost.
 	ArmorMoveCost getMoveCostBaseNormal() const { return _moveCostBaseNormal; }
 };

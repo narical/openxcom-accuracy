@@ -2830,6 +2830,7 @@ void StatsForNerdsState::initArmorList()
 		{
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseClimb(), "baseClimbPercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
@@ -2843,6 +2844,9 @@ void StatsForNerdsState::initArmorList()
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbUp(), "climbUpPercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbDown(), "climbDownPercent", { 100, 50 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
 
