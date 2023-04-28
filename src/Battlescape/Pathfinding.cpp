@@ -157,7 +157,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	}
 
 	// look for a possible fast and accurate bresenham path and skip A*
-	if (startPosition.z == endPosition.z && bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
+	if (bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
 	{
 		std::reverse(_path.begin(), _path.end()); //paths are stored in reverse order
 		return;
@@ -1353,6 +1353,17 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
 			for (dir = 0; dir < 8; ++dir)
 			{
 				if (xd[dir] == cx-lastPoint.x && yd[dir] == cy-lastPoint.y) break;
+			}
+			if (dir == 8)
+			{
+				if (cz-lastPoint.z > 0)
+				{
+					dir = DIR_UP;
+				}
+				else
+				{
+					dir = DIR_DOWN;
+				}
 			}
 			PathfindingStep r = getTUCost(lastPoint, dir, _unit, missileTarget, bam);
 			nextPoint = r.pos;
