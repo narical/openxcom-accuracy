@@ -166,6 +166,8 @@ private:
 	ArmorMoveCost _moveCostBaseFly = { 0, 0 };
 	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
+	std::vector<Position> _reachablePositions;
+	Position _positionWhenReachableWasUpdated = Position(-1, -1, -1);
 	bool _capturable;
 	bool _vip;
 	bool _bannedInNextStage;
@@ -843,6 +845,12 @@ public:
 	int aiTargetMode();
 	/// Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
 	void checkForReactivation();
+	/// Cache inside the unit what positions it can reach for reference by AI
+	void setReachablePositions(std::vector<Position> reachable);
+	std::vector<Position> getReachablePositions();
+	/// Remember this value in order to check whether an update is due
+	void setPositionOfUpdate(Position posOfUpdate);
+	Position getPositionOfUpdate();
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }

@@ -5684,6 +5684,26 @@ void BattleUnit::checkForReactivation()
 	}
 }
 
+void BattleUnit::setReachablePositions(std::vector<Position> reachable)
+{
+	_reachablePositions = reachable;
+}
+
+std::vector<Position> BattleUnit::getReachablePositions()
+{
+	return _reachablePositions;
+}
+
+void BattleUnit::setPositionOfUpdate(Position pos)
+{
+	_positionWhenReachableWasUpdated = pos;
+}
+
+Position BattleUnit::getPositionOfUpdate()
+{
+	return _positionWhenReachableWasUpdated;
+}
+
 bool BattleUnit::isLeeroyJenkins() const
 {
 	return _isLeeroyJenkins;
