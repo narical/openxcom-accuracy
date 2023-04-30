@@ -133,6 +133,8 @@ en-US:
 #SoldiersState.h
   STR_TRAINING: "Training"
   STR_SOLDIER_INFO: "Soldier Info"
+  STR_NO_CRAFT_FILTER: "No Craft Filter"
+  STR_NOT_ASSIGNED: "Unassigned"
 #SoldierTransformationAssignState.cpp
   STR_TRANSFER_TIME: "Transfer Time>{ALT}{0}"
   STR_RECOVERY_TIME: "Recovery Time>{ALT}{0}"
@@ -142,7 +144,7 @@ en-US:
   STR_CHANGES_MAX: "Changes (max)"
   STR_BONUS_STATS: "Bonus stats"
 #SoldierTransformationListState.cpp
-  STR_TRANSFORMATIONS_OVERVIEW: "Transformations Overview"
+  STR_TRANSFORMATIONS_OVERVIEW: "Transform. Overview"
   STR_PROJECT_NAME: "PROJECT NAME"
   STR_AVAILABLE_MATERIALS: "AVAILABLE MATERIALS"
   STR_ELIGIBLE_SOLDIERS: "ELIGIBLE SOLDIERS"
