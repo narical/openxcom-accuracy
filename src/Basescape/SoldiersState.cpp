@@ -53,7 +53,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL), selectedCraftIndex(0)
+SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
 	bool isPsiBtnVisible = Options::anytimePsiTraining && _base->getAvailablePsiLabs() > 0;
 	bool isTrnBtnVisible = _base->getAvailableTraining() > 0;
@@ -81,9 +81,8 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_btnPsiTraining = new TextButton(96, 16, 112, 176);
 	_btnTraining = new TextButton(96, 16, 112, 176);
 	_cbxScreenActions = new ComboBox(this, 148, 16, 8, 176, true);
-	_txtTitle = new Text(96, 17, 16, 8);
-	_cbxSortBy = new ComboBox(this, 96, 16, 216, 8, false);
-	_cbxFilterCraft = new ComboBox(this, 96, 16, 112, 8, false);	
+	_txtTitle = new Text(168, 17, 16, 8);
+	_cbxSortBy = new ComboBox(this, 120, 16, 192, 8, false);
 	_txtName = new Text(114, 9, 16, 32);
 	_txtRank = new Text(102, 9, 122, 32);
 	_txtCraft = new Text(82, 9, 220, 32);
@@ -100,7 +99,6 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	add(_txtCraft, "text2", "soldierList");
 	add(_lstSoldiers, "list", "soldierList");
 	add(_cbxSortBy, "button", "soldierList");
-	add(_cbxFilterCraft, "button", "soldierList");	
 	if (showCombobox)
 	{
 		add(_cbxScreenActions, "button", "soldierList");
@@ -230,22 +228,6 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_cbxSortBy->onChange((ActionHandler)&SoldiersState::cbxSortByChange);
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
 
-	// populate craft filter
-	std::vector<std::string> craftFilter;
-	craftFilter.push_back(tr("All Soldiers"));
-	craftFilter.push_back(tr("Unassigned"));
-    // populate craft names
-	// NHR: Index will be related to craft position in array. We will access
-	// _base->getCrafts()->at(index) to access to craft at that position in vector
-	for (size_t craft = 0; craft < _base->getCrafts()->size(); ++craft)
-	{
-        craftFilter.push_back( _base->getCrafts()->at(craft)->getName(_game->getLanguage()));
-	}
-	_cbxFilterCraft->setOptions(craftFilter);
-	_cbxFilterCraft->setSelected(0);
-	_cbxFilterCraft->onChange((ActionHandler)&SoldiersState::cbxFilterCraftByChange);
-	_cbxFilterCraft->setText("Assigned Craft");
-
 	//_lstSoldiers->setArrowColumn(188, ARROW_VERTICAL);
 	_lstSoldiers->setColumns(3, 106, 98, 76);
 	_lstSoldiers->setAlign(ALIGN_RIGHT, 3);
@@ -281,7 +263,7 @@ void SoldiersState::cbxSortByChange(Action *action)
 	{
 		return;
 	}
-    // selectedCraftIndex: 0 --> no extra filter; 1: no crafts; 2..n: given craft
+
 	SortFunctor *compFunc = _sortFunctors[selIdx];
 	_dynGetter = NULL;
 	if (compFunc)
@@ -334,20 +316,6 @@ void SoldiersState::cbxSortByChange(Action *action)
 }
 
 /**
- * Filters the soldiers list by the selected craft
- * @param action Pointer to an action.
- */
-void SoldiersState::cbxFilterCraftByChange(Action *action){
-	size_t selIdx = _cbxFilterCraft->getSelected();
-	if (selIdx == (size_t)-1)
-	{
-		return;
-	}
-	selectedCraftIndex = selIdx; 
-	initList(0);
-}	
-
-/**
  * Updates the soldiers list
  * after going to other screens.
  */
@@ -383,24 +351,8 @@ void SoldiersState::initList(size_t scrl)
 	{
 		_lstSoldiers->setArrowColumn(188, ARROW_VERTICAL);
 
-		// all soldiers in the base // NHR: Change to selection based on selectedCraftIndex
-		if(selectedCraftIndex == 0)
-		{
-			_filteredListOfSoldiers = *_base->getSoldiers();
-		}else if(selectedCraftIndex == 1){
-			for (auto* soldier : *_base->getSoldiers())
-				if (soldier->getCraft() == 0){
-					_filteredListOfSoldiers.push_back(soldier);					
-				}	
-		}else{
-			for (auto* soldier : *_base->getSoldiers()){
-				if (soldier->getCraft() == _base->getCrafts()->at(selectedCraftIndex-2))
-				{
-					_filteredListOfSoldiers.push_back(soldier);
-				}
-			}			
-		}
-			
+		// all soldiers in the base
+		_filteredListOfSoldiers = *_base->getSoldiers();
 	}
 	else
 	{
