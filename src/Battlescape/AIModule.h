@@ -227,7 +227,7 @@ public:
 	/// returns how much energy the unit can recover each turn
 	int getEnergyRecovery(BattleUnit* unit);
 	/// returns reachable tile-Ids by a particular unit
-	std::vector<Position> getReachableBy(BattleUnit* unit);
+	std::vector<Position> getReachableBy(BattleUnit* unit, bool &ranOutOfTUs);
 	/// checks whether it would be possible to see one tile from another
 	bool hasTileSight(Position from, Position to);
 };

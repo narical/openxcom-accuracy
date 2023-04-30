@@ -160,6 +160,7 @@ private:
 	bool _summonedPlayerUnit, _resummonedFakeCivilian;
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;
+	bool _ranOutOfTUs;
 	MovementType _movementType;
 	MovementType _originalMovementType;
 	ArmorMoveCost _moveCostBase = { 0, 0 };
@@ -852,6 +853,9 @@ public:
 	/// Remember this value in order to check whether an update is due
 	void setPositionOfUpdate(Position posOfUpdate);
 	Position getPositionOfUpdate();
+	/// Remember whether it ran out of TUs while doing the reachability-check
+	void setRanOutOfTUs(bool ranOutOfTUs) { _ranOutOfTUs = ranOutOfTUs; }
+	bool getRanOutOfTUs() { return _ranOutOfTUs; }
 
 	/// Multiplier of move cost.
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }

@@ -2917,8 +2917,7 @@ void AIModule::brutalThink(BattleAction* action)
 			allyDist += Position::distance(ally->getPosition(), enemyPos);
 		}
 
-		//for testing:
-		allyReachable = _save->getPathfinding()->findReachable(ally, BattleActionCost(), allyRanOutOfTUs).size();
+		allyReachable = getReachableBy(ally, _ranOutOfTUs).size();
 		if (_ranOutOfTUs == false)
 		{
 			if (myReachable < allyReachable)
@@ -3060,7 +3059,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 		}
-		for (Position reachablePosOfTarget : getReachableBy(target))
+		for (Position reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
 		{
 			if (std::find(enemyReachable.begin(), enemyReachable.end(), reachablePosOfTarget) == enemyReachable.end())
 			{
@@ -5722,17 +5721,18 @@ int AIModule::getEnergyRecovery(BattleUnit* unit)
 	return recovery;
 }
 
-std::vector<Position> AIModule::getReachableBy(BattleUnit* unit)
+std::vector<Position> AIModule::getReachableBy(BattleUnit* unit, bool &ranOutOfTUs)
 {
 	Position startPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
-	if (_unit->isCheatOnMovement())
+	if (_unit->isCheatOnMovement() || unit->getFaction() == _unit->getFaction())
 		startPosition = unit->getPosition();
 	if (unit->getPositionOfUpdate() == startPosition)
+	{
+		ranOutOfTUs = unit->getRanOutOfTUs();
 		return unit->getReachablePositions();
-	bool dummy;
-	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), dummy, false, NULL, &startPosition, false, true);
+	}
+	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), ranOutOfTUs, false, NULL, &startPosition, false, true);
 	std::vector<Position> tiles;
-	tiles.reserve(reachable.size());
 	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
 	{
 		tiles.push_back((*it)->getPosition());
@@ -5746,6 +5746,7 @@ std::vector<Position> AIModule::getReachableBy(BattleUnit* unit)
 	}
 	unit->setPositionOfUpdate(startPosition);
 	unit->setReachablePositions(tiles);
+	unit->setRanOutOfTUs(ranOutOfTUs);
 	return tiles;
 }
 
