@@ -958,7 +958,7 @@ void SellState::lstItemsMousePress(Action *action)
 				std::string articleId = rule->getUfopediaType();
 				const RuleResearch *selectedTopic = _game->getMod()->getResearch(articleId, false);
 				bool ctrlPressed = _game->isCtrlPressed();
-				if (selectedTopic && !ctrlPressed)
+				if (selectedTopic && ctrlPressed)
 				{
 					_game->pushState(new TechTreeViewerState(selectedTopic, 0));
 				}
