@@ -3460,11 +3460,12 @@ void AIModule::brutalThink(BattleAction* action)
 			bool shouldHaveBeenAbleToAttack = pos == myPos;
 			bool realLineOfFire = lineOfFire;
 			bool specialDoorCase = false;
+			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
 			bool shouldPeak = false;
-			if (peakMode && _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide)
+			if (peakMode && specialDoorCase)
 				shouldPeak = true;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
-			if (!lineOfFire && shouldPeak)
+			if (!lineOfFire && enoughTUToPeak)
 			{
 				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 				{
@@ -3473,8 +3474,6 @@ void AIModule::brutalThink(BattleAction* action)
 						Position checkPos = pos;
 						checkPos += Position(x, y, 0);
 						Tile* targetTile = _save->getTile(checkPos);
-						if (targetTile->getSmoke() > 0)
-							continue;
 						if (_save->getTileEngine()->isNextToDoor(targetTile) && targetDist < 1 + _unit->getArmor()->getSize() && targetPosition.z == checkPos.z)
 						{
 							Tile* targetTile = _save->getTile(targetPosition);
@@ -3663,7 +3662,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(tuDistFromTarget);
+			//	tile->setTUMarker(directPeakScore * 10);
 			//}
 		}
 		if (_traceAI)
