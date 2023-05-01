@@ -19,7 +19,7 @@
  */
 
 #define OPENXCOM_VERSION_ENGINE "Extended"
-#define OPENXCOM_VERSION_SHORT "Extended Brutal 7.9.0 5.0.2"
+#define OPENXCOM_VERSION_SHORT "Extended Brutal 7.9.0 5.0.3"
 #define OPENXCOM_VERSION_LONG "7.9.0.0"
 #define OPENXCOM_VERSION_NUMBER 7,9,0,0
 
