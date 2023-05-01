@@ -2983,7 +2983,6 @@ void AIModule::brutalThink(BattleAction* action)
 	bool sweepMode = _unit->isAggressive() || _unit->isLeeroyJenkins();
 	int lowestTurnsLastSeen = 255;
 	float targetDistanceTofurthestReach = FLT_MAX;
-	bool contact = false;
 	std::vector<Position> enemyReachable;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
@@ -3066,8 +3065,6 @@ void AIModule::brutalThink(BattleAction* action)
 				enemyReachable.push_back(reachablePosOfTarget);
 			}
 		}
-		if (visibleToAnyFriend(target))
-			contact = true;
 		if ((_unit->isCheatOnMovement() || target->getTurnsSinceSeen(_unit->getFaction()) == 0) && hasLofTile(target, _unit->getTile()))
 			amInAnyonesFOW = true;
 		BattleUnit *LoFCheckUnitForPath = NULL;
@@ -3547,9 +3544,9 @@ void AIModule::brutalThink(BattleAction* action)
 				greatCoverScore = closestEnemyDist;
 			else if (!realLineOfFire && !sweepMode && !canReachTargetTileWithAttack)
 			{
-				if (!avoidLoF && !contact)
+				if (!avoidLoF)
 					greatCoverScore = 100 / walkToDist;
-				else if (!peakLoF && !encircleLoF && !contact)
+				else if (!peakLoF && !encircleLoF)
 					goodCoverScore = 100 / walkToDist;
 				else if (!peakLoF)
 					okayCoverScore = 100 / walkToDist;
