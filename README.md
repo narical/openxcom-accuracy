@@ -50,13 +50,13 @@ game, which needed using differentiated hangars and/or more than 1 craft per han
 
 ### Windows Binary
 
-For convenience, a windows binary has been added to folder 'WindowsBinaries'. This exe 
-has been tested to work in a Windows10 machine (64 bits), thought it has not been
-intensively tested 
+For convenience, a ZIP file with windows binary has been added to folder 'WindowsBinaries'.
+ This exe has been tested to work in a Windows10 machine (64 bits), thought it has not been
+intensively tested. It also include extra Language files needed for some specific features
 
-[Link to Windows Binary](/WindowsBinaries/openxcomRFeatured.exe)
+[Link to Windows Binary](/WindowsBinaries/UnzipInOXCEFolder.zip)
 
-You can just place this binary in the same folder than the original one, and just click
+You can just place the binary and folder in the game folder of the original one, and just click
 it when you want start the game with these new features.
 
 ## Installation
