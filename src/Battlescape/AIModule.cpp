@@ -3462,7 +3462,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool specialDoorCase = false;
 			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
 			bool shouldPeak = false;
-			if (peakMode && specialDoorCase)
+			if (peakMode && enoughTUToPeak)
 				shouldPeak = true;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire && enoughTUToPeak)
@@ -3530,7 +3530,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			if (dissolveBlockage)
 				greatCoverScore = closestEnemyDist;
-			else if (!realLineOfFire && !sweepMode)
+			else if (!realLineOfFire && !sweepMode && !_save->getTileEngine()->isNextToDoor(tile))
 			{
 				bool futherForMeThanForEnemy = false;
 				if (unitToWalkTo)
@@ -3542,10 +3542,10 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					if (!avoidLoF)
 						greatCoverScore = 100 / walkToDist;
-					else if (!peakLoF && !encircleLoF)
-						goodCoverScore = 100 / walkToDist;
+					else if (!peakLoF && encircleLoF)
+						goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 					else if (!peakLoF)
-						okayCoverScore = 100 / walkToDist;
+						okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
 			if (sweepMode || (targetIsInSmoke && shouldPeak))
@@ -4100,15 +4100,17 @@ Position AIModule::closestToGoTowards(Position target, std::vector<PathfindingNo
 		while (targetNode->getPrevNode() != NULL && targetNode->getPrevNode()->getPosition() != myPos)
 		{
 			if (peakMode && hasTileSight(myPos, targetNode->getPrevNode()->getPosition()))
+			{
+				//if (_traceAI)
+				//{
+				//	Tile* tile = _save->getTile(targetNode->getPosition());
+				//	tile->setMarkerColor(_unit->getId());
+				//	tile->setPreview(10);
+				//	tile->setTUMarker(_unit->getId() % 1000);
+				//}
 				return targetNode->getPosition();
+			}
 			targetNode = targetNode->getPrevNode();
-			//if (_traceAI)
-			//{
-			//	Tile *tile = _save->getTile(targetNode->getPosition());
-			//	tile->setMarkerColor(_unit->getId());
-			//	tile->setPreview(10);
-			//	tile->setTUMarker(targetNode->getPrevDir());
-			//}
 		}
 		return targetNode->getPosition();
 	}
