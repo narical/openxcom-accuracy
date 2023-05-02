@@ -3542,10 +3542,12 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					if (!avoidLoF)
 						greatCoverScore = 100 / walkToDist;
-					else if (!peakLoF && encircleLoF)
+					else if (!peakLoF && encircleLoF && !IAmPureMelee)
 						goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					else if (!peakLoF)
+					else if (!peakLoF && !IAmPureMelee)
 						okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					else if	(!peakLoF)
+						okayCoverScore = 100 / walkToDist;
 				}
 			}
 			if (sweepMode || (targetIsInSmoke && shouldPeak))
