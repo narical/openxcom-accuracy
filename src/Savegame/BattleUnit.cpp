@@ -2345,8 +2345,11 @@ bool BattleUnit::addToVisibleTiles(Tile *tile)
 	//Only add once, otherwise we're going to mess up the visibility value and make trouble for the AI (if sneaky).
 	if (_visibleTilesLookup.insert(tile).second)
 	{
-		tile->setVisible(1);
-		tile->setLastExplored(getFaction());
+		if (getFaction() == FACTION_PLAYER)
+			tile->setVisible(1);
+		BattleUnit* unitOnTile = tile->getUnit();
+		if (!unitOnTile || hasVisibleUnit(unitOnTile))
+			tile->setLastExplored(getFaction());
 		_visibleTiles.push_back(tile);
 		return true;
 	}
