@@ -4908,6 +4908,10 @@ void AIModule::brutalBlaster()
 		Position target = _aggroTarget->getPosition();
 		if (blindMode)
 			target = blindTarget;
+		if (!Options::ignoreDelay && _save->getTile(target) && _save->getTile(target)->getFloorSpecialTileType() == START_POINT)
+		{
+			if (_traceAI)
+		}
 		float closestDistToTarget = 255;
 		for (auto pn : missilePaths)
 		{
