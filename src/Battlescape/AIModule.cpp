@@ -3060,11 +3060,14 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 		}
-		for (Position reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
+		if (!target->wantsToSurrender())
 		{
-			if (std::find(enemyReachable.begin(), enemyReachable.end(), reachablePosOfTarget) == enemyReachable.end())
+			for (Position reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
 			{
-				enemyReachable.push_back(reachablePosOfTarget);
+				if (std::find(enemyReachable.begin(), enemyReachable.end(), reachablePosOfTarget) == enemyReachable.end())
+				{
+					enemyReachable.push_back(reachablePosOfTarget);
+				}
 			}
 		}
 		if ((_unit->isCheatOnMovement() || target->getTurnsSinceSeen(_unit->getFaction()) == 0) && hasLofTile(target, _unit->getTile()))
@@ -3393,7 +3396,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
 					continue;
-				if (hasTileSight(unitPosition, pos))
+				if (!unit->wantsToSurrender() && hasTileSight(unitPosition, pos))
 					peakLoF = true;
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;
