@@ -32,6 +32,7 @@
 #include "../Savegame/Production.h"
 #include "ManufactureState.h"
 #include "TechTreeViewerState.h"
+#include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
 {
@@ -164,7 +165,15 @@ void GlobalManufactureState::onOpenTechTreeViewer(Action *)
 
 	if (selectedTopic)
 	{
-		_game->pushState(new TechTreeViewerState(0, selectedTopic));
+		if (_game->isCtrlPressed())
+		{
+			std::string articleId = selectedTopic->getName();
+			Ufopaedia::openArticle(_game, articleId);
+		}
+		else
+		{
+			_game->pushState(new TechTreeViewerState(0, selectedTopic));
+		}
 	}
 }
 
