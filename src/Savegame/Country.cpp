@@ -371,20 +371,17 @@ bool Country::canBeInfiltrated()
 namespace
 {
 
-int checkBoundsAndGet(int index, const std::vector<int>& element)
+int checkBoundsAndGetFromEnd(int index, const std::vector<int>& element)
 {
-	if (index < 0 || index > element.size()) {
-		Log(LOG_WARNING) << "Attempted to get invalid data point.";
-		return -1;
-	}
-	return element[index];
+	if (index < 0 || index > element.size()) { return 0; }
+	return element[element.size() - index - 1];
 }
 
 }
 
-int Country::getMonthlyActivityAlien(int month) const { return checkBoundsAndGet(month, _activityAlien); }
-int Country::getMonthlyActivityXcom(int month) const { return checkBoundsAndGet(month, _activityXcom); }
-int Country::getMonthlyFunding(int month) const { return checkBoundsAndGet(month, _funding); }
+int Country::getMonthlyActivityAlien(int month) const { return checkBoundsAndGetFromEnd(month, _activityAlien); }
+int Country::getMonthlyActivityXcom(int month) const { return checkBoundsAndGetFromEnd(month, _activityXcom); }
+int Country::getMonthlyFunding(int month) const { return checkBoundsAndGetFromEnd(month, _funding); }
 
 namespace // script helpers
 {
@@ -420,9 +417,9 @@ void Country::ScriptRegister(ScriptParserBase* parser)
 	countryBinder.add<&Country::getCurrentActivityXcom>("getCurrentActivityXcom", "Get the countries current xcom activity.");
 
 	countryBinder.add<&Country::getMonthsTracked>("getMonthsTracked", "Gets the number of months currently tracked. [2, 12].");
-	countryBinder.add<&Country::getMonthlyFunding>("getFunding", "Gets funding for a tracked month [0 to monthsTracked), -1 on error.");
-	countryBinder.add<&Country::getMonthlyActivityAlien>("getAlienActivity", "Gets alien activity for a tracked month [0 to monthsTracked), -1 on error.");
-	countryBinder.add<&Country::getMonthlyActivityXcom>("getXcomActivity", "Gets xcom activity for a tracked month [0 to monthsTracked), -1 on error.");
+	countryBinder.add<&Country::getMonthlyFunding>("getFunding", "Gets funding working backwards from the present [0 to monthsTracked), 0 on error. (funding monthsAgo)");
+	countryBinder.add<&Country::getMonthlyActivityAlien>("getAlienActivity", "Gets alien activity working backwards from the present [0 to monthsTracked), 0 on error. (activity monthsAgo)");
+	countryBinder.add<&Country::getMonthlyActivityXcom>("getXcomActivity", "Gets xcom activity working backwards from the present [0 to monthsTracked), 0 on error. (activity monthsAgo)");
 
 	countryBinder.addScriptValue<BindBase::SetAndGet, &Country::_scriptValues>();
 	countryBinder.addDebugDisplay<&debugDisplayScript>();
