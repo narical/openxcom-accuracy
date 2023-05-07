@@ -4911,6 +4911,8 @@ void AIModule::brutalBlaster()
 		if (!Options::ignoreDelay && _save->getTile(target) && _save->getTile(target)->getFloorSpecialTileType() == START_POINT)
 		{
 			if (_traceAI)
+				Log(LOG_INFO) << "Launching blaster-bomb at "<<target<<" aborted out of pity.";
+			return;
 		}
 		float closestDistToTarget = 255;
 		for (auto pn : missilePaths)
