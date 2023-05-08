@@ -3060,7 +3060,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 		}
-		if (!target->wantsToSurrender())
+		if (!target->hasPanickedLastTurn())
 		{
 			for (Position reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
 			{
@@ -3396,7 +3396,7 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
 					continue;
-				if (!unit->wantsToSurrender() && hasTileSight(unitPosition, pos))
+				if (!unit->hasPanickedLastTurn() && hasTileSight(unitPosition, pos))
 					peakLoF = true;
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;

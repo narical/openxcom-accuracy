@@ -63,7 +63,7 @@ namespace OpenXcom
 BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleStartingCondition* sc) :
 	_faction(FACTION_PLAYER), _originalFaction(FACTION_PLAYER), _killedBy(FACTION_PLAYER), _id(0), _tile(0),
 	_lastPos(Position()), _direction(0), _toDirection(0), _directionTurret(0), _toDirectionTurret(0),
-	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
+	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _hasPanickedLastTurn(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
@@ -388,7 +388,7 @@ void BattleUnit::prepareBannedFlag(const RuleStartingCondition* sc)
 BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, const RuleEnviroEffects* enviro, Armor *armor, StatAdjustment *adjustment, int depth, const RuleStartingCondition* sc) :
 	_faction(faction), _originalFaction(faction), _killedBy(faction), _id(id),
 	_tile(0), _lastPos(Position()), _direction(0), _toDirection(0), _directionTurret(0),
-	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0),
+	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _hasPanickedLastTurn(false), _isSurrendering(false), _walkPhase(0),
 	_fallPhase(0), _kneeled(false), _floating(false), _dontReselect(false), _fire(0), _currentAIState(0),
 	_visible(false), _exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
@@ -594,6 +594,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_faction = (UnitFaction)node["faction"].as<int>(_faction);
 	_status = (UnitStatus)node["status"].as<int>(_status);
 	_wantsToSurrender = node["wantsToSurrender"].as<bool>(_wantsToSurrender);
+	_hasPanickedLastTurn = node["hasPanickedLastTurn"].as<bool>(_hasPanickedLastTurn);
 	_isSurrendering = node["isSurrendering"].as<bool>(_isSurrendering);
 	_pos = node["position"].as<Position>(_pos);
 	_direction = _toDirection = node["direction"].as<int>(_direction);
@@ -710,6 +711,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 		node["wantsToSurrender"] = _wantsToSurrender;
 	if (_isSurrendering)
 		node["isSurrendering"] = _isSurrendering;
+	if (_hasPanickedLastTurn)
+		node["hasPanickedLastTurn"] = _hasPanickedLastTurn;
 	node["position"] = _pos;
 	node["direction"] = _direction;
 	node["directionTurret"] = _directionTurret;
@@ -1059,6 +1062,15 @@ UnitStatus BattleUnit::getStatus() const
 bool BattleUnit::wantsToSurrender() const
 {
 	return _wantsToSurrender;
+}
+
+/**
+ * Has the unit panicked last turn?
+ * @return True if the unit has panicked
+ */
+bool BattleUnit::hasPanickedLastTurn() const
+{
+	return _hasPanickedLastTurn;
 }
 
 /**
@@ -2721,6 +2733,7 @@ void BattleUnit::prepareStun(int stun)
  */
 void BattleUnit::prepareMorale(int morale)
 {
+	_hasPanickedLastTurn = false;
 	if (!isOut())
 	{
 		moraleChange(morale);
@@ -2731,6 +2744,7 @@ void BattleUnit::prepareMorale(int morale)
 			int berserkChance = _unitRules ? _unitRules->getBerserkChance() : 33;
 			_status = (type <= berserkChance ? STATUS_BERSERK : STATUS_PANICKING); // 33% chance of berserk, panic can mean freeze or flee, but that is determined later
 			_wantsToSurrender = true;
+			_hasPanickedLastTurn = true;
 		}
 		else
 		{
