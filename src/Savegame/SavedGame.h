@@ -247,6 +247,8 @@ public:
 	void setAllIds(const std::map<std::string, int> &ids);
 	/// Gets the list of countries.
 	std::vector<Country*> *getCountries();
+	/// Gets the list of countries.
+	[[nodiscard]] const std::vector<Country*>* getCountries() const { return &_countries; }
 	/// Gets the total country funding.
 	int getCountryFunding() const;
 	/// Gets the list of regions.

@@ -18,7 +18,9 @@
  */
 #include "RuleCountry.h"
 #include "Mod.h"
+#include "ModScript.h"
 #include "../Engine/RNG.h"
+#include "../Engine/ScriptBind.h"
 #include "../fmath.h"
 
 namespace OpenXcom
@@ -44,11 +46,11 @@ RuleCountry::~RuleCountry()
  * Loads the country type from a YAML file.
  * @param node YAML node.
  */
-void RuleCountry::load(const YAML::Node &node)
+void RuleCountry::load(const YAML::Node &node, const ModScript& parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent);
+		load(parent, parsers);
 	}
 
 	_signedPactEventName = node["signedPactEvent"].as<std::string>(_signedPactEventName);
@@ -73,6 +75,9 @@ void RuleCountry::load(const YAML::Node &node)
 		if (_latMin.back() > _latMax.back())
 			std::swap(_latMin.back(), _latMax.back());
 	}
+
+	_countryScripts.load(_type, node, parsers.countryScripts);
+	_scriptValues.load(node, parsers.getShared());
 }
 
 /**
@@ -174,6 +179,28 @@ int RuleCountry::getLabelColor() const
 int RuleCountry::getZoomLevel() const
 {
 	return _zoomLevel;
+}
+
+namespace // script helpers
+{
+
+std::string debugDisplayScript(const RuleCountry* ruleCountry)
+{
+	if (ruleCountry == nullptr) { return "null"; }
+
+	return RuleCountry::ScriptName + std::string("(name: \"") + ruleCountry->getType() + "\")";
+}
+
+} // end script helpers.
+
+void RuleCountry::ScriptRegister(ScriptParserBase* parser)
+{
+	Bind<RuleCountry> ruleCountryBinder = { parser };
+
+	ruleCountryBinder.add<&RuleCountry::getFundingCap>("getFundingCap", "Gets the predefined max funding cap for this country.");
+
+	ruleCountryBinder.addScriptValue<BindBase::OnlyGet, &RuleCountry::_scriptValues>();
+	ruleCountryBinder.addDebugDisplay<&debugDisplayScript>();
 }
 
 }
