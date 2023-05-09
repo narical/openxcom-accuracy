@@ -3118,8 +3118,8 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	else if (_attackAction.type == BA_RETHINK)
 		brutalSelectSpottedUnitForSniper();
-	//if (_attackAction.type == BA_RETHINK && _grenade)
-	//	brutalGrenadeAction();
+	if (_attackAction.type == BA_RETHINK && _grenade)
+		brutalGrenadeAction();
 	//if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
 	//	blindFire();
 
@@ -3538,7 +3538,7 @@ void AIModule::brutalThink(BattleAction* action)
 			else if (!realLineOfFire && !sweepMode && !_save->getTileEngine()->isNextToDoor(tile))
 			{
 				bool futherForMeThanForEnemy = false;
-				if (unitToWalkTo)
+				if (unitToWalkTo && !unitToWalkTo->hasPanickedLastTurn())
 				{
 					if (pu->getTUCost(false).time > tuDistFromTarget)
 						futherForMeThanForEnemy = true;
@@ -3672,7 +3672,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(directPeakScore * 10);
+			//	tile->setTUMarker(tile->getDangerous());
 			//}
 		}
 		if (_traceAI)
@@ -4652,7 +4652,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
  * @param grenade Is the explosion coming from a grenade?
  * @return Value greater than zero if it is worthwhile creating an explosion in the target position. Bigger value better target.
  */
-float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade) const
+float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade, bool validOnly) const
 {
 	Tile *targetTile = _save->getTile(targetPos);
 	if (targetTile->getDangerous())
@@ -4682,7 +4682,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 	BattleUnit *target = targetTile->getUnit();
 	if (target)
 	{
-		if (isEnemy(target))
+		if (isEnemy(target) && (brutalValidTarget(target) || !validOnly))
 			enemiesAffected++;
 		else if (isAlly(target))
 			enemiesAffected--;
@@ -4714,7 +4714,7 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 			float distMod = float(radius - dist / 2.0) / float(radius);
 			if (collidesWith == V_UNIT && traj.front().toTile() == (*i)->getPosition())
 			{
-				if (isEnemy(*i))
+				if (isEnemy(*i) && (brutalValidTarget((*i)) || !validOnly))
 				{
 					enemiesAffected += distMod;
 				}
@@ -5017,7 +5017,7 @@ void AIModule::brutalGrenadeAction()
 						action.target = currentPosition;
 						if (!validateArcingShot(&action))
 							continue;
-						float currentEfficacy = brutalExplosiveEfficacy(currentPosition, _unit, radius, true);
+						float currentEfficacy = brutalExplosiveEfficacy(currentPosition, _unit, radius, true, true);
 						if (currentEfficacy > bestScore)
 						{
 							bestReachablePosition = currentPosition;
@@ -5036,6 +5036,8 @@ void AIModule::brutalGrenadeAction()
 		_attackAction.type = BA_THROW;
 		_rifle = false;
 		_melee = false;
+		if (_traceAI)
+			Log(LOG_INFO) << "brutalGrenadeAction: Throw grenade at " << bestReachablePosition;
 	}
 }
 

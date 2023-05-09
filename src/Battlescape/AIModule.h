@@ -167,7 +167,7 @@ public:
 	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
 	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile = NULL);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
-	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false) const;
+	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false, bool validOnly = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
 	bool quickLineOfFire(Position pos, BattleUnit *target, bool beOkayWithFriendOfTarget = false, bool lastLocationMode = false, bool fleeMode = false);
 	/// checks whether there is clear sight between two tile-positions
