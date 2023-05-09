@@ -4992,6 +4992,7 @@ void AIModule::brutalGrenadeAction()
 	auto radius = grenade->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
 	Position bestReachablePosition;
 	float bestScore = 0;
+	int actionTimeBefore = action.Time;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -5010,6 +5011,7 @@ void AIModule::brutalGrenadeAction()
 				if (dist <= radius)
 				{
 					// take into account we might have to turn towards our target
+					action.Time = actionTimeBefore;
 					action.Time += getTurnCostTowards(currentPosition);
 					// do we have enough TUs to prime and throw the grenade?
 					if (action.haveTU())
@@ -5024,7 +5026,6 @@ void AIModule::brutalGrenadeAction()
 							bestScore = currentEfficacy;
 						}
 					}
-					action.Time -= getTurnCostTowards(currentPosition);
 				}
 			}
 		}
