@@ -3113,10 +3113,8 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	if (_blaster)
-	{
 		brutalBlaster();
-	}
-	else if (_attackAction.type == BA_RETHINK)
+	if (_attackAction.type == BA_RETHINK)
 		brutalSelectSpottedUnitForSniper();
 	if (_attackAction.type == BA_RETHINK && _grenade)
 		brutalGrenadeAction();
@@ -3298,8 +3296,6 @@ void AIModule::brutalThink(BattleAction* action)
 				break;
 		}
 	}
-	if (_unit->getArmor()->getSize() > 1 && !dissolveBlockage)
-		sweepMode = true;
 	if (_blaster)
 		sweepMode = false;
 	if (!shouldSaveEnergy && (!iHaveLof && (_unit->getTimeUnits() == getMaxTU(_unit) || veryCloseToEnemy)))
@@ -3396,8 +3392,22 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
 					continue;
-				if (!unit->hasPanickedLastTurn() && hasTileSight(unitPosition, pos))
-					peakLoF = true;
+				if (!unit->hasPanickedLastTurn())
+				{
+					for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+					{
+						for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+						{
+							Position compPos = pos;
+							compPos.x += x;
+							compPos.y += y;
+							if (hasTileSight(unitPosition, compPos))
+							{
+								peakLoF = true;
+							}
+						}
+					}
+				}
 				if (unit->haveNoFloorBelow())
 					eaglesCanFly = true;
 				if (shouldAvoidMeleeRange(unit) && unitDist < 2)
@@ -3433,7 +3443,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				badPath = true;
 			}
-			if (!isPathToPositionSave(pos, true))
+			if (!sweepMode && !isPathToPositionSave(pos, true))
 				continue;
 			bool haveTUToAttack = false;
 			if (targetDist < closestEnemyDist)
@@ -3527,15 +3537,25 @@ void AIModule::brutalThink(BattleAction* action)
 				closerThanEnemyCanReach = true;
 			for (Position reachable : enemyReachable)
 			{
-				if (hasTileSight(pos, reachable))
+				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 				{
-					avoidLoF = true;
-					break;
+					for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+					{
+						Position compPos = pos;
+						compPos.x += x;
+						compPos.y += y;
+						if (hasTileSight(compPos, reachable))
+						{
+							avoidLoF = true;
+						}
+					}
 				}
+				if (avoidLoF)
+					break;
 			}
 			if (dissolveBlockage)
 				greatCoverScore = closestEnemyDist;
-			else if (!realLineOfFire && !sweepMode && !_save->getTileEngine()->isNextToDoor(tile))
+			else if (!realLineOfFire && !sweepMode)
 			{
 				bool futherForMeThanForEnemy = false;
 				if (unitToWalkTo && !unitToWalkTo->hasPanickedLastTurn())
@@ -3545,9 +3565,9 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (!futherForMeThanForEnemy)
 				{
-					if (!avoidLoF)
+					if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
 						greatCoverScore = 100 / walkToDist;
-					else if (!peakLoF && encircleLoF && !IAmPureMelee)
+					else if (!peakLoF && encircleLoF && !IAmPureMelee && !_save->getTileEngine()->isNextToDoor(tile))
 						goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 					else if (!peakLoF && !IAmPureMelee)
 						okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
@@ -4819,6 +4839,11 @@ int AIModule::getTurnCostTowards(Position target)
 void AIModule::brutalBlaster()
 {
 	BattleActionCost attackCost(BA_LAUNCH, _unit, _attackAction.weapon);
+	int maxWaypoints = _attackAction.weapon->getCurrentWaypoints();
+	if (maxWaypoints == -1)
+	{
+		maxWaypoints = INT_MAX;
+	}
 	if (!attackCost.haveTU())
 	{
 		// cannot make a launcher attack - consider some other behaviour, like running away, or standing motionless.
@@ -4836,15 +4861,22 @@ void AIModule::brutalBlaster()
 		for (auto node : path)
 		{
 			if (node->getPosition() == (*i)->getPosition())
+			{
 				havePath = true;
+			}
 		}
-		auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
-		float score = brutalExplosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
-		if (havePath &&
-			score > highestScore)
+		if (havePath)
 		{
-			highestScore = score;
-			_aggroTarget = *i;
+			if (requiredWayPointCount((*i)->getPosition(), path) <= maxWaypoints)
+			{
+				auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
+				float score = brutalExplosiveEfficacy((*i)->getPosition(), _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
+				if (score > highestScore)
+				{
+					highestScore = score;
+					_aggroTarget = *i;
+				}
+			}
 		}
 		_save->getPathfinding()->abortPath();
 	}
@@ -4861,26 +4893,33 @@ void AIModule::brutalBlaster()
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted(_unit->getFaction(), true));
 				bool dummy = false;
-				std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, *i);
+				std::vector<PathfindingNode*> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, *i);
 				bool havePath = false;
 				for (auto node : path)
 				{
 					if (node->getPosition() == targetPos)
-						havePath = true;
-				}
-				auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
-				float score = brutalExplosiveEfficacy(targetPos, _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
-				// for blind-fire an efficacy of 0 is good enough
-				if (havePath &&
-					score >= highestScore)
-				{
-					highestScore = score;
-					_aggroTarget = *i;
-					blindMode = true;
-					blindTarget = targetPos;
-					if (_traceAI)
 					{
-						Log(LOG_INFO) << "Blindfire with blaster at " << blindTarget << " would have a score of " << score;
+						havePath = true;
+					}
+				}
+				if (havePath)
+				{
+					if (requiredWayPointCount(targetPos, path) + 1 <= maxWaypoints)
+					{
+						auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
+						float score = brutalExplosiveEfficacy(targetPos, _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
+						// for blind-fire an efficacy of 0 is good enough
+						if (score >= highestScore)
+						{
+							highestScore = score;
+							_aggroTarget = *i;
+							blindMode = true;
+							blindTarget = targetPos;
+							if (_traceAI)
+							{
+								Log(LOG_INFO) << "Blindfire with blaster at " << blindTarget << " would have a score of " << score;
+							}
+						}
 					}
 				}
 				_save->getPathfinding()->abortPath();
@@ -4902,11 +4941,6 @@ void AIModule::brutalBlaster()
 		_attackAction.waypoints.clear();
 		int PathDirection;
 		int CollidesWith;
-		int maxWaypoints = _attackAction.weapon->getCurrentWaypoints();
-		if (maxWaypoints == -1)
-		{
-			maxWaypoints = INT_MAX;
-		}
 		PathfindingNode *targetNode = NULL;
 		Position target = _aggroTarget->getPosition();
 		if (blindMode)
@@ -5798,6 +5832,43 @@ bool AIModule::hasTileSight(Position from, Position to)
 	if (_save->getTileEngine()->calculateLineTile(from, to, _trajectory) > 0)
 		return false;
 	return true;
+}
+
+int AIModule::requiredWayPointCount(Position to, const std::vector<PathfindingNode*> nodeVector)
+{
+	PathfindingNode* targetNode = NULL;
+	for (auto pn : nodeVector)
+	{
+		if (to == pn->getPosition())
+		{
+			targetNode = pn;
+			break;
+		}
+	}
+	int lastDirection = -1;
+	int directionChanges = 1;
+	if (targetNode != NULL)
+	{
+		while (targetNode->getPrevNode() != NULL)
+		{
+			if (targetNode->getPrevNode() != NULL)
+			{
+				int direction = _save->getTileEngine()->getDirectionTo(targetNode->getPosition(), targetNode->getPrevNode()->getPosition());
+				bool zChange = false;
+				if (targetNode->getPosition().z != targetNode->getPrevNode()->getPosition().z)
+					zChange = true;
+				if (direction != lastDirection || zChange)
+				{
+					++directionChanges;
+				}
+				lastDirection = direction;
+			}
+			targetNode = targetNode->getPrevNode();
+		}
+	}
+	if (_traceAI)
+		Log(LOG_INFO) << "need " << directionChanges << " waypoints to launch blaster at "<<to;
+	return directionChanges;
 }
 
 }

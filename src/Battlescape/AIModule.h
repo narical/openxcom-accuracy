@@ -230,6 +230,8 @@ public:
 	std::vector<Position> getReachableBy(BattleUnit* unit, bool &ranOutOfTUs);
 	/// checks whether it would be possible to see one tile from another
 	bool hasTileSight(Position from, Position to);
+	/// returns the amount of blaster-waypoints to reach a target-positon
+	int requiredWayPointCount(Position to, const std::vector<PathfindingNode*> nodeVector);
 };
 
 }
