@@ -172,11 +172,12 @@ std::vector<int> &Country::getActivityAlien()
 
 void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int averageFunding)
 {
+	// Note: this is a TEMPORARY variable! it's not saved in the save file, i.e. we don't know the value from the previous month!
 	_satisfaction = Satisfaction::SATISFIED;
-	int funding = getFunding().back();
-	int good = (xcomTotal / 10) + _activityXcom.back();
-	int bad = (alienTotal / 20) + _activityAlien.back();
-	int oldFunding = _funding.back() / 1000;
+	const int funding = getFunding().back();
+	const int good = (xcomTotal / 10) + _activityXcom.back();
+	const int bad = (alienTotal / 20) + _activityAlien.back();
+	const int oldFunding = _funding.back() / 1000;
 	int newFunding = (oldFunding * RNG::generate(5, 20) / 100) * 1000;
 	if (newFunding == 0)
 	{
@@ -214,34 +215,39 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 		}
 	}
 
-	// about to be in cahoots
-	if (_newPact)
+	if (_satisfaction == Satisfaction::SATISFIED)
 	{
-		_newPact = false;
-		_pact = true;
-		_cancelPact = false;
-		addActivityAlien(pactScore);
+		newFunding = 0;
 	}
-	// there's still hope in humanity
-	else if (_cancelPact)
+	if (_cancelPact)
 	{
-		_newPact = false;
-		_pact = false;
-		_cancelPact = false;
 		if (oldFunding <= 0)
 		{
 			_satisfaction = Satisfaction::SATISFIED; // satisfied, not happy or unhappy
-			funding = averageFunding;
+			newFunding = averageFunding;
 		}
 	}
 
+	// form/cancel pacts
+	if (_newPact)
+	{
+		_pact = true;
+		addActivityAlien(pactScore);
+	}
+	else if (_cancelPact)
+	{
+		_pact = false;
+	}
+
+	// reset pact change states
+	_newPact = false;
+	_cancelPact = false;
+
 	// set the new funding and reset the activity meters
 	if (_pact)
-		_funding.push_back(0);
-	else if (_satisfaction != Satisfaction::SATISFIED)
-		_funding.push_back(funding + newFunding);
+		_funding.push_back(0); // yes, hardcoded!
 	else
-		_funding.push_back(funding);
+		_funding.push_back(funding + newFunding);
 
 	_activityAlien.push_back(0);
 	_activityXcom.push_back(0);
