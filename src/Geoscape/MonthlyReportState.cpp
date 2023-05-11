@@ -451,24 +451,26 @@ void MonthlyReportState::calculateChanges()
 	int averageFunding = _game->getSavedGame()->getCountryFunding() / _game->getSavedGame()->getCountries()->size() / 1000 * 1000;
 	for (auto* country : *_game->getSavedGame()->getCountries())
 	{
-		// add them to the list of new pact members
-		// this is done BEFORE initiating a new month
-		// because the _newPact flag will be reset in the
-		// process
-		if (country->getNewPact())
-		{
-			_pactList.push_back(country->getRules()->getType());
-		}
-		if (country->getCancelPact() && country->getPact())
-		{
-			_cancelPactList.push_back(country->getRules()->getType());
-		}
+		// check pact status before and after, because scripting can arbitrarily form/break pacts
+		bool wasInPact = country->getPact();
+
 		// determine satisfaction level, sign pacts, adjust funding
 		// and update activity meters,
 		country->newMonth(xcomTotal, alienTotal, pactScore, averageFunding);
 		// and after they've made their decisions, calculate the difference, and add
 		// them to the appropriate lists.
 		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
+
+		bool isInPact = country->getPact();
+		if (!wasInPact && isInPact) // signed a new pact this month
+		{
+			_pactList.push_back(country->getRules()->getType());
+		}
+		else if (wasInPact && !isInPact) // renounced a pact this month
+		{
+			_cancelPactList.push_back(country->getRules()->getType());
+		}
+
 		switch(country->getSatisfaction())
 		{
 		case Country::Satisfaction::UNHAPPY:
