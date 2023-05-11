@@ -32,11 +32,14 @@ class RuleCountry;
  */
 class Country
 {
+public:
+	enum class Satisfaction : int { ALIEN_PACT, UNHAPPY, SATISFIED, HAPPY };
+
 private:
 	RuleCountry *_rules;
 	bool _pact, _newPact, _cancelPact;
 	std::vector<int> _funding, _activityXcom, _activityAlien;
-	int _satisfaction;
+	Satisfaction _satisfaction;
 public:
 	/// Creates a new country of the specified type.
 	Country(RuleCountry *rules, bool gen = true);
@@ -53,7 +56,7 @@ public:
 	/// Sets the country's funding.
 	void setFunding(int funding);
 	/// get the country's satisfaction level
-	int getSatisfaction() const;
+	Satisfaction getSatisfaction() const;
 	/// add xcom activity in this country
 	void addActivityXcom(int activity);
 	/// add alien activity in this country

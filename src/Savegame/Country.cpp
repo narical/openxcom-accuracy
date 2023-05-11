@@ -28,7 +28,7 @@ namespace OpenXcom
  * @param rules Pointer to ruleset.
  * @param gen Generate new funding.
  */
-Country::Country(RuleCountry *rules, bool gen) : _rules(rules), _pact(false), _newPact(false), _cancelPact(false), _funding(0), _satisfaction(2)
+Country::Country(RuleCountry *rules, bool gen) : _rules(rules), _pact(false), _newPact(false), _cancelPact(false), _funding(0), _satisfaction(Satisfaction::SATISFIED)
 {
 	if (gen)
 	{
@@ -117,10 +117,10 @@ void Country::setFunding(int funding)
  * Keith Richards would be so proud
  * @return satisfaction level, 0 = alien pact, 1 = unhappy, 2 = satisfied, 3 = happy.
  */
-int Country::getSatisfaction() const
+Country::Satisfaction Country::getSatisfaction() const
 {
 	if (_pact)
-		return 0;
+		return Satisfaction::ALIEN_PACT;
 	return _satisfaction;
 }
 
@@ -172,7 +172,7 @@ std::vector<int> &Country::getActivityAlien()
 
 void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int averageFunding)
 {
-	_satisfaction = 2;
+	_satisfaction = Satisfaction::SATISFIED;
 	int funding = getFunding().back();
 	int good = (xcomTotal / 10) + _activityXcom.back();
 	int bad = (alienTotal / 20) + _activityAlien.back();
@@ -194,7 +194,7 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 				if (funding + newFunding > cap)
 					newFunding = cap - funding;
 				if (newFunding)
-					_satisfaction = 3;
+					_satisfaction = Satisfaction::HAPPY;
 			}
 		}
 	}
@@ -209,7 +209,7 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 				if (funding + newFunding < 0)
 					newFunding = 0 - funding;
 				if (newFunding)
-					_satisfaction = 1;
+					_satisfaction = Satisfaction::UNHAPPY;
 			}
 		}
 	}
@@ -230,7 +230,7 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 		_cancelPact = false;
 		if (oldFunding <= 0)
 		{
-			_satisfaction = 2; // satisfied, not happy or unhappy
+			_satisfaction = Satisfaction::SATISFIED; // satisfied, not happy or unhappy
 			funding = averageFunding;
 		}
 	}
@@ -238,7 +238,7 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 	// set the new funding and reset the activity meters
 	if (_pact)
 		_funding.push_back(0);
-	else if (_satisfaction != 2)
+	else if (_satisfaction != Satisfaction::SATISFIED)
 		_funding.push_back(funding + newFunding);
 	else
 		_funding.push_back(funding);

@@ -471,10 +471,10 @@ void MonthlyReportState::calculateChanges()
 		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
 		switch(country->getSatisfaction())
 		{
-		case 1:
+		case Country::Satisfaction::UNHAPPY:
 			_sadList.push_back(country->getRules()->getType());
 			break;
-		case 3:
+		case Country::Satisfaction::HAPPY:
 			_happyList.push_back(country->getRules()->getType());
 			break;
 		default:
