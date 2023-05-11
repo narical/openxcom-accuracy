@@ -17,10 +17,10 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Country.h"
-#include "../Mod/RuleCountry.h"
-#include "../Mod/Mod.h"
 #include "../Engine/RNG.h"
 #include "../Engine/ScriptBind.h"
+#include "../Mod/Mod.h"
+#include "../Mod/RuleCountry.h"
 #include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
@@ -31,7 +31,7 @@ namespace OpenXcom
  * @param rules Pointer to ruleset.
  * @param gen Generate new funding.
  */
-Country::Country(RuleCountry *rules, bool gen) : _rules(rules), _pact(false), _newPact(false), _cancelPact(false), _funding(0), _satisfaction(Satisfaction::SATISFIED)
+Country::Country(RuleCountry* rules, bool gen) : _rules(rules), _pact(false), _newPact(false), _cancelPact(false), _funding(0), _satisfaction(Satisfaction::SATISFIED)
 {
 	if (gen)
 	{
@@ -52,14 +52,15 @@ Country::~Country()
  * Loads the country from a YAML file.
  * @param node YAML node.
  */
-void Country::load(const YAML::Node &node, const ScriptGlobal* shared)
+void Country::load(const YAML::Node& node, const ScriptGlobal* shared)
 {
-	_funding = node["funding"].as< std::vector<int> >(_funding);
-	_activityXcom = node["activityXcom"].as< std::vector<int> >(_activityXcom);
-	_activityAlien = node["activityAlien"].as< std::vector<int> >(_activityAlien);
+	_funding = node["funding"].as<std::vector<int> >(_funding);
+	_activityXcom = node["activityXcom"].as<std::vector<int> >(_activityXcom);
+	_activityAlien = node["activityAlien"].as<std::vector<int> >(_activityAlien);
 	_pact = node["pact"].as<bool>(_pact);
 	_newPact = node["newPact"].as<bool>(_newPact);
 	_cancelPact = node["cancelPact"].as<bool>(_cancelPact);
+
 	_scriptValues.load(node, shared);
 }
 
@@ -91,15 +92,13 @@ YAML::Node Country::save(const ScriptGlobal* shared) const
 	_scriptValues.save(node, shared);
 
 	return node;
-
-	_scriptValues.save(node, &tags);
 }
 
 /**
  * Returns the ruleset for the country's type.
  * @return Pointer to ruleset.
  */
-const RuleCountry *Country::getRules() const
+const RuleCountry* Country::getRules() const
 {
 	return _rules;
 }
@@ -108,7 +107,7 @@ const RuleCountry *Country::getRules() const
  * Returns the country's current monthly funding.
  * @return Monthly funding.
  */
-std::vector<int> &Country::getFunding()
+std::vector<int>& Country::getFunding()
 {
 	return _funding;
 }
@@ -123,7 +122,7 @@ void Country::setFunding(int funding)
 }
 
 /*
- * Gets the countries satisfaction level.
+ * Keith Richards would be so proud
  * @return satisfaction level, 0 = alien pact, 1 = unhappy, 2 = satisfied, 3 = happy.
  */
 Country::Satisfaction Country::getSatisfaction() const
@@ -155,7 +154,7 @@ void Country::addActivityAlien(int activity)
  * Gets the country's xcom activity level.
  * @return activity level.
  */
-std::vector<int> &Country::getActivityXcom()
+std::vector<int>& Country::getActivityXcom()
 {
 	return _activityXcom;
 }
@@ -164,7 +163,7 @@ std::vector<int> &Country::getActivityXcom()
  * Gets the country's alien activity level.
  * @return activity level.
  */
-std::vector<int> &Country::getActivityAlien()
+std::vector<int>& Country::getActivityAlien()
 {
 	return _activityAlien;
 }
@@ -200,7 +199,7 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 			if (RNG::generate(0, good) > bad)
 			{
 				// don't go over the cap
-				int cap = getRules()->getFundingCap()*1000;
+				int cap = getRules()->getFundingCap() * 1000;
 				if (funding + newFunding > cap)
 					newFunding = cap - funding;
 				if (newFunding)
@@ -238,8 +237,8 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 	}
 
 	// call script which can adjust values.
-	ModScript::NewMonthCountry::Output args{ newFunding, static_cast<int>(_satisfaction), _newPact, _cancelPact };
-	ModScript::NewMonthCountry::Worker work{ this, save, xcomTotal, alienTotal };
+	ModScript::NewMonthCountry::Output args{newFunding, static_cast<int>(_satisfaction), _newPact, _cancelPact};
+	ModScript::NewMonthCountry::Worker work{this, save, xcomTotal, alienTotal};
 	work.execute(_rules->getScript<ModScript::NewMonthCountry>(), args);
 
 	newFunding = std::get<0>(args.data);
@@ -268,10 +267,6 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 	else
 		_funding.push_back(funding + newFunding);
 
-	// new funding is equal to last months funding + change
-	_funding.push_back(_funding.back() + fundingChange);
-
-	// reset activity meters.
 	_activityAlien.push_back(0);
 	_activityXcom.push_back(0);
 	if (_activityAlien.size() > 12)
@@ -280,77 +275,6 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 		_activityXcom.erase(_activityXcom.begin());
 	if (_funding.size() > 12)
 		_funding.erase(_funding.begin());
-
-	return fundingChange;
-}
-
-/**
- * Pure helper method to calculate country changes on new month.
- * 
- * There are five possible outcomes:
- * - in a pact or formed a pact. No funding.
- * - left a pact when last month's funding was 0. Country satisfied. Recieve average funding.
- * - xcom score exceeds alien score by 30 points, and a random roll is succesful. Country happy. Increase funding.
- * - a random roll exceeds xcom score. Country unhappy. Decrease funding.
- * - None of the above. Country satisfied. No change to funding.
- * @return change to funding and new satisfaction levels.
-*/
-[[nodiscard]] std::pair<int, Country::Satisfaction> Country::CalculateChanges(const OpenXcom::SavedGame& save, int xcomScore, int alienScore) const
-{
-	// prepare values.
-	// county specific scores
-	int countryXcomScore = (xcomScore / 10) + _activityXcom.back();
-	int countryAlienScore = (alienScore / 20) + _activityAlien.back();
-
-	// funding can change by 5 to 20%, in 1k increments, but always by at least 1000.
-	int lastMonthFunding = _funding.back();
-	int fundingPercentChange = RNG::generate(5, 20);
-	int fundingChange = (lastMonthFunding / 1000 * fundingPercentChange / 100) * 1000;
-	fundingChange = std::max(fundingChange, 1000);
-
-	// forming a pact, or in a pact and not canceling this month. No funding.
-	if (_newPact || (_pact && !_cancelPact))
-	{
-		// since next month funding is equal to lastMonthFunding + fundingChange, this will result in 0 funding next month.
-		// if funding was already 0, it will still be 0.
-		return { -lastMonthFunding, Satisfaction::ALIEN_PACT };
-	}
-
-	// canceling a pact and resetting country funding.
-	// note that if a pact is canceled but last month's funding was not 0, this branch is not taken.
-	// This can probably only happen via scripts though, which should handle the issue themselves.
-	if (_cancelPact && lastMonthFunding <= 0)
-	{
-		// using funding appropriate to the country's rules is probably better, but this is the original logic.
-		int averageCountryFunding = save.getCountryFunding() / save.getCountries()->size() / 1000 * 1000;
-		return { averageCountryFunding, Satisfaction::SATISFIED };
-	}
-
-	// Country is happy. Increase funding but don't don't let total funding go over the cap.
-	if (countryXcomScore > countryAlienScore + 30 && RNG::generate(0, countryXcomScore) > countryAlienScore) {
-		int fundingCap = getRules()->getFundingCap() * 1000;
-		if (lastMonthFunding + fundingChange > fundingCap)
-		{
-			fundingChange = fundingCap - lastMonthFunding;
-		}
-
-		return { fundingChange, Satisfaction::HAPPY };
-	}
-
-	// Country is unhappy. Decrease funding, but don't let total funding go below 0.
-	if (RNG::generate(0, countryAlienScore) > countryXcomScore)
-	{
-		fundingChange = -fundingChange;
-		if (lastMonthFunding + fundingChange < 0)
-		{
-			fundingChange = -lastMonthFunding;
-		}
-
-		return { fundingChange, Satisfaction::UNHAPPY };
-	}
-
-	// no other condition applies. Country is satisfied. No change to funding.
-	return { 0, Satisfaction::SATISFIED };
 }
 
 /**
@@ -366,8 +290,8 @@ bool Country::getNewPact() const
  */
 void Country::setNewPact()
 {
-	 _newPact = true;
-	 _cancelPact = false;
+	_newPact = true;
+	_cancelPact = false;
 }
 
 /**
@@ -412,7 +336,7 @@ bool Country::getPact() const
  */
 void Country::setPact()
 {
-	 _pact = true;
+	_pact = true;
 }
 
 /**
@@ -463,7 +387,7 @@ void Country::ScriptRegister(ScriptParserBase* parser)
 {
 	parser->registerPointerType<RuleCountry>();
 
-	Bind<Country> c = { parser };
+	Bind<Country> c = {parser};
 
 	c.addRules<RuleCountry, &Country::getRules>("getRuleCountry");
 
@@ -486,11 +410,11 @@ void Country::ScriptRegister(ScriptParserBase* parser)
  * Constructor of new month country script parser.
  * Called every new month for every country.
  */
-ModScript::NewMonthCountryParser::NewMonthCountryParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
-	"fundingChange", "satisfaction", "formPact", "cancelPact",
-	"country", "geoscape_game", "totalXcomScore", "totalAlienScore" }
+ModScript::NewMonthCountryParser::NewMonthCountryParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{shared, name,
+																																	  "fundingChange", "satisfaction", "formPact", "cancelPact",
+																																	  "country", "geoscape_game", "totalXcomScore", "totalAlienScore"}
 {
-	BindBase b { this };
+	BindBase b{this};
 
 	b.addCustomPtr<const Mod>("rules", mod);
 }

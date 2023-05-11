@@ -17,30 +17,30 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MonthlyReportState.h"
-#include <climits>
-#include <sstream>
+#include "../Battlescape/CommendationState.h"
 #include "../Engine/Game.h"
-#include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
-#include "../Interface/TextButton.h"
-#include "../Interface/Window.h"
-#include "../Interface/Text.h"
-#include "../Savegame/SavedGame.h"
-#include "../Savegame/Base.h"
-#include "../Savegame/GameTime.h"
-#include "PsiTrainingState.h"
-#include "../Savegame/Region.h"
-#include "../Savegame/Country.h"
-#include "../Mod/RuleCountry.h"
-#include "Globe.h"
 #include "../Engine/Options.h"
 #include "../Engine/Unicode.h"
+#include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
+#include "../Interface/Window.h"
 #include "../Menu/CutsceneState.h"
-#include "../Battlescape/CommendationState.h"
-#include "../Savegame/SoldierDiary.h"
 #include "../Menu/SaveGameState.h"
+#include "../Mod/Mod.h"
+#include "../Mod/RuleCountry.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
+#include "../Savegame/Base.h"
+#include "../Savegame/Country.h"
+#include "../Savegame/GameTime.h"
+#include "../Savegame/Region.h"
+#include "../Savegame/SavedGame.h"
+#include "../Savegame/SoldierDiary.h"
+#include "Globe.h"
+#include "PsiTrainingState.h"
+#include <climits>
+#include <sstream>
 
 namespace OpenXcom
 {
@@ -50,7 +50,7 @@ namespace OpenXcom
  * @param psi Show psi training afterwards?
  * @param globe Pointer to the globe.
  */
-MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTotal(0), _fundingDiff(0), _lastMonthsRating(0), _happyList(0), _sadList(0), _pactList(0), _cancelPactList(0)
+MonthlyReportState::MonthlyReportState(Globe* globe) : _gameOver(0), _ratingTotal(0), _fundingDiff(0), _lastMonthsRating(0), _happyList(0), _sadList(0), _pactList(0), _cancelPactList(0)
 {
 	_globe = globe;
 	// Create objects
@@ -120,19 +120,44 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	std::string m;
 	switch (month)
 	{
-	case 1: m = "STR_JAN"; break;
-	case 2: m = "STR_FEB"; break;
-	case 3: m = "STR_MAR"; break;
-	case 4: m = "STR_APR"; break;
-	case 5: m = "STR_MAY"; break;
-	case 6: m = "STR_JUN"; break;
-	case 7: m = "STR_JUL"; break;
-	case 8: m = "STR_AUG"; break;
-	case 9: m = "STR_SEP"; break;
-	case 10: m = "STR_OCT"; break;
-	case 11: m = "STR_NOV"; break;
-	case 12: m = "STR_DEC"; break;
-	default: m = "";
+	case 1:
+		m = "STR_JAN";
+		break;
+	case 2:
+		m = "STR_FEB";
+		break;
+	case 3:
+		m = "STR_MAR";
+		break;
+	case 4:
+		m = "STR_APR";
+		break;
+	case 5:
+		m = "STR_MAY";
+		break;
+	case 6:
+		m = "STR_JUN";
+		break;
+	case 7:
+		m = "STR_JUL";
+		break;
+	case 8:
+		m = "STR_AUG";
+		break;
+	case 9:
+		m = "STR_SEP";
+		break;
+	case 10:
+		m = "STR_OCT";
+		break;
+	case 11:
+		m = "STR_NOV";
+		break;
+	case 12:
+		m = "STR_DEC";
+		break;
+	default:
+		m = "";
 	}
 	_txtMonth->setText(tr("STR_MONTH").arg(tr(m)).arg(year));
 
@@ -266,7 +291,8 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 			}
 			else
 			{
-				ss5 << "\n\n" << tr("STR_COUNCIL_REDUCE_DEBTS");
+				ss5 << "\n\n"
+					<< tr("STR_COUNCIL_REDUCE_DEBTS");
 				_game->getSavedGame()->setWarned(true);
 				resetWarning = false;
 			}
@@ -314,7 +340,7 @@ MonthlyReportState::~MonthlyReportState()
  * Returns to the previous screen.
  * @param action Pointer to an action.
  */
-void MonthlyReportState::btnOkClick(Action *)
+void MonthlyReportState::btnOkClick(Action*)
 {
 	if (!_gameOver)
 	{
@@ -370,7 +396,7 @@ void MonthlyReportState::btnOkClick(Action *)
 			else
 				cutsceneId = _game->getMod()->getLoseMoneyCutscene();
 
-			const RuleVideo *videoRule = _game->getMod()->getVideo(cutsceneId, true);
+			const RuleVideo* videoRule = _game->getMod()->getVideo(cutsceneId, true);
 			if (videoRule->getLoseGame())
 			{
 				_game->getSavedGame()->setEnding(END_LOSE);
@@ -442,12 +468,13 @@ void MonthlyReportState::calculateChanges()
 
 	// now that we have our totals we can send the relevant info to the countries
 	// and have them make their decisions weighted on the council's perspective.
-	const RuleAlienMission *infiltration = _game->getMod()->getRandomMission(OBJECTIVE_INFILTRATION, _game->getSavedGame()->getMonthsPassed());
+	const RuleAlienMission* infiltration = _game->getMod()->getRandomMission(OBJECTIVE_INFILTRATION, _game->getSavedGame()->getMonthsPassed());
 	int pactScore = 0;
 	if (infiltration)
 	{
 		pactScore = infiltration->getPoints();
 	}
+	int averageFunding = _game->getSavedGame()->getCountryFunding() / _game->getSavedGame()->getCountries()->size() / 1000 * 1000;
 	for (auto* country : *_game->getSavedGame()->getCountries())
 	{
 		// check pact status before and after, because scripting can arbitrarily form/break pacts
@@ -458,7 +485,7 @@ void MonthlyReportState::calculateChanges()
 		country->newMonth(xcomTotal, alienTotal, pactScore, averageFunding, _game->getSavedGame());
 		// and after they've made their decisions, calculate the difference, and add
 		// them to the appropriate lists.
-		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
+		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size() - 2);
 
 		bool isInPact = country->getPact();
 		if (!wasInPact && isInPact) // signed a new pact this month
@@ -470,7 +497,7 @@ void MonthlyReportState::calculateChanges()
 			_cancelPactList.push_back(country->getRules()->getType());
 		}
 
-		switch(country->getSatisfaction())
+		switch (country->getSatisfaction())
 		{
 		case Country::Satisfaction::UNHAPPY:
 			_sadList.push_back(country->getRules()->getType());
@@ -482,7 +509,7 @@ void MonthlyReportState::calculateChanges()
 			break;
 		}
 	}
-	//calculate total.
+	// calculate total.
 	_ratingTotal = xcomTotal - alienTotal;
 }
 
@@ -493,7 +520,7 @@ void MonthlyReportState::calculateChanges()
  * @param singular String ID to append at the end if the list is singular.
  * @param plural String ID to append at the end if the list is plural.
  */
-std::string MonthlyReportState::countryList(const std::vector<std::string> &countries, const std::string &singular, const std::string &plural)
+std::string MonthlyReportState::countryList(const std::vector<std::string>& countries, const std::string& singular, const std::string& plural)
 {
 	std::ostringstream ss;
 	if (!countries.empty())
