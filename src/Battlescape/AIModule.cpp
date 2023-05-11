@@ -3435,9 +3435,6 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			bool outOfRangeForShortRangeWeapon = false;
-			if (maxExtenderRangeWith(_unit, getMaxTU(_unit)) < closestEnemyDist)
-				outOfRangeForShortRangeWeapon = true;
 			bool badPath = false;
 			if (!isPathToPositionSave(pos))
 			{
@@ -3448,6 +3445,9 @@ void AIModule::brutalThink(BattleAction* action)
 			bool haveTUToAttack = false;
 			if (targetDist < closestEnemyDist)
 				closestEnemyDist = targetDist;
+			bool outOfRangeForShortRangeWeapon = false;
+			if (maxExtenderRangeWith(_unit, getMaxTU(_unit)) < closestEnemyDist)
+				outOfRangeForShortRangeWeapon = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
@@ -3577,7 +3577,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			if (sweepMode || (targetIsInSmoke && shouldPeak))
 				directPeakScore = 100 / walkToDist;
-			else if (peakLoF && shouldPeak && pos != myPos)
+			else if (peakLoF && shouldPeak && pos != myPos && !outOfRangeForShortRangeWeapon)
 				directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			if (hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
 				indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
