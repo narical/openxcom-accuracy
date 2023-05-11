@@ -2871,7 +2871,7 @@ bool AIModule::visibleToAnyFriend(BattleUnit* target) const
 void AIModule::brutalThink(BattleAction* action)
 {
 	// Step 1: Check whether we wait for someone else on our team to move first
-	int myReachable = _reachable.size();
+	int myReachable = getReachableBy(_unit, _ranOutOfTUs, true).size();
 	float myDist = 0;
 	bool IAmMindControlled = false;
 	if (_unit->getFaction() != _unit->getOriginalFaction())
@@ -2925,6 +2925,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
+				//if (Options::traceAI)
+				//{
+				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
+				//}
 				return;
 			}
 		}
@@ -2935,6 +2939,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
+				//if (Options::traceAI)
+				//{
+				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
+				//}
 				return;
 			}
 		}
@@ -5790,12 +5798,12 @@ int AIModule::getEnergyRecovery(BattleUnit* unit)
 	return recovery;
 }
 
-std::vector<Position> AIModule::getReachableBy(BattleUnit* unit, bool &ranOutOfTUs)
+std::vector<Position> AIModule::getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc)
 {
 	Position startPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	if (_unit->isCheatOnMovement() || unit->getFaction() == _unit->getFaction())
 		startPosition = unit->getPosition();
-	if (unit->getPositionOfUpdate() == startPosition)
+	if (unit->getPositionOfUpdate() == startPosition && !forceRecalc)
 	{
 		ranOutOfTUs = unit->getRanOutOfTUs();
 		return unit->getReachablePositions();
