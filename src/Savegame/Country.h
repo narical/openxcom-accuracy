@@ -50,7 +50,7 @@ public:
 	/// Saves the country to YAML.
 	YAML::Node save() const;
 	/// Gets the country's ruleset.
-	RuleCountry *getRules() const;
+	const RuleCountry *getRules() const;
 	/// Gets the country's funding.
 	std::vector<int> &getFunding();
 	/// Sets the country's funding.
