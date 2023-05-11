@@ -18,7 +18,10 @@
  */
 #include "Country.h"
 #include "../Mod/RuleCountry.h"
+#include "../Mod/Mod.h"
 #include "../Engine/RNG.h"
+#include "../Engine/ScriptBind.h"
+#include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
 {
@@ -49,7 +52,7 @@ Country::~Country()
  * Loads the country from a YAML file.
  * @param node YAML node.
  */
-void Country::load(const YAML::Node &node)
+void Country::load(const YAML::Node &node, const ScriptGlobal* shared)
 {
 	_funding = node["funding"].as< std::vector<int> >(_funding);
 	_activityXcom = node["activityXcom"].as< std::vector<int> >(_activityXcom);
@@ -57,13 +60,15 @@ void Country::load(const YAML::Node &node)
 	_pact = node["pact"].as<bool>(_pact);
 	_newPact = node["newPact"].as<bool>(_newPact);
 	_cancelPact = node["cancelPact"].as<bool>(_cancelPact);
+
+	_scriptValues.load(node, shared);
 }
 
 /**
  * Saves the country to a YAML file.
  * @return YAML node.
  */
-YAML::Node Country::save() const
+YAML::Node Country::save(const ScriptGlobal* shared) const
 {
 	YAML::Node node;
 	node["type"] = _rules->getType();
@@ -83,6 +88,9 @@ YAML::Node Country::save() const
 	{
 		node["newPact"] = _newPact;
 	}
+
+	_scriptValues.save(node, shared);
+
 	return node;
 }
 
@@ -170,7 +178,7 @@ std::vector<int> &Country::getActivityAlien()
  * @param averageFunding current average funding across all countries (including withdrawn countries)
  */
 
-void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int averageFunding)
+void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int averageFunding, const SavedGame* save)
 {
 	// Note: this is a TEMPORARY variable! it's not saved in the save file, i.e. we don't know the value from the previous month!
 	_satisfaction = Satisfaction::SATISFIED;
@@ -227,6 +235,16 @@ void Country::newMonth(int xcomTotal, int alienTotal, int pactScore, int average
 			newFunding = averageFunding;
 		}
 	}
+
+	// call script which can adjust values.
+	ModScript::NewMonthCountry::Output args{ newFunding, static_cast<int>(_satisfaction), _newPact, _cancelPact };
+	ModScript::NewMonthCountry::Worker work{ this, save, xcomTotal, alienTotal };
+	work.execute(_rules->getScript<ModScript::NewMonthCountry>(), args);
+
+	newFunding = std::get<0>(args.data);
+	_satisfaction = static_cast<Satisfaction>(std::get<1>(args.data));
+	_newPact = static_cast<bool>(std::get<2>(args.data));
+	_cancelPact = static_cast<bool>(std::get<3>(args.data));
 
 	// form/cancel pacts
 	if (_newPact)
@@ -337,6 +355,68 @@ bool Country::canBeInfiltrated()
 		return true;
 	}
 	return false;
+}
+
+////////////////////////////////////////////////////////////
+//					Script binding
+////////////////////////////////////////////////////////////
+
+namespace
+{
+
+std::string debugDisplayScript(const Country* c)
+{
+	if (c)
+	{
+		std::string s;
+		s += Country::ScriptName;
+		s += "(name: \"";
+		s += c->getRules()->getType();
+		s += "\")";
+		return s;
+	}
+	else
+	{
+		return "null";
+	}
+}
+
+} // namespace
+
+void Country::ScriptRegister(ScriptParserBase* parser)
+{
+	parser->registerPointerType<RuleCountry>();
+
+	Bind<Country> c = { parser };
+
+	c.addRules<RuleCountry, &Country::getRules>("getRuleCountry");
+
+	c.add<&Country::getPact>("getPact", "Get if the country has signed an alien pact or not.");
+
+	c.add<&Country::getCurrentFunding>("getCurrentFunding", "Get the country's current funding.");
+	c.add<&Country::getCurrentActivityAlien>("getCurrentActivityAlien", "Get the country's current alien activity.");
+	c.add<&Country::getCurrentActivityXcom>("getCurrentActivityXcom", "Get the country's current xcom activity.");
+
+	c.addScriptValue<&Country::_scriptValues>();
+	c.addDebugDisplay<&debugDisplayScript>();
+
+	c.addCustomConst("SATISFACTION_ALIENPACT", 0);
+	c.addCustomConst("SATISFACTION_UNHAPPY", 1);
+	c.addCustomConst("SATISFACTION_SATISIFIED", 2);
+	c.addCustomConst("SATISFACTION_HAPPY", 3);
+}
+
+/**
+ * Constructor of new month country script parser.
+ * Called every new month for every country.
+ */
+ModScript::NewMonthCountryParser::NewMonthCountryParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"fundingChange", "satisfaction", "formPact", "cancelPact",
+	"country", "geoscape_game", "totalXcomScore", "totalAlienScore" }
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
 }
 
 }

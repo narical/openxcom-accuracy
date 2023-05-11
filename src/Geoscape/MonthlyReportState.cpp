@@ -456,7 +456,7 @@ void MonthlyReportState::calculateChanges()
 
 		// determine satisfaction level, sign pacts, adjust funding
 		// and update activity meters,
-		country->newMonth(xcomTotal, alienTotal, pactScore, averageFunding);
+		country->newMonth(xcomTotal, alienTotal, pactScore, averageFunding, _game->getSavedGame());
 		// and after they've made their decisions, calculate the difference, and add
 		// them to the appropriate lists.
 		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
