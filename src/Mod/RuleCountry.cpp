@@ -181,26 +181,44 @@ int RuleCountry::getZoomLevel() const
 	return _zoomLevel;
 }
 
-namespace // script helpers
+////////////////////////////////////////////////////////////
+//					Script binding
+////////////////////////////////////////////////////////////
+
+namespace
 {
 
-std::string debugDisplayScript(const RuleCountry* ruleCountry)
+std::string debugDisplayScript(const RuleCountry* rc)
 {
-	if (ruleCountry == nullptr) { return "null"; }
-
-	return RuleCountry::ScriptName + std::string("(name: \"") + ruleCountry->getType() + "\")";
+	if (rc)
+	{
+		std::string s;
+		s += RuleCountry::ScriptName;
+		s += "(name: \"";
+		s += rc->getType();
+		s += "\")";
+		return s;
+	}
+	else
+	{
+		return "null";
+	}
 }
 
-} // end script helpers.
+} // namespace
 
+/**
+ * Register RuleCountry in script parser.
+ * @param parser Script parser.
+ */
 void RuleCountry::ScriptRegister(ScriptParserBase* parser)
 {
-	Bind<RuleCountry> ruleCountryBinder = { parser };
+	Bind<RuleCountry> rcb = { parser };
 
-	ruleCountryBinder.add<&RuleCountry::getFundingCap>("getFundingCap", "Gets the predefined max funding cap for this country.");
+	rcb.add<&RuleCountry::getFundingCap>("getFundingCap", "Gets the predefined max funding cap for this country.");
 
-	ruleCountryBinder.addScriptValue<BindBase::OnlyGet, &RuleCountry::_scriptValues>();
-	ruleCountryBinder.addDebugDisplay<&debugDisplayScript>();
+	rcb.addScriptValue<BindBase::OnlyGet, &RuleCountry::_scriptValues>();
+	rcb.addDebugDisplay<&debugDisplayScript>();
 }
 
 }

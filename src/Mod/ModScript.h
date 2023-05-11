@@ -242,8 +242,8 @@ class ModScript
 	////////////////////////////////////////////////////////////
 	//					country script
 	////////////////////////////////////////////////////////////
-	// Output(fundingChange, newSatisfaction, newPact, cancelPact), Input(Country, Save, XComScore, AlienScore)
-	struct NewMonthCountryParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&, int&>, Country*, SavedGame*, int, int>
+
+	struct NewMonthCountryParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&, int&>, const Country*, const SavedGame*, int, int>
 	{
 		NewMonthCountryParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};

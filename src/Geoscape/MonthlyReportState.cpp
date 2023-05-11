@@ -450,26 +450,26 @@ void MonthlyReportState::calculateChanges()
 	}
 	for (auto* country : *_game->getSavedGame()->getCountries())
 	{
-		// check pact status before and after, because scripting can arbitrarily form/break pacts.
+		// check pact status before and after, because scripting can arbitrarily form/break pacts
 		bool wasInPact = country->getPact();
 
-		// determine satisfaction level, sign pacts, adjust funding, and update activity meters.
-		int fundingChange = country->newMonth(xcomTotal, alienTotal, pactScore, *_game->getSavedGame());
-		_fundingDiff += fundingChange;
+		// determine satisfaction level, sign pacts, adjust funding
+		// and update activity meters,
+		country->newMonth(xcomTotal, alienTotal, pactScore, averageFunding, _game->getSavedGame());
+		// and after they've made their decisions, calculate the difference, and add
+		// them to the appropriate lists.
+		_fundingDiff += country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
 
 		bool isInPact = country->getPact();
-
-		if (!wasInPact && isInPact) // signed a new pact this month.
+		if (!wasInPact && isInPact) // signed a new pact this month
 		{
 			_pactList.push_back(country->getRules()->getType());
 		}
-		else if (wasInPact && !isInPact) // left a pact this month.
+		else if (wasInPact && !isInPact) // renounced a pact this month
 		{
 			_cancelPactList.push_back(country->getRules()->getType());
 		}
-		// if both values are the same there is no change in pact status and nothing to be done.
 
-		// and after they've made their decisions add them to the appropriate lists.
 		switch(country->getSatisfaction())
 		{
 		case Country::Satisfaction::UNHAPPY:

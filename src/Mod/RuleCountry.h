@@ -21,7 +21,6 @@
 #include <yaml-cpp/yaml.h>
 #include "RuleEvent.h"
 #include "ModScript.h"
-#include "../Engine/Script.h"
 
 namespace OpenXcom
 {
@@ -46,11 +45,14 @@ private:
 	const RuleEvent* _signedPactEvent = nullptr;
 	const RuleEvent* _rejoinedXcomEvent = nullptr;
 
-	/// holds references to user tags. 
-	ScriptValues<RuleCountry> _scriptValues;
-	/// holds references to country specific scripts.
 	ModScript::CountryScripts::Container _countryScripts;
+	ScriptValues<RuleCountry> _scriptValues;
 public:
+	/// Name of class used in script.
+	static constexpr const char* ScriptName = "RuleCountry";
+	/// Register all useful function used by script.
+	static void ScriptRegister(ScriptParserBase* parser);
+
 	/// Creates a blank country ruleset.
 	RuleCountry(const std::string &type);
 	/// Cleans up the country ruleset.
@@ -83,12 +85,7 @@ public:
 	int getLabelColor() const;
 	/// Gets the minimum zoom level required to display the label (Note: works for extraGlobeLabels only, not for vanilla countries).
 	int getZoomLevel() const;
-
-	/// Name of class used in script.
-	static constexpr const char* ScriptName = "RuleCountry";
-	/// Register all useful function used by script.
-	static void ScriptRegister(ScriptParserBase* parser);
-
+	/// Gets script.
 	template<typename Script>
 	const typename Script::Container& getScript() const { return _countryScripts.get<Script>(); }
 };
