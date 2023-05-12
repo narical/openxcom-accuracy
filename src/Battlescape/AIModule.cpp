@@ -3165,6 +3165,8 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Tile *encircleTile = NULL;
 	Tile *assumedTile = NULL;
+	bool iAmShortRange = false;
+	int weaponRange = maxExtenderRangeWith(_unit, getMaxTU(_unit));
 	if (unitToWalkTo != NULL)
 	{
 		Position targetPosition = unitToWalkTo->getPosition();
@@ -3175,6 +3177,8 @@ void AIModule::brutalThink(BattleAction* action)
 			amInLoSToFurthestReachable = true;
 		if (closestDistanceofFurthestPosition < _save->getMod()->getMaxViewDistance())
 			amCloserThanFurthestReachable = true;
+		if(weaponRange < Position::distance(myPos, targetPosition))
+			iAmShortRange = true;
 	}
 	else if (!_unit->isCheatOnMovement() && _unit->getTimeUnits() == _unit->getBaseStats()->tu)
 	{
@@ -3454,7 +3458,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (targetDist < closestEnemyDist)
 				closestEnemyDist = targetDist;
 			bool outOfRangeForShortRangeWeapon = false;
-			if (maxExtenderRangeWith(_unit, getMaxTU(_unit)) < closestEnemyDist)
+			if (weaponRange < closestEnemyDist)
 				outOfRangeForShortRangeWeapon = true;
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) //We want to go in anyways, regardless of whether we still can attack or not
@@ -3576,9 +3580,19 @@ void AIModule::brutalThink(BattleAction* action)
 					if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
 						greatCoverScore = 100 / walkToDist;
 					else if (!peakLoF && encircleLoF && !IAmPureMelee && !_save->getTileEngine()->isNextToDoor(tile))
-						goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					{
+						if (iAmShortRange)
+							goodCoverScore = 100 / walkToDist;
+						else
+							goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					}
 					else if (!peakLoF && !IAmPureMelee)
-						okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					{
+						if (iAmShortRange)
+							okayCoverScore = 100 / walkToDist;
+						else
+							okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					}
 					else if	(!peakLoF)
 						okayCoverScore = 100 / walkToDist;
 				}
