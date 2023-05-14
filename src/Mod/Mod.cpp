@@ -2462,9 +2462,9 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 							const float to = op * 1.0f; // 0.0 -> 64.0
 
 							SDL_Color taint;
-							taint.r = color.r * to;
-							taint.g = color.g * to;
-							taint.b = color.b * to;
+							taint.r = Clamp((int)(color.r * to), 0, 255);
+							taint.g = Clamp((int)(color.g * to), 0, 255);
+							taint.b = Clamp((int)(color.b * to), 0, 255);
 							taint.unused = 255 * co;
 							_transparencies[start + curr][opacity] = taint;
 						};
