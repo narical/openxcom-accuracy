@@ -3547,55 +3547,34 @@ void AIModule::brutalThink(BattleAction* action)
 			bool closerThanEnemyCanReach = false;
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
-			for (Position reachable : enemyReachable)
+			int hiddenFrom = enemyReachable.size();
+			if (dissolveBlockage)
+				greatCoverScore = closestEnemyDist;
+			else if (!sweepMode)
 			{
-				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+				if (_unit->getArmor()->getSize() > 1)
+					hiddenFrom *= 4;
+				for (Position reachable : enemyReachable)
 				{
-					for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+					for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 					{
-						Position compPos = pos;
-						compPos.x += x;
-						compPos.y += y;
-						if (hasTileSight(compPos, reachable))
+						for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
 						{
-							avoidLoF = true;
+							Position compPos = pos;
+							compPos.x += x;
+							compPos.y += y;
+							if (hasTileSight(compPos, reachable))
+							{
+								avoidLoF = true;
+								hiddenFrom--;
+							}
 						}
 					}
 				}
-				if (avoidLoF)
-					break;
-			}
-			if (dissolveBlockage)
-				greatCoverScore = closestEnemyDist;
-			else if (!realLineOfFire && !sweepMode)
-			{
-				bool futherForMeThanForEnemy = false;
-				if (unitToWalkTo && !unitToWalkTo->hasPanickedLastTurn())
-				{
-					if (pu->getTUCost(false).time > tuDistFromTarget)
-						futherForMeThanForEnemy = true;
-				}
-				if (!futherForMeThanForEnemy)
-				{
-					if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
-						greatCoverScore = 100 / walkToDist;
-					else if (!peakLoF && encircleLoF && !IAmPureMelee && !_save->getTileEngine()->isNextToDoor(tile))
-					{
-						if (iAmShortRange)
-							goodCoverScore = 100 / walkToDist;
-						else
-							goodCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					}
-					else if (!peakLoF && !IAmPureMelee)
-					{
-						if (iAmShortRange)
-							okayCoverScore = 100 / walkToDist;
-						else
-							okayCoverScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					}
-					else if	(!peakLoF)
-						okayCoverScore = 100 / walkToDist;
-				}
+				if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
+					greatCoverScore = 100 / walkToDist;
+				else
+					goodCoverScore = hiddenFrom;
 			}
 			if (sweepMode || (targetIsInSmoke && shouldPeak))
 				directPeakScore = 100 / walkToDist;
@@ -3604,9 +3583,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
 				indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			fallbackScore = 100 / walkToDist;
-			// If the enemy has produced smoke for us and can't fly, we like being in smoke
 			greatCoverScore /= cuddleAvoidModifier;
-			goodCoverScore /= cuddleAvoidModifier;
 			okayCoverScore /= cuddleAvoidModifier;
 			directPeakScore /= cuddleAvoidModifier;
 			indirectPeakScore /= cuddleAvoidModifier;
@@ -3660,9 +3637,6 @@ void AIModule::brutalThink(BattleAction* action)
 			if (avoidMeleeRange || (badPath && !sweepMode))
 			{
 				attackScore /= 10;
-				greatCoverScore /= 10;
-				goodCoverScore /= 10;
-				okayCoverScore /= 10;
 				directPeakScore /= 10;
 				indirectPeakScore /= 10;
 			}
@@ -3714,7 +3688,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(tile->getDangerous());
+			//	tile->setTUMarker(hiddenFrom);
 			//}
 		}
 		if (_traceAI)
@@ -5843,6 +5817,11 @@ std::vector<Position> AIModule::getReachableBy(BattleUnit* unit, bool& ranOutOfT
 
 bool AIModule::hasTileSight(Position from, Position to)
 {
+	if (_save->getTileEngine()->hasEntry(from, to))
+	{
+		return _save->getTileEngine()->getVisibilityCache(from, to);
+	}
+	bool result = true;
 	std::vector<Position> _trajectory;
 	_trajectory.clear();
 	Tile* tile = _save->getTile(from);
@@ -5852,8 +5831,9 @@ bool AIModule::hasTileSight(Position from, Position to)
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		to.z += 1;
 	if (_save->getTileEngine()->calculateLineTile(from, to, _trajectory) > 0)
-		return false;
-	return true;
+		result = false;
+	_save->getTileEngine()->setVisibilityCache(from, to, result);
+	return result;
 }
 
 int AIModule::requiredWayPointCount(Position to, const std::vector<PathfindingNode*> nodeVector)

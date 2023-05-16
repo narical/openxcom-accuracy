@@ -3171,6 +3171,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 	//Recalculate relevant item/unit locations and visibility depending on what happened during the hit
 	if (terrainChanged || effectGenerated)
 	{
+		resetVisibilityCache();
 		applyGravity(tile);
 		auto layer = LL_ITEMS;
 		if (part == V_FLOOR && _save->getTile(tilePos - Position(0, 0, 1)))
@@ -4094,7 +4095,7 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 		}
 		else return 5;
 	}
-
+	resetVisibilityCache();
 	return door;
 }
 
@@ -4170,7 +4171,7 @@ int TileEngine::closeUfoDoors()
 		}
 		doorsclosed += _save->getTile(i)->closeUfoDoor();
 	}
-
+	resetVisibilityCache();
 	return doorsclosed;
 }
 
@@ -6021,6 +6022,31 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 		}
 	}
 	return visibleFrom;
+}
+
+void TileEngine::setVisibilityCache(Position from, Position to, bool visible)
+{
+	std::pair<int, int> key = std::make_pair(_save->getTileIndex(from), _save->getTileIndex(to));
+	_visibilityCache.insert({key, visible});
+}
+
+bool TileEngine::getVisibilityCache(Position from, Position to)
+{
+	std::pair<int, int> key = std::make_pair(_save->getTileIndex(from), _save->getTileIndex(to));
+	return _visibilityCache[key];
+}
+
+bool TileEngine::hasEntry(Position from, Position to)
+{
+	std::pair<int, int> key = std::make_pair(_save->getTileIndex(from), _save->getTileIndex(to));
+	if (_visibilityCache.find(key) != _visibilityCache.end())
+		return true;
+	return false;
+}
+
+void TileEngine::resetVisibilityCache()
+{
+	_visibilityCache.clear();
 }
 
 }

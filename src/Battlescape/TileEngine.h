@@ -104,6 +104,7 @@ private:
 	Position _eventVisibilitySectorL, _eventVisibilitySectorR, _eventVisibilityObserverPos;
 	std::vector<BattleUnit*> _movingUnitPrev;
 	BattleUnit* _movingUnit = nullptr;
+	std::map<std::pair<int, int>, bool> _visibilityCache;
 
 	/// Add light source.
 	void addLight(MapSubset gs, Position center, int power, LightLayers layer);
@@ -276,6 +277,14 @@ public:
 	bool isNextToDoor(Tile *tile);
 	/// Returns a vector of tiles that would be visible from a specific location
 	std::set<Tile*> visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew = false);
+	/// remember how the visibility from a specific position to another would be
+	void setVisibilityCache(Position from, Position to, bool visible);
+	/// recall how the visibility from a specific position to another was
+	bool getVisibilityCache(Position from, Position to);
+	/// checks whether there's an entry for a specific position-pair
+	bool hasEntry(Position from, Position to);
+	/// empties the visibility cache, call whenever a door is opened or destructive terrain is destroyed
+	void resetVisibilityCache();
 };
 
 }
