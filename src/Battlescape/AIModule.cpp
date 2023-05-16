@@ -3537,7 +3537,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				saveFromGrenades = true;
 			}
-			if (tile->hasNoFloor())
+			if (tile->hasNoFloor() && Options::battleExplosionHeight == 0)
 				saveFromGrenades = true;
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes); 
 			float walkToDist = 20 + tuDistFromTarget;
@@ -3576,11 +3576,7 @@ void AIModule::brutalThink(BattleAction* action)
 				else
 					goodCoverScore = hiddenFrom;
 			}
-			if (sweepMode || (targetIsInSmoke && shouldPeak))
-				directPeakScore = 100 / walkToDist;
-			else if (peakLoF && shouldPeak && pos != myPos && !outOfRangeForShortRangeWeapon)
-				directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-			if (hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
+			if (!sweepMode && hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
 				indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
