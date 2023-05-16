@@ -996,7 +996,22 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 			for (auto* vehicle : *_craft->getVehicles())
 			{
 				RuleItem *item = vehicle->getRules();
-				if (startingCondition != 0 && !startingCondition->isVehiclePermitted(item->getType()))
+				bool hwpDisabled = false;
+				if (startingCondition)
+				{
+					if (!startingCondition->isVehiclePermitted(item->getType()))
+					{
+						hwpDisabled = true; // HWP is disabled
+					}
+					else if (item->getVehicleClipAmmo())
+					{
+						if (!startingCondition->isItemPermitted(item->getVehicleClipAmmo()->getType(), _game->getMod(), _craft))
+						{
+							hwpDisabled = true; // HWP's ammo is disabled
+						}
+					}
+				}
+				if (hwpDisabled)
 				{
 					// send disabled vehicles back to base
 					_base->getStorageItems()->addItem(item, 1);
@@ -1113,7 +1128,22 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 			for (auto* vehicle : *_craft->getVehicles())
 			{
 				RuleItem *item = vehicle->getRules();
-				if (startingCondition != 0 && !startingCondition->isVehiclePermitted(item->getType()))
+				bool hwpDisabled = false;
+				if (startingCondition)
+				{
+					if (!startingCondition->isVehiclePermitted(item->getType()))
+					{
+						hwpDisabled = true; // HWP is disabled
+					}
+					else if (item->getVehicleClipAmmo())
+					{
+						if (!startingCondition->isItemPermitted(item->getVehicleClipAmmo()->getType(), _game->getMod(), _craft))
+						{
+							hwpDisabled = true; // HWP's ammo is disabled
+						}
+					}
+				}
+				if (hwpDisabled)
 				{
 					// skip, already done earlier
 				}
