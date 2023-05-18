@@ -3296,21 +3296,9 @@ void AIModule::brutalThink(BattleAction* action)
 	float tuToSaveForHide = 0.5;
 	bool shouldSaveEnergy = _unit->getEnergy() + getEnergyRecovery(_unit) < _unit->getBaseStats()->stamina;
 	bool saveDistance = true;
-	bool veryCloseToEnemy = false;
-	for (Position reachable : enemyReachable)
-	{
-		if (reachable == myPos)
-			veryCloseToEnemy = true;
-		if (hasTileSight(myPos, reachable))
-		{
-			saveDistance = false;
-			if (veryCloseToEnemy)
-				break;
-		}
-	}
 	if (_blaster)
 		sweepMode = false;
-	if (!shouldSaveEnergy && (!iHaveLof && (_unit->getTimeUnits() == getMaxTU(_unit) || veryCloseToEnemy)))
+	if (!shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	if (_traceAI)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
@@ -3547,11 +3535,11 @@ void AIModule::brutalThink(BattleAction* action)
 			bool closerThanEnemyCanReach = false;
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
-			int hiddenFrom = enemyReachable.size();
 			if (dissolveBlockage)
 				greatCoverScore = closestEnemyDist;
 			else if (!sweepMode)
 			{
+				int hiddenFrom = enemyReachable.size();
 				if (_unit->getArmor()->getSize() > 1)
 					hiddenFrom *= 4;
 				for (Position reachable : enemyReachable)
@@ -3574,7 +3562,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
 					greatCoverScore = 100 / walkToDist;
 				else
-					goodCoverScore = hiddenFrom;
+					goodCoverScore = (float)hiddenFrom / enemyReachable.size();
 			}
 			if (!sweepMode && hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
 				indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
@@ -3684,7 +3672,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(hiddenFrom);
+			//	tile->setTUMarker(tuDistFromTarget);
 			//}
 		}
 		if (_traceAI)
@@ -5867,6 +5855,36 @@ int AIModule::requiredWayPointCount(Position to, const std::vector<PathfindingNo
 	if (_traceAI)
 		Log(LOG_INFO) << "need " << directionChanges << " waypoints to launch blaster at "<<to;
 	return directionChanges;
+}
+
+std::vector<Position> AIModule::getPositionsOnPathTo(Position target, const std::vector<PathfindingNode*> nodeVector)
+{
+	PathfindingNode* targetNode = NULL;
+	for (auto pn : nodeVector)
+	{
+		if (target == pn->getPosition())
+		{
+			targetNode = pn;
+			break;
+		}
+	}
+	std::vector<Position> positions;
+	if (targetNode != NULL)
+	{
+		while (targetNode->getPrevNode() != NULL)
+		{
+			positions.push_back(targetNode->getPosition());
+			if (_traceAI)
+			{
+				Tile* tile = _save->getTile(_save->getTileIndex(targetNode->getPosition()));
+				tile->setMarkerColor(_unit->getId());
+				tile->setPreview(10);
+				tile->setTUMarker(_unit->getId() % 100);
+			}
+			targetNode = targetNode->getPrevNode();
+		}
+	}
+	return positions;
 }
 
 }

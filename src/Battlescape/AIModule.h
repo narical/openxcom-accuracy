@@ -232,6 +232,8 @@ public:
 	bool hasTileSight(Position from, Position to);
 	/// returns the amount of blaster-waypoints to reach a target-positon
 	int requiredWayPointCount(Position to, const std::vector<PathfindingNode*> nodeVector);
+	/// returns a vector of all positions we'd have to walk towards a specific location
+	std::vector<Position> getPositionsOnPathTo(Position target, const std::vector<PathfindingNode*> nodeVector);
 };
 
 }
