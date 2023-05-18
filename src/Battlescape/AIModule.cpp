@@ -3464,7 +3464,7 @@ void AIModule::brutalThink(BattleAction* action)
 							lineOfFire = false;
 					}
 				}
-				if (lineOfFire == false || IAmPureMelee)
+				if (lineOfFire == false || (IAmPureMelee || _unit->isCheatOnMovement()))
 				{
 					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && (_melee || quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement()))))
 					{
@@ -3533,13 +3533,13 @@ void AIModule::brutalThink(BattleAction* action)
 			if (encircleTile && hasTileSight(pos, encircleTile->getPosition()))
 				encircleLoF = true;
 			bool closerThanEnemyCanReach = false;
+			int hiddenFrom = enemyReachable.size();
 			if (Position::distance(pos, furthestPositionEnemyCanReach) < _save->getMod()->getMaxViewDistance())
 				closerThanEnemyCanReach = true;
 			if (dissolveBlockage)
 				greatCoverScore = closestEnemyDist;
 			else if (!sweepMode)
 			{
-				int hiddenFrom = enemyReachable.size();
 				if (_unit->getArmor()->getSize() > 1)
 					hiddenFrom *= 4;
 				for (Position reachable : enemyReachable)
@@ -3562,12 +3562,13 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
 					greatCoverScore = 100 / walkToDist;
 				else
-					goodCoverScore = (float)hiddenFrom / enemyReachable.size();
+					goodCoverScore = hiddenFrom;
 			}
 			if (!sweepMode && hasTileSight(pos, peakPosition) && shouldPeak && pos != myPos)
 				indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
+			goodCoverScore /= cuddleAvoidModifier;
 			okayCoverScore /= cuddleAvoidModifier;
 			directPeakScore /= cuddleAvoidModifier;
 			indirectPeakScore /= cuddleAvoidModifier;
@@ -3672,7 +3673,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(tuDistFromTarget);
+			//	tile->setTUMarker(hiddenFrom);
 			//}
 		}
 		if (_traceAI)
