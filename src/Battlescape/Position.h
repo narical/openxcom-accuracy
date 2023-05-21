@@ -133,6 +133,24 @@ public:
 	}
 };
 
+struct PositionComparator
+{
+	bool operator()(const Position& pos1, const Position& pos2) const
+	{
+		if (pos1.x < pos2.x)
+			return true;
+		if (pos1.x > pos2.x)
+			return false;
+
+		if (pos1.y < pos2.y)
+			return true;
+		if (pos1.y > pos2.y)
+			return false;
+
+		return pos1.z < pos2.z;
+	}
+};
+
 inline std::ostream& operator<<(std::ostream& out, const Position& pos)
 {
 	out << "(" << pos.x << "," << pos.y << ","<< pos.z << ")";

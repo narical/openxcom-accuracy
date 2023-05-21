@@ -5647,12 +5647,12 @@ void BattleUnit::checkForReactivation()
 	}
 }
 
-void BattleUnit::setReachablePositions(std::vector<Position> reachable)
+void BattleUnit::setReachablePositions(std::map<Position, int, PositionComparator> reachable)
 {
 	_reachablePositions = reachable;
 }
 
-std::vector<Position> BattleUnit::getReachablePositions()
+std::map<Position, int, PositionComparator> BattleUnit::getReachablePositions()
 {
 	return _reachablePositions;
 }
@@ -5672,18 +5672,14 @@ bool BattleUnit::isLeeroyJenkins() const
 	return _isLeeroyJenkins;
 }
 
-bool BattleUnit::isAggressive() const
+int BattleUnit::getAggressiveness() const
 {
 	if (getFaction() == FACTION_PLAYER)
-	{
-		if (Options::autoAggression)
-			return true;
-		else
-			return false;
-	}
-	else if (Options::aiAggression)
-		return true;
-	return false;
+		return Options::autoAggression;
+	else if (Options::inheritAggression)
+		return getAggression() + 1;
+	else
+		return Options::aiAggression;
 }
 
 ////////////////////////////////////////////////////////////

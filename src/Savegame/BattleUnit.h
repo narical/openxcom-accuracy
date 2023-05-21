@@ -168,7 +168,7 @@ private:
 	ArmorMoveCost _moveCostBaseClimb = { 0, 0 };
 	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
-	std::vector<Position> _reachablePositions;
+	std::map<Position, int, PositionComparator> _reachablePositions;
 	Position _positionWhenReachableWasUpdated = Position(-1, -1, -1);
 	bool _capturable;
 	bool _vip;
@@ -792,7 +792,7 @@ public:
 	/// Get the unit leeroyJenkins flag
 	bool isLeeroyJenkins() const;
 	/// Get the unit's aggression-flag
-	bool isAggressive() const;
+	int getAggressiveness() const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
 	int getSpotterDuration() const;
 	/// Remembers the unit's XP (used for shotguns).
@@ -850,8 +850,8 @@ public:
 	/// Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
 	void checkForReactivation();
 	/// Cache inside the unit what positions it can reach for reference by AI
-	void setReachablePositions(std::vector<Position> reachable);
-	std::vector<Position> getReachablePositions();
+	void setReachablePositions(std::map<Position, int, PositionComparator> reachable);
+	std::map<Position, int, PositionComparator> getReachablePositions();
 	/// Remember this value in order to check whether an update is due
 	void setPositionOfUpdate(Position posOfUpdate);
 	Position getPositionOfUpdate();
