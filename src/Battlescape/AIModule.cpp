@@ -2986,11 +2986,12 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->getAggressiveness() >= 3 || _unit->isLeeroyJenkins();
+	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
 	if (_unit->getHealth() - _unit->getFatalWounds() * 3 <= 0)
 		sweepMode = true;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
+	std::map<Position, int, PositionComparator> allyReachable;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3000,6 +3001,10 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (primeDist <= explosionRadius && target != _unit)
 				primeScore -= 2;
+			for (auto &reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
+			{
+				allyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
+			}
 			continue;
 		}
 		if (!_unit->isCheatOnMovement())
@@ -3067,7 +3072,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (!target->hasPanickedLastTurn())
 		{
-			for (auto reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
+			for (auto &reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
 			{
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
 			}
@@ -3358,6 +3363,7 @@ void AIModule::brutalThink(BattleAction* action)
 			bool peakLoF = false;
 			bool avoidLoF = false;
 			float closestAnyOneDist = FLT_MAX;
+			int smoke = tile->getSmoke();
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3546,12 +3552,13 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 				}
-				if (_unit->getAggressiveness() < 2 && !avoidLoF && !_save->getTileEngine()->isNearDoor(tile))
-					greatCoverScore = 100 / walkToDist;
-				else if (!realLineOfFire && !_save->getTileEngine()->isNearDoor(tile) && !tile->hasGravLiftFloor() && !peakLoF && !inReachable)
-					goodCoverScore = 100 / (walkToDist + discoverThreat);
+				discoverThreat /= 1.0 + (smoke / 3.0);
+				discoverThreat -= allyReachable[pos];
+				discoverThreat = std::max(0.0f, discoverThreat);
+				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF)
+					greatCoverScore = 100 / (walkToDist + discoverThreat);
 				else
-					okayCoverScore = 100 / (walkToDist + discoverThreat);
+					goodCoverScore = 100 / (walkToDist + discoverThreat);
 			}
 			if (!sweepMode && shouldPeak && pos != myPos)
 			{
@@ -3668,7 +3675,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(walkToDist + discoverThreat);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -5767,7 +5774,7 @@ int AIModule::getEnergyRecovery(BattleUnit* unit)
 	return recovery;
 }
 
-std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc)
+std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc, bool useMaxTUs)
 {
 	Position startPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	if (_unit->isCheatOnMovement() || unit->getFaction() == _unit->getFaction())
@@ -5777,11 +5784,14 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 		ranOutOfTUs = unit->getRanOutOfTUs();
 		return unit->getReachablePositions();
 	}
-	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), ranOutOfTUs, false, NULL, &startPosition, false, true);
+	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), ranOutOfTUs, false, NULL, &startPosition, false, useMaxTUs);
 	std::map<Position, int, PositionComparator> tuAtPositionMap;
+	int TUs = unit->getTimeUnits();
+	if (useMaxTUs)
+		TUs = getMaxTU(unit);
 	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
 	{
-		tuAtPositionMap[(*it)->getPosition()] = getMaxTU(unit) - (*it)->getTUCost(false).time;
+		tuAtPositionMap[(*it)->getPosition()] = TUs - (*it)->getTUCost(false).time;
 		//if (_traceAI && unit->getFaction() != _unit->getFaction())
 		//{
 		//	Tile* tile = _save->getTile((*it)->getPosition());

@@ -227,7 +227,7 @@ public:
 	/// returns how much energy the unit can recover each turn
 	int getEnergyRecovery(BattleUnit* unit);
 	/// returns reachable tile-Ids by a particular unit
-	std::map<Position, int, PositionComparator> getReachableBy(BattleUnit* unit, bool &ranOutOfTUs, bool forceRecalc = false);
+	std::map<Position, int, PositionComparator> getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc = false, bool useMaxTUs = false);
 	/// checks whether it would be possible to see one tile from another
 	bool hasTileSight(Position from, Position to);
 	/// returns the amount of blaster-waypoints to reach a target-positon
