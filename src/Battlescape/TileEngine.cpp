@@ -5931,6 +5931,53 @@ bool TileEngine::isNextToDoor(Tile* tile)
 	return false;
 }
 
+bool TileEngine::isNearDoor(Tile* tile)
+{
+	if (isNextToDoor(tile))
+		return true;
+	Position checkPosition = tile->getPosition();
+	checkPosition += Position(0, -1, 0);
+	Tile* checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(1, -1, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(1, 0, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(1, 1, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(0, 1, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(-1, 1, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(-1, 0, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	checkPosition = tile->getPosition();
+	checkPosition += Position(-1, -1, 0);
+	checkTile = _save->getTile(checkPosition);
+	if (isNextToDoor(checkTile))
+		return true;
+	return false;
+}
+
 std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew)
 {
 	std::set<Tile*> visibleFrom;
