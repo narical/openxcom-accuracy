@@ -271,7 +271,17 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		*i += increment;
 
 		int min = 0, max = 0;
-		if (i == &Options::aiTargetMode)
+		if (i == &Options::aiAggression)
+		{
+			min = 1;
+			max = 3;
+		}
+		else if (i == &Options::autoAggression)
+		{
+			min = 1;
+			max = 3;
+		}
+		else if(i == &Options::aiTargetMode)
 		{
 			min = 1;
 			max = 4;
