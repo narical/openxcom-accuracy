@@ -3363,7 +3363,6 @@ void AIModule::brutalThink(BattleAction* action)
 			bool peakLoF = false;
 			bool avoidLoF = false;
 			float closestAnyOneDist = FLT_MAX;
-			int smoke = tile->getSmoke();
 			for (BattleUnit *unit : *(_save->getUnits()))
 			{
 				if (unit->isOut())
@@ -3552,10 +3551,10 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 				}
-				discoverThreat /= 1.0 + (smoke / 3.0);
-				discoverThreat -= allyReachable[pos];
+				if (_unit->getAggressiveness() > 1)
+					discoverThreat -= allyReachable[pos];
 				discoverThreat = std::max(0.0f, discoverThreat);
-				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF)
+				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF)
 					greatCoverScore = 100 / (walkToDist + discoverThreat);
 				else
 					goodCoverScore = 100 / (walkToDist + discoverThreat);
