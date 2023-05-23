@@ -703,20 +703,47 @@ int overloadCustomProc(const ScriptProcData& spd, const ScriptRefData* begin, co
 	}
 	return tempSorce;
 }
+
 /**
- * Helper choosing correct overload function to call.
+ * Return public argument number of given function.
  */
-bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc, const ScriptRefData* begin, const ScriptRefData* end)
+int getOverloadArgSize(const ScriptProcData& spd)
 {
-	if (!proc)
+	int argSize = 0;
+
+	for (auto& currOver : spd.overloadArg)
 	{
-		return false;
-	}
-	if ((size_t)std::distance(begin, end) > ScriptMaxArg)
-	{
-		return false;
+		if (currOver)
+		{
+			argSize += 1;
+		}
 	}
 
+	return argSize;
+}
+
+/**
+ * Return type of public argument of given function.
+ */
+ScriptRange<ArgEnum> getOverloadArgType(const ScriptProcData& spd, int argPos)
+{
+	for (auto& currOver : spd.overloadArg)
+	{
+		if (currOver)
+		{
+			if (argPos == 0)
+			{
+				return currOver;
+			}
+			--argPos;
+		}
+	}
+
+	return {};
+}
+
+std::tuple<int, const ScriptProcData*> findBestOverloadProc(const ScriptRange<ScriptProcData>& proc, const ScriptRefData* begin, const ScriptRefData* end)
+{
 	int bestSorce = 0;
 	const ScriptProcData* bestValue = nullptr;
 	for (auto& p : proc)
@@ -735,6 +762,34 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 			}
 		}
 	}
+
+	return std::make_tuple(bestSorce, bestValue);
+}
+
+////////////////////////////////////////////////////////////
+//			Pushing operation on proc vector
+////////////////////////////////////////////////////////////
+
+
+/**
+ * Helper choosing correct overload function to call.
+ */
+bool parseOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	if (!proc)
+	{
+		return false;
+	}
+	if ((size_t)std::distance(begin, end) > ScriptMaxArg)
+	{
+		return false;
+	}
+
+	int bestSorce = 0;
+	const ScriptProcData* bestValue = nullptr;
+
+	std::tie(bestSorce, bestValue) = findBestOverloadProc(proc, begin, end);
+
 	if (bestSorce)
 	{
 		if (bestValue)
@@ -779,12 +834,6 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 		return false;
 	}
 }
-
-
-////////////////////////////////////////////////////////////
-//			Pushing operation on proc vector
-////////////////////////////////////////////////////////////
-
 
 /**
  * Helper used to parse line for build in function.
@@ -908,7 +957,7 @@ bool parseConditionImpl(ParserWriter& ph, ScriptRefData truePos, ScriptRefData f
 	}
 
 	const auto proc = ph.parser.getProc(ScriptRef{ equalFunc ? "test_eq" : "test_le" });
-	if (callOverloadProc(ph, proc, std::begin(conditionArgs), std::end(conditionArgs)) == false)
+	if (parseOverloadProc(ph, proc, std::begin(conditionArgs), std::end(conditionArgs)) == false)
 	{
 		Log(LOG_ERROR) << "Unsupported operator: '" + begin[0].name.toString() + "'";
 		return false;
@@ -976,7 +1025,7 @@ bool parseVariableImpl(ParserWriter& ph, ScriptRefData reg, ScriptRefData val = 
 			val,
 		};
 		const auto proc = ph.parser.getProc(ScriptRef{ "set" });
-		return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
+		return parseOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
 	}
 	else
 	{
@@ -985,7 +1034,7 @@ bool parseVariableImpl(ParserWriter& ph, ScriptRefData reg, ScriptRefData val = 
 			reg,
 		};
 		const auto proc = ph.parser.getProc(ScriptRef{ "clear" });
-		return callOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
+		return parseOverloadProc(ph, proc, std::begin(setArgs), std::end(setArgs));
 	}
 }
 
@@ -1111,7 +1160,7 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 		curr,
 		{ {}, ArgInt, 1 },
 	};
-	correct &= callOverloadProc(ph, ph.parser.getProc(ScriptRef{ "add" }), std::begin(addArgs), std::end(addArgs));
+	correct &= parseOverloadProc(ph, ph.parser.getProc(ScriptRef{ "add" }), std::begin(addArgs), std::end(addArgs));
 
 
 	if (correct)
@@ -1420,7 +1469,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 				ScriptRefData temp[] = { outputRegsData[i], begin[i] };
 
 				const auto proc = ph.parser.getProc(ScriptRef{ "set" });
-				if (!callOverloadProc(ph, proc, std::begin(temp), std::end(temp)))
+				if (!parseOverloadProc(ph, proc, std::begin(temp), std::end(temp)))
 				{
 					Log(LOG_ERROR) << "Invalid return argument '" + begin[i].name.toString() + "'";
 					return false;
@@ -1452,7 +1501,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 					ScriptRefData temp[] = { outputRegsData[i], outputRegsData[j] };
 
 					const auto proc = ph.parser.getProc(ScriptRef{ "swap" });
-					if (!callOverloadProc(ph, proc, std::begin(temp), std::end(temp)))
+					if (!parseOverloadProc(ph, proc, std::begin(temp), std::end(temp)))
 					{
 						return false;
 					}
@@ -1483,7 +1532,7 @@ bool parseDebugLog(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 	for (auto i = begin; i != end; ++i)
 	{
 		const auto proc = ph.parser.getProc(ScriptRef{ "debug_impl" });
-		if (!callOverloadProc(ph, proc, i, std::next(i)))
+		if (!parseOverloadProc(ph, proc, i, std::next(i)))
 		{
 			Log(LOG_ERROR) << "Invalid debug argument '" + i->name.toString() + "'";
 			return false;
@@ -2961,7 +3010,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		}
 
 		// create normal proc call
-		if (callOverloadProc(help, op_curr, argData, argData+i) == false)
+		if (parseOverloadProc(help, op_curr, argData, argData+i) == false)
 		{
 			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
 			return false;
@@ -3719,5 +3768,131 @@ void ScriptGlobal::load(const YAML::Node& node)
 		}
 	}
 }
+
+
+
+
+#ifdef OXCE_AUTO_TEST
+
+namespace
+{
+
+struct Func_test_a
+{
+	[[gnu::always_inline]]
+	static RetEnum func (ScriptWorkerBase& c, int p, int& b)
+	{
+
+		return RetContinue;
+	}
+};
+
+struct Func_test_b
+{
+	[[gnu::always_inline]]
+	static RetEnum func (int p, int& b)
+	{
+
+		return RetContinue;
+	}
+};
+
+struct Func_test_c
+{
+	[[gnu::always_inline]]
+	static RetEnum func (int p, int& b, ScriptWorkerBase& c)
+	{
+
+		return RetContinue;
+	}
+};
+
+static auto dummyTestScriptOverload = ([]
+{
+	ScriptProcData data_a {	};
+	data_a.overload = &overloadCustomProc;
+	data_a.overloadArg = helper::FuncGroup<Func_test_a>::overloadType();
+
+	ScriptProcData data_b {	};
+	data_b.overload = &overloadCustomProc;
+	data_b.overloadArg = helper::FuncGroup<Func_test_b>::overloadType();
+
+	ScriptProcData data_c {	};
+	data_c.overload = &overloadCustomProc;
+	data_c.overloadArg = helper::FuncGroup<Func_test_c>::overloadType();
+
+
+	auto arg_any = ArgInvalid;
+	auto arg_int = ArgInt;
+	auto arg_int_ref = ArgSpecAdd(ArgInt, ArgSpecReg);
+	auto arg_int_var = ArgSpecAdd(ArgInt, ArgSpecVar);
+
+	auto test_overload = [](const ScriptProcData& a, std::initializer_list<ArgEnum> ref)
+	{
+		std::array<ScriptRefData, 10> arr = {};
+		int i = 0;
+		for (auto& p : ref)
+		{
+			arr[i++] = { {}, p };
+		}
+		return overloadCustomProc(a, std::begin(arr), std::begin(arr) + ref.size());
+	};
+
+	assert(3 == data_a.overloadArg.size());
+	assert(2 == data_b.overloadArg.size());
+	assert(3 == data_c.overloadArg.size());
+
+	assert(2 == getOverloadArgSize(data_a));
+	assert(2 == getOverloadArgSize(data_b));
+	assert(2 == getOverloadArgSize(data_c));
+
+	assert(0 == test_overload(data_a, { }));
+
+	assert(0 == test_overload(data_a, { arg_any, }));
+
+	assert(255 == test_overload(data_a, { arg_any, arg_any, }));
+
+	assert(255 - 1 == test_overload(data_a, { arg_int, arg_any, }));
+
+	assert(0 == test_overload(data_a, { arg_int, arg_int, }));
+
+	assert(255 - 1 == test_overload(data_a, { arg_int, arg_int_var, }));
+
+	assert(255 == test_overload(data_a, { arg_any, arg_int_var, }));
+
+	assert(0 == test_overload(data_a, { arg_any, arg_int_var, arg_any, }));
+
+	assert(255 - 64 - 1 == test_overload(data_a, { arg_int_var, arg_any, }));
+
+	assert(255 - 64 - 1 == test_overload(data_a, { arg_int_var, arg_int_var, }));
+
+	auto test_arg = [](const ScriptProcData& a, int i, std::initializer_list<ArgEnum> ref)
+	{
+		auto args = getOverloadArgType(a, i);
+		return std::equal(
+			std::begin(args), std::end(args),
+			std::begin(ref), std::end(ref)
+		);
+	};
+
+	assert(test_arg(data_a, 0, { arg_int, arg_int_ref }));
+	assert(test_arg(data_a, 1, { arg_int_var }));
+	assert(test_arg(data_a, 2, { }));
+
+	assert(test_arg(data_b, 0, { arg_int, arg_int_ref }));
+	assert(test_arg(data_b, 1, { arg_int_var }));
+	assert(test_arg(data_b, 2, { }));
+
+	assert(test_arg(data_c, 0, { arg_int, arg_int_ref }));
+	assert(test_arg(data_c, 1, { arg_int_var }));
+	assert(test_arg(data_c, 2, { }));
+
+	return 0;
+})();
+
+} //namespace
+
+
+#endif
 
 } //namespace OpenXcom
