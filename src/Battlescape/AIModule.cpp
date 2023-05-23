@@ -4556,6 +4556,8 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			int radius = ammo->getRules()->getExplosionRadius({action->type, _unit, _attackAction.weapon, ammo});
 			if (radius > 0)
 				explosionMod *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
+			if (ammo->getRules()->getShotgunPellets() > 0)
+				numberOfShots *= ammo->getRules()->getShotgunPellets();
 		}
 	}
 	// I had to make it mutually exclusive from ammo-damage because that way I wouldn't have power from lasers twice. This seems okay for vanilla but might be wrong for other stuff.
@@ -4641,9 +4643,9 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
 					  << " from: " << originPosition << " to: "<<action->target
 					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod
-					  << " score: " << damage * accuracy * numberOfShots * explosionMod;
+					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod;
 	}
-	return damage * accuracy * numberOfShots * dangerMod;
+	return damage * accuracy * numberOfShots * dangerMod * explosionMod;
 }
 
 /**
