@@ -3027,13 +3027,13 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		Position targetPosition = target->getPosition();
 		int turnsLastSeen = 0;
-		if (!_unit->isCheatOnMovement())
+		if (!_unit->isCheatOnMovement() && !visibleToAnyFriend(target))
 		{
 			turnsLastSeen = target->getTurnsSinceSeen(_unit->getFaction());
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
 			Tile *targetTile = _save->getTile(targetPosition);
 			bool tileChecked = false;
-			if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target) && targetTile->getSmoke() == 0)
+			if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && targetTile->getSmoke() == 0)
 				tileChecked = true;
 			else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
 				tileChecked = true;
@@ -3071,7 +3071,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (newIndex == -1)
 					continue;
 			}
-		} else {
+		} else if (!visibleToAnyFriend(target)) {
 			Position blindFirePosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true));
 			Tile *targetTile = _save->getTile(blindFirePosition);
 			if (targetTile)
@@ -4468,7 +4468,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	int distanceSq = Position::distanceSq(originPosition, target->getPosition());
 	if (!checkLOF)
 		distanceSq = Position::distanceSq(originPosition, _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true)));
-	int distance = (int)std::ceil(sqrt(float(distanceSq)));
+	float distance = Position::distance(originPosition, target->getPosition());
 
 	int tuTotal = _unit->getTimeUnits();
 	float dangerMod = 1;
@@ -4525,6 +4525,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		{
 			accuracy = 0;
 		}
+		accuracy -= target->getArmor()->getMeleeDodge(target);
 	}
 	else if (shouldAvoidMeleeRange(target) && distance < 2)
 	{
@@ -5525,7 +5526,7 @@ bool AIModule::inRangeOfAnyFriend(Position pos)
 
 bool AIModule::shouldAvoidMeleeRange(BattleUnit *enemy)
 {
-	if (_melee)
+	if (maxExtenderRangeWith(_unit, getMaxTU(_unit)) == 1)
 		return false;
 	if (_save->getMod()->getEnableCloseQuartersCombat() && !_unit->getArmor()->getIgnoresMeleeThreat() && enemy->getArmor()->getCreatesMeleeThreat())
 		return true;
