@@ -234,6 +234,8 @@ public:
 	int requiredWayPointCount(Position to, const std::vector<PathfindingNode*> nodeVector);
 	/// returns a vector of all positions we'd have to walk towards a specific location
 	std::vector<Position> getPositionsOnPathTo(Position target, const std::vector<PathfindingNode*> nodeVector);
+	/// returns fear of smoke
+	std::map<Position, int, PositionComparator> getSmokeFearMap();
 };
 
 }

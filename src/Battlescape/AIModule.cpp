@@ -3001,9 +3001,12 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (primeDist <= explosionRadius && target != _unit)
 				primeScore -= 2;
-			for (auto &reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
+			if (target != _unit)
 			{
-				allyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
+				for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
+				{
+					allyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
+				}
 			}
 			continue;
 		}
@@ -3034,6 +3037,22 @@ void AIModule::brutalThink(BattleAction* action)
 				tileChecked = true;
 			else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
 				tileChecked = true;
+			else
+			{
+				for (BattleUnit* ally : *(_save->getUnits()))
+				{
+					if (ally->isOut())
+						continue;
+					if (ally->getFaction() != _unit->getFaction())
+						continue;
+					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
+					if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && Position::distance(targetPosition, ally->getPosition()) <= minViewDistance)
+					{
+						tileChecked = true;
+						break;
+					}
+				}
+			}
 			//if (_traceAI)
 			//	Log(LOG_INFO) << "Assuming unit at " << target->getPosition() << " to be at " << targetPosition << " checked: " << tileChecked << " target-tile last explored: " << targetTile->getLastExplored(_unit->getFaction()) << " current turn: " << _save->getTurn() << " smoke: " << targetTile->getSmoke() << " turns since seen: " << target->getTurnsSinceSeen(_unit->getFaction());
 			if (tileChecked)
@@ -3075,6 +3094,13 @@ void AIModule::brutalThink(BattleAction* action)
 			for (auto &reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
 			{
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
+			}
+			if (!enemyReachable.empty()) //No need to be afraid of smoke if everyone panicked
+			{
+				for (auto& smoke : getSmokeFearMap())
+				{
+					enemyReachable[smoke.first] = std::max(enemyReachable[smoke.first], smoke.second);
+				}
 			}
 		}
 		if ((_unit->isCheatOnMovement() || target->getTurnsSinceSeen(_unit->getFaction()) == 0) && hasLofTile(target, _unit->getTile()))
@@ -3332,11 +3358,6 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
-		if ((!sweepMode || _blaster) && !(peakMode && !_unit->isCheatOnMovement()))
-		{
-			Position newTarget = furthestToGoTowards(furthestPositionEnemyCanReach, reserved, _allPathFindingNodes);
-			travelTarget = newTarget;
-		}
 		std::vector<PathfindingNode *> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
 		if (_traceAI)
 		{
@@ -3522,9 +3543,6 @@ void AIModule::brutalThink(BattleAction* action)
 				saveFromGrenades = true;
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes); 
 			float walkToDist = myMaxTU + tuDistFromTarget;
-			bool encircleLoF = false;
-			if (encircleTile && hasTileSight(pos, encircleTile->getPosition()))
-				encircleLoF = true;
 			float discoverThreat = 0;
 			if (dissolveBlockage)
 				greatCoverScore = closestEnemyDist;
@@ -3556,15 +3574,22 @@ void AIModule::brutalThink(BattleAction* action)
 				discoverThreat = std::max(0.0f, discoverThreat);
 				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF)
 					greatCoverScore = 100 / (walkToDist + discoverThreat);
-				else
+				else if (!realLineOfFire && !peakLoF)
 					goodCoverScore = 100 / (walkToDist + discoverThreat);
+				else
+					okayCoverScore = 100 / (walkToDist + discoverThreat);
 			}
-			if (!sweepMode && shouldPeak && pos != myPos)
+			if (!sweepMode && pos != myPos)
 			{
-				if (hasTileSight(pos, targetPosition) && _unit->getAggressiveness() > 1 && !outOfRangeForShortRangeWeapon)
-					directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-				else if (hasTileSight(pos, peakPosition))
-					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+				if (!outOfRangeForShortRangeWeapon && tile->getSmoke() > 0 && enoughTUToPeak)
+					directPeakScore = 100 / walkToDist;
+				if (shouldPeak)
+				{
+					if (hasTileSight(pos, targetPosition) && !outOfRangeForShortRangeWeapon)
+						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					else if (hasTileSight(pos, peakPosition))
+						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+				}
 			}
 			fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
@@ -4589,7 +4614,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	if (numberOfShots < 1)
 		return 0;
 
-	accuracy /= 100;
+	accuracy /= 100.0;
 	if (accuracy > 0)
 		accuracy += std::max(1 - accuracy, 0.0f) / distance;
 	accuracy = std::min(1.0f, accuracy);
@@ -4639,7 +4664,8 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
+		Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
 					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
 					  << " from: " << originPosition << " to: "<<action->target
 					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod
@@ -5793,9 +5819,11 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
 	{
 		tuAtPositionMap[(*it)->getPosition()] = TUs - (*it)->getTUCost(false).time;
-		//if (_traceAI && unit->getFaction() != _unit->getFaction())
-		//{
-		//	Tile* tile = _save->getTile((*it)->getPosition());
+		if (_traceAI && unit->getFaction() == _unit->getFaction() && unit->getFaction() == FACTION_PLAYER)
+		{
+			Tile* tile = _save->getTile((*it)->getPosition());
+			tile->setSmoke(15);
+		}
 		//	tile->setMarkerColor(unit->getId());
 		//	tile->setPreview(10);
 		//	tile->setTUMarker(getMaxTU(unit) - (*it)->getTUCost(false).time);
@@ -5807,16 +5835,39 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 	return tuAtPositionMap;
 }
 
+std::map<Position, int, PositionComparator> AIModule::getSmokeFearMap()
+{
+	std::map<Position, int, PositionComparator> smokeFearMap;
+	for (int i = 0; i < _save->getMapSizeXYZ(); i++)
+	{
+		Tile* tile = _save->getTile(i);
+		if (tile && tile->getSmoke() > 0)
+		{
+			smokeFearMap[tile->getPosition()] = tile->getSmoke();
+		}
+	}
+	return smokeFearMap;
+}
+
 bool AIModule::hasTileSight(Position from, Position to)
 {
 	if (_save->getTileEngine()->hasEntry(from, to))
 	{
 		return _save->getTileEngine()->getVisibilityCache(from, to);
 	}
+	Tile* tile = _save->getTile(from);
+	if (!tile)
+		return false;
+	if (Options::aiPerformanceOptimization && tile->hasNoFloor())
+	{
+		// Just assume we would be visible when flying two tiles above the ground.
+		Tile* tileBelow = _save->getBelowTile(tile);
+		if (tileBelow && tileBelow->hasNoFloor())
+			return true;
+	}
 	bool result = true;
 	std::vector<Position> _trajectory;
 	_trajectory.clear();
-	Tile* tile = _save->getTile(from);
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		from.z += 1;
 	tile = _save->getTile(to);
