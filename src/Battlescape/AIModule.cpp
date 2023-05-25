@@ -2916,8 +2916,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			allyDist += Position::distance(ally->getPosition(), enemyPos);
 		}
-
-		allyReachable = getReachableBy(ally, _ranOutOfTUs).size();
+		allyReachable = getReachableBy(ally, allyRanOutOfTUs).size();
 		if (_ranOutOfTUs == false)
 		{
 			if (myReachable < allyReachable)
@@ -2991,7 +2990,6 @@ void AIModule::brutalThink(BattleAction* action)
 		sweepMode = true;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
-	std::map<Position, int, PositionComparator> allyReachable;
 	for (BattleUnit *target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3001,13 +2999,6 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (primeDist <= explosionRadius && target != _unit)
 				primeScore -= 2;
-			if (target != _unit)
-			{
-				for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs))
-				{
-					allyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
-				}
-			}
 			continue;
 		}
 		if (!_unit->isCheatOnMovement())
@@ -3095,13 +3086,6 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
 			}
-			if (!enemyReachable.empty()) //No need to be afraid of smoke if everyone panicked
-			{
-				for (auto& smoke : getSmokeFearMap())
-				{
-					enemyReachable[smoke.first] = std::max(enemyReachable[smoke.first], smoke.second);
-				}
-			}
 		}
 		if ((_unit->isCheatOnMovement() || target->getTurnsSinceSeen(_unit->getFaction()) == 0) && hasLofTile(target, _unit->getTile()))
 			amInAnyonesFOW = true;
@@ -3121,6 +3105,13 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
+		}
+	}
+	if (!enemyReachable.empty()) // No need to be afraid of smoke if everyone panicked
+	{
+		for (auto& smoke : getSmokeFearMap())
+		{
+			enemyReachable[smoke.first] = std::max(enemyReachable[smoke.first], smoke.second);
 		}
 	}
 
@@ -3315,6 +3306,14 @@ void AIModule::brutalThink(BattleAction* action)
 	float tuToSaveForHide = 0.5;
 	bool shouldSaveEnergy = _unit->getEnergy() + getEnergyRecovery(_unit) < _unit->getBaseStats()->stamina;
 	bool saveDistance = true;
+	for (auto reachable : enemyReachable)
+	{
+		if (hasTileSight(myPos, reachable.first))
+		{
+			saveDistance = false;
+			break;
+		}
+	}
 	if (_blaster)
 		sweepMode = false;
 	if (!shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
@@ -3569,8 +3568,6 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 				}
-				if (_unit->getAggressiveness() > 1)
-					discoverThreat -= allyReachable[pos];
 				discoverThreat = std::max(0.0f, discoverThreat);
 				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF)
 					greatCoverScore = 100 / (walkToDist + discoverThreat);
@@ -4570,6 +4567,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			explosionMod = brutalExplosiveEfficacy(target->getPosition(), _unit, radius, true);
 		else
 			explosionMod = brutalExplosiveEfficacy(_save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true)), _unit, radius, true);
+		explosionMod *= grenadeRiddingUrgency();
 	}
 	else
 	{
@@ -4669,7 +4667,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
 					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
 					  << " from: " << originPosition << " to: "<<action->target
-					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod
+					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
 					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod;
 	}
 	return damage * accuracy * numberOfShots * dangerMod * explosionMod;
@@ -4687,13 +4685,13 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade, bool validOnly) const
 {
 	Tile *targetTile = _save->getTile(targetPos);
-	if (targetTile->getDangerous())
+	if (grenade && targetTile->getDangerous())
 		return 0;
 
 	// don't throw grenades at flying enemies.
 	if (grenade && targetPos.z > 0 && targetTile->hasNoFloor(_save))
 	{
-		return false;
+		return 0;
 	}
 
 	int distance = Position::distance2d(attackingUnit->getPosition(), targetPos);
@@ -5076,15 +5074,49 @@ void AIModule::brutalGrenadeAction()
 			}
 		}
 	}
+	if (Options::aiTargetMode == 3 && bestScore == 0 && grenadeRiddingUrgency() > 1)
+	{
+		for (BattleUnit* target : *(_save->getUnits()))
+		{
+			if (target->isOut())
+				continue;
+			if (!isEnemy(target))
+				continue;
+			Position pos = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true));
+			Tile* tile = _save->getTile(pos);
+			if (!tile)
+				continue;
+			if (tile->getDangerous())
+				continue;
+			action.Time = actionTimeBefore;
+			action.Time += getTurnCostTowards(pos);
+			if (!action.haveTU())
+				continue;
+			action.target = pos;
+			if (!validateArcingShot(&action))
+				continue;
+			if (brutalExplosiveEfficacy(pos, _unit, radius, true, true) < 0)
+				continue;
+			float score = Position::distance(pos, _unit->getPosition());
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestReachablePosition = pos;
+				_aggroTarget = target;
+			}
+		}
+	}
 	if (bestScore > 0)
 	{
+		if (_aggroTarget)
+			_aggroTarget->setTileLastSpotted(-1, _unit->getFaction(), true);
 		_attackAction.weapon = grenade;
 		_attackAction.target = bestReachablePosition;
 		_attackAction.type = BA_THROW;
 		_rifle = false;
 		_melee = false;
 		if (_traceAI)
-			Log(LOG_INFO) << "brutalGrenadeAction: Throw grenade at " << bestReachablePosition;
+			Log(LOG_INFO) << "brutalGrenadeAction: Throw grenade at " << bestReachablePosition << " score: " << bestScore;
 	}
 }
 
@@ -5215,6 +5247,8 @@ bool AIModule::validateArcingShot(BattleAction *action, Tile* originTile)
 		originTile = _unit->getTile();
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), originTile);
 	Tile *targetTile = _save->getTile(action->target);
+	if (!targetTile)
+		return false;
 	Position targetVoxel;
 	std::vector<Position> targets;
 	double curvature;
@@ -5820,11 +5854,11 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 	for (std::vector<PathfindingNode*>::const_iterator it = reachable.begin(); it != reachable.end(); ++it)
 	{
 		tuAtPositionMap[(*it)->getPosition()] = TUs - (*it)->getTUCost(false).time;
-		if (_traceAI && unit->getFaction() == _unit->getFaction() && unit->getFaction() == FACTION_PLAYER)
-		{
-			Tile* tile = _save->getTile((*it)->getPosition());
-			tile->setSmoke(15);
-		}
+		//if (_traceAI && unit->getFaction() == _unit->getFaction() && unit->getFaction() == FACTION_PLAYER)
+		//{
+		//	Tile* tile = _save->getTile((*it)->getPosition());
+		//	tile->setSmoke(15);
+		//}
 		//	tile->setMarkerColor(unit->getId());
 		//	tile->setPreview(10);
 		//	tile->setTUMarker(getMaxTU(unit) - (*it)->getTUCost(false).time);
@@ -5945,6 +5979,20 @@ std::vector<Position> AIModule::getPositionsOnPathTo(Position target, const std:
 		}
 	}
 	return positions;
+}
+
+float AIModule::grenadeRiddingUrgency()
+{
+	if (_grenade && _unit->getGrenadeFromBelt() && _unit->getGrenadeFromBelt()->isFuseEnabled())
+	{
+		BattleAction action;
+		action.weapon = _unit->getGrenadeFromBelt();
+		action.type = BA_THROW;
+		action.actor = _unit;
+		int explosionRadius = action.weapon->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
+		return 1 + -1 * brutalExplosiveEfficacy(_unit->getPosition(), _unit, explosionRadius, true, true);
+	}
+	return 1;
 }
 
 }

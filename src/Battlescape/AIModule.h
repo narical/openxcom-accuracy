@@ -236,6 +236,8 @@ public:
 	std::vector<Position> getPositionsOnPathTo(Position target, const std::vector<PathfindingNode*> nodeVector);
 	/// returns fear of smoke
 	std::map<Position, int, PositionComparator> getSmokeFearMap();
+	/// returns how urgent it is to get rid of a grenade
+	float grenadeRiddingUrgency();
 };
 
 }
