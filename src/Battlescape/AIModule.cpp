@@ -2877,16 +2877,22 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getFaction() != _unit->getOriginalFaction())
 		IAmMindControlled = true;
 	Position myPos = _unit->getPosition();
-	for (BattleUnit* enemy : *(_save->getUnits()))
+	Tile* myTile = _save->getTile(myPos);
+
+	// Units standing in doorways move first so they can make room for others
+	if (!_save->getTileEngine()->isNextToDoor(myTile))
 	{
-		if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
-			continue;
-		Position enemyPos = enemy->getPosition();
-		if (!_unit->isCheatOnMovement())
+		for (BattleUnit* enemy : *(_save->getUnits()))
 		{
-			enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
+			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
+				continue;
+			Position enemyPos = enemy->getPosition();
+			if (!_unit->isCheatOnMovement())
+			{
+				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
+			}
+			myDist += Position::distance(myPos, enemyPos);
 		}
-		myDist += Position::distance(myPos, enemyPos);
 	}
 
 	for (BattleUnit* ally : *(_save->getUnits()))
@@ -2905,16 +2911,21 @@ void AIModule::brutalThink(BattleAction* action)
 		bool allyIsMindControlled = false;
 		if (ally->getFaction() != ally->getOriginalFaction())
 			allyIsMindControlled = true;
-		for (BattleUnit* enemy : *(_save->getUnits()))
+
+		// Units standing in doorways move first so they can make room for others
+		if (!_save->getTileEngine()->isNextToDoor(ally->getTile()))
 		{
-			if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
-				continue;
-			Position enemyPos = enemy->getPosition();
-			if (!_unit->isCheatOnMovement())
+			for (BattleUnit* enemy : *(_save->getUnits()))
 			{
-				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(ally->getFaction()));
+				if (enemy->getMainHandWeapon() == NULL || enemy->isOut() || enemy->getFaction() == _unit->getFaction())
+					continue;
+				Position enemyPos = enemy->getPosition();
+				if (!_unit->isCheatOnMovement())
+				{
+					enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(ally->getFaction()));
+				}
+				allyDist += Position::distance(ally->getPosition(), enemyPos);
 			}
-			allyDist += Position::distance(ally->getPosition(), enemyPos);
 		}
 		allyReachable = getReachableBy(ally, allyRanOutOfTUs).size();
 		if (_ranOutOfTUs == false)
@@ -2924,10 +2935,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
-				// if (Options::traceAI)
+				//if (Options::traceAI)
 				//{
 				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
-				// }
+				//}
 				return;
 			}
 		}
@@ -2938,10 +2949,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
-				// if (Options::traceAI)
+				//if (Options::traceAI)
 				//{
 				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
-				// }
+				//}
 				return;
 			}
 		}
