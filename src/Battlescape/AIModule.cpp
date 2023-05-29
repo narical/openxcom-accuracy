@@ -3583,7 +3583,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			if (!sweepMode)
 			{
-				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon)
+				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos)
 				{
 					if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
 						smokePeakScore = 100 / walkToDist;
