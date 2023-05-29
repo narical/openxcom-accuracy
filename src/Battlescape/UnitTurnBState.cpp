@@ -96,15 +96,7 @@ void UnitTurnBState::init()
 			}
 			if (door == 0 || door == 1)
 			{
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE, true);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER, true);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL);
-				_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL, true);
-				_unit->setTurnsSinceSeen(0, FACTION_HOSTILE);
-				_unit->setTurnsSinceSeen(0, FACTION_PLAYER);
-				_unit->setTurnsSinceSeen(0, FACTION_NEUTRAL);
+				_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()));
 			}
 			if (door == 4)
 			{

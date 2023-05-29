@@ -403,15 +403,7 @@ void ProjectileFlyBState::init()
 		_parent->getMap()->setCursorType(CT_NONE);
 		_parent->getMap()->getCamera()->stopMouseScrolling();
 		_parent->getMap()->disableObstacles();
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE);
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_HOSTILE, true);
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER);
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_PLAYER, true);
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL);
-		_unit->setTileLastSpotted(_parent->getSave()->getTileIndex(_unit->getPosition()), FACTION_NEUTRAL, true);
-		_unit->setTurnsSinceSeen(0, FACTION_HOSTILE);
-		_unit->setTurnsSinceSeen(0, FACTION_PLAYER);
-		_unit->setTurnsSinceSeen(0, FACTION_NEUTRAL);
+		_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()));
 	}
 	else if (isPlayer && (_targetVoxel.z >= 0 || forceEnableObstacles))
 	{
