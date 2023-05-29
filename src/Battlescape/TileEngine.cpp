@@ -5037,6 +5037,20 @@ void TileEngine::itemDrop(Tile *t, BattleItem *item, bool updateLight)
 	if (item->getRules()->isFixed())
 		return;
 
+	BattleUnit* dropper = t->getUnit();
+	if (dropper)
+	{
+		dropper->updateEnemyKnowledge(_save->getTileIndex(p));
+		if (item->getRules()->getBattleType() == BT_GRENADE)
+		{
+			if (item->isFuseEnabled() && item->getRules()->getDamageType()->ResistType != DT_NONE)
+			{
+				int radius = item->getRules()->getExplosionRadius({BA_THROW, dropper, item, item});
+				_save->getTileEngine()->setDangerZone(p, radius, dropper);
+			}
+		}
+	}
+
 	if (_save->getSide() != FACTION_PLAYER)
 	{
 		item->setTurnFlag(true);
@@ -5124,6 +5138,20 @@ void TileEngine::itemMoveInventory(Tile *t, BattleUnit *unit, BattleItem *item, 
 	{
 		if (slot == _inventorySlotGround)
 		{
+			BattleUnit* dropper = t->getUnit();
+			Position p = t->getPosition();
+			if (dropper)
+			{
+				dropper->updateEnemyKnowledge(_save->getTileIndex(p));
+				if (item->getRules()->getBattleType() == BT_GRENADE)
+				{
+					if (item->isFuseEnabled() && item->getRules()->getDamageType()->ResistType != DT_NONE)
+					{
+						int radius = item->getRules()->getExplosionRadius({BA_THROW, dropper, item, item});
+						_save->getTileEngine()->setDangerZone(p, radius, dropper);
+					}
+				}
+			}
 			item->moveToOwner(nullptr);
 			t->addItem(item, slot);
 			if (item->getUnit() && item->getUnit()->getStatus() == STATUS_UNCONSCIOUS)
@@ -5912,21 +5940,21 @@ void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttac
 	}
 }
 
-bool TileEngine::isNextToDoor(Tile* tile)
+bool TileEngine::isNextToDoor(Tile* tile, bool flipDoor)
 {
 	if (tile == NULL)
 		return false;
-	if (tile->isDoor(O_NORTHWALL) || tile->isDoor(O_WESTWALL) || tile->isUfoDoor(O_NORTHWALL) || tile->isUfoDoor(O_WESTWALL))
+	if (tile->isDoor(O_NORTHWALL) || tile->isDoor(O_WESTWALL) || ((tile->isUfoDoor(O_NORTHWALL) || tile->isUfoDoor(O_WESTWALL)) && !flipDoor) )
 		return true;
 	Position neighbourSouth = tile->getPosition();
 	neighbourSouth += Position(0, 1, 0);
 	Tile* tileSouth = _save->getTile(neighbourSouth);
-	if (tileSouth != NULL && (tileSouth->isDoor(O_NORTHWALL) || tileSouth->isUfoDoor(O_NORTHWALL)))
+	if (tileSouth != NULL && (tileSouth->isDoor(O_NORTHWALL) || tileSouth->isUfoDoor(O_NORTHWALL) && !flipDoor))
 		return true;
 	Position neighbourEast = tile->getPosition();
 	neighbourEast += Position(1, 0, 0);
 	Tile *tileEast = _save->getTile(neighbourEast);
-	if (tileEast != NULL && (tileEast->isDoor(O_WESTWALL) || tileEast->isUfoDoor(O_WESTWALL)))
+	if (tileEast != NULL && (tileEast->isDoor(O_WESTWALL) || tileEast->isUfoDoor(O_WESTWALL) && !flipDoor))
 		return true;
 	return false;
 }

@@ -274,7 +274,7 @@ public:
 	void updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos);
 
 	/// Checks if a tile either has a door is next to a door
-	bool isNextToDoor(Tile *tile);
+	bool isNextToDoor(Tile *tile, bool flipDoor = false);
 	/// Checks if any tiles around this tile are next to a door
 	bool isNearDoor(Tile* tile);
 	/// Returns a vector of tiles that would be visible from a specific location
