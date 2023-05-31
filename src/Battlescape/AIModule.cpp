@@ -4024,7 +4024,7 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	return _aggroTarget != 0;
 }
 
-int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *actor)
+int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *actor, bool forceExactPosition)
 {
 	float closestDistToTarget = 3;
 	int tuCostToClosestNode = 10000;
@@ -4040,6 +4040,8 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 		if (pos.z != pn->getPosition().z)
 			continue;
 		if (!posTile->hasNoFloor() && tile->hasNoFloor() && actor->getMovementType() != MT_FLY)
+			continue;
+		if (forceExactPosition)
 			continue;
 		float currDist = Position::distance(pos, pn->getPosition());
 		if (currDist < closestDistToTarget)
@@ -4482,6 +4484,44 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
 			}
 		}
+		// Now let's check all tiles in the radius of 2 around myself and the target
+		std::vector<Position> attackPositions;
+		for (int x = -2; x <= 2; ++x)
+		{
+			for (int y = -2; y <= 2; ++y)
+			{
+				if (x != 0 || y != 0)
+				{
+					Position attPos = originPosition + Position(x, y, 0);
+					if (_unit->getTimeUnits() - testAction.Time - tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) > 0)
+						attackPositions.push_back(attPos);
+					attPos = _attackAction.target + Position(x, y, 0);
+					if (_unit->getTimeUnits() - testAction.Time - tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) > 0)
+					{
+						if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
+							attackPositions.push_back(attPos);
+					}
+				}
+			}
+		}
+		for (Position simPos : attackPositions)
+		{
+			Tile* simulationTile = _save->getTile(simPos);
+			for (auto& j : attackOptions)
+			{
+				testAction.type = j;
+				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile);
+
+				if (newScore > score && simPos != _unit->getPosition())
+				{
+					score = newScore;
+					chosenBattleAction.type = BA_WALK;
+					chosenBattleAction.target = simPos;
+					chosenBattleAction.weapon = _attackAction.weapon;
+					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
+				}
+			}
+		}
 	}
 	_attackAction = chosenBattleAction;
 	return score;
@@ -4519,7 +4559,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 
 	if (simulationTile)
 	{
-		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes);
+		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true);
 		if (!isPathToPositionSave(simulationTile->getPosition()) || simulationTile->getDangerous() || simulationTile->getFire())
 			dangerMod /= 2;
 		if (!isPathToPositionSave(simulationTile->getPosition(), true))
@@ -4594,7 +4634,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
-	tuTotal -= getTurnCostTowards(action->target);
+	tuTotal -= getTurnCostTowards(action->target, originPosition);
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
 	if (action->type == BA_THROW && _grenade && action->weapon == _unit->getGrenadeFromBelt())
@@ -4640,7 +4680,17 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 	}
 	else
 	{
-		relevantArmor = target->getArmor()->getFrontArmor();
+		UnitSide side = getSideFacingToPosition(target, originPosition);
+		if (side == SIDE_FRONT || side == SIDE_RIGHT || side == SIDE_LEFT || side == SIDE_REAR || side == SIDE_UNDER)
+			relevantArmor = target->getArmor()->getArmor(side);
+		else if (side == SIDE_LEFT_FRONT)
+			relevantArmor = (target->getArmor()->getArmor(SIDE_LEFT) + target->getArmor()->getArmor(SIDE_FRONT)) / 2.0;
+		else if (side == SIDE_RIGHT_FRONT)
+			relevantArmor = (target->getArmor()->getArmor(SIDE_RIGHT) + target->getArmor()->getArmor(SIDE_FRONT)) / 2.0;
+		else if (side == SIDE_LEFT_REAR)
+			relevantArmor = (target->getArmor()->getArmor(SIDE_LEFT) + target->getArmor()->getArmor(SIDE_REAR)) / 2.0;
+		else if (side == SIDE_RIGHT_REAR)
+			relevantArmor = (target->getArmor()->getArmor(SIDE_RIGHT) + target->getArmor()->getArmor(SIDE_REAR)) / 2.0;
 	}
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
 	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
@@ -4660,9 +4710,14 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		return 0;
 
 	accuracy /= 100.0;
-	if (accuracy > 0)
-		accuracy += std::max(1 - accuracy, 0.0f) / distance;
-	accuracy = std::min(1.0f, accuracy);
+
+	// Apply a modifier for higher/lower hit-chance when closer/further from the target. But not for melee-attacks.
+	if (action->type != BA_HIT)
+	{
+		if (accuracy > 0)
+			accuracy += std::max(1 - accuracy, 0.0f) / distance;
+		accuracy = std::min(1.0f, accuracy);
+	}
 
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), simulationTile);
 	Position targetPosition;
@@ -4877,14 +4932,20 @@ bool AIModule::clearSight(Position pos, Position target)
  * @param target Positon to consider how many TUs it takes to turn towards
  * @return amount of TUs required to turn in that direction
  */
-int AIModule::getTurnCostTowards(Position target)
+int AIModule::getTurnCostTowards(Position target, Position from)
 {
 	int currDir = _unit->getFaceDirection();
-	int wantDir = _save->getTileEngine()->getDirectionTo(_unit->getPosition(), target);
+	int wantDir = _save->getTileEngine()->getDirectionTo(from, target);
 	int turnSteps = std::abs(currDir - wantDir);
 	if (turnSteps > 4)
 		turnSteps = 8 - turnSteps;
 	return turnSteps *= _unit->getArmor()->getTurnCost();
+}
+
+int AIModule::getTurnCostTowards(Position target)
+{
+	Position from = _unit->getPosition();
+	return getTurnCostTowards(target, from);
 }
 
 /**
@@ -6040,5 +6101,35 @@ float AIModule::grenadeRiddingUrgency()
 	}
 	return 1;
 }
+
+UnitSide AIModule::getSideFacingToPosition(BattleUnit* unit, Position pos)
+{
+	if (unit->isOut())
+		return SIDE_UNDER;
+
+	int direction = unit->getDirection();
+	int directionTo = _save->getTileEngine()->getDirectionTo(unit->getPosition(), pos);
+	int relativeDirection = (directionTo - direction + 8) % 8;
+
+	if (relativeDirection == 0)
+		return SIDE_FRONT;
+	else if (relativeDirection == 1)
+		return SIDE_LEFT_FRONT;
+	else if (relativeDirection == 2)
+		return SIDE_LEFT;
+	else if (relativeDirection == 3)
+		return SIDE_LEFT_REAR;
+	else if (relativeDirection == 4)
+		return SIDE_REAR;
+	else if (relativeDirection == 5)
+		return SIDE_RIGHT_REAR;
+	else if (relativeDirection == 6)
+		return SIDE_RIGHT;
+	else if (relativeDirection == 7)
+		return SIDE_RIGHT_FRONT;
+
+	return SIDE_UNDER;
+}
+
 
 }

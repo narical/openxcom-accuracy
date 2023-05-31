@@ -153,7 +153,7 @@ public:
 	/// Like selectSpottedUnitForSniper but works for everyone
 	bool brutalSelectSpottedUnitForSniper();
 	/// look up in _allPathFindingNodes how many time-units we need to get to a specific position
-	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* actor = NULL);
+	int tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit* actor = NULL, bool forceExactPosition = false);
 	/// find the cloest Position to our target we can reach while reserving for a BattleAction
 	Position furthestToGoTowards(Position target, BattleActionCost reserve, const std::vector<PathfindingNode *> nodeVector, bool encircleTileMode = false, Tile *encircleTile = NULL);
 	/// find the closest Position that isn't our current position which is on the way to a target
@@ -173,6 +173,8 @@ public:
 	/// checks whether there is clear sight between two tile-positions
 	bool clearSight(Position pos, Position target);
 	/// how many time-units would it take to turn to a specific target
+	int getTurnCostTowards(Position target, Position from);
+	/// overload without from
 	int getTurnCostTowards(Position target);
 	/// Using weapons like the blaster but actually hitting what we want while avoiding to mow down our allies
 	void brutalBlaster();
@@ -238,6 +240,8 @@ public:
 	std::map<Position, int, PositionComparator> getSmokeFearMap();
 	/// returns how urgent it is to get rid of a grenade
 	float grenadeRiddingUrgency();
+	/// returns which side of the unit is facing the given position
+	UnitSide getSideFacingToPosition(BattleUnit* unit, Position pos);
 };
 
 }
