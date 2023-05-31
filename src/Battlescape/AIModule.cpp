@@ -4029,6 +4029,8 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 	float closestDistToTarget = 3;
 	int tuCostToClosestNode = 10000;
 	Tile *posTile = _save->getTile(pos);
+	if (!posTile)
+		return tuCostToClosestNode;
 	bool isAtDoor = _save->getTileEngine()->isNextToDoor(posTile);
 	if (actor == NULL)
 		actor = _unit;
@@ -4762,15 +4764,15 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			}
 		}
 	}
-	if (_traceAI)
-	{
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
-					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
-					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
-					  << " from: " << originPosition << " to: "<<action->target
-					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
-					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod;
-	}
+	//if (_traceAI)
+	//{
+	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
+	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
+	//				  << " from: " << originPosition << " to: "<<action->target
+	//				  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
+	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod;
+	//}
 	return damage * accuracy * numberOfShots * dangerMod * explosionMod;
 }
 
