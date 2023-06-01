@@ -2996,7 +2996,6 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool paranoidPeeking = false;
 	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
 	if (_unit->getHealth() - _unit->getFatalWounds() * 3 <= 0)
 		sweepMode = true;
@@ -3033,7 +3032,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!_unit->isCheatOnMovement() && !visibleToAnyFriend(target))
 		{
 			turnsLastSeen = target->getTurnsSinceSeen(_unit->getFaction());
-			turnsLastSeen = std::min(_save->getTurn(), turnsLastSeen);
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
 			Tile* targetTile = _save->getTile(targetPosition);
 			bool tileChecked = false;
@@ -3043,13 +3041,13 @@ void AIModule::brutalThink(BattleAction* action)
 				tileChecked = true;
 			else
 			{
-				float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
 				for (BattleUnit* ally : *(_save->getUnits()))
 				{
 					if (ally->isOut())
 						continue;
 					if (ally->getFaction() != _unit->getFaction())
 						continue;
+					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
 					if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && Position::distance(targetPosition, ally->getPosition()) <= minViewDistance)
 					{
 						tileChecked = true;
@@ -3083,26 +3081,10 @@ void AIModule::brutalThink(BattleAction* action)
 			if (targetTile)
 			{
 				bool tileChecked = false;
-				if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && targetTile->getSmoke() == 0)
+				if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target))
 					tileChecked = true;
 				else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
 					tileChecked = true;
-				else
-				{
-					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
-					for (BattleUnit* ally : *(_save->getUnits()))
-					{
-						if (ally->isOut())
-							continue;
-						if (ally->getFaction() != _unit->getFaction())
-							continue;
-						if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && Position::distance(targetPosition, ally->getPosition()) <= minViewDistance)
-						{
-							tileChecked = true;
-							break;
-						}
-					}
-				}
 				if (_traceAI)
 					Log(LOG_INFO) << "Clearing blind-fire-target for " << target->getPosition() << " previously assumed to be at " << blindFirePosition << " checked: " << tileChecked << " target-tile last explored: " << targetTile->getLastExplored(_unit->getFaction()) << " current turn: " << _save->getTurn() << " smoke: " << targetTile->getSmoke() << " turns since seen: " << target->getTurnsSinceSeen(_unit->getFaction());
 				if (tileChecked)
@@ -3124,12 +3106,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (_unit->isCheatOnMovement())
 			LoFCheckUnitForPath = target;
 		int currentWalkPath = tuCostToReachPosition(targetPosition, _allPathFindingNodes) + turnsLastSeen * getMaxTU(_unit);
-		if (tuCostToReachPosition(targetPosition, _allPathFindingNodes) < turnsLastSeen * getMaxTU(target))
-			paranoidPeeking = true;
-		if (_traceAI)
-		{
-			Log(LOG_INFO) << target->getId() << " could have moved " << turnsLastSeen * getMaxTU(target) << " / " << tuCostToReachPosition(targetPosition, _allPathFindingNodes);
-		}
 		Position posUnitCouldReach = closestPositionEnemyCouldReach(target);
 		float distToPosUnitCouldReach = Position::distance(myPos, posUnitCouldReach);
 		if (distToPosUnitCouldReach < closestDistanceofFurthestPosition)
@@ -3625,13 +3601,8 @@ void AIModule::brutalThink(BattleAction* action)
 					if (hasTileSight(pos, targetPosition) && Position::distance(pos, targetPosition) <= _save->getMod()->getMaxViewDistance())
 						directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
-				if (!_unit->isCheatOnMovement()) // No need for indirect peaking while cheating since I already know where the enemy is
-				{
-					if (paranoidPeeking && !enemyReachable.empty() && enoughTUToPeak && tile->getLastExplored(_unit->getFaction()) < _save->getTurn())
-						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					else if (hasTileSight(pos, peakPosition) && shouldPeak)
-						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-				}
+				if (hasTileSight(pos, peakPosition) && shouldPeak)
+					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
 			fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
