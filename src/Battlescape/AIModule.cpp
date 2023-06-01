@@ -4238,24 +4238,28 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 				for (int x = -1; x <= 1; ++x)
 					for (int y = -1; y <= 1; ++y)
 					{
-						Position posToCheck = tile->getPosition();
-						posToCheck.x += x;
-						posToCheck.y += y;
-						Tile *tileToCheck = _save->getTile(posToCheck);
-						if (tileToCheck)
-						{
-							for (BattleItem *item : *(tileToCheck->getInventory()))
+						for (int x2 = 0; x2 < _unit->getArmor()->getSize(); ++x2)
+							for (int y2 = 0; y2 < _unit->getArmor()->getSize(); ++y2)
 							{
-								if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
-									if (tileToCheck != tile || tileToCheck == tile)
-										if (_save->getTileEngine()->horizontalBlockage(tileToCheck, tile, DT_HE) >= item->getRules()->getPower())
-											saveForProxies = true;
-										else
-											saveForProxies = false;
-									else
-										saveForProxies = false;
+								Position posToCheck = tile->getPosition();
+								posToCheck.x += x + x2;
+								posToCheck.y += y + y2;
+								Tile* tileToCheck = _save->getTile(posToCheck);
+								if (tileToCheck)
+								{
+									for (BattleItem* item : *(tileToCheck->getInventory()))
+									{
+										if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
+											if (tileToCheck != tile || tileToCheck == tile)
+												if (_save->getTileEngine()->horizontalBlockage(tileToCheck, tile, DT_HE) >= item->getRules()->getPower())
+													saveForProxies = true;
+												else
+													saveForProxies = false;
+											else
+												saveForProxies = false;
+									}
+								}
 							}
-						}
 					}
 			}
 			else
