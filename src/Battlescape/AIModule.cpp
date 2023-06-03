@@ -3331,7 +3331,7 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (_blaster)
 		sweepMode = false;
-	if (!shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
+	if (!_unit->isCheatOnMovement() && !shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	if (_traceAI)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " amInAnyonesFOW: " << amInAnyonesFOW << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
