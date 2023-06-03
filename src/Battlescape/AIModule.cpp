@@ -3321,7 +3321,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float tuToSaveForHide = 0.5;
 	bool shouldSaveEnergy = _unit->getEnergy() + getEnergyRecovery(_unit) < _unit->getBaseStats()->stamina;
 	bool saveDistance = true;
-	for (auto reachable : enemyReachable)
+	for (auto& reachable : enemyReachable)
 	{
 		if (hasTileSight(myPos, reachable.first))
 		{
