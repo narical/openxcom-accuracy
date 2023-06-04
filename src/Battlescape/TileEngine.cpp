@@ -4090,12 +4090,12 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 				calculateLighting(LL_FIRE, doorCentre, doorsOpened, true);
 				// Update FOV through the doorway.
 				calculateFOV(doorCentre, doorsOpened, true, true);
+				resetVisibilityCache();
 			}
 			else return 4;
 		}
 		else return 5;
 	}
-	resetVisibilityCache();
 	return door;
 }
 
@@ -4171,7 +4171,8 @@ int TileEngine::closeUfoDoors()
 		}
 		doorsclosed += _save->getTile(i)->closeUfoDoor();
 	}
-	resetVisibilityCache();
+	if(doorsclosed > 0)
+		resetVisibilityCache();
 	return doorsclosed;
 }
 
