@@ -3283,11 +3283,6 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "I'm mind-controlled.";
 	}
 
-	bool dissolveBlockage = false;
-	if (shortestWalkingPath >= 10000 && _unit->getArmor()->getSize() > 1)
-	{
-		dissolveBlockage = true;
-	}
 	bool peakMode = false;
 
 	if (_traceAI)
@@ -3559,9 +3554,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes);
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			float discoverThreat = 0;
-			if (dissolveBlockage)
-				greatCoverScore = closestEnemyDist;
-			else if (!sweepMode)
+			if (!sweepMode)
 			{
 				bool inReachable = false;
 				for (auto& reachable : enemyReachable)
@@ -3772,15 +3765,15 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		travelTarget = bestAttackPosition;
 	}
-	else if (bestSmokePeakScore > 0 && !dissolveBlockage && _save->getTileEngine()->visibleTilesFrom(_unit, bestSmokePeakPosition, peakDirection, true).size() > 0)
+	else if (bestSmokePeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestSmokePeakPosition, peakDirection, true).size() > 0)
 	{
 		travelTarget = bestSmokePeakPosition;
 	}
-	else if (bestDirectPeakScore > 0 && !dissolveBlockage && _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, peakDirection, true).size() > 0)
+	else if (bestDirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, peakDirection, true).size() > 0)
 	{
 		travelTarget = bestDirectPeakPosition;
 	}
-	else if (bestIndirectPeakScore > 0 && !dissolveBlockage && _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, peakDirection, true).size() > 0)
+	else if (bestIndirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, peakDirection, true).size() > 0)
 	{
 		travelTarget = bestIndirectPeakPosition;
 	}
@@ -6014,16 +6007,23 @@ bool AIModule::hasTileSight(Position from, Position to)
 			return true;
 	}
 	bool result = true;
-	std::vector<Position> _trajectory;
-	_trajectory.clear();
+	std::vector<Position> trajectory;
+	trajectory.clear();
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		from.z += 1;
 	tile = _save->getTile(to);
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		to.z += 1;
-	if (_save->getTileEngine()->calculateLineTile(from, to, _trajectory) > 0)
+	if (_save->getTileEngine()->calculateLineTile(from, to, trajectory) > 0)
 		result = false;
 	_save->getTileEngine()->setVisibilityCache(from, to, result);
+	// Set visibility cache for each position in the trajectory
+	for (const Position& position : trajectory)
+	{
+		_save->getTileEngine()->setVisibilityCache(from, position, result);
+		if (result)
+			_save->getTileEngine()->setVisibilityCache(position, to, result);
+	}
 	return result;
 }
 
