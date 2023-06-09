@@ -579,9 +579,406 @@ void ScriptWorkerBase::log_buffer_flush(ProgPos& p)
 	}
 }
 
+
+////////////////////////////////////////////////////////////
+//				ParserWriter helpers
+////////////////////////////////////////////////////////////
+
+/**
+ * Token type
+ */
+enum TokenEnum
+{
+	TokenNone,
+	TokenInvalid,
+	TokenColon,
+	TokenSemicolon,
+	TokenSymbol,
+	TokenNumber,
+	TokenText,
+};
+
+/**
+ * Struct represents position of token in input string
+ */
+class SelectedToken : public ScriptRef
+{
+	/// type of this token.
+	TokenEnum _type;
+
+public:
+
+	/// Default constructor.
+	SelectedToken() : ScriptRef{ }, _type{ TokenNone }
+	{
+
+	}
+
+	/// Constructor from range.
+	SelectedToken(TokenEnum type, ScriptRef range) : ScriptRef{ range }, _type{ type }
+	{
+
+	}
+
+	/// Get token type.
+	TokenEnum getType() const
+	{
+		return _type;
+	}
+
+	/// Convert token to script ref.
+	ScriptRefData parse(const ParserWriter& ph) const
+	{
+		if (getType() == TokenNumber)
+		{
+			auto str = toString();
+			int value = 0;
+			size_t offset = 0;
+			std::stringstream ss(str);
+			if (str[0] == '-' || str[0] == '+')
+				offset = 1;
+			if (str.size() > 2 + offset && str[offset] == '0' && (str[offset + 1] == 'x' || str[offset + 1] == 'X'))
+				ss >> std::hex;
+			if ((ss >> value))
+				return ScriptRefData{ *this, ArgInt, value };
+		}
+		else if (getType() == TokenSymbol)
+		{
+			auto ref = ph.getReferece(*this);
+			if (ref)
+				return ref;
+		}
+		else if (getType() == TokenText)
+		{
+			return ScriptRefData{ *this, ArgText, };
+		}
+		return ScriptRefData{ *this, ArgInvalid };
+	}
+
+};
+
+class ScriptRefTokens : public ScriptRef
+{
+public:
+	/// Using default constructors.
+	using ScriptRef::ScriptRef;
+
+	/// Extract new token from current object.
+	SelectedToken getNextToken(TokenEnum excepted = TokenNone);
+};
+
+
+class ScriptRefOperation
+{
+public:
+	ScriptRange<ScriptProcData> procList;
+	ScriptRef procNamePrefix;
+	ScriptRef procName;
+
+	ScriptRefData argRef;
+	ScriptRef argName;
+
+	/// Check if whole object is correct
+	explicit operator bool() const
+	{
+		return
+			(procName && procList) && // have function name and have related overload set
+			(!argName || (argRef && procNamePrefix)) // have optional argument embedded in original operation name
+		;
+	}
+
+	bool haveProc() const
+	{
+		return !!procName;
+	}
+
+	bool haveArg() const
+	{
+		return !!argName;
+	}
+
+	std::string toStringProc() const
+	{
+		return procNamePrefix.toString() + procName.toString();
+	}
+
+	std::string toStringArg() const
+	{
+		return argName.toString();
+	}
+};
+
+
+/**
+ * Function extracting token from range
+ * @param excepted what token type we expecting now
+ * @return extracted token
+ */
+SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
+{
+	//groups of different types of ASCII characters
+	using CharClasses = Uint8;
+	constexpr CharClasses CC_none = 0x1;
+	constexpr CharClasses CC_spec = 0x2;
+	constexpr CharClasses CC_digit = 0x4;
+	constexpr CharClasses CC_digitHex = 0x8;
+	constexpr CharClasses CC_charRest = 0x10;
+	constexpr CharClasses CC_digitSign = 0x20;
+	constexpr CharClasses CC_digitHexX = 0x40;
+	constexpr CharClasses CC_quote = 0x80;
+
+	constexpr std::array<CharClasses, 256> charDecoder = (
+		[]
+		{
+			std::array<CharClasses, 256> r = { };
+			for (int i = 0; i < 256; ++i)
+			{
+				if (i == '#' || i == ' ' || i == '\r' || i == '\n' || i == '\t')	r[i] |= CC_none;
+				if (i == ':' || i == ';')	r[i] |= CC_spec;
+
+				if (i == '+' || i == '-')	r[i] |= CC_digitSign;
+				if (i >= '0' && i <= '9')	r[i] |= CC_digit;
+				if (i >= 'A' && i <= 'F')	r[i] |= CC_digitHex;
+				if (i >= 'a' && i <= 'f')	r[i] |= CC_digitHex;
+				if (i == 'x' || i == 'X')	r[i] |= CC_digitHexX;
+
+				if (i >= 'A' && i <= 'Z')	r[i] |= CC_charRest;
+				if (i >= 'a' && i <= 'z')	r[i] |= CC_charRest;
+				if (i == '_' || i == '.')	r[i] |= CC_charRest;
+
+				if (i == '"')				r[i] |= CC_quote;
+			}
+			return r;
+		}
+	)();
+
+	struct NextSymbol
+	{
+		char c;
+		CharClasses decode;
+
+		/// Is valid symbol
+		operator bool() const { return c; }
+
+		/// Check type of symbol
+		bool is(CharClasses t) const { return decode & t; }
+
+		/// Is this symbol starting next token?
+		bool isStartOfNextToken() const { return is(CC_spec | CC_none); }
+	};
+
+	auto peekCharacter = [&]() -> NextSymbol const
+	{
+		if (_begin != _end)
+		{
+			const auto c = *_begin;
+			return NextSymbol{ c, charDecoder[(Uint8)c] };
+		}
+		else
+		{
+			return NextSymbol{ 0, 0 };
+		}
+	};
+
+	auto readCharacter = [&]() -> NextSymbol const
+	{
+		auto curr = peekCharacter();
+		//it will stop on `\0` character
+		if (curr)
+		{
+			++_begin;
+		}
+		return curr;
+	};
+
+	auto backCharacter = [&]()
+	{
+		--_begin;
+	};
+
+	//find first no whitespace character.
+	if (peekCharacter().is(CC_none))
+	{
+		while(const auto next = readCharacter())
+		{
+			if (next.c == '#')
+			{
+				while(const auto comment = readCharacter())
+				{
+					if (comment.c == '\n')
+					{
+						break;
+					}
+				}
+				continue;
+			}
+			else if (next.is(CC_none))
+			{
+				continue;
+			}
+			else
+			{
+				//not empty character, put it back
+				backCharacter();
+				break;
+			}
+		}
+		if (!peekCharacter())
+		{
+			return SelectedToken{ };
+		}
+	}
+
+
+	//start of new token of unknown type
+	auto type = TokenInvalid;
+	auto begin = _begin;
+	const auto first = readCharacter();
+
+	//text like `"abcdef"`
+	if (first.is(CC_quote))
+	{
+		type = TokenText;
+		while (const auto next = readCharacter())
+		{
+			if (next.c == first.c)
+			{
+				break;
+			}
+			else if (next.c == '\\')
+			{
+				const auto escapedChar = readCharacter();
+				if (escapedChar.c == first.c)
+				{
+					continue;
+				}
+				else if (escapedChar.c == '\\')
+				{
+					continue;
+				}
+				else
+				{
+					type = TokenInvalid;
+					break;
+				}
+				continue;
+			}
+			else if (next.c == '\n')
+			{
+				type = TokenInvalid;
+				break;
+			}
+			else
+			{
+				//eat all other chars
+				continue;
+			}
+		}
+		if (!peekCharacter().isStartOfNextToken())
+		{
+			type = TokenInvalid;
+		}
+
+	}
+	//special symbol like `;` or `:`
+	else if (first.is(CC_spec))
+	{
+		if (first.c == ':')
+		{
+			type = excepted == TokenColon ? TokenColon : TokenInvalid;
+		}
+		else if (first.c == ';')
+		{
+			//semicolon wait for his turn, returning empty token
+			if (excepted != TokenSemicolon)
+			{
+				backCharacter();
+				type = TokenNone;
+			}
+			else
+			{
+				type = TokenSemicolon;
+			}
+		}
+		else
+		{
+			type = TokenInvalid;
+		}
+	}
+	//number like `0x1234` or `5432` or `+232`
+	else if (first.is(CC_digitSign | CC_digit))
+	{
+		auto firstDigit = first;
+		//sign
+		if (firstDigit.is(CC_digitSign))
+		{
+			firstDigit = readCharacter();
+		}
+		if (firstDigit.is(CC_digit))
+		{
+			const auto hex = firstDigit.c == '0' && peekCharacter().is(CC_digitHexX);
+			if (hex)
+			{
+				//eat `x`
+				readCharacter();
+			}
+			else
+			{
+				//at least we have already one digit
+				type = TokenNumber;
+			}
+
+			const CharClasses serachClass = hex ? (CC_digitHex | CC_digit) : CC_digit;
+
+			while (const auto next = readCharacter())
+			{
+				//end of symbol
+				if (next.isStartOfNextToken())
+				{
+					backCharacter();
+					break;
+				}
+				else if (next.is(serachClass))
+				{
+					type = TokenNumber;
+				}
+				else
+				{
+					type = TokenInvalid;
+					break;
+				}
+			}
+		}
+	}
+	//symbol like `abcd` or `p12345`
+	else if (first.is(CC_charRest))
+	{
+		type = TokenSymbol;
+		while (const auto next = readCharacter())
+		{
+			//end of symbol
+			if (next.isStartOfNextToken())
+			{
+				backCharacter();
+				break;
+			}
+			else if (!next.is(CC_charRest | CC_digit))
+			{
+				type = TokenInvalid;
+				break;
+			}
+		}
+
+	}
+	auto end = _begin;
+	return SelectedToken{ type, ScriptRef{ begin, end } };
+}
+
+
 ////////////////////////////////////////////////////////////
 //					Helper functions
 ////////////////////////////////////////////////////////////
+
 
 namespace
 {
@@ -764,6 +1161,68 @@ std::tuple<int, const ScriptProcData*> findBestOverloadProc(const ScriptRange<Sc
 	}
 
 	return std::make_tuple(bestSorce, bestValue);
+}
+
+ScriptRefOperation findOperationAndArg(const ParserWriter& ph, ScriptRef op)
+{
+	ScriptRefOperation result;
+
+	result.procName = op;
+	result.procList = ph.parser.getProc(op);
+	if (!result)
+	{
+		auto first_dot = op.find('.');
+		if (first_dot == std::string::npos)
+		{
+			return result;
+		}
+
+		result.argName = op.substr(0, first_dot);
+		result.argRef = ph.getReferece(result.argName);
+		if (!result.argRef)
+		{
+			return result;
+		}
+
+		auto name = ph.parser.getTypeName(result.argRef.type);
+		if (result.argRef.type < ArgMax || !name)
+		{
+			return result;
+		}
+
+		result.procNamePrefix = name;
+		result.procName = op.substr(first_dot);
+		result.procList = ph.parser.getProc(result.procNamePrefix, result.procName);
+	}
+
+	return result;
+}
+
+void logErrorOnOperationArg(const ScriptRefOperation& op)
+{
+	if (op)
+	{
+		return;
+	}
+
+	if (op.haveArg())
+	{
+		if (op.argRef)
+		{
+			if (op.procNamePrefix)
+			{
+				Log(LOG_ERROR) << "Unknown operation name '" << op.toStringProc() << "' for variable '" << op.toStringArg() << "'";
+			}
+			else
+			{
+				Log(LOG_ERROR) << "Unsupported type for variable '" << op.toStringArg() << "'";
+			}
+		}
+		else
+		{
+			Log(LOG_ERROR) << "Unknown variable name '" << op.toStringArg() << "'";
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -1708,366 +2167,8 @@ ScriptRef addString(std::vector<std::vector<char>>& list, const std::string& s)
 	return ref;
 }
 
-//groups of different types of ASCII characters
-using CharClasses = Uint8;
-constexpr CharClasses CC_none = 0x1;
-constexpr CharClasses CC_spec = 0x2;
-constexpr CharClasses CC_digit = 0x4;
-constexpr CharClasses CC_digitHex = 0x8;
-constexpr CharClasses CC_charRest = 0x10;
-constexpr CharClasses CC_digitSign = 0x20;
-constexpr CharClasses CC_digitHexX = 0x40;
-constexpr CharClasses CC_quote = 0x80;
-
-constexpr std::array<CharClasses, 256> charDecoderInit()
-{
-	std::array<CharClasses, 256> r = { };
-	for (int i = 0; i < 256; ++i)
-	{
-		if (i == '#' || i == ' ' || i == '\r' || i == '\n' || i == '\t')	r[i] |= CC_none;
-		if (i == ':' || i == ';')	r[i] |= CC_spec;
-
-		if (i == '+' || i == '-')	r[i] |= CC_digitSign;
-		if (i >= '0' && i <= '9')	r[i] |= CC_digit;
-		if (i >= 'A' && i <= 'F')	r[i] |= CC_digitHex;
-		if (i >= 'a' && i <= 'f')	r[i] |= CC_digitHex;
-		if (i == 'x' || i == 'X')	r[i] |= CC_digitHexX;
-
-		if (i >= 'A' && i <= 'Z')	r[i] |= CC_charRest;
-		if (i >= 'a' && i <= 'z')	r[i] |= CC_charRest;
-		if (i == '_' || i == '.')	r[i] |= CC_charRest;
-
-		if (i == '"')				r[i] |= CC_quote;
-	}
-	return r;
-}
-
-CharClasses getCharClassOf(char c)
-{
-	//array storing data about every ASCII character
-	constexpr static std::array<CharClasses, 256> charDecoder = charDecoderInit();
-	return charDecoder[(Uint8)c];
-}
-
-
 } //namespace
 
-////////////////////////////////////////////////////////////
-//				ParserWriter helpers
-////////////////////////////////////////////////////////////
-
-/**
- * Token type
- */
-enum TokenEnum
-{
-	TokenNone,
-	TokenInvalid,
-	TokenColon,
-	TokenSemicolon,
-	TokenSymbol,
-	TokenNumber,
-	TokenText,
-};
-
-/**
- * Struct represents position of token in input string
- */
-class SelectedToken : public ScriptRef
-{
-	/// type of this token.
-	TokenEnum _type;
-
-public:
-
-	/// Default constructor.
-	SelectedToken() : ScriptRef{ }, _type{ TokenNone }
-	{
-
-	}
-
-	/// Constructor from range.
-	SelectedToken(TokenEnum type, ScriptRef range) : ScriptRef{ range }, _type{ type }
-	{
-
-	}
-
-	/// Get token type.
-	TokenEnum getType() const
-	{
-		return _type;
-	}
-
-	/// Convert token to script ref.
-	ScriptRefData parse(const ParserWriter& ph) const
-	{
-		if (getType() == TokenNumber)
-		{
-			auto str = toString();
-			int value = 0;
-			size_t offset = 0;
-			std::stringstream ss(str);
-			if (str[0] == '-' || str[0] == '+')
-				offset = 1;
-			if (str.size() > 2 + offset && str[offset] == '0' && (str[offset + 1] == 'x' || str[offset + 1] == 'X'))
-				ss >> std::hex;
-			if ((ss >> value))
-				return ScriptRefData{ *this, ArgInt, value };
-		}
-		else if (getType() == TokenSymbol)
-		{
-			auto ref = ph.getReferece(*this);
-			if (ref)
-				return ref;
-		}
-		else if (getType() == TokenText)
-		{
-			return ScriptRefData{ *this, ArgText, };
-		}
-		return ScriptRefData{ *this, ArgInvalid };
-	}
-
-};
-
-class ScriptRefTokens : public ScriptRef
-{
-public:
-	/// Using default constructors.
-	using ScriptRef::ScriptRef;
-
-	/// Extract new token from current object.
-	SelectedToken getNextToken(TokenEnum excepted = TokenNone);
-};
-
-
-/**
- * Function extracting token from range
- * @param excepted what token type we expecting now
- * @return extracted token
- */
-SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
-{
-	struct NextSymbol
-	{
-		char c;
-		CharClasses decode;
-
-		/// Is valid symbol
-		operator bool() const { return c; }
-
-		/// Check type of symbol
-		bool is(CharClasses t) const { return decode & t; }
-
-		/// Is this symbol starting next token?
-		bool isStartOfNextToken() const { return is(CC_spec | CC_none); }
-	};
-
-	auto peekCharacter = [&]() -> NextSymbol const
-	{
-		if (_begin != _end)
-		{
-			const auto c = *_begin;
-			return NextSymbol{ c, getCharClassOf(c) };
-		}
-		else
-		{
-			return NextSymbol{ 0, 0 };
-		}
-	};
-
-	auto readCharacter = [&]() -> NextSymbol const
-	{
-		auto curr = peekCharacter();
-		//it will stop on `\0` character
-		if (curr)
-		{
-			++_begin;
-		}
-		return curr;
-	};
-
-	auto backCharacter = [&]()
-	{
-		--_begin;
-	};
-
-	//find first no whitespace character.
-	if (peekCharacter().is(CC_none))
-	{
-		while(const auto next = readCharacter())
-		{
-			if (next.c == '#')
-			{
-				while(const auto comment = readCharacter())
-				{
-					if (comment.c == '\n')
-					{
-						break;
-					}
-				}
-				continue;
-			}
-			else if (next.is(CC_none))
-			{
-				continue;
-			}
-			else
-			{
-				//not empty character, put it back
-				backCharacter();
-				break;
-			}
-		}
-		if (!peekCharacter())
-		{
-			return SelectedToken{ };
-		}
-	}
-
-
-	//start of new token of unknown type
-	auto type = TokenInvalid;
-	auto begin = _begin;
-	const auto first = readCharacter();
-
-	//text like `"abcdef"`
-	if (first.is(CC_quote))
-	{
-		type = TokenText;
-		while (const auto next = readCharacter())
-		{
-			if (next.c == first.c)
-			{
-				break;
-			}
-			else if (next.c == '\\')
-			{
-				const auto escapedChar = readCharacter();
-				if (escapedChar.c == first.c)
-				{
-					continue;
-				}
-				else if (escapedChar.c == '\\')
-				{
-					continue;
-				}
-				else
-				{
-					type = TokenInvalid;
-					break;
-				}
-				continue;
-			}
-			else if (next.c == '\n')
-			{
-				type = TokenInvalid;
-				break;
-			}
-			else
-			{
-				//eat all other chars
-				continue;
-			}
-		}
-		if (!peekCharacter().isStartOfNextToken())
-		{
-			type = TokenInvalid;
-		}
-
-	}
-	//special symbol like `;` or `:`
-	else if (first.is(CC_spec))
-	{
-		if (first.c == ':')
-		{
-			type = excepted == TokenColon ? TokenColon : TokenInvalid;
-		}
-		else if (first.c == ';')
-		{
-			//semicolon wait for his turn, returning empty token
-			if (excepted != TokenSemicolon)
-			{
-				backCharacter();
-				type = TokenNone;
-			}
-			else
-			{
-				type = TokenSemicolon;
-			}
-		}
-		else
-		{
-			type = TokenInvalid;
-		}
-	}
-	//number like `0x1234` or `5432` or `+232`
-	else if (first.is(CC_digitSign | CC_digit))
-	{
-		auto firstDigit = first;
-		//sign
-		if (firstDigit.is(CC_digitSign))
-		{
-			firstDigit = readCharacter();
-		}
-		if (firstDigit.is(CC_digit))
-		{
-			const auto hex = firstDigit.c == '0' && peekCharacter().is(CC_digitHexX);
-			if (hex)
-			{
-				//eat `x`
-				readCharacter();
-			}
-			else
-			{
-				//at least we have already one digit
-				type = TokenNumber;
-			}
-
-			const CharClasses serachClass = hex ? (CC_digitHex | CC_digit) : CC_digit;
-
-			while (const auto next = readCharacter())
-			{
-				//end of symbol
-				if (next.isStartOfNextToken())
-				{
-					backCharacter();
-					break;
-				}
-				else if (next.is(serachClass))
-				{
-					type = TokenNumber;
-				}
-				else
-				{
-					type = TokenInvalid;
-					break;
-				}
-			}
-		}
-	}
-	//symbol like `abcd` or `p12345`
-	else if (first.is(CC_charRest))
-	{
-		type = TokenSymbol;
-		while (const auto next = readCharacter())
-		{
-			//end of symbol
-			if (next.isStartOfNextToken())
-			{
-				backCharacter();
-				break;
-			}
-			else if (!next.is(CC_charRest | CC_digit))
-			{
-				type = TokenInvalid;
-				break;
-			}
-		}
-
-	}
-	auto end = _begin;
-	return SelectedToken{ type, ScriptRef{ begin, end } };
-}
 
 ////////////////////////////////////////////////////////////
 //					ParserWriter class
@@ -2878,51 +2979,23 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			args[0] = range.getNextToken();
 		}
 
-		// change form of `Reg.Function` to `Type.Function Reg`.
-		auto op_curr = getProc(op);
+		ScriptRefOperation op_curr = findOperationAndArg(help, op);
 		if (!op_curr)
 		{
-			auto first_dot = op.find('.');
-			if (first_dot == std::string::npos)
-			{
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
-				return false;
-			}
+			logErrorOnOperationArg(op_curr);
+			Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+		}
 
-			auto temp = op.substr(0, first_dot);
-			auto ref = help.getReferece(temp);
-			if (!ref)
-			{
-				Log(LOG_ERROR) << "Unknown variable name '" << temp.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
-				return false;
-			}
-
-			auto name = getTypeName(ref.type);
-			if (ref.type < ArgMax || !name)
-			{
-				Log(LOG_ERROR) << "Unsupported type for variable '" << ref.name.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
-				return false;
-			}
-
-			auto name_end = op.substr(first_dot);
-			op_curr = getProc(name, name_end);
-			if (!op_curr)
-			{
-				Log(LOG_ERROR) << "Unknown operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
-				return false;
-			}
-
-			// now we manage to find form `Type.Function Reg`
-
+		// change form of `Reg.Function` to `Type.Function Reg`.
+		if (op_curr.haveArg())
+		{
 			// we already loaded op_curr = "Reg.Function", args[0] = "X"
 			// then switch it to op_curr = "Type.Function", args[0] = "Reg", args[1] = "X"
 			args[1] = args[0];
-			args[0] = { TokenSymbol, temp };
+			args[0] = { TokenSymbol, op_curr.argName };
 		}
-		for (size_t i = (args[1] ? 2 : 1); i < ScriptMaxArg; ++i)
+
+		for (size_t i = (op_curr.haveArg() ? 2 : 1); i < ScriptMaxArg; ++i)
 			args[i] = range.getNextToken();
 		SelectedToken f = range.getNextToken(TokenSemicolon);
 
@@ -3010,7 +3083,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		}
 
 		// create normal proc call
-		if (parseOverloadProc(help, op_curr, argData, argData+i) == false)
+		if (parseOverloadProc(help, op_curr.procList, argData, argData+i) == false)
 		{
 			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
 			return false;
