@@ -2997,8 +2997,6 @@ void AIModule::brutalThink(BattleAction* action)
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
 	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
-	if (_unit->getHealth() - _unit->getFatalWounds() * 3 <= 0)
-		sweepMode = true;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	for (BattleUnit* target : *(_save->getUnits()))
@@ -3326,6 +3324,8 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (_blaster)
 		sweepMode = false;
+	if (_unit->getHealth() - _unit->getFatalWounds() * 3 <= _unit->getStunlevel())
+		sweepMode = true;
 	if (!_unit->isCheatOnMovement() && !shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	if (_traceAI)
