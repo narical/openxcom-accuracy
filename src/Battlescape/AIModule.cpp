@@ -3578,12 +3578,19 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 				discoverThreat = std::max(0.0f, discoverThreat);
-				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-					greatCoverScore = 100 / (walkToDist + discoverThreat);
-				else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-					goodCoverScore = 100 / (walkToDist + discoverThreat);
+				if (discoverThreat <= _unit->getTimeUnits() - pu->getTUCost(false).time)
+				{
+					if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
+						greatCoverScore = 100 / (walkToDist + discoverThreat);
+					else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
+						goodCoverScore = 100 / (walkToDist + discoverThreat);
+					else
+						okayCoverScore = 100 / (walkToDist + discoverThreat);
+				}
 				else
-					okayCoverScore = 100 / (walkToDist + discoverThreat);
+				{
+					fallbackScore = 100 / discoverThreat;
+				}
 			}
 			if (!sweepMode)
 			{
@@ -3597,7 +3604,8 @@ void AIModule::brutalThink(BattleAction* action)
 				if (hasTileSight(pos, peakPosition) && shouldPeak)
 					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
-			fallbackScore = 100 / walkToDist;
+			else
+				fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
 			goodCoverScore /= cuddleAvoidModifier;
 			okayCoverScore /= cuddleAvoidModifier;
@@ -3716,13 +3724,13 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			// if (_traceAI && _unit->getFaction() == FACTION_HOSTILE)
+			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
 			//	tile->setTUMarker(discoverThreat);
-			// }
+			//}
 		}
 		if (_traceAI)
 		{
@@ -4737,7 +4745,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 				{
 					return 0;
 				}
-				if (projectileMayHarmFriends(action->actor->getPosition(), target->getPosition()))
+				if (projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
 		}
@@ -4752,11 +4760,11 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			}
 			else
 			{
-				if (!clearSight(_unit->getPosition(), targetPosition) || !quickLineOfFire(_unit->getPosition(), target, true, true))
+				if (!clearSight(originPosition, targetPosition) || !quickLineOfFire(originPosition, target, true, true))
 				{
 					return 0;
 				}
-				if (projectileMayHarmFriends(action->actor->getPosition(), target->getPosition()))
+				if (projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
 		}
