@@ -1480,12 +1480,13 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 * @param eventPos The centre of the event which necessitated the FOV update. Used to optimize which tiles to update.
 * @param eventRadius The radius of a circle able to fully encompass the event, in tiles. Hence: 1 for a single tile event.
 */
-void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, const int eventRadius)
+void TileEngine::calculateTilesInFOV(BattleUnit* unit, const Position eventPos, const int eventRadius)
 {
 	bool useTurretDirection = false;
 	bool skipNarrowArcTest = false;
 	int direction;
-	if (Options::strafe && (unit->getTurretType() > -1)) {
+	if (Options::strafe && (unit->getTurretType() > -1))
+	{
 		direction = unit->getTurretDirection();
 		useTurretDirection = true;
 	}
@@ -1495,7 +1496,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	}
 	if (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection))
 	{
-		//The event wasn't meant for us and/or visible for us.
+		// The event wasn't meant for us and/or visible for us.
 		return;
 	}
 	else if (unit->isOut())
@@ -1506,78 +1507,58 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	Position posSelf = unit->getPosition();
 	if (setupEventVisibilitySector(posSelf, eventPos, eventRadius))
 	{
-		//Asked to do a full check. Or unit within event. Should update all.
+		// Asked to do a full check. Or unit within event. Should update all.
 		unit->clearVisibleTiles();
 		skipNarrowArcTest = true;
 	}
 
-	//Only recalculate bresenham lines to tiles that are at the event or further away.
+	// Only recalculate bresenham lines to tiles that are at the event or further away.
 	const int distanceSqrMin = skipNarrowArcTest ? 0 : std::max(Position::distance2dSq(posSelf, eventPos) - eventRadius * eventRadius, 0);
 
-	//Variables for finding the tiles to test based on the view direction.
+	// Variables for finding the tiles to test based on the view direction.
 	Position posTest;
 	std::vector<Position> _trajectory;
 	bool swap = (direction == 0 || direction == 4);
-	const int signX[8] = { +1, +1, +1, +1, -1, -1, -1, -1 };
-	const int signY[8] = { -1, -1, -1, +1, +1, +1, -1, -1 };
+	const int signX[8] = {+1, +1, +1, +1, -1, -1, -1, -1};
+	const int signY[8] = {-1, -1, -1, +1, +1, +1, -1, -1};
 	int y1, y2;
 
 	if ((unit->getHeight() + unit->getFloatHeight() + -_save->getTile(unit->getPosition())->getTerrainLevel()) >= 24 + 4)
 	{
-		Tile *tileAbove = _save->getTile(posSelf + Position(0, 0, 1));
+		Tile* tileAbove = _save->getTile(posSelf + Position(0, 0, 1));
 		if (tileAbove && tileAbove->hasNoFloor(0))
 		{
 			++posSelf.z;
 		}
 	}
-	//Test all tiles within view cone for visibility.
-	int maxDist = _save->getMapSizeX();
-	if (unit->getFaction() != FACTION_PLAYER)
-	{
-		if (Options::aiPerformanceOptimization)
-		{
-			int myUnits = 0;
-			for (BattleUnit *bu : *(_save->getUnits()))
-			{
-				if (bu->getFaction() == unit->getFaction() && !bu->isOut())
-					++myUnits;
-			}
-			float scaleFactor = (float)60 * 60 * 4 * 30 / (_save->getMapSizeXYZ() * myUnits);
-			maxDist = std::max(60, _save->getMod()->getMaxViewDistance());
-			if (scaleFactor < 1)
-				maxDist *= scaleFactor;
-		}
-	}
-	for (int x = 0; x <= maxDist; ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+	// Test all tiles within view cone for visibility.
+	for (int x = 0; x <= getMaxViewDistance(); ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
 		if (direction & 1)
 		{
 			y1 = 0;
-			y2 = _save->getMapSizeY();
+			y2 = getMaxViewDistance();
 		}
 		else
 		{
 			y1 = -x;
 			y2 = x;
 		}
-		int mayDist = y2;
-		if (unit->getFaction() != FACTION_PLAYER)
-			mayDist = maxDist;
-		for (int y = y1; y <= mayDist; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+		for (int y = y1; y <= y2; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
-			const int distanceSqr = x*x + y*y;
-			if (distanceSqr >= distanceSqrMin)
+			const int distanceSqr = x * x + y * y;
+			if (distanceSqr <= getMaxViewDistanceSq() && distanceSqr >= distanceSqrMin)
 			{
 				posTest.x = posSelf.x + signX[direction] * (swap ? y : x);
 				posTest.y = posSelf.y + signY[direction] * (swap ? x : y);
-				//Only continue if the column of tiles at (x,y) is within the narrow arc of interest (if enabled)
+				// Only continue if the column of tiles at (x,y) is within the narrow arc of interest (if enabled)
 				if (inEventVisibilitySector(posTest))
 				{
 					for (int z = 0; z < _save->getMapSizeZ(); z++)
 					{
 						posTest.z = z;
 
-						if (_save->getTile(posTest)) //inside map?
+						if (_save->getTile(posTest)) // inside map?
 						{
 							// this sets tiles to discovered if they are in LOS - tile visibility is not calculated in voxelspace but in tilespace
 							// large units have "4 pair of eyes"
@@ -1591,15 +1572,15 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 									int tst = calculateLineTile(poso, posTest, _trajectory);
 									if (tst > 127)
 									{
-										//Vision impacted something before reaching posTest. Throw away the impact point.
+										// Vision impacted something before reaching posTest. Throw away the impact point.
 										_trajectory.pop_back();
 									}
-									//Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
+									// Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
 									for (const auto& posVisited : _trajectory)
 									{
-										//Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
-										// this bresenham line's period might be different from the one that originally revealed the tile.
-										if (!unit->hasVisibleTile(_save->getTile(posVisited)) && x <= getMaxViewDistance() && y <= getMaxViewDistance() && distanceSqr <= getMaxViewDistanceSq())
+										// Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
+										//  this bresenham line's period might be different from the one that originally revealed the tile.
+										if (!unit->hasVisibleTile(_save->getTile(posVisited)))
 										{
 											unit->addToVisibleTiles(_save->getTile(posVisited));
 											if (unit->getFaction() == FACTION_PLAYER)
@@ -1608,17 +1589,13 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 												_save->getTile(posVisited)->setDiscovered(true, O_FLOOR);
 
 												// walls to the east or south of a visible tile, we see that too
-												Tile *t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
+												Tile* t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
 												if (t)
 													t->setDiscovered(true, O_WESTWALL);
 												t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
 												if (t)
 													t->setDiscovered(true, O_NORTHWALL);
 											}
-										}
-										if (!unit->hasLofTile(_save->getTile(posVisited)))
-										{
-											unit->addToLofTiles(_save->getTile(posVisited));
 										}
 									}
 								}

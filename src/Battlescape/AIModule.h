@@ -212,8 +212,6 @@ public:
 	bool shouldAvoidMeleeRange(BattleUnit *enemy);
 	/// Checks whether a unit has any means to fight
 	bool isArmed(BattleUnit *unit) const;
-	/// Method that combines checking the unit's LoF-tile-cache and storing whether the unit has that tile as a LoF-tile.
-	bool hasLofTile(BattleUnit *unit, Tile *tile);
 	/// Checks whether there's a grenade on the ground and tries to pick it up
 	void tryToPickUpGrenade(Tile* tile, BattleAction* action);
 	/// returns a score for how much we like to pick up a specific kind of item
