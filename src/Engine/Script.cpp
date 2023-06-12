@@ -3963,6 +3963,88 @@ static auto dummyTestScriptOverload = ([]
 	return 0;
 })();
 
+
+struct ScriptParserTest : ScriptParserBase
+{
+	ScriptParserTest(ScriptGlobal* g) : ScriptParserBase(g, "X")
+	{
+
+	}
+};
+struct DummyClass
+{
+	/// Name of class used in script.
+	static constexpr const char *ScriptName = "DummyClass";
+	/// Register all useful function used by script.
+	static void ScriptRegister(ScriptParserBase* parser);
+};
+void dummyFunctionInt(int i, int j)
+{
+
+}
+void dummyFunctionClass(const DummyClass* c)
+{
+
+}
+
+static auto dummyTestScriptFunctionParser = ([]
+{
+	ScriptGlobal g;
+	ScriptParserTest f(&g);
+
+	f.addType<DummyClass*>("DummyClass");
+
+	Bind<DummyClass> bind{ &f };
+	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionInt)>>("test1");
+	bind.add<&dummyFunctionClass>("test2");
+
+
+	ScriptContainerBase tempScript;
+	ParserWriter help(
+		0,
+		tempScript,
+		f
+	);
+	help.addReg<DummyClass*&>(ScriptRef{"foo"});
+
+	{
+		auto r = help.getReferece(ScriptRef{"foo"});
+		assert(!!r && "reg 'foo'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"if"});
+		assert(!!r && "func 'if'");
+		assert(r.haveArg() == false && "func 'if'");
+		assert(r.haveProc() == true && "func 'if'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"test1"});
+		assert(!!r && "func 'test1'");
+		assert(r.haveArg() == false && "func 'test1'");
+		assert(r.haveProc() == true && "func 'test1'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"DummyClass.test2"});
+		assert(!!r && "func 'DummyClass.test2'");
+		assert(r.haveArg() == false && "func 'DummyClass.test2'");
+		assert(r.haveProc() == true && "func 'DummyClass.test2'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"foo.test2"});
+		assert(!!r && "func 'foo.test2'");
+		assert(r.haveArg() == true && "func 'foo.test2'");
+		assert(r.argName == ScriptRef{"foo"} && "func 'foo.test2'");
+		assert(r.haveProc() == true && "func 'foo.test2'");
+	}
+
+	return 0;
+})();
+
+
 } //namespace
 
 
