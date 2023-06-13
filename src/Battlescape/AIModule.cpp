@@ -3584,10 +3584,12 @@ void AIModule::brutalThink(BattleAction* action)
 					else
 						okayCoverScore = 100 / (walkToDist + discoverThreat);
 				}
-				else
+				else if (!outOfRangeForShortRangeWeapon)
 				{
 					fallbackScore = 100 / discoverThreat;
 				}
+				else
+					fallbackScore = 100 / walkToDist;
 			}
 			if (!sweepMode)
 			{
