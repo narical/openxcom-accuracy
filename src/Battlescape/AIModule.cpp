@@ -3551,7 +3551,14 @@ void AIModule::brutalThink(BattleAction* action)
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes);
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			float discoverThreat = 0;
-			if (!sweepMode)
+			bool validCover = true;
+			if (Options::aiPerformanceOptimization && tile->hasNoFloor())
+			{
+				Tile* tileBelow = _save->getBelowTile(tile);
+				if (tileBelow && tileBelow->hasNoFloor())
+					validCover = false;
+			}
+			if (!sweepMode && validCover)
 			{
 				bool inReachable = false;
 				for (auto& reachable : enemyReachable)
@@ -5977,13 +5984,6 @@ bool AIModule::hasTileSight(Position from, Position to)
 	Tile* tile = _save->getTile(from);
 	if (!tile)
 		return false;
-	if (Options::aiPerformanceOptimization && tile->hasNoFloor())
-	{
-		// Just assume we would be visible when flying two tiles above the ground.
-		Tile* tileBelow = _save->getBelowTile(tile);
-		if (tileBelow && tileBelow->hasNoFloor())
-			return true;
-	}
 	bool result = true;
 	std::vector<Position> trajectory;
 	trajectory.clear();
