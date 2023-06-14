@@ -3582,21 +3582,12 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 				discoverThreat = std::max(0.0f, discoverThreat);
-				if (discoverThreat <= _unit->getTimeUnits() - pu->getTUCost(false).time)
-				{
-					if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-						greatCoverScore = 100 / (walkToDist + discoverThreat);
-					else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-						goodCoverScore = 100 / (walkToDist + discoverThreat);
-					else
-						okayCoverScore = 100 / (walkToDist + discoverThreat);
-				}
-				else if (!outOfRangeForShortRangeWeapon)
-				{
-					fallbackScore = 100 / discoverThreat;
-				}
+				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
+					greatCoverScore = 100 / (walkToDist + discoverThreat);
+				else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
+					goodCoverScore = 100 / (walkToDist + discoverThreat);
 				else
-					fallbackScore = 100 / walkToDist;
+					okayCoverScore = 100 / (walkToDist + discoverThreat);
 			}
 			if (!sweepMode)
 			{
@@ -3610,8 +3601,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (hasTileSight(pos, peakPosition) && shouldPeak)
 					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
-			else
-				fallbackScore = 100 / walkToDist;
+			fallbackScore = 100 / walkToDist;
 			greatCoverScore /= cuddleAvoidModifier;
 			goodCoverScore /= cuddleAvoidModifier;
 			okayCoverScore /= cuddleAvoidModifier;
