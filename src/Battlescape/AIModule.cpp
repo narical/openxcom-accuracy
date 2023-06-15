@@ -4600,6 +4600,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		accuracy = 0;
 	if (action->type == BA_HIT)
 	{
+		accuracy -= target->getArmor()->getMeleeDodge(target);
 		// We can definitely assume we'll be facing the target
 		int directionToLook = _save->getTileEngine()->getDirectionTo(originPosition, target->getPosition());
 		if (checkLOF)
@@ -4611,7 +4612,6 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 		{
 			accuracy = 0;
 		}
-		accuracy -= target->getArmor()->getMeleeDodge(target);
 	}
 	else if (shouldAvoidMeleeRange(target) && distance < 2)
 	{
