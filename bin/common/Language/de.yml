@@ -95,7 +95,7 @@ de:
   STR_QUICK_LOAD: "Schnell laden"
   STR_ADVANCED: "ERWEITERT"
   STR_AGGRESSIVERETALIATION: "Agressive Vergeltung"
-  STR_AGGRESSIVERETALIATION_DESC: "UFOs können jederzeit Ihre Basen aufspüren, unabhängig ihrer Missionsparameter."
+  STR_AGGRESSIVERETALIATION_DESC: "Das Angreifen von gelandeten UFOs kann auch Vergeltung auslösen. Das Muster der Basissuche wird normalisiert, um die Erfolgschance zu erhöhen und UFOs versuchen jederzeit, Ihre Basen zu orten."
   STR_DOGFIGHTAI: "Verbessertes Luftkampfverhalten"
   STR_DOGFIGHTAI_DESC: "Sobald schnellere UFOs beschossen werden, kommen sie nah genug heran um selber zu feuern."
   STR_CANT_KEEP_DISTANCE: "KANN ABSTAND NICHT HALTEN"

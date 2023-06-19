@@ -95,7 +95,7 @@ en-US:
   STR_QUICK_LOAD: "Quick Load"
   STR_ADVANCED: "ADVANCED"
   STR_AGGRESSIVERETALIATION: "Aggressive retaliation"
-  STR_AGGRESSIVERETALIATION_DESC: "UFOs will attempt to detect your bases at all times, regardless of their mission parameters."
+  STR_AGGRESSIVERETALIATION_DESC: "Assaulting landed UFOs can also trigger retaliation, the base-searching-pattern is normalized to increase the chance of success and UFOs will attempt to detect your bases at all times."
   STR_DOGFIGHTAI: "Enhanced dogfighting behavior"
   STR_DOGFIGHTAI_DESC: "Once faster UFOs are being fired at they will come close enough to also fire."
   STR_CANT_KEEP_DISTANCE: "CAN'T KEEP DISTANCE"
