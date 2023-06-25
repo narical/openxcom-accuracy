@@ -2995,7 +2995,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
+	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins();
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	for (BattleUnit* target : *(_save->getUnits()))
@@ -3570,9 +3570,13 @@ void AIModule::brutalThink(BattleAction* action)
 							Position compPos = pos;
 							compPos.x += x;
 							compPos.y += y;
-							if (compPos == reachable.first)
-								inReachable = true;
-							if (hasTileSight(compPos, reachable.first))
+							if (_unit->getAggressiveness() == 3 && compPos == reachable.first)
+							{
+								avoidLoF = true;
+								if (reachable.second > discoverThreat)
+									discoverThreat = reachable.second;
+							}
+							if (_unit->getAggressiveness() < 3 && hasTileSight(compPos, reachable.first))
 							{
 								avoidLoF = true;
 								if (reachable.second > discoverThreat)
@@ -3596,9 +3600,22 @@ void AIModule::brutalThink(BattleAction* action)
 					if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
 						smokePeakScore = 100 / walkToDist;
 					if (hasTileSight(pos, targetPosition) && Position::distance(pos, targetPosition) <= _save->getMod()->getMaxViewDistance())
-						directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					{
+						Tile* targetTile = _save->getTile(targetPosition);
+						if (targetTile)
+						{
+							BattleUnit* unitOnTile = targetTile->getUnit();
+							if (unitOnTile)
+							{
+								if(quickLineOfFire(pos, unitOnTile))
+									directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+							}
+							else if (clearSight(pos, targetPosition))
+								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+						}
+					}
 				}
-				if (hasTileSight(pos, peakPosition) && shouldPeak)
+				if (shouldPeak && hasTileSight(pos, peakPosition))
 					indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			}
 			fallbackScore = 100 / walkToDist;
@@ -3720,12 +3737,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE)
+			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && directPeakScore > 0)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(directPeakScore);
 			//}
 		}
 		if (_traceAI)
