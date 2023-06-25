@@ -172,7 +172,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position startPosition, Position e
 	}
 
 	// look for a possible fast and accurate bresenham path and skip A*
-	if (bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
+	if (!unit->isBrutal() && bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
 	{
 		std::reverse(_path.begin(), _path.end()); // paths are stored in reverse order
 		return;
