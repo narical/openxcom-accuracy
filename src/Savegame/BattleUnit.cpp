@@ -5590,6 +5590,15 @@ bool BattleUnit::isBrutal() const
 	return brutal;
 }
 
+bool BattleUnit::isAvoidMines() const
+{
+	if (isLeeroyJenkins())
+		return false;
+	if (Options::avoidMines || getFaction() == FACTION_PLAYER)
+		return true;
+	return false;
+}
+
 /**
  * Returns whether the unit should be controlled by brutalAI
  */

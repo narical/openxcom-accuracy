@@ -4247,7 +4247,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 		while (targetNode->getPrevNode() != NULL)
 		{
 			Tile *tile = _save->getTile(targetNode->getPosition());
-			if (checkForProxies)
+			if (checkForProxies && _unit->isAvoidMines())
 			{
 				for (int x = -1; x <= 1; ++x)
 					for (int y = -1; y <= 1; ++y)
@@ -4263,7 +4263,7 @@ bool AIModule::isPathToPositionSave(Position target, bool checkForProxies)
 								{
 									for (BattleItem* item : *(tileToCheck->getInventory()))
 									{
-										if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE)
+										if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE && !item->getRules()->isHiddenOnMinimap())
 											if (tileToCheck != tile || tileToCheck == tile)
 												if (_save->getTileEngine()->horizontalBlockage(tileToCheck, tile, DT_HE) >= item->getRules()->getPower())
 													saveForProxies = true;

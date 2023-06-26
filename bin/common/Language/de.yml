@@ -137,6 +137,8 @@ de:
   STR_ALLOWPREPRIME_DESC: "Wenn aktiv, können von der brutalen KI gesteuerte Einheiten entscheiden ihre Granaten schon scharf machen bevor sie sie benutzen wollen."
   STR_IGNOREDELAY: "KI ignoriert Gegenstandsverzögerung"
   STR_IGNOREDELAY_DESC: "Normalerweise darf die KI bestimmte Gegnstände erst ab einer bestimmten Runde verwenden. Diese Option erlaubt der KI diese Einschränkung zu ignorieren."
+  STR_AVOIDMINES: "Näherungsgranaten vermeiden für Brutale-KI"
+  STR_AVOIDMINES_DESC: "Wenn aktiviert, erkennen Einheiten ob sich eine Näherungsgranate auf ihrem Weg befindet, und vermeiden es, darauf zu treten. Funktioniert nicht für Einheiten mit maximaler Aggressivität."
   STR_AITARGETMODE: "Zielverhalten für Brutale KI"
   STR_AITARGETMODE_DESC: "1> Nur was Einheiten selbst sehen. 2> Auch was andere Einheiten im selben Team sehen. 3> Auch Orte von denen sie oder ihre Kameraden angegriffen worden. 4> Keine Einschränkungen."
   STR_AIAGGRESSION: "Feindesaggressivität"

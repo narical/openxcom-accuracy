@@ -135,6 +135,8 @@ en-US:
   STR_CHEATONMOVEMENT_DESC: "Units controlled by Brutal AI can see your units on their minimap."
   STR_IGNOREDELAY: "Allow AI to use explosives on turn one"
   STR_IGNOREDELAY_DESC: "By default enemies will not use explosive items until turn 3. Enable this option to allow them to use explosives at any time."
+  STR_AVOIDMINES: "Brutal AI avoids proximity-grenades"
+  STR_AVOIDMINES_DESC: "If enabled units controlled by Brutal AI will recognize when there is a proximity-grenade on their path and avoid stepping on it. Not working for units with maximum aggressiveness."
   STR_ALLOWPREPRIME: "Allow Brutal AI to pre-prime grenades"
   STR_ALLOWPREPRIME_DESC: "If enabled units controlled by Brutal AI may decide to prime their grenades when they don't have anything more urgent to do and feel it's reasonably safe to do so."
   STR_AITARGETMODE: "Targeting behavior for Brutal AI"
