@@ -956,7 +956,9 @@ void SellState::lstItemsMousePress(Action *action)
 			if (rule != 0)
 			{
 				std::string articleId = rule->getUfopediaType();
-				if (_game->isCtrlPressed())
+				const RuleResearch *selectedTopic = _game->getMod()->getResearch(articleId, false);
+				bool ctrlPressed = _game->isCtrlPressed();
+				if (selectedTopic && ctrlPressed)
 				{
 					Ufopaedia::openArticle(_game, articleId);
 				}

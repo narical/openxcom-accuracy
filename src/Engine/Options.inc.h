@@ -8,7 +8,7 @@ OPT int displayWidth, displayHeight, maxFrameSkip, baseXResolution, baseYResolut
 OPT bool fullscreen, asyncBlit, playIntro, useScaleFilter, useHQXFilter, useXBRZFilter, useOpenGL, checkOpenGLErrors, vSyncForOpenGL, useOpenGLSmoothing,
 	autosave, allowResize, borderless, debug, debugUi, fpsCounter, newSeedOnLoad, keepAspectRatio, nonSquarePixelRatio,
 	cursorInBlackBandsInFullscreen, cursorInBlackBandsInWindow, cursorInBlackBandsInBorderlessWindow, maximizeInfoScreens, musicAlwaysLoop, StereoSound, verboseLogging, soldierDiaries, touchEnabled,
-	rootWindowedMode, lazyLoadResources, backgroundMute;
+	rootWindowedMode, lazyLoadResources, backgroundMute, showCraftHangar;
 OPT std::string language, useOpenGLShader;
 OPT KeyboardType keyboardMode;
 OPT SaveSort saveOrder;
@@ -100,6 +100,7 @@ OPT bool oxceManufactureFilterSuppliesOK;
 OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
+OPT int maxNumberOfBases;
 /**
  * Verification level of mod data.
  * Same levels supported as `SeverityLevel`.

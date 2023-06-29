@@ -1,0 +1,16 @@
+facilities:
+  - type: STR_GARAGE
+    spriteShape: 1
+    spriteFacility: 890
+    size: 1
+    buildCost: 100000
+    buildTime: 12
+    monthlyCost: 15000
+    hangarType: 0 
+    crafts: 1
+    craftSlots:
+      - [-2, 0, 0]
+    mapName: XCFG_00
+    workshops: 2
+
+

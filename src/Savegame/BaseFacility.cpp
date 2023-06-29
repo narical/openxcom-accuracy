@@ -29,7 +29,7 @@ namespace OpenXcom
  * @param rules Pointer to ruleset.
  * @param base Pointer to base of origin.
  */
-BaseFacility::BaseFacility(const RuleBaseFacility *rules, Base *base) : _rules(rules), _base(base), _x(-1), _y(-1), _buildTime(0), _disabled(false), _craftForDrawing(0), _hadPreviousFacility(false)
+BaseFacility::BaseFacility(const RuleBaseFacility *rules, Base *base) : _rules(rules), _base(base), _x(-1), _y(-1), _buildTime(0), _disabled(false), _craftsForDrawing(), _hadPreviousFacility(false)
 {
 }
 
@@ -208,21 +208,55 @@ void BaseFacility::setDisabled(bool disabled)
 }
 
 /**
- * Gets craft, used for drawing facility.
- * @return craft
+* Gets crafts vector, used for drawing facility.
+ * @return crafts vector at the facility
  */
-Craft *BaseFacility::getCraftForDrawing() const
+std::vector<Craft *> BaseFacility::getCraftsForDrawing()
 {
-	return _craftForDrawing;
+	return _craftsForDrawing;
 }
 
 /**
- * Sets craft, used for drawing facility.
+ * Sets a vector of crafts, used for drawing facility.
+ * @param vector of Crafts to copy to other facility, craftV
+ */
+ void BaseFacility::setCraftsForDrawing(std::vector<Craft*> craftV)
+{
+		_craftsForDrawing = craftV;
+}
+
+/**
+ * Add another craft, used for drawing facility.
  * @param craft for drawing hangar.
  */
-void BaseFacility::setCraftForDrawing(Craft *craft)
+void BaseFacility::addCraftForDrawing(Craft *craft)
 {
-	_craftForDrawing = craft;
+	_craftsForDrawing.push_back(craft);
+}
+
+/**
+ * Delete an already included craft, used for drawing facility.
+ * @param craft to delete
+ */
+std::vector<Craft*>::iterator BaseFacility::delCraftForDrawing(Craft *craft)
+{
+	std::vector<Craft*>::iterator c;
+	for (c = _craftsForDrawing.begin(); c != _craftsForDrawing.end(); ++c)
+	{
+		if (*c == craft)
+		{
+			return _craftsForDrawing.erase(c);
+		}
+	}
+	return c;
+}
+
+/**
+ * Clear vector of crafts at the facility
+ */
+void BaseFacility::clearCraftsForDrawing()
+{
+	_craftsForDrawing.clear();
 }
 
 /**

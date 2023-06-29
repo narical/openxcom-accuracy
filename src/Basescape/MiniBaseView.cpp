@@ -34,7 +34,7 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-MiniBaseView::MiniBaseView(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _bases(0), _texture(0), _base(0), _hoverBase(0), _red(0), _green(0), _blue(0)
+MiniBaseView::MiniBaseView(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _bases(0), _texture(0), _base(0), _hoverBase(0), _visibleBasesIndex(0), _red(0), _green(0), _blue(0)
 {
 }
 
@@ -86,16 +86,68 @@ void MiniBaseView::setSelectedBase(size_t base)
 }
 
 /**
+ * Changes the set of bases that are currently visible on
+ * the mini base view (if more than MAX_VISIBLE_BASES)
+ * to show one more up
+ */
+bool MiniBaseView::incVisibleBasesIndex()
+{
+	if (_visibleBasesIndex < (_bases->size() - MAX_VISIBLE_BASES))
+	{
+		_visibleBasesIndex++;
+		_redraw = true;
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Changes the set of bases that are currently visible on
+ * the mini base view (if more than MAX_VISIBLE_BASES)
+ * to show one more down
+ */
+bool MiniBaseView::decVisibleBasesIndex()
+{
+	if (_visibleBasesIndex > 0)
+	{
+		_visibleBasesIndex--;
+		_redraw = true;
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Returns the index offset for the list
+ * of visible bases
+ * @return offset index
+ */
+size_t MiniBaseView::getVisibleBasesIndex() const
+{
+	return _visibleBasesIndex;
+}
+
+/**
+ * Changes the set of base that are currently selected on
+ * the mini base view.
+ * @param newVisibleBasesIndex offset for list of visible bases.
+ */
+void MiniBaseView::setVisibleBasesIndex(size_t newVisibleBasesIndex)
+{
+	_visibleBasesIndex = newVisibleBasesIndex;
+}
+
+/**
  * Draws the view of all the bases with facilities
  * in varying colors.
  */
 void MiniBaseView::draw()
 {
 	Surface::draw();
-	for (size_t i = 0; i < MAX_BASES; ++i)
+	for (size_t i = 0; i < MAX_VISIBLE_BASES; ++i)
 	{
 		// Draw base squares
-		if (i == _base)
+		if ((i + _visibleBasesIndex) == _base)
 		{
 			SDL_Rect r;
 			r.x = i * (MINI_SIZE + 2);
@@ -111,7 +163,7 @@ void MiniBaseView::draw()
 		{
 			SDL_Rect r;
 			lock();
-			for (const auto* fac : *_bases->at(i)->getFacilities())
+			for (const auto* fac : *_bases->at(i + _visibleBasesIndex)->getFacilities())
 			{
 				int color;
 				if (fac->getDisabled())

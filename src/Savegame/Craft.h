@@ -43,6 +43,7 @@ class Vehicle;
 class RuleStartingCondition;
 class ScriptParserBase;
 class ScriptGlobal;
+class Position;
 
 enum UfoDetection : int;
 
@@ -86,12 +87,14 @@ private:
 	double _speedMaxRadian;
 	RuleCraftStats _stats;
 	bool _isAutoPatrolling;
+	bool _assignedToSlot;	
 	double _lonAuto, _latAuto;
 	std::vector<int> _pilots;
 	std::map<int, SoldierDeploymentData> _customSoldierDeployment;
 	std::vector<VehicleDeploymentData> _customVehicleDeployment;
 	int _skinIndex;
 	ScriptValues<Craft> _scriptValues;
+	Position _baseEscapePosition;	
 
 	void recalcSpeedMaxRadian();
 
@@ -139,7 +142,11 @@ public:
 	bool getIsAutoPatrolling() const;
 	/// Sets whether the craft is on auto patrol.
 	void setIsAutoPatrolling(bool isAuto);
-	/// Gets the auto patrol longitude.
+	/// Gets whether the craft is assigned to a hangar slot.
+	bool getIsAssignedToSlot() const;
+	/// Sets whether the craft is assigned to a hangar slot
+	void setIsAssignedToSlot(bool isAssigned);		
+	/// Gets the auto-patrol longitude.
 	double getLongitudeAuto() const;
 	/// Sets the auto patrol longitude.
 	void setLongitudeAuto(double lon);
@@ -341,6 +348,10 @@ public:
 	bool validateAddingSoldier(int space, const Soldier* s) const;
 	/// Validates craft space and craft constraints on adding vehicles to a craft.
 	int validateAddingVehicles(int totalSize) const;
+	// Set position assigned to Craft in BaseEscape
+	void setBaseEscapePosition(const Position position);
+	/// Get position assigned to Craft in BaseEscape
+	Position getBaseEscapePosition() const;		
 };
 
 }

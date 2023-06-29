@@ -137,6 +137,10 @@ namespace OpenXcom
 		ss << tr("STR_WEAPON_PODS").arg(craft->getWeapons()) << '\n';
 		ss << tr("STR_DAMAGE_CAPACITY_UC").arg(Unicode::formatNumber(craft->getMaxDamage())) << '\n';
 		ss << tr("STR_CARGO_SPACE").arg(craft->getMaxUnits()) << '\n';
+		if(Options::showCraftHangar)
+		{
+			ss << tr("STR_HANGAR_TYPE").arg(craft->getHangarType()) << '\n';
+		}			
 		if (craft->getPilots() > 0)
 		{
 			ss << tr("STR_COCKPIT_CAPACITY").arg(craft->getPilots()) << '\n';

@@ -1,0 +1,7 @@
+ufopaedia:
+  - id: STR_GARAGE
+    type_id: 6
+    section: STR_BASE_FACILITIES
+    text: STR_GARAGE_UFOPEDIA
+  
+

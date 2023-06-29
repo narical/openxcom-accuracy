@@ -147,7 +147,7 @@ SavedGame::SavedGame() :
 	_difficulty(DIFF_BEGINNER), _end(END_NONE), _ironman(false), _globeLon(0.0), _globeLat(0.0), _globeZoom(0),
 	_battleGame(0), _previewBase(nullptr), _debug(false), _warned(false),
 	_togglePersonalLight(true), _toggleNightVision(false), _toggleBrightness(0),
-	_monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
+	_monthsPassed(-1), _selectedBase(0), _visibleBasesIndex(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
 {
 	_time = new GameTime(6, 1, 1, 1999, 12, 0, 0);
 	_alienStrategy = new AlienStrategy();
@@ -1400,12 +1400,30 @@ Base *SavedGame::getSelectedBase()
 }
 
 /**
+ * Returns the last index of Visible Bases.
+ * @return index for visible Bases.
+ */
+size_t SavedGame::getVisibleBasesIndex()
+{
+	return _visibleBasesIndex;
+}
+
+/**
  * Sets the last selected player base.
  * @param base number of the base.
  */
 void SavedGame::setSelectedBase(size_t base)
 {
 	_selectedBase = base;
+}
+
+/**
+ * Sets the last index of visible bases.
+ * @param index number for visible bases.
+ */
+void SavedGame::setVisibleBasesIndex(size_t lastVisibleBasesIndex)
+{
+	_visibleBasesIndex = lastVisibleBasesIndex;
 }
 
 /**

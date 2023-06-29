@@ -1,0 +1,9 @@
+extraSprites:
+  - type: BASEBITS.PCK   
+    files:      
+      862: Resources/Cars/Van_base.png		
+      865: Resources/Cars/Car_base.png	
+      904: Resources/Cars/Opscar_base.png		  
+      890: Resources/Garage.png
+      900: Resources/Cars/LuxuryCar_base.png	  
+      903: Resources/Cars/Hummer_base.png

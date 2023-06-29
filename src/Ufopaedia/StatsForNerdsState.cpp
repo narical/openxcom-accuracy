@@ -3069,6 +3069,7 @@ void StatsForNerdsState::initFacilityList()
 	}
 	addInteger(ss, facilityRule->getBuildTime(), "buildTime");
 	addInteger(ss, facilityRule->getMonthlyCost(), "monthlyCost", 0, true);
+	addInteger(ss, facilityRule->getHangarType(), "hangarType");		
 	addInteger(ss, facilityRule->getRefundValue(), "refundValue", 0, true);
 
 	addVectorOfStrings(ss, mod->getBaseFunctionNames(facilityRule->getRequireBaseFunc()), "requiresBaseFunc");
@@ -3199,6 +3200,7 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getSellCost(), "costSell", 0, true);
 	addInteger(ss, craftRule->getTransferTime(), "transferTime", 24);
 
+	addInteger(ss, craftRule->getHangarType(), "hangarType", 0, true);	
 	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
 	addInteger(ss, craftRule->getPilots(), "pilots");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");

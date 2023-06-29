@@ -24,6 +24,7 @@ namespace OpenXcom
 
 class Base;
 class BaseView;
+class MiniBaseView;
 class Text;
 class TextList;
 class Window;

@@ -26,6 +26,7 @@
 #include "../Interface/TextList.h"
 #include "../Interface/Window.h"
 #include "BaseView.h"
+#include "MiniBaseView.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/BaseFacility.h"
 #include "../Mod/RuleBaseFacility.h"
@@ -138,6 +139,7 @@ void PlaceLiftState::viewClick(Action *)
 		_game->getMod()->getSound("GEO.CAT", fac->getRules()->getPlaceSound())->play();
 	}
 	_game->popState();
+	_game->getSavedGame()->setVisibleBasesIndex(_game->getSavedGame()->getBases()->size()>=MiniBaseView::MAX_VISIBLE_BASES?_game->getSavedGame()->getBases()->size()-MiniBaseView::MAX_VISIBLE_BASES:0);
 	BasescapeState *bState = new BasescapeState(_base, _globe);
 	_game->getSavedGame()->setSelectedBase(_game->getSavedGame()->getBases()->size() - 1);
 	_game->pushState(bState);

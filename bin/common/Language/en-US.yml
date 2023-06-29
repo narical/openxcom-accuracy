@@ -94,6 +94,8 @@ en-US:
   STR_QUICK_SAVE: "Quick Save"
   STR_QUICK_LOAD: "Quick Load"
   STR_ADVANCED: "ADVANCED"
+  STR_SHOW_CRAFT_HANGAR: "Show hangar types for crafts"
+  STR_SHOW_CRAFT_HANGAR_DESC: "Craft entries in UFOPAEDIA will show which hangar can allocate the craft"  
   STR_AGGRESSIVERETALIATION: "Aggressive retaliation"
   STR_AGGRESSIVERETALIATION_DESC: "Assaulting landed UFOs can also trigger retaliation, the base-searching-pattern is normalized to increase the chance of success and UFOs will attempt to detect your bases at all times."
   STR_DOGFIGHTAI: "Enhanced dogfighting behavior"

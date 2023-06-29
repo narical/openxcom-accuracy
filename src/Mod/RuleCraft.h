@@ -166,7 +166,7 @@ private:
 	std::vector<std::string> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
 	std::string _requiresBuyCountry;
-	int _sprite, _marker;
+	int _sprite, _marker, _hangarType;
 	std::vector<int> _skinSprites;
 	int _weapons, _soldiers, _pilots, _vehicles;
 	int _maxSmallSoldiers, _maxLargeSoldiers, _maxSmallVehicles, _maxLargeVehicles;
@@ -218,6 +218,8 @@ public:
 	const std::vector<int> &getSkinSpritesRaw() const { return _skinSprites; }
 	/// Gets the craft's globe marker.
 	int getMarker() const;
+	/// Gets the hangar type id in which craft can be allocated.
+	int getHangarType() const;		
 	/// Gets the craft's maximum fuel.
 	int getMaxFuel() const;
 	/// Gets the craft's maximum damage.

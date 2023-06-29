@@ -53,7 +53,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
+SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL), selectedCraftIndex(0)
 {
 	bool isPsiBtnVisible = Options::anytimePsiTraining && _base->getAvailablePsiLabs() > 0;
 	bool isTrnBtnVisible = _base->getAvailableTraining() > 0;
@@ -61,26 +61,13 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_game->getSavedGame()->getAvailableTransformations(availableTransformations, _game->getMod(), _base);
 	bool isTransformationAvailable = availableTransformations.size() > 0;
 
-	// if both training buttons would be displayed, or if there are any transformations, switch to combobox
-	bool showCombobox = isTransformationAvailable || (isPsiBtnVisible && isTrnBtnVisible) || Options::oxceAlternateCraftEquipmentManagement;
-	// 3 buttons or 2 buttons?
-	bool showThreeButtons = !showCombobox && (isPsiBtnVisible || isTrnBtnVisible);
-
+	// Always show Combo Box and Three buttons: one button for actions(Memorial, Trainings, Transormations,...)
+	// another button for craft selection; and a 3rd one for "Ok"
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
-	if (showThreeButtons)
-	{
-		_btnOk = new TextButton(96, 16, 216, 176);
-		_btnMemorial = new TextButton(96, 16, 8, 176);
-	}
-	else
-	{
-		_btnOk = new TextButton(148, 16, 164, 176);
-		_btnMemorial = new TextButton(148, 16, 8, 176);
-	}
-	_btnPsiTraining = new TextButton(96, 16, 112, 176);
-	_btnTraining = new TextButton(96, 16, 112, 176);
-	_cbxScreenActions = new ComboBox(this, 148, 16, 8, 176, true);
+	_btnOk = new TextButton(64, 16, 248, 176);
+	_cbxScreenActions = new ComboBox(this, 128, 16, 8, 176, true);
+	_cbxFilterByCraft = new ComboBox(this, 96, 16, 144, 176, true);	
 	_txtTitle = new Text(168, 17, 16, 8);
 	_cbxSortBy = new ComboBox(this, 120, 16, 192, 8, false);
 	_txtName = new Text(114, 9, 16, 32);
@@ -98,17 +85,9 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	add(_txtRank, "text2", "soldierList");
 	add(_txtCraft, "text2", "soldierList");
 	add(_lstSoldiers, "list", "soldierList");
-	add(_cbxSortBy, "button", "soldierList");
-	if (showCombobox)
-	{
-		add(_cbxScreenActions, "button", "soldierList");
-	}
-	else
-	{
-		add(_btnMemorial, "button", "soldierList");
-		add(_btnPsiTraining, "button", "soldierList");
-		add(_btnTraining, "button", "soldierList");
-	}
+	add(_cbxSortBy, "button", "soldierList");	
+	add(_cbxScreenActions, "button", "soldierList");
+	add(_cbxFilterByCraft, "button", "soldierList");	
 
 	centerAllSurfaces();
 
@@ -120,58 +99,51 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnInventoryClick, Options::keyBattleInventory);
 
-	_btnPsiTraining->setText(tr("STR_PSI_TRAINING"));
-	_btnPsiTraining->onMouseClick((ActionHandler)&SoldiersState::btnPsiTrainingClick);
-	_btnPsiTraining->setVisible(isPsiBtnVisible);
-
-	_btnTraining->setText(tr("STR_TRAINING"));
-	_btnTraining->onMouseClick((ActionHandler)&SoldiersState::btnTrainingClick);
-	_btnTraining->setVisible(isTrnBtnVisible);
-
-	_btnMemorial->setText(tr("STR_MEMORIAL"));
-	_btnMemorial->onMouseClick((ActionHandler)&SoldiersState::btnMemorialClick);
+    // _cbxScreenActions
 
 	_availableOptions.clear();
-	if (showCombobox)
+	_availableOptions.push_back("STR_SOLDIER_INFO");
+	_availableOptions.push_back("STR_MEMORIAL");
+	_availableOptions.push_back("STR_INVENTORY");
+	if (isPsiBtnVisible)
+		_availableOptions.push_back("STR_PSI_TRAINING");
+	if (isTrnBtnVisible)
+		_availableOptions.push_back("STR_TRAINING");
+	if (isTransformationAvailable)
+		_availableOptions.push_back("STR_TRANSFORMATIONS_OVERVIEW");
+
+	bool refreshDeadSoldierStats = false;
+	for (const auto* transformationRule : availableTransformations)
 	{
-		_btnMemorial->setVisible(false);
-		_btnPsiTraining->setVisible(false);
-		_btnTraining->setVisible(false);
-
-		_availableOptions.push_back("STR_SOLDIER_INFO");
-		_availableOptions.push_back("STR_MEMORIAL");
-		_availableOptions.push_back("STR_INVENTORY");
-
-		if (isPsiBtnVisible)
-			_availableOptions.push_back("STR_PSI_TRAINING");
-
-		if (isTrnBtnVisible)
-			_availableOptions.push_back("STR_TRAINING");
-
-		if (isTransformationAvailable)
-			_availableOptions.push_back("STR_TRANSFORMATIONS_OVERVIEW");
-
-		bool refreshDeadSoldierStats = false;
-		for (const auto* transformationRule : availableTransformations)
+		_availableOptions.push_back(transformationRule->getName());
+		if (transformationRule->isAllowingDeadSoldiers())
 		{
-			_availableOptions.push_back(transformationRule->getName());
-			if (transformationRule->isAllowingDeadSoldiers())
-			{
-				refreshDeadSoldierStats = true;
-			}
+			refreshDeadSoldierStats = true;
 		}
-		if (refreshDeadSoldierStats)
-		{
-			for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
-			{
-				deadMan->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
-			}
-		}
-
-		_cbxScreenActions->setOptions(_availableOptions, true);
-		_cbxScreenActions->setSelected(0);
-		_cbxScreenActions->onChange((ActionHandler)&SoldiersState::cbxScreenActionsChange);
 	}
+	if (refreshDeadSoldierStats)
+	{
+		for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
+		{
+			deadMan->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
+		}
+	}
+
+	_cbxScreenActions->setOptions(_availableOptions, true);
+	_cbxScreenActions->setSelected(0);
+	_cbxScreenActions->onChange((ActionHandler)&SoldiersState::cbxScreenActionsChange);
+
+	// _cbxFilterByCraft
+	_craftOptions.clear();  // NHR: could be a std::string? defined here
+	_craftOptions.push_back("STR_NO_CRAFT_FILTER");
+	_craftOptions.push_back("STR_NOT_ASSIGNED");
+	for (size_t craft = 0; craft < _base->getCrafts()->size(); ++craft)
+	{
+       _craftOptions.push_back( _base->getCrafts()->at(craft)->getName(_game->getLanguage()));
+	}
+	_cbxFilterByCraft->setOptions(_craftOptions, true);
+	_cbxFilterByCraft->setSelected(0);
+	_cbxFilterByCraft->onChange((ActionHandler)&SoldiersState::cbxFilterCraftByChange);	
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_LEFT);
@@ -367,6 +339,7 @@ void SoldiersState::initList(size_t scrl)
 	_lstSoldiers->clearList();
 
 	_filteredListOfSoldiers.clear();
+	_baseIndexSoldiers.clear();
 
 	std::string selAction = "STR_SOLDIER_INFO";
 	if (!_availableOptions.empty())
@@ -379,8 +352,28 @@ void SoldiersState::initList(size_t scrl)
 	{
 		_lstSoldiers->setArrowColumn(188, ARROW_VERTICAL);
 
-		// all soldiers in the base
-		_filteredListOfSoldiers = *_base->getSoldiers();
+		// all soldiers in the base // NHR: Change to selection based on selectedCraftIndex
+		for(size_t i=0; i< _base->getSoldiers()->size();++i)
+		{
+			Soldier* soldier=_base->getSoldiers()->at(i);
+			if(selectedCraftIndex == 0)
+			{
+				_filteredListOfSoldiers.push_back(soldier);
+				_baseIndexSoldiers.push_back(i);
+			}else if(selectedCraftIndex == 1){
+				if (soldier->getCraft() == 0){
+					_filteredListOfSoldiers.push_back(soldier);	
+					_baseIndexSoldiers.push_back(i);									
+				}	
+			}else{
+				if (soldier->getCraft() == _base->getCrafts()->at(selectedCraftIndex-2))
+				{
+					_filteredListOfSoldiers.push_back(soldier);
+					_baseIndexSoldiers.push_back(i);
+				}
+			
+			}
+		}
 	}
 	else
 	{
@@ -391,16 +384,21 @@ void SoldiersState::initList(size_t scrl)
 		RuleSoldierTransformation *transformationRule = _game->getMod()->getSoldierTransformation(selAction);
 		if (transformationRule)
 		{
-			for (auto* soldier : *_base->getSoldiers())
+			for(size_t i=0; i< _base->getSoldiers()->size();++i)			
 			{
-				if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
+				Soldier* soldier=_base->getSoldiers()->at(i);
+				if ((soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT") || 
+                  
+				    ((selectedCraftIndex  > 1) && soldier->getCraft() != _base->getCrafts()->at(selectedCraftIndex-2)) ||
+					
+					(selectedCraftIndex == 1 )  && soldier->getCraft())
 				{
 					// soldiers outside of the base are not eligible
 					continue;
 				}
 				if (soldier->isEligibleForTransformation(transformationRule))
 				{
-					_filteredListOfSoldiers.push_back(soldier);
+					_filteredListOfSoldiers.push_back(soldier);		
 				}
 			}
 			for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
@@ -488,16 +486,18 @@ void SoldiersState::lstItemsLeftArrowClick(Action *action)
  */
 void SoldiersState::moveSoldierUp(Action *action, unsigned int row, bool max)
 {
-	Soldier *s = _base->getSoldiers()->at(row);
+	Soldier *s = _filteredListOfSoldiers.at(row);
+	size_t baseIndex = _baseIndexSoldiers.at(row);
 	if (max)
 	{
-		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + row);
+		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + baseIndex);
 		_base->getSoldiers()->insert(_base->getSoldiers()->begin(), s);
 	}
 	else
 	{
-		_base->getSoldiers()->at(row) = _base->getSoldiers()->at(row - 1);
-		_base->getSoldiers()->at(row - 1) = s;
+		size_t baseIndexNext = _baseIndexSoldiers.at(row-1);
+		_base->getSoldiers()->at(baseIndex) = _base->getSoldiers()->at(baseIndexNext);
+		_base->getSoldiers()->at(baseIndexNext) = s;
 		if (row != _lstSoldiers->getScroll())
 		{
 			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() - static_cast<Uint16>(8 * action->getYScale()));
@@ -517,7 +517,7 @@ void SoldiersState::moveSoldierUp(Action *action, unsigned int row, bool max)
 void SoldiersState::lstItemsRightArrowClick(Action *action)
 {
 	unsigned int row = _lstSoldiers->getSelectedRow();
-	size_t numSoldiers = _base->getSoldiers()->size();
+	size_t numSoldiers = _filteredListOfSoldiers.size();
 	if (0 < numSoldiers && INT_MAX >= numSoldiers && row < numSoldiers - 1)
 	{
 		if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
@@ -541,16 +541,18 @@ void SoldiersState::lstItemsRightArrowClick(Action *action)
  */
 void SoldiersState::moveSoldierDown(Action *action, unsigned int row, bool max)
 {
-	Soldier *s = _base->getSoldiers()->at(row);
+	Soldier *s = _filteredListOfSoldiers.at(row);
+	size_t baseIndex = _baseIndexSoldiers.at(row);
 	if (max)
 	{
-		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + row);
+		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + baseIndex);
 		_base->getSoldiers()->insert(_base->getSoldiers()->end(), s);
 	}
 	else
 	{
-		_base->getSoldiers()->at(row) = _base->getSoldiers()->at(row + 1);
-		_base->getSoldiers()->at(row + 1) = s;
+		size_t baseIndexNext = _baseIndexSoldiers.at(row+1);
+		_base->getSoldiers()->at(baseIndex) = _base->getSoldiers()->at(baseIndexNext);
+		_base->getSoldiers()->at(baseIndexNext) = s;
 		if (row != _lstSoldiers->getVisibleRows() - 1 + _lstSoldiers->getScroll())
 		{
 			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() + static_cast<Uint16>(8 * action->getYScale()));
@@ -570,33 +572,6 @@ void SoldiersState::moveSoldierDown(Action *action, unsigned int row, bool max)
 void SoldiersState::btnOkClick(Action *)
 {
 	_game->popState();
-}
-
-/**
- * Opens the Psionic Training screen.
- * @param action Pointer to an action.
- */
-void SoldiersState::btnPsiTrainingClick(Action *)
-{
-	_game->pushState(new AllocatePsiTrainingState(_base));
-}
-
-/**
- * Opens the Martial Training screen.
- * @param action Pointer to an action.
- */
-void SoldiersState::btnTrainingClick(Action *)
-{
-	_game->pushState(new AllocateTrainingState(_base));
-}
-
-/**
- * Opens the Memorial screen.
- * @param action Pointer to an action.
- */
-void SoldiersState::btnMemorialClick(Action *)
-{
-	_game->pushState(new SoldierMemorialState);
 }
 
 /**
@@ -637,6 +612,20 @@ void SoldiersState::cbxScreenActionsChange(Action *action)
 		initList(0);
 	}
 }
+
+/**
+ * Filters the soldiers list by the selected craft
+ * @param action Pointer to an action.
+ */
+void SoldiersState::cbxFilterCraftByChange(Action *action){
+	size_t selIdx = _cbxFilterByCraft->getSelected();
+	if (selIdx == (size_t)-1)
+	{
+		return;
+	}	
+	selectedCraftIndex = selIdx; 
+	initList(0);
+}	
 
 /**
 * Displays the inventory screen for the soldiers inside the base.

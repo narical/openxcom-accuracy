@@ -12,6 +12,53 @@ and the [wiki](https://www.ufopaedia.org/index.php/OpenXcom).
 
 Uses modified code from SDL\_gfx (LGPL) with permission from author.
 
+## 'Rejected features' fork
+
+This is a fork from official master of OXCE+ which allows some new features which
+have been rejected by official OXCE+ developers. Currently there are 2 new features
+implemented:
+
+### More than 8 bases
+
+Now, player can choose the limit of available bases to build using a new entry in
+file 'openxcom.cfg': 
+
+oxceMaxBases= maxNumBases
+
+Default is 8 bases.
+If more than the 8 visible bases, player can scroll bases miniview using RMB at the 
+edges of the miniview. A blue arrow appears when there are more bases at either edge.
+ 
+### Hangars reworked 
+Every hangar and craft has a "hangarType" tag, so a Hangar with an specific "hangarType"
+value can only store crafts with the same "hangarType". "hangaType" tag can be given 
+at both facilities and crafts, in their corresponding YAML ruleset. If no tag is given, 
+that craft/hangar will have a "-1" default tag, so their behavior will be the same
+as in vanilla engine.
+Another feature added is the possibility of allocate more than 1 craft at an specific
+hangar facility, so all crafts will be shown at Basescape, and can be right-clicked
+to go to craft screen. If more than craft is defined for an hangar facility, a new 
+YAML tag "craftSlots" should be defined in the hangar ruleset. This tag will be 
+followed by as many "position entries" as crafts are allowed in the hangar.
+Every position is a "- [x, y, z]" entry, where x,y are position offesets respect to 
+the center of the hangar sprite, and z is ignored. This way, modders can choose where
+they want to place crafts in an hangar which allows more than one.  
+
+An "example MOD" is included in "Examples" folder. Though this mod is a submod of the
+fantastic master mod "The Xcom Files", you can adapt it to any other mod or vanilla 
+game, which needed using differentiated hangars and/or more than 1 craft per hangar.
+
+### Windows Binary
+
+For convenience, a ZIP file with windows binary has been added to folder 'WindowsBinaries'.
+ This exe has been tested to work in a Windows10 machine (64 bits), thought it has not been
+intensively tested. It also include extra Language files needed for some specific features
+
+[Link to Windows Binary](/WindowsBinaries/UnzipInOXCEFolder.zip)
+
+You can just place the binary and folder in the game folder of the original one, and just click
+it when you want start the game with these new features.
+
 ## Installation
 
 OpenXcom requires a vanilla copy of the X-COM resources -- from either or both

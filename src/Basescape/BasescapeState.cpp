@@ -76,6 +76,8 @@ BasescapeState::BasescapeState(Base *base, Globe *globe) : _base(base), _globe(g
 	_mini = new MiniBaseView(128, 16, 192, 41);
 	_edtBase = new TextEdit(this, 127, 17, 193, 0);
 	_txtLocation = new Text(126, 9, 194, 16);
+	_leftArrow = new Text(7, 9, 192, 32); 
+	_rightArrow = new Text(7, 9, 310, 32); 	
 	_txtFunds = new Text(126, 9, 194, 24);
 	_btnNewBase = new TextButton(128, 12, 192, 58);
 	_btnBaseInfo = new TextButton(128, 12, 192, 71);
@@ -98,6 +100,8 @@ BasescapeState::BasescapeState(Base *base, Globe *globe) : _base(base), _globe(g
 	add(_edtBase, "text1", "basescape");
 	add(_txtLocation, "text2", "basescape");
 	add(_txtFunds, "text3", "basescape");
+	add(_leftArrow,"text3", "basescape");
+	add(_rightArrow,"text3", "basescape");	
 	add(_btnNewBase, "button", "basescape");
 	add(_btnBaseInfo, "button", "basescape");
 	add(_btnSoldiers, "button", "basescape");
@@ -122,8 +126,10 @@ BasescapeState::BasescapeState(Base *base, Globe *globe) : _base(base), _globe(g
 
 	_mini->setTexture(_game->getMod()->getSurfaceSet("BASEBITS.PCK"));
 	_mini->setBases(_game->getSavedGame()->getBases());
+	_mini->setVisibleBasesIndex(_game->getSavedGame()->getVisibleBasesIndex());
 	_mini->onMouseClick((ActionHandler)&BasescapeState::miniLeftClick, SDL_BUTTON_LEFT);
 	_mini->onMouseClick((ActionHandler)&BasescapeState::miniRightClick, SDL_BUTTON_RIGHT);
+	_mini->onMouseClick((ActionHandler)&BasescapeState::miniMiddleClick, SDL_BUTTON_MIDDLE);
 	_mini->onKeyboardPress((ActionHandler)&BasescapeState::handleKeyPress);
 
 	_edtBase->setBig();
@@ -204,7 +210,8 @@ void BasescapeState::init()
 	State::init();
 
 	setBase(_base);
-	_view->setBase(_base);
+	_view->setBase(_base);		
+	updateArrows();	
 	_mini->draw();
 	_edtBase->setText(_base->getName());
 
@@ -219,8 +226,7 @@ void BasescapeState::init()
 	}
 
 	_txtFunds->setText(tr("STR_FUNDS").arg(Unicode::formatFunding(_game->getSavedGame()->getFunds())));
-
-	_btnNewBase->setVisible(_game->getSavedGame()->getBases()->size() < MiniBaseView::MAX_BASES);
+	_btnNewBase->setVisible(_game->getSavedGame()->getBases()->size() < Options::maxNumberOfBases);
 
 	if (!_game->getMod()->getNewBaseUnlockResearch().empty())
 	{
@@ -253,12 +259,15 @@ void BasescapeState::setBase(Base *base)
 				break;
 			}
 		}
-		// If base was removed, select first one
+		// If base was removed, select first one and reset index of visible bases
 		if (!exists)
 		{
 			_base = _game->getSavedGame()->getBases()->front();
 			_mini->setSelectedBase(0);
 			_game->getSavedGame()->setSelectedBase(0);
+			_mini->setVisibleBasesIndex(0);
+			_game->getSavedGame()->setVisibleBasesIndex(0);
+
 		}
 	}
 	else
@@ -467,14 +476,14 @@ void BasescapeState::viewRightClick(Action *)
 	}
 	else if (f->getRules()->getCrafts() > 0)
 	{
-		if (f->getCraftForDrawing() == 0)
+		if (f->getCraftsForDrawing().empty())
 		{
 			_game->pushState(new CraftsState(_base));
 		}
 		else
 			for (size_t craft = 0; craft < _base->getCrafts()->size(); ++craft)
 			{
-				if (f->getCraftForDrawing() == _base->getCrafts()->at(craft))
+				if (_view->getSelectedCraft() == _base->getCrafts()->at(craft))
 				{
 					_game->pushState(new CraftInfoState(_base, craft));
 					break;
@@ -546,9 +555,9 @@ void BasescapeState::viewMouseOver(Action *)
 		else
 		{
 			ss << tr(f->getRules()->getType());
-			if (f->getCraftForDrawing() != 0)
+			if (!(f->getCraftsForDrawing().empty()))
 			{
-				ss << " " << tr("STR_CRAFT_").arg(f->getCraftForDrawing()->getName(_game->getLanguage()));
+				ss << " " << tr("STR_CRAFT_").arg(_view->getSelectedCraft()->getName(_game->getLanguage()));
 			}
 		}
 	}
@@ -573,8 +582,37 @@ void BasescapeState::miniLeftClick(Action *)
 	size_t base = _mini->getHoveredBase();
 	if (base < _game->getSavedGame()->getBases()->size())
 	{
-		_base = _game->getSavedGame()->getBases()->at(base);
+		_base = _game->getSavedGame()->getBases()->at(base + _mini->getVisibleBasesIndex());
 		init();
+	}
+}
+
+/**
+ * Scroll group of visible bases when at the
+ * leftmost or rightmost position
+ * @param action Pointer to an action.
+ */
+void BasescapeState::miniRightClick(Action*)
+{
+	size_t baseIndex = _mini->getHoveredBase();
+	size_t numBases = _game->getSavedGame()->getBases()->size();
+	if (numBases > MiniBaseView::MAX_VISIBLE_BASES)
+	{ // More bases than MiniBaseView::MAX_VISIBLE_BASES
+		if (baseIndex == MiniBaseView::MAX_VISIBLE_BASES - 1)
+		{ // most-right base
+			if(_mini->incVisibleBasesIndex())
+			{
+				_game->getSavedGame()->setVisibleBasesIndex(_mini->getVisibleBasesIndex());
+			}
+		}
+		else if (baseIndex == 0)
+		{ // most-left base
+			if(_mini->decVisibleBasesIndex())
+			{
+				_game->getSavedGame()->setVisibleBasesIndex(_mini->getVisibleBasesIndex());	
+			}		
+		}
+		updateArrows();
 	}
 }
 
@@ -582,9 +620,9 @@ void BasescapeState::miniLeftClick(Action *)
  * Moves the current base to the left in the list of bases.
  * @param action Pointer to an action.
  */
-void BasescapeState::miniRightClick(Action *)
+void BasescapeState::miniMiddleClick(Action *)
 {
-	size_t baseIndex = _mini->getHoveredBase();
+	size_t baseIndex = _mini->getHoveredBase() + _mini->getVisibleBasesIndex();
 
 	if (baseIndex > 0 && baseIndex < _game->getSavedGame()->getBases()->size())
 	{
@@ -637,6 +675,30 @@ void BasescapeState::handleKeyPress(Action *action)
 void BasescapeState::edtBaseChange(Action *)
 {
 	_base->setName(_edtBase->getText());
+}
+
+/**
+ *update visibility of arrows
+ */
+void BasescapeState::updateArrows()
+{
+	size_t numBases = _game->getSavedGame()->getBases()->size();
+	if(_mini->getVisibleBasesIndex() > 0)
+	{
+		_leftArrow->setText("<");	
+	}	
+    else{	
+		_leftArrow->setText("");
+	}
+	size_t maxIndex = numBases >  MiniBaseView::MAX_VISIBLE_BASES? numBases -  MiniBaseView::MAX_VISIBLE_BASES:0;
+	if(_mini->getVisibleBasesIndex() < maxIndex)
+	{
+		_rightArrow->setText(">");	
+	}	
+    else
+	{	
+		_rightArrow->setText("");
+	}
 }
 
 }

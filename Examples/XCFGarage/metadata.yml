@@ -1,0 +1,7 @@
+version: 1.0
+name: "[XCF] Garage"
+id: XCFGarage
+author: FlaubertNHR
+description: "Garage Expansion Mod Pack for X-Com Files. OXCE+ needed."
+master: x-com-files
+#requiredExtendedEngine: Hangars-reworked
