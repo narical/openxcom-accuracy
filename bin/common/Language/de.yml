@@ -142,7 +142,7 @@ de:
   STR_AITARGETMODE: "Zielverhalten für Brutale KI"
   STR_AITARGETMODE_DESC: "1> Nur was Einheiten selbst sehen. 2> Auch was andere Einheiten im selben Team sehen. 3> Auch Orte von denen sie oder ihre Kameraden angegriffen worden. 4> Keine Einschränkungen."
   STR_AIAGGRESSION: "Feindesaggressivität"
-  STR_AIAGGRESSION_DESC: "1> Sehr deckungsorientiertes Verhalten. 2> Ausgewogener Ansatz zwischen Angriff und Deckung. 3> Angriff ist wichtiger als Deckung. (schnell) 4> Keine Mühe, sich zu decken. (schneller)"
+  STR_AIAGGRESSION_DESC: "1> Sehr deckungsorientiertes Verhalten. 2> Ausgewogener Ansatz zwischen Angriff und Deckung. 3> Wie Ausgewogen aber schneller. 4> Keine Mühe, sich zu decken."
   STR_INHERITAGGRESSION: "Aggressivität der Einheit erben"
   STR_INHERITAGGRESSION_DESC: "Verwendet den Aggressionswert der Einheit anstelle dessen, was für die Feindesaggressivität gewählt wurde."
   STR_BRUTALCIVILIANS: "Brutale KI für neutrale Truppen"

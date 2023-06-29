@@ -3558,6 +3558,20 @@ void AIModule::brutalThink(BattleAction* action)
 				if (tileBelow && tileBelow->hasNoFloor())
 					validCover = false;
 			}
+			bool isNode = false;
+			if (_unit->getAggressiveness() == 3)
+			{
+				for (const auto* node : *_save->getNodes())
+				{
+					if (node->getPosition() == pos)
+					{
+						isNode = true;
+						break;
+					}
+				}
+				if (!isNode && getCoverValue(tile, _unit, 3) == 0)
+					validCover = false;
+			}
 			if (!sweepMode && validCover)
 			{
 				bool inReachable = false;
@@ -3570,13 +3584,7 @@ void AIModule::brutalThink(BattleAction* action)
 							Position compPos = pos;
 							compPos.x += x;
 							compPos.y += y;
-							if (_unit->getAggressiveness() == 3 && compPos == reachable.first)
-							{
-								avoidLoF = true;
-								if (reachable.second > discoverThreat)
-									discoverThreat = reachable.second;
-							}
-							if (_unit->getAggressiveness() < 3 && hasTileSight(compPos, reachable.first))
+							if (hasTileSight(compPos, reachable.first))
 							{
 								avoidLoF = true;
 								if (reachable.second > discoverThreat)
@@ -3737,12 +3745,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && directPeakScore > 0)
+			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && validCover)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(directPeakScore);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
