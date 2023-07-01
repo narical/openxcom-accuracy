@@ -2891,6 +2891,11 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(_unit->getFaction()));
 			}
+			if (_unit->hasVisibleUnit(enemy))
+			{
+				myDist = 0;
+				break;
+			}
 			myDist += Position::distance(myPos, enemyPos);
 		}
 	}
@@ -2923,6 +2928,11 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!_unit->isCheatOnMovement())
 				{
 					enemyPos = _save->getTileCoords(enemy->getTileLastSpotted(ally->getFaction()));
+				}
+				if (ally->hasVisibleUnit(enemy))
+				{
+					allyDist = 0;
+					break;
 				}
 				allyDist += Position::distance(ally->getPosition(), enemyPos);
 			}
@@ -2973,7 +2983,10 @@ void AIModule::brutalThink(BattleAction* action)
 		_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 
 	bool dummy = false;
-	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true);
+	BattleActionMove bam = BAM_NORMAL;
+	if (Options::strafe && wantToRun())
+		bam = BAM_RUN;
+	_allPathFindingNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, NULL, false, false, bam);
 	int explosionRadius = 0;
 	if (_grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled())
 	{
@@ -3364,7 +3377,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
-		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget);
+		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
@@ -3874,6 +3887,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_traceAI && unitToFaceTo)
 		Log(LOG_INFO) << "unit with closest distance after moving " << unitToFaceTo->getId() << " " << unitToFaceTo->getPosition() << " dist: " << shortestDist;
 	action->type = BA_WALK;
+	action->run = wantToRun();
 	action->finalFacing = -1;
 	if (unitToFaceTo != NULL)
 	{
@@ -3902,7 +3916,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (!_unit->isCheatOnMovement())
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			bool dummy = false;
-			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target);
+			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target, false, false, bam);
 			//Tile *lookAtTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), myNodes, false, NULL));
 			Tile* lookAtTile = _save->getTile(closestToGoTowards(targetPosition, myNodes, action->target));
 			if (lookAtTile && _traceAI)
@@ -4507,6 +4521,7 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 			{
 				score = newScore;
 				chosenBattleAction.type = BA_WALK;
+				chosenBattleAction.run = wantToRun();
 				chosenBattleAction.target = simulationPosition;
 				chosenBattleAction.weapon = _attackAction.weapon;
 				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
@@ -4544,6 +4559,7 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 				{
 					score = newScore;
 					chosenBattleAction.type = BA_WALK;
+					chosenBattleAction.run = wantToRun();
 					chosenBattleAction.target = simPos;
 					chosenBattleAction.weapon = _attackAction.weapon;
 					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
@@ -5923,7 +5939,10 @@ float AIModule::highestCoverInRange(const std::vector<PathfindingNode *> nodeVec
 bool AIModule::isAnyMovementPossible()
 {
 	bool dummy = true;
-	if (_save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, false, NULL, NULL, true).size() > 1)
+	BattleActionMove bam = BAM_NORMAL;
+	if (Options::strafe && wantToRun())
+		bam = BAM_RUN;
+	if (_save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, false, NULL, NULL, true, false, bam).size() > 1)
 		return true;
 	return false;
 }
@@ -6005,6 +6024,8 @@ bool AIModule::hasTileSight(Position from, Position to)
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		from.z += 1;
 	tile = _save->getTile(to);
+	if (!tile)
+		return false;
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		to.z += 1;
 	if (_save->getTileEngine()->calculateLineTile(from, to, trajectory) > 0)
@@ -6130,5 +6151,13 @@ UnitSide AIModule::getSideFacingToPosition(BattleUnit* unit, Position pos)
 	return SIDE_UNDER;
 }
 
+bool AIModule::wantToRun()
+{
+	if (_traceAI)
+		Log(LOG_INFO) << "E:TU-Ratio: " << (float)_unit->getEnergy() / _unit->getTimeUnits() << " E-cost:TU-cost-Ratio: " << (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent;
+	if (Options::strafe && _unit->getArmor()->allowsRunning() && (float)_unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
+		return true;
+	return false;
+}
 
 }

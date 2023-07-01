@@ -30,7 +30,14 @@ class Tile;
 class BattleUnit;
 struct BattleActionCost;
 
-enum BattleActionMove : char;
+enum BattleActionMove : char
+{
+	BAM_NORMAL = 0,
+	BAM_RUN = 1,
+	BAM_STRAFE = 2,
+	BAM_SNEAK = 3,
+	BAM_MISSILE = 4
+};
 
 
 /**
@@ -270,7 +277,7 @@ public:
 	/// Gets all reachable tiles, based on cost.
 	std::vector<int> findReachable(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTUs);
 	/// Gets all reachable tiles, based on cost and returns the associated cost of getting there too
-	std::vector<PathfindingNode*> findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTus, bool entireMap = false, const BattleUnit* missileTarget = NULL, const Position* alternateStart = NULL, bool justCheckIfAnyMovementIsPossible = false, bool useMaxTUs = false);
+	std::vector<PathfindingNode*> findReachablePathFindingNodes(BattleUnit *unit, const BattleActionCost &cost, bool &ranOutOfTus, bool entireMap = false, const BattleUnit* missileTarget = NULL, const Position* alternateStart = NULL, bool justCheckIfAnyMovementIsPossible = false, bool useMaxTUs = false, BattleActionMove bam = BAM_NORMAL);
 	/// Gets _totalTUCost; finds out whether we can hike somewhere in this turn or not.
 	int getTotalTUCost() const { return _totalTUCost.time; }
 	/// Gets the path preview setting.

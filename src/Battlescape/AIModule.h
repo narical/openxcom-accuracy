@@ -240,6 +240,8 @@ public:
 	float grenadeRiddingUrgency();
 	/// returns which side of the unit is facing the given position
 	UnitSide getSideFacingToPosition(BattleUnit* unit, Position pos);
+	/// returns whether the unit wants to run
+	bool wantToRun();
 };
 
 }

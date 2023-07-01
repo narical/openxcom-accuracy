@@ -1477,7 +1477,7 @@ std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleAction
  * @param missileTarget we can path into this unit as we want to hit it
  * @return A vector of pathfinding-nodes, sorted in ascending order of cost. The first tile is the start location.
  */
-std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(BattleUnit* unit, const BattleActionCost& cost, bool& ranOutOfTUs, bool entireMap, const BattleUnit* missileTarget, const Position* alternateStart, bool justCheckIfAnyMovementIsPossible, bool useMaxTUs)
+std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(BattleUnit* unit, const BattleActionCost& cost, bool& ranOutOfTUs, bool entireMap, const BattleUnit* missileTarget, const Position* alternateStart, bool justCheckIfAnyMovementIsPossible, bool useMaxTUs, BattleActionMove bam)
 {
 	_unit = unit;
 	Position start = unit->getPosition();
@@ -1537,7 +1537,7 @@ std::vector<PathfindingNode*> Pathfinding::findReachablePathFindingNodes(BattleU
 		// Try all reachable neighbours.
 		for (int direction = 0; direction < 10; direction++)
 		{
-			auto r = getTUCost(currentPos, direction, unit, missileTarget, BAM_NORMAL);
+			auto r = getTUCost(currentPos, direction, unit, missileTarget, bam);
 			if (r.cost.time == INVALID_MOVE_COST) // Skip unreachable / blocked
 				continue;
 			auto totalTuCost = currentNode->getTUCost(false) + r.cost + r.penalty;

@@ -401,7 +401,10 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		auto* targetTile = _save->getTile(action.target);
 		if (targetTile)
 		{
-			_save->getPathfinding()->calculate(action.actor, action.target, BAM_NORMAL);
+			BattleActionMove bam = BAM_NORMAL;
+			if (Options::strafe && action.actor->isBrutal() && action.actor->getAIModule()->wantToRun())
+				bam = BAM_RUN;
+			_save->getPathfinding()->calculate(action.actor, action.target, bam);
 		}
 		if (_save->getPathfinding()->getStartDirection() != -1)
 		{
