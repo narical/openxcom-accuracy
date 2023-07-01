@@ -71,7 +71,6 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 	// set random hidden movement/next turn background for this mission
 	auto battleSave = _game->getSavedGame()->getSavedBattle();
 	battleSave->setRandomHiddenMovementBackground(_game->getMod());
-
 	std::string mission = battleSave->getMissionType();
 	AlienDeployment *deployment = _game->getMod()->getDeployment(mission);
 	Ufo * ufo = 0;
