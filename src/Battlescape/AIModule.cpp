@@ -3005,6 +3005,7 @@ void AIModule::brutalThink(BattleAction* action)
 	int primeScore = 0;
 	bool amInLoSToFurthestReachable = false;
 	bool amCloserThanFurthestReachable = false;
+	bool contact = _unit->getTurnsSinceSeen(_targetFaction) == 0 && !_save->getTileEngine()->isNextToDoor(myTile);
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
@@ -3340,6 +3341,8 @@ void AIModule::brutalThink(BattleAction* action)
 		peakMode = true;
 	if (_traceAI)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
+	if (_traceAI)
+		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled && saveDistance)
 	{
 		BattleItem* grenade = _unit->getGrenadeFromBelt();
@@ -3382,6 +3385,7 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
+		float lowestDiscoverThread = FLT_MAX;
 		for (auto pu : _allPathFindingNodes)
 		{
 			Position pos = pu->getPosition();
@@ -3607,12 +3611,23 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 				discoverThreat = std::max(0.0f, discoverThreat);
-				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-					greatCoverScore = 100 / (walkToDist + discoverThreat);
-				else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile, true))
-					goodCoverScore = 100 / (walkToDist + discoverThreat);
+				float distMod = walkToDist;
+				if (contact)
+				{
+					distMod = 0;
+					if (discoverThreat < lowestDiscoverThread)
+					{
+						lowestDiscoverThread = discoverThreat;
+					}
+					if (lowestDiscoverThread == 0 && discoverThreat == 0)
+						discoverThreat = pu->getTUCost(false).time + 1;
+				}
+				if (_unit->getAggressiveness() < 2 && !realLineOfFire && !peakLoF && !avoidLoF && !_save->getTileEngine()->isNextToDoor(tile))
+					greatCoverScore = 100 / (distMod + discoverThreat);
+				else if (!realLineOfFire && !peakLoF && !_save->getTileEngine()->isNextToDoor(tile))
+					goodCoverScore = 100 / (distMod + discoverThreat);
 				else
-					okayCoverScore = 100 / (walkToDist + discoverThreat);
+					okayCoverScore = 100 / (distMod + discoverThreat);
 			}
 			if (!sweepMode)
 			{
@@ -6153,9 +6168,11 @@ UnitSide AIModule::getSideFacingToPosition(BattleUnit* unit, Position pos)
 
 bool AIModule::wantToRun()
 {
+	if (!Options::strafe || !_unit->getArmor()->allowsRunning())
+		return false;
 	if (_traceAI)
 		Log(LOG_INFO) << "E:TU-Ratio: " << (float)_unit->getEnergy() / _unit->getTimeUnits() << " E-cost:TU-cost-Ratio: " << (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent;
-	if (Options::strafe && _unit->getArmor()->allowsRunning() && (float)_unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
+	if ((float)_unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
 		return true;
 	return false;
 }
