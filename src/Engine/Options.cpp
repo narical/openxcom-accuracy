@@ -222,7 +222,7 @@ void create()
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
-	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, true, "STR_AI_PERFORMANCE", "STR_AI"));
+	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("inheritAggression", &inheritAggression, false, "STR_INHERITAGGRESSION", "STR_AI"));

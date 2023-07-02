@@ -3009,7 +3009,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins();
+	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	for (BattleUnit* target : *(_save->getUnits()))
@@ -3569,15 +3569,12 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			float discoverThreat = 0;
 			bool validCover = true;
+			bool isNode = false;
 			if (Options::aiPerformanceOptimization && tile->hasNoFloor())
 			{
 				Tile* tileBelow = _save->getBelowTile(tile);
 				if (tileBelow && tileBelow->hasNoFloor())
 					validCover = false;
-			}
-			bool isNode = false;
-			if (_unit->getAggressiveness() == 3)
-			{
 				for (const auto* node : *_save->getNodes())
 				{
 					if (node->getPosition() == pos)
