@@ -3004,7 +3004,6 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleUnit* unitToWalkTo = NULL;
 	int primeScore = 0;
 	bool amInLoSToFurthestReachable = false;
-	bool amCloserThanFurthestReachable = false;
 	bool contact = _unit->getTurnsSinceSeen(_targetFaction) == 0 && !_save->getTileEngine()->isNextToDoor(myTile);
 
 	Position furthestPositionEnemyCanReach = myPos;
@@ -3207,8 +3206,6 @@ void AIModule::brutalThink(BattleAction* action)
 		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true));
 		if (clearSight(myPos, furthestPositionEnemyCanReach))
 			amInLoSToFurthestReachable = true;
-		if (closestDistanceofFurthestPosition < _save->getMod()->getMaxViewDistance())
-			amCloserThanFurthestReachable = true;
 		if (weaponRange < Position::distance(myPos, targetPosition))
 			iAmShortRange = true;
 	}
@@ -3340,7 +3337,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (!_unit->isCheatOnMovement() && !shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	if (_traceAI)
-		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " too close: " << amCloserThanFurthestReachable << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
+		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
 	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && primeScore >= 0 && !IAmMindControlled && saveDistance)
@@ -3549,11 +3546,14 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			if (!sweepMode)
 			{
-				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos)
+				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo)
 				{
 					if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
 						smokePeakScore = 100 / walkToDist;
-					if (Position::distance(pos, targetPosition) <= _save->getMod()->getMaxViewDistance())
+					int viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo->getArmor());
+					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
+						viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo->getArmor());
+					if (Position::distance(pos, targetPosition) <= viewDistance)
 					{
 						Tile* targetTile = _save->getTile(targetPosition);
 						if (targetTile)
@@ -3624,7 +3624,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				discoverThreat = std::max(0.0f, discoverThreat);
 				float distMod = walkToDist;
-				if (contact)
+				if (contact && !outOfRangeForShortRangeWeapon)
 				{
 					distMod = 0;
 					if (discoverThreat < lowestDiscoverThread)
