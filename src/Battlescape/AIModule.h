@@ -159,7 +159,7 @@ public:
 	/// find the closest Position that isn't our current position which is on the way to a target
 	Position closestToGoTowards(Position target, const std::vector<PathfindingNode *> nodeVector, Position myPos, bool peakMode = false);
 	/// checks if the path to a position is save
-	bool isPathToPositionSave(Position target, bool checkForProxies = false);
+	bool isPathToPositionSave(Position target, bool &saveForProxies);
 	/// Performs a psionic attack but allow multiple per turn and take success-chance into consideration
 	bool brutalPsiAction();
 	/// Chooses a firing mode for the AI based on expected damage dealt
