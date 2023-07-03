@@ -242,6 +242,8 @@ public:
 	UnitSide getSideFacingToPosition(BattleUnit* unit, Position pos);
 	/// returns whether the unit wants to run
 	bool wantToRun();
+	/// Pointer to save so that unit can access it
+	SavedBattleGame* getSave() { return _save; };
 };
 
 }

@@ -6063,7 +6063,12 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 										Tile* tile = _save->getTile(posVisited);
 										if (!onlyNew || tile->getLastExplored(unit->getFaction()) < _save->getTurn())
 										{
-											visibleFrom.insert(tile);
+											BattleUnit* unitOnTile = tile->getUnit();
+											int viewDistance = unit->getMaxViewDistanceAtDay(unitOnTile ? unitOnTile->getArmor() : NULL);
+											if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
+												viewDistance = unit->getMaxViewDistanceAtDark(unitOnTile ? unitOnTile->getArmor() : NULL);
+											if (Position::distance(unit->getPosition(), tile->getPosition()) <= viewDistance)
+												visibleFrom.insert(tile);
 										}
 									}
 								}
