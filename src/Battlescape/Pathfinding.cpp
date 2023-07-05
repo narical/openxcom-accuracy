@@ -577,7 +577,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		if (missileTarget && destinationTile[i]->getUnit())
 		{
 			BattleUnit *unitHere = destinationTile[i]->getUnit();
-			if (unitHere != missileTarget && !unitHere->isOut())
+			if (unitHere != missileTarget && !unitHere->isOut() && unitHere != unit)
 			{
 				if (unitHere->getFaction() == unit->getFaction())
 				{
