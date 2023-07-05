@@ -3151,8 +3151,7 @@ void AIModule::brutalThink(BattleAction* action)
 			return;
 		}
 	}
-	if (_blaster)
-		brutalBlaster();
+	brutalBlaster();
 	if (_attackAction.type == BA_RETHINK)
 		brutalSelectSpottedUnitForSniper();
 	if (_attackAction.type == BA_RETHINK && _grenade)
@@ -3173,6 +3172,9 @@ void AIModule::brutalThink(BattleAction* action)
 			_unit->spendTimeUnits(4);
 		}
 		action->updateTU();
+		if (_traceAI)
+			Log(LOG_INFO) << "Should attack " << action->target
+						  << " with " << action->weapon->getRules()->getName();
 		if (action->type == BA_LAUNCH)
 		{
 			action->waypoints = _attackAction.waypoints;
@@ -4899,10 +4901,10 @@ float AIModule::brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackin
 			}
 		}
 	}
-	if (_traceAI)
-	{
-		Log(LOG_INFO) << "Explosion at " << targetPos << " will hit " << enemiesAffected;
-	}
+	//if (_traceAI)
+	//{
+	//	Log(LOG_INFO) << "Explosion at " << targetPos << " will hit " << enemiesAffected;
+	//}
 	return enemiesAffected;
 }
 
@@ -5000,6 +5002,17 @@ int AIModule::getTurnCostTowards(Position target)
  */
 void AIModule::brutalBlaster()
 {
+	if (_unit->getSpecialWeapon(BT_FIREARM))
+	{
+		if (_unit->getSpecialWeapon(BT_FIREARM)->getCurrentWaypoints() != 0)
+		{
+			if (!_blaster)
+				_attackAction.weapon = _unit->getSpecialWeapon(BT_FIREARM);
+			_blaster = true;
+		}
+	}
+	if (!_blaster)
+		return;
 	BattleActionCost attackCost(BA_LAUNCH, _unit, _attackAction.weapon);
 	int maxWaypoints = _attackAction.weapon->getCurrentWaypoints();
 	if (maxWaypoints == -1)
