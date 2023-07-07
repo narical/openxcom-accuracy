@@ -3767,7 +3767,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(isNode);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -6046,10 +6046,9 @@ bool AIModule::hasTileSight(Position from, Position to)
 		result = false;
 	_save->getTileEngine()->setVisibilityCache(from, to, result);
 	// Set visibility cache for each position in the trajectory
-	for (const Position& position : trajectory)
+	if (result)
 	{
-		_save->getTileEngine()->setVisibilityCache(from, position, result);
-		if (result)
+		for (const Position& position : trajectory)
 			_save->getTileEngine()->setVisibilityCache(position, to, result);
 	}
 	return result;
