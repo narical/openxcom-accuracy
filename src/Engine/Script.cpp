@@ -24,6 +24,7 @@
 #include <cmath>
 #include <bitset>
 #include <array>
+#include <numeric>
 
 #include "Logger.h"
 #include "Options.h"
@@ -668,13 +669,112 @@ public:
 	SelectedToken getNextToken(TokenEnum excepted = TokenNone);
 };
 
+/**
+ * ScriptRef that is glue from independent parts.
+ * First empty ref mean end of list.
+ */
+class ScriptRefCompound
+{
+
+public:
+
+	std::array<ScriptRef, 4> parts;
+
+	/// Default constructor.
+	constexpr ScriptRefCompound() = default;
+
+	/// Constructor from one ref.
+	constexpr ScriptRefCompound(ScriptRef r) : parts{ r }
+	{
+
+	}
+
+
+	constexpr bool haveParts() const
+	{
+		return !!parts[1];
+	}
+
+	constexpr size_t sizeParts() const
+	{
+		size_t s = 0;
+		interate([&](const ScriptRef& r){ s += 1; });
+		return s;
+	}
+
+	constexpr size_t size() const
+	{
+		size_t s = 0;
+		interate([&](const ScriptRef& r){ s += r.size(); });
+		return s;
+	}
+
+	constexpr ScriptRef last() const
+	{
+		ScriptRef l;
+		interate([&](const ScriptRef& r){ l = r; });
+		return l;
+	}
+
+	std::string toString() const
+	{
+		std::string s;
+		s.reserve(size());
+		interate([&](const ScriptRef& r){ s.append(r.begin(), r.size()); });
+		return s;
+	}
+
+
+	constexpr explicit operator bool() const
+	{
+		return !!parts[0];
+	}
+
+	constexpr operator ScriptRange<ScriptRef>() const
+	{
+		return { parts.begin(), parts.end() };
+	}
+
+
+	template<typename Callback>
+	constexpr void interateMutate(Callback&& f)
+	{
+		for (auto& p : parts)
+		{
+			if constexpr (std::is_invocable_r_v<bool, Callback, ScriptRef&>)
+			{
+				if (!f(p))
+				{
+					return;
+				}
+			}
+			else
+			{
+				f(p);
+			}
+		}
+	}
+
+	template<typename Callback>
+	constexpr void interate(Callback&& f) const
+	{
+		for (const auto& p : parts)
+		{
+			if (!p)
+			{
+				return;
+			}
+
+			f(p);
+		}
+	}
+};
 
 class ScriptRefOperation
 {
 public:
 	ScriptRange<ScriptProcData> procList;
-	ScriptRef procNamePrefix;
-	ScriptRef procName;
+	ScriptRefCompound procName;
 
 	ScriptRefData argRef;
 	ScriptRef argName;
@@ -684,7 +784,7 @@ public:
 	{
 		return
 			(procName && procList) && // have function name and have related overload set
-			(!argName || (argRef && procNamePrefix)) // have optional argument embedded in original operation name
+			(!argName || (argRef && procName.haveParts())) // have optional argument embedded in original operation name
 		;
 	}
 
@@ -696,16 +796,6 @@ public:
 	bool haveArg() const
 	{
 		return !!argName;
-	}
-
-	std::string toStringProc() const
-	{
-		return procNamePrefix.toString() + procName.toString();
-	}
-
-	std::string toStringArg() const
-	{
-		return argName.toString();
 	}
 };
 
@@ -1198,9 +1288,8 @@ ScriptRefOperation findOperationAndArg(const ParserWriter& ph, ScriptRef op)
 			return result;
 		}
 
-		result.procNamePrefix = name;
-		result.procName = op.substr(first_dot);
-		result.procList = ph.parser.getProc(result.procNamePrefix, result.procName);
+		result.procName.parts = { name, op.substr(first_dot) };
+		result.procList = ph.parser.getProc(result.procName);
 	}
 
 	return result;
@@ -1217,18 +1306,18 @@ void logErrorOnOperationArg(const ScriptRefOperation& op)
 	{
 		if (op.argRef)
 		{
-			if (op.procNamePrefix)
+			if (op.procName.haveParts())
 			{
-				Log(LOG_ERROR) << "Unknown operation name '" << op.toStringProc() << "' for variable '" << op.toStringArg() << "'";
+				Log(LOG_ERROR) << "Unknown operation name '" << op.procName.toString() << "' for variable '" << op.argName.toString() << "'";
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Unsupported type for variable '" << op.toStringArg() << "'";
+				Log(LOG_ERROR) << "Unsupported type for variable '" << op.argName.toString() << "'";
 			}
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Unknown variable name '" << op.toStringArg() << "'";
+			Log(LOG_ERROR) << "Unknown variable name '" << op.argName.toString() << "'";
 		}
 	}
 }
@@ -2038,6 +2127,60 @@ void addSortHelper(std::vector<R>& vec, R value)
 	std::sort(vec.begin(), vec.end(), [](const R& a, const R& b) { return ScriptRef::compare(a.name, b.name) < 0; });
 }
 
+template<bool upper, typename R>
+auto boundSortHelper(R* begin, R* end, ScriptRange<ScriptRef> than)
+{
+	constexpr int limit = upper ? 1 : 0;
+	const auto total_size = std::accumulate(than.begin(), than.end(), size_t{}, [](size_t acc, ScriptRef r) { return acc + r.size(); });
+	const auto last_empty = std::find_if(than.begin(), than.end(), [](ScriptRef r){ return !r; });
+
+	// some garbage, should not happened, for avoiding unexpected results make check for it
+	assert(std::all_of(last_empty, than.end(), [](ScriptRef r){ return !r; }));
+
+	const auto final_range = ScriptRange{ than.begin(), last_empty };
+
+	return std::partition_point(begin, end,
+		[&](const R& a)
+		{
+			const auto curr = a.name.size();
+			if (curr < total_size)
+			{
+				return true;
+			}
+			else if (curr == total_size)
+			{
+				ScriptRef head = {};
+				ScriptRef tail = a.name;
+				auto comp = 0;
+				for (ScriptRef r : final_range)
+				{
+					auto s = r.size();
+					head = tail.head(s);
+					tail = tail.tail(s);
+					comp = ScriptRef::compare(head, r);
+					if (comp < 0)
+					{
+						return true;
+					}
+					else if (comp > 0)
+					{
+						return false;
+					}
+					else // comp == 0
+					{
+						continue;
+					}
+				}
+				return comp < limit;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	);
+}
+
 /**
  * Get bound of value, upper or lower based on template parameter.
  * @param begin begin of sorted range.
@@ -2081,36 +2224,51 @@ R* boundSortHelper(R* begin, R* end, ScriptRef prefix, ScriptRef postfix = {})
 }
 
 /**
- * Helper function finding data by name (that can be merge from two parts).
+ * Helper function finding data by name (that can be merge from multiple parts).
  * @param begin begin of sorted range.
  * @param end end of sorted range.
- * @param prefix First part of name.
- * @param postfix Second part of name.
+ * @param name Name split to parts.
  * @return Found data or null.
  */
-template<typename R>
-R* findSortHelper(R* begin, R* end, ScriptRef prefix, ScriptRef postfix = {})
+template<typename R, typename... Args>
+R* findSortHelper(R* begin, R* end, Args... args)
 {
-	auto f = boundSortHelper<false>(begin, end, prefix, postfix);
+	auto f = boundSortHelper<false>(begin, end, args...);
 	if (f != end)
 	{
-		if (postfix)
+		// check upper bound, if is different than lower, its mean we have hit
+		if (f != boundSortHelper<true>(f, f + 1, args...))
 		{
-			const auto size = prefix.size();
-			if (f->name.substr(0, size) == prefix && f->name.substr(size) == postfix)
-			{
-				return &*f;
-			}
-		}
-		else
-		{
-			if (f->name == prefix)
-			{
-				return &*f;
-			}
+			return &*f;
 		}
 	}
 	return nullptr;
+}
+
+/**
+ * Helper function finding data by name (that can be merge from multiple parts).
+ * @param begin begin of sorted range.
+ * @param end end of sorted range.
+ * @param name Name split to parts.
+ * @return Found data or null.
+ */
+template<typename R>
+const R* findSortHelper(const std::vector<R>& vec, ScriptRange<ScriptRef> name)
+{
+	return findSortHelper(vec.data(), vec.data() + vec.size(), name);
+}
+
+/**
+ * Helper function finding data by name (that can be merge from multiple parts).
+ * @param begin begin of sorted range.
+ * @param end end of sorted range.
+ * @param name Name split to parts.
+ * @return Found data or null.
+ */
+template<typename R>
+R* findSortHelper(std::vector<R>& vec, ScriptRange<ScriptRef> name)
+{
+	return findSortHelper(vec.data(), vec.data() + vec.size(), name);
 }
 
 /**
@@ -2894,40 +3052,37 @@ const ScriptTypeData* ScriptParserBase::getType(ArgEnum type) const
 
 /**
  * Get type data with name equal prefix + postfix.
- * @param prefix Beginning of name.
- * @param postfix End of name.
+ * @param name Name split in parts.
  * @return Pointer to data or null if not find.
  */
-const ScriptTypeData* ScriptParserBase::getType(ScriptRef prefix, ScriptRef postfix) const
+const ScriptTypeData* ScriptParserBase::getType(ScriptRange<ScriptRef> name) const
 {
-	return findSortHelper(_typeList, prefix, postfix);
+	return findSortHelper(_typeList, name);
 }
 
 /**
  * Get function data with name equal prefix + postfix.
- * @param prefix Beginning of name.
- * @param postfix End of name.
+ * @param name Name split in parts.
  * @return Pointer to data or null if not find.
  */
-ScriptRange<ScriptProcData> ScriptParserBase::getProc(ScriptRef prefix, ScriptRef postfix) const
+ScriptRange<ScriptProcData> ScriptParserBase::getProc(ScriptRange<ScriptRef> name) const
 {
 	auto lower = _procList.data();
 	auto upper = _procList.data() + _procList.size();
-	lower = boundSortHelper<false>(lower, upper, prefix, postfix);
-	upper = boundSortHelper<true>(lower, upper, prefix, postfix);
+	lower = boundSortHelper<false>(lower, upper, name);
+	upper = boundSortHelper<true>(lower, upper, name);
 
 	return { lower, upper };
 }
 
 /**
  * Get arguments data with name equal prefix + postfix.
- * @param prefix Beginning of name.
- * @param postfix End of name.
+ * @param name Name split in parts.
  * @return Pointer to data or null if not find.
  */
-const ScriptRefData* ScriptParserBase::getRef(ScriptRef prefix, ScriptRef postfix) const
+const ScriptRefData* ScriptParserBase::getRef(ScriptRange<ScriptRef> name) const
 {
-	return findSortHelper(_refList, prefix, postfix);
+	return findSortHelper(_refList, name);
 }
 
 /**
@@ -4069,6 +4224,137 @@ static auto dummyTestScriptFunctionParser = ([]
 		assert(r.argName == ScriptRef{"foo"} && "func 'foo.test2'");
 		assert(r.haveProc() == true && "func 'foo.test2'");
 	}
+
+	return 0;
+})();
+
+
+static auto dummyTestScriptStringRef = ([]
+{
+	assert(ScriptRef{"foo"} == ScriptRef{"foo"}.substr(0));
+	assert(ScriptRef{"oo"} == ScriptRef{"foo"}.substr(1));
+	assert(ScriptRef{"o"} == ScriptRef{"foo"}.substr(2));
+	assert(ScriptRef{""} == ScriptRef{"foo"}.substr(3));
+	assert(ScriptRef{""} == ScriptRef{"foo"}.substr(4));
+
+	assert(ScriptRef{""} == ScriptRef{"foo1234"}.substr(3, 0));
+	assert(ScriptRef{"1"} == ScriptRef{"foo1234"}.substr(3, 1));
+	assert(ScriptRef{"12"} == ScriptRef{"foo1234"}.substr(3, 2));
+	assert(ScriptRef{"123"} == ScriptRef{"foo1234"}.substr(3, 3));
+	assert(ScriptRef{"1234"} == ScriptRef{"foo1234"}.substr(3, 4));
+	assert(ScriptRef{"1234"} == ScriptRef{"foo1234"}.substr(3, 5));
+
+	assert(ScriptRef{""} == ScriptRef{"12345"}.head(0));
+	assert(ScriptRef{"1"} == ScriptRef{"12345"}.head(1));
+	assert(ScriptRef{"12"} == ScriptRef{"12345"}.head(2));
+	assert(ScriptRef{"123"} == ScriptRef{"12345"}.head(3));
+	assert(ScriptRef{"1234"} == ScriptRef{"12345"}.head(4));
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.head(5));
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.head(6));
+
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.tail(0));
+	assert(ScriptRef{"2345"} == ScriptRef{"12345"}.tail(1));
+	assert(ScriptRef{"345"} == ScriptRef{"12345"}.tail(2));
+	assert(ScriptRef{"45"} == ScriptRef{"12345"}.tail(3));
+	assert(ScriptRef{"5"} == ScriptRef{"12345"}.tail(4));
+	assert(ScriptRef{""} == ScriptRef{"12345"}.tail(5));
+	assert(ScriptRef{""} == ScriptRef{"12345"}.tail(6));
+
+	assert(ScriptRef{""} == ScriptRef{"12345"}.headFromEnd(0));
+	assert(ScriptRef{"5"} == ScriptRef{"12345"}.headFromEnd(1));
+	assert(ScriptRef{"45"} == ScriptRef{"12345"}.headFromEnd(2));
+	assert(ScriptRef{"345"} == ScriptRef{"12345"}.headFromEnd(3));
+	assert(ScriptRef{"2345"} == ScriptRef{"12345"}.headFromEnd(4));
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.headFromEnd(5));
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.headFromEnd(6));
+
+	assert(ScriptRef{"12345"} == ScriptRef{"12345"}.tailFromEnd(0));
+	assert(ScriptRef{"1234"} == ScriptRef{"12345"}.tailFromEnd(1));
+	assert(ScriptRef{"123"} == ScriptRef{"12345"}.tailFromEnd(2));
+	assert(ScriptRef{"12"} == ScriptRef{"12345"}.tailFromEnd(3));
+	assert(ScriptRef{"1"} == ScriptRef{"12345"}.tailFromEnd(4));
+	assert(ScriptRef{""} == ScriptRef{"12345"}.tailFromEnd(5));
+	assert(ScriptRef{""} == ScriptRef{"12345"}.tailFromEnd(6));
+
+	return 0;
+})();
+
+
+
+static auto dummyTestScriptLowerBound = ([]
+{
+	std::vector<ScriptTypeData> test;
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "b" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "bb" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "bbb" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "bbbb" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "c" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "cc" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "ccc" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "a" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aa" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aaa" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aaaa" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aaab" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aaaba" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "aaaaa" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "abcde" }  });
+	addSortHelper(test, ScriptTypeData{ ScriptRef{ "abcdf" }  });
+
+	auto pairRange = [&](const auto &pr, const auto &po)
+	{
+		ScriptRef prefix{ pr };
+		ScriptRef postfix{ po };
+		auto lower = test.data();
+		auto upper = test.data() + test.size();
+		lower = boundSortHelper<false>(lower, upper, prefix, postfix);
+		upper = boundSortHelper<true>(lower, upper, prefix, postfix);
+		return std::make_pair(lower, upper);
+	};
+	auto listRange = [&](std::initializer_list<const char*> l)
+	{
+		ScriptRef prefix[64] = { };
+		int i = 0;
+		for (auto* p : l)
+		{
+			prefix[i] = ScriptRef{ p, p + std::strlen(p) };
+			++i;
+		}
+		auto lower = test.data();
+		auto upper = test.data() + test.size();
+		lower = boundSortHelper<false>(lower, upper, ScriptRange{ prefix, prefix + i });
+		upper = boundSortHelper<true>(lower, upper, ScriptRange{ prefix, prefix + i });
+		return std::make_pair(lower, upper);
+	};
+	auto foundSomething = [](std::pair<const ScriptTypeData*, const ScriptTypeData*> p)
+	{
+		return p.first != p.second;
+	};
+
+	assert(true == foundSomething(pairRange("aa", "")));
+	assert(true == foundSomething(pairRange("aaaa", "")));
+	assert(true == foundSomething(pairRange("aa", "aa")));
+	assert((pairRange("aaaa", "")) == (pairRange("aa", "aa")));
+	assert((pairRange("abcde", "")) == (pairRange("abc", "de")));
+	assert((pairRange("abcde", "")) == (pairRange("ab", "cde")));
+
+	assert(false == foundSomething(listRange({"www"})));
+	assert(false == foundSomething(listRange({"www", ""})));
+	assert(true == foundSomething(listRange({"aa"})));
+	assert(true == foundSomething(listRange({"aa", ""})));
+	assert(true == foundSomething(listRange({"aaaa", ""})));
+	assert(true == foundSomething(listRange({"aa", "aa"})));
+	assert((listRange({"aaaa", ""})) == (listRange({"aa", "aa"})));
+	assert((listRange({"abcde", ""})) == (listRange({"abc", "de"})));
+	assert((listRange({"abcde", ""})) == (listRange({"ab", "cde"})));
+	assert((listRange({"abcde", ""})) == (listRange({"a", "b", "cde"})));
+	assert((listRange({"abcde", ""})) == (listRange({"a", "b", "c", "d", "e"})));
+	assert(false == foundSomething(listRange({"www", ""})));
+
+	assert((pairRange("abcde", "")) == (listRange({"a", "b", "cde"})));
+
+	assert((pairRange("aaaba", "").second) == (pairRange("abcde", "").first));
+	assert((pairRange("abcde", "").second) == (pairRange("ab", "cdf").first));
 
 	return 0;
 })();
