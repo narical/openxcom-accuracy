@@ -1567,6 +1567,12 @@ void SavedBattleGame::endTurn()
 		}
 	}
 
+	//danger state must be cleared after each player due to autoplay also setting it
+	for (int i = 0; i < _mapsize_x * _mapsize_y * _mapsize_z; ++i)
+	{
+		getTile(i)->setDangerous(false);
+	}
+
 	//scripts update
 	newTurnUpdateScripts();
 
