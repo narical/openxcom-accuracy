@@ -3183,7 +3183,8 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (action->type == BA_AIMEDSHOT || action->type == BA_AUTOSHOT)
 			{
-				action->kneel = _unit->getArmor()->allowsKneeling(false);
+				if (_unit->getTimeUnits() >= _unit->getKneelDownCost() + action->Time + _tuCostToReachClosestPositionToBreakLos > 0 ? _tuCostToReachClosestPositionToBreakLos + _unit->getKneelUpCost() : 0)
+					action->kneel = _unit->getArmor()->allowsKneeling(false);
 			}
 			return;
 		}
