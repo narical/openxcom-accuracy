@@ -56,6 +56,13 @@ private:
 	bool _foundBaseModuleToDestroy;
 	std::vector<int> _reachable, _reachableWithAttack, _wasHitBy;
 	std::vector<PathfindingNode*> _allPathFindingNodes;
+	Position _closestPositionToBreakLos;
+	Position _positionFromWhichPositionToBreakLosWasChecked;
+	int _tuCostToReachClosestPositionToBreakLos;
+	int _energyCostToReachClosestPositionToBreakLos;
+	int _turnPositionToBreakLosWasChecked;
+	int _tuWhenChecking;
+	bool _reposition;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 	UnitFaction _myFaction;
