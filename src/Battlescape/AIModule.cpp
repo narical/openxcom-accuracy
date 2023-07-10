@@ -3164,6 +3164,7 @@ void AIModule::brutalThink(BattleAction* action)
 			action->updateTU();
 			if (action->type == BA_WALK)
 			{
+				action->run = _attackAction.run;
 				_reposition = true;
 				if (_traceAI)
 					Log(LOG_INFO) << "Should reposition to " << action->target
@@ -6263,10 +6264,12 @@ bool AIModule::wantToRun()
 {
 	if (!Options::strafe || !_unit->getArmor()->allowsRunning())
 		return false;
-	if (_traceAI)
-		Log(LOG_INFO) << "E:TU-Ratio: " << (float)_unit->getEnergy() / _unit->getTimeUnits() << " E-cost:TU-cost-Ratio: " << (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent;
 	if ((float)_unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
+	{
+		if (_traceAI)
+			Log(LOG_INFO) << "Wants to run since energy is decent: " << (float)_unit->getEnergy() / _unit->getTimeUnits() << " / " << (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent;
 		return true;
+	}
 	return false;
 }
 
