@@ -4709,9 +4709,7 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 			accuracy -= (lowerLimit - distance) * action->weapon->getRules()->getDropoff();
 		}
 	}
-	if (originPosition == _unit->getPosition() && !_unit->hasVisibleUnit(target))
-		accuracy -= _save->getMod()->getNoLOSAccuracyPenaltyGlobal();
-	else
+	if (_save->getMod()->getNoLOSAccuracyPenaltyGlobal() > 0)
 	{
 		Tile* targetTile = target->getTile();
 		bool shouldHaveLos = true;
