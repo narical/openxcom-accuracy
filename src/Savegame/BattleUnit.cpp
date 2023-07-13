@@ -5598,6 +5598,8 @@ bool BattleUnit::isBrutal() const
 
 bool BattleUnit::isAvoidMines() const
 {
+	if (!isBrutal())
+		return false;
 	if (isLeeroyJenkins())
 		return false;
 	if (Options::avoidMines || getFaction() == FACTION_PLAYER)
@@ -5697,7 +5699,12 @@ Position BattleUnit::getPositionOfUpdate()
 
 bool BattleUnit::isLeeroyJenkins() const
 {
-	return _isLeeroyJenkins;
+	if (!isBrutal())
+		return _isLeeroyJenkins;
+	else if (Options::inheritAggression)
+		return _isLeeroyJenkins;
+	else
+		return false;
 }
 
 int BattleUnit::getAggressiveness() const
@@ -5705,7 +5712,7 @@ int BattleUnit::getAggressiveness() const
 	if (getFaction() == FACTION_PLAYER)
 		return Options::autoAggression;
 	else if (Options::inheritAggression)
-		return getAggression() + 1;
+		return std::min(2, getAggression());
 	else
 		return Options::aiAggression;
 }
