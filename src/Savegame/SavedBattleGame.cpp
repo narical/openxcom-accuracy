@@ -407,6 +407,18 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		unit->setSpecialWeapon(this, true);
 	}
 
+
+	// tie units to its owner, running through the units again
+	for (YAML::const_iterator i : std::get<NodeIterator>(toUnits))
+	{
+		// get next unit to match owners
+		auto* unit = std::get<UnitVec>(toUnits)[std::get<size_t>(toUnits)++];
+
+		assert((*i)["id"].as<int>() == unit->getId());
+
+		unit->setPreviousOwner(findUnitById((*i)["previousOwner"]));
+	}
+
 	// tie ammo items to their weapons, running through the items again
 	for (auto& pass : toContainer)
 	{

@@ -2190,11 +2190,22 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		return;
 	}
 
+
+	BattleUnit* owner = attack.attacker;
+	if (owner == nullptr)
+	{
+		owner = attack.damage_item->getOwner();
+		if (owner == nullptr)
+		{
+			owner = attack.damage_item->getPreviousOwner();
+		}
+	}
+
 	// Check which faction the new unit will be
 	UnitFaction faction;
-	if (item->getSpawnUnitFaction() == FACTION_NONE && attack.attacker)
+	if (item->getSpawnUnitFaction() == FACTION_NONE && owner)
 	{
-		faction = attack.attacker->getFaction();
+		faction = owner->getFaction();
 	}
 	else
 	{
@@ -2257,10 +2268,10 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		newUnit->setPosition(position);
 		newUnit->setDirection(unitDirection);
 		newUnit->clearTimeUnits();
-		getSave()->getUnits()->push_back(newUnit);
-		bool visible = faction == FACTION_PLAYER;
-		newUnit->setVisible(visible);
-		getSave()->initUnit(newUnit, itemLevel);
+		newUnit->setPreviousOwner(owner);
+		newUnit->setVisible(faction == FACTION_PLAYER);
+		_save->getUnits()->push_back(newUnit);
+		_save->initUnit(newUnit, itemLevel);
 
 		getTileEngine()->applyGravity(newUnit->getTile());
 		getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
@@ -2297,6 +2308,16 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 		return;
 	}
 
+	BattleUnit* owner = attack.attacker;
+	if (owner == nullptr)
+	{
+		owner = attack.damage_item->getOwner();
+		if (owner == nullptr)
+		{
+			owner = attack.damage_item->getPreviousOwner();
+		}
+	}
+
 	// Create the item
 	auto* newItem = _save->createTempItem(type);
 
@@ -2305,8 +2326,9 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 	if (tile) // Place the item and initialize it in the battlescape
 	{
 		tile->addItem(newItem, getMod()->getInventoryGround());
+		newItem->setPreviousOwner(owner);
 		_save->getItems()->push_back(newItem);
-		_save->initItem(newItem, attack.attacker);
+		_save->initItem(newItem, owner);
 
 		getTileEngine()->applyGravity(newItem->getTile());
 		if (newItem->getGlow())

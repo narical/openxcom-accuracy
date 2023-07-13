@@ -742,6 +742,9 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	if (_faction == FACTION_PLAYER && _dontReselect)
 		node["dontReselect"] = _dontReselect;
 
+	if (_previousOwner)
+		node["previousOwner"] = _previousOwner->getId();
+
 	if (_spawnUnit)
 	{
 		node["spawnUnit"] = _spawnUnit->getType();
@@ -3285,6 +3288,31 @@ void BattleUnit::setInventoryTile(Tile *tile)
 Tile *BattleUnit::getTile() const
 {
 	return _tile;
+}
+
+
+/**
+ * Gets the unit's creator.
+ */
+BattleUnit *BattleUnit::getPreviousOwner()
+{
+	return _previousOwner;
+}
+
+/**
+ * Gets the unit's creator.
+ */
+const BattleUnit *BattleUnit::getPreviousOwner() const
+{
+	return _previousOwner;
+}
+
+/**
+ * Sets the unit's creator.
+ */
+void BattleUnit::setPreviousOwner(BattleUnit *owner)
+{
+	_previousOwner = owner;
 }
 
 /**
@@ -6118,6 +6146,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
 	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will spawn");
 	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will spawn");
+
+
+	bu.addPair<BattleUnit, &BattleUnit::getPreviousOwner, &BattleUnit::getPreviousOwner>("getPreviousOwner");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");
