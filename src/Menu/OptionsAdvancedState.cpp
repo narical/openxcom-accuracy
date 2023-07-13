@@ -273,7 +273,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		int min = 0, max = 0;
 		if (i == &Options::aiAggression)
 		{
-			min = 1;
+			min = 0;
 			max = 3;
 		}
 		else if (i == &Options::autoAggression)
