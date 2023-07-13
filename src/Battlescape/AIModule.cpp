@@ -3184,7 +3184,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			else if (action->type == BA_AIMEDSHOT || action->type == BA_AUTOSHOT)
 			{
-				if (_unit->getTimeUnits() >= _unit->getKneelDownCost() + action->Time + _tuCostToReachClosestPositionToBreakLos > 0 ? _tuCostToReachClosestPositionToBreakLos + _unit->getKneelUpCost() : 0)
+				if (_unit->getTimeUnits() >= _unit->getKneelDownCost() + action->Time + (_tuCostToReachClosestPositionToBreakLos > 0 ? (_tuCostToReachClosestPositionToBreakLos + _unit->getKneelUpCost()) : 0))
 					action->kneel = _unit->getArmor()->allowsKneeling(false);
 			}
 			return;
@@ -3375,6 +3375,7 @@ void AIModule::brutalThink(BattleAction* action)
 			wantToFuse = true;
 	}
 	bool winnerWasSpecialDoorCase = false;
+	bool iGlow = 15 - _unit->getArmor()->getPersonalLight() >= _save->getMod()->getMaxDarknessToSeeUnits();
 	bool shouldHaveLofAfterMove = false;
 	int peakDirection = _unit->getDirection();
 	bool usePeakDirection = false;
@@ -3561,9 +3562,11 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			Tile* tileAbove = _save->getAboveTile(tile);
+			bool inDoors = false;
 			if (tileAbove && !tileAbove->hasNoFloor())
 			{
 				saveFromGrenades = true;
+				inDoors = true;
 			}
 			if (tile->hasNoFloor() && Options::battleExplosionHeight == 0)
 				saveFromGrenades = true;
@@ -3649,7 +3652,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				discoverThreat = std::max(0.0f, discoverThreat);
 				float distMod = walkToDist;
-				if (contact && !outOfRangeForShortRangeWeapon)
+				if ((contact && !outOfRangeForShortRangeWeapon) || _unit->getAggressiveness() == 0)
 				{
 					distMod = 0;
 					if (discoverThreat < lowestDiscoverThread)
@@ -3665,7 +3668,7 @@ void AIModule::brutalThink(BattleAction* action)
 					goodCoverScore = 100 / (distMod + discoverThreat);
 				else
 					okayCoverScore = 100 / (distMod + discoverThreat);
-				if ((_unit->getAggressiveness() < 2 || discoverThreat < getMaxTU(_unit)) / 2.0 && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
+				if ((_unit->getAggressiveness() < 2 || discoverThreat < getMaxTU(_unit) / 2.0) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
 				{
 					_closestPositionToBreakLos = pos;
 					_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
@@ -3683,6 +3686,18 @@ void AIModule::brutalThink(BattleAction* action)
 			directPeakScore /= cuddleAvoidModifier;
 			indirectPeakScore /= cuddleAvoidModifier;
 			fallbackScore /= cuddleAvoidModifier;
+			if (!sweepMode && !iGlow && tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits())
+			{
+				float shadeBonus = 1 + tile->getShade();
+				attackScore *= 2;
+				greatCoverScore *= shadeBonus;
+				goodCoverScore *= shadeBonus;
+				okayCoverScore *= shadeBonus;
+				smokePeakScore *= shadeBonus;
+				directPeakScore *= shadeBonus;
+				indirectPeakScore *= shadeBonus;
+				fallbackScore *= shadeBonus;
+			}
 			if (tile->getDangerous() || tile->getFire())
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
@@ -3732,6 +3747,12 @@ void AIModule::brutalThink(BattleAction* action)
 				directPeakScore /= 10;
 				indirectPeakScore /= 10;
 				fallbackScore /= 10;
+			}
+			if (_unit->getAggressiveness() == 0 && inDoors)
+			{
+				greatCoverScore *= 10;
+				goodCoverScore *= 10;
+				okayCoverScore *= 10;
 			}
 			if (avoidMeleeRange || (badPath && !sweepMode))
 			{
@@ -4351,44 +4372,57 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 									for (BattleItem* item : *(tileToCheck->getInventory()))
 									{
 										if (item->isFuseEnabled() && item->getRules()->getDamageType()->RandomType != DRT_NONE && !item->getRules()->isHiddenOnMinimap())
+										{
+											bool willBeHit = false;
 											if (tileToCheck != tile || tileToCheck == tile)
 												if (_save->getTileEngine()->horizontalBlockage(tileToCheck, tile, DT_HE) >= item->getRules()->getPower())
-													saveForProxies = true;
+													willBeHit = false;
 												else
-													saveForProxies = false;
+													willBeHit = true;
 											else
-												saveForProxies = false;
+												willBeHit = true;
+											if (willBeHit)
+											{
+												float damage = item->getRules()->getPower();
+												damage *= _unit->getArmor()->getDamageModifier(item->getRules()->getDamageType()->ResistType);
+												float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
+												damage = (damage * damageRange - _unit->getArmor()->getUnderArmor()) / 2.0f;
+												damage *= _unit->getArmor()->getSize() * _unit->getArmor()->getSize(); //take into account that large units get hit multiple times
+												if (damage * 2.0 > _unit->getHealth() - _unit->getStunlevel())
+													saveForProxies = false;
+											}
+										}
 									}
 								}
 							}
 					}
 			}
-			else
+			// If we can't see the previous node despite being on the same level, the only plausible reason is there's a closed door. And if there's a closed door, we'd pop out. So any proxies we've seen before would not be triggered and the path is safe up until the door.
+			if (targetNode->getPosition().z == targetNode->getPrevNode()->getPosition().z && !hasTileSight(targetNode->getPosition(), targetNode->getPrevNode()->getPosition()))
+				saveForProxies = true;
+			for (BattleUnit *unit : *(_save->getUnits()))
 			{
-				for (BattleUnit *unit : *(_save->getUnits()))
+				if (unit->isOut())
+					continue;
+				if (isAlly(unit))
+					continue;
+				bool suspectReaction = unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu));
+				if (!_unit->isCheatOnMovement())
 				{
-					if (unit->isOut())
-						continue;
-					if (isAlly(unit))
-						continue;
-					bool suspectReaction = unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getTUCost(false).time) / (_unit->getBaseStats()->tu));
-					if (!_unit->isCheatOnMovement())
+					if (visibleToAnyFriend(unit))
+						suspectReaction = true;
+					else
+						suspectReaction = false;
+				}
+				if (unit->hasVisibleTile(tile) && suspectReaction)
+				{
+					if (unit->hasVisibleUnit(_unit))
+						return false;
+					else if (targetNode->getPrevNode())
 					{
-						if (visibleToAnyFriend(unit))
-							suspectReaction = true;
-						else
-							suspectReaction = false;
-					}
-					if (unit->hasVisibleTile(tile) && suspectReaction)
-					{
-						if (unit->hasVisibleUnit(_unit))
+						Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
+						if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
 							return false;
-						else if (targetNode->getPrevNode())
-						{
-							Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
-							if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
-								return false;
-						}
 					}
 				}
 			}
@@ -5340,6 +5374,8 @@ void AIModule::brutalGrenadeAction()
 			if (target->isOut())
 				continue;
 			if (!isEnemy(target))
+				continue;
+			if (target->getTurnsSinceSeen(_unit->getFaction()) > 1)
 				continue;
 			Position pos = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true));
 			Tile* tile = _save->getTile(pos);
