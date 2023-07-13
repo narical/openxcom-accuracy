@@ -144,7 +144,7 @@ en-GB:
   STR_AIAGGRESSION: "Enemy aggressiveness"
   STR_AIAGGRESSION_DESC: "0> Actively avoid the enemy. 1> Very cover-oriented behaviour. 2> Balanced approach between attacking and cover. 3> Don't bother taking cover."
   STR_INHERITAGGRESSION: "Inherit unit-aggression"
-  STR_INHERITAGGRESSION_DESC: "Преодолейте агрессивность противника с помощью агрессивности вашего подразделения. Учтите флаг LeeroyJenkins."
+  STR_INHERITAGGRESSION_DESC: "Override Enemy aggressiveness with the aggression-value of the unit. Take the LeeroyJenkins-flag into account."
   STR_BRUTALCIVILIANS: "Brutal AI for neutral forces"
   STR_BRUTALCIVILIANS_DESC: "Neutral forces will be controlled by Brutal AI."
   STR_AUTOCOMBAT: "Automated combat"
