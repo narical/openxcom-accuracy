@@ -3353,13 +3353,13 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	bool wantToFuse = false;
-	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled)
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt()->getRules()->isExplodingInHands())
 	{
 		if (saveDistance)
 		{
 			BattleItem* grenade = _unit->getGrenadeFromBelt();
 			int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
-			if (primeCost <= _unit->getTimeUnits() && !grenade->getRules()->isExplodingInHands())
+			if (primeCost <= _unit->getTimeUnits())
 			{
 				_unit->spendTimeUnits(4);
 				_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
