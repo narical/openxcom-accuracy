@@ -4982,6 +4982,11 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	{
 		if (item && i < SPEC_WEAPON_MAX)
 		{
+			if (getBaseStats()->psiSkill <= 0 && item->isPsiRequired())
+			{
+				return;
+			}
+
 			//TODO: move this check to load of ruleset
 			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
 			{
@@ -5008,7 +5013,7 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 
 	addItem(getArmor()->getSpecialWeapon());
 
-	if (getBaseStats()->psiSkill > 0 && getOriginalFaction() == FACTION_HOSTILE)
+	if (getUnitRules() && getOriginalFaction() == FACTION_HOSTILE)
 	{
 		addItem(mod->getItem(getUnitRules()->getPsiWeapon()));
 	}
