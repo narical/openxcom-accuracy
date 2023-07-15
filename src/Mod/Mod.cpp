@@ -2219,7 +2219,6 @@ void Mod::loadAll()
 			_finalResearch = r.second;
 		}
 	}
-	checkForSoftError(_finalResearch == nullptr, "mod", "Missing final research with 'unlockFinalMission: true'", LOG_INFO);
 
 
 	// check unique listOrder
