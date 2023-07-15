@@ -1807,11 +1807,32 @@ void BattlescapeGame::primaryAction(Position pos)
 		else if ((_currentAction.type == BA_PANIC || _currentAction.type == BA_MINDCONTROL || _currentAction.type == BA_USE) && _currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP)
 		{
 			auto* targetUnit = _save->selectUnit(pos);
-			if (targetUnit && targetUnit->getVisible())
+			if (targetUnit)
 			{
-				UnitFaction targetFaction = targetUnit->getFaction();
-				bool psiTargetAllowed = _currentAction.weapon->getRules()->isTargetAllowed(targetFaction);
-				if (_currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
+				const UnitFaction targetFaction = targetUnit->getFaction();
+				const UnitFaction attackerFaction = _currentAction.actor->getFaction();
+
+				bool knowTarget = true;
+				if (attackerFaction == FACTION_PLAYER || attackerFaction == FACTION_NEUTRAL)
+				{
+					knowTarget = targetUnit->getVisible();
+				}
+				else if (attackerFaction == FACTION_HOSTILE) // for debugging
+				{
+					if (targetFaction != FACTION_HOSTILE)
+					{
+						knowTarget = _currentAction.actor->getAIModule()
+							? _currentAction.actor->getAIModule()->validTarget(targetUnit, false, true) // different flags than AI used because AI consider strategy
+							: false;
+					}
+					else
+					{
+						knowTarget = true;
+					}
+				}
+
+				bool psiTargetAllowed = knowTarget && _currentAction.weapon->getRules()->isTargetAllowed(targetFaction, attackerFaction);
+				if (_currentAction.type == BA_MINDCONTROL && attackerFaction == targetFaction)
 				{
 					// no mind controlling allies, unwanted side effects
 					psiTargetAllowed = false;
@@ -1824,12 +1845,13 @@ void BattlescapeGame::primaryAction(Position pos)
 				{
 					psiTargetAllowed = false;
 				}
+
 				if (psiTargetAllowed)
 				{
 					_currentAction.updateTU();
 					_currentAction.target = pos;
 					if (!_currentAction.weapon->getRules()->isLOSRequired() ||
-						(_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
+						(attackerFaction == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
 						std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 					{
 						// get the sound/animation started
@@ -1842,6 +1864,10 @@ void BattlescapeGame::primaryAction(Position pos)
 					{
 						_parentState->warning("STR_LINE_OF_SIGHT_REQUIRED");
 					}
+				}
+				else if (knowTarget)
+				{
+					//TODO: add `warning` that we can't target given unit
 				}
 			}
 		}
@@ -3060,7 +3086,7 @@ int BattlescapeGame::checkForProximityGrenades(BattleUnit *unit)
 		ss << "STR_DEATH_TRAP_" << deathTrapTile->getFloorSpecialTileType();
 		auto* deathTrapRule = getMod()->getItem(ss.str());
 		if (deathTrapRule &&
-			deathTrapRule->isTargetAllowed(unit->getOriginalFaction()) &&
+			deathTrapRule->isTargetAllowed(unit->getOriginalFaction(), FACTION_PLAYER) && // FACTION_PLAYER for backward compatibility reasons
 			(deathTrapRule->getBattleType() == BT_PROXIMITYGRENADE || deathTrapRule->getBattleType() == BT_MELEE))
 		{
 			BattleItem* deathTrapItem = nullptr;
