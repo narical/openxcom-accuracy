@@ -3191,7 +3191,8 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		else
 		{
-			Log(LOG_INFO) << "Could not find a proper target to attack.";
+			if (_traceAI)
+				Log(LOG_INFO) << "Could not find a proper target to attack.";
 		}
 	}
 	_reposition = false;
@@ -4008,7 +4009,8 @@ void AIModule::brutalThink(BattleAction* action)
 				_tuCostToReachClosestPositionToBreakLos = -1;
 			}
 			action->type = BA_RETHINK;
-			Log(LOG_INFO) << "Should reconsider my options now that I know whether I can still hide after shooting.";
+			if (_traceAI)
+				Log(LOG_INFO) << "Should reconsider my options now that I know whether I can still hide after shooting.";
 			return;
 		}
 		if (action->finalFacing != _unit->getDirection() && action->finalFacing != -1)
