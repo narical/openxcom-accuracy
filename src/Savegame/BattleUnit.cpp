@@ -768,6 +768,9 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	if (_faction == FACTION_PLAYER && _dontReselect)
 		node["dontReselect"] = _dontReselect;
 
+	if (_previousOwner)
+		node["previousOwner"] = _previousOwner->getId();
+
 	if (_spawnUnit)
 	{
 		node["spawnUnit"] = _spawnUnit->getType();
@@ -3415,6 +3418,31 @@ Tile *BattleUnit::getTile() const
 	return _tile;
 }
 
+
+/**
+ * Gets the unit's creator.
+ */
+BattleUnit *BattleUnit::getPreviousOwner()
+{
+	return _previousOwner;
+}
+
+/**
+ * Gets the unit's creator.
+ */
+const BattleUnit *BattleUnit::getPreviousOwner() const
+{
+	return _previousOwner;
+}
+
+/**
+ * Sets the unit's creator.
+ */
+void BattleUnit::setPreviousOwner(BattleUnit *owner)
+{
+	_previousOwner = owner;
+}
+
 /**
  * Checks if there's an inventory item in
  * the specified inventory position.
@@ -5196,6 +5224,11 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	{
 		if (item && i < SPEC_WEAPON_MAX)
 		{
+			if (getBaseStats()->psiSkill <= 0 && item->isPsiRequired())
+			{
+				return;
+			}
+
 			//TODO: move this check to load of ruleset
 			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
 			{
@@ -5222,7 +5255,7 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 
 	addItem(getArmor()->getSpecialWeapon());
 
-	if (getBaseStats()->psiSkill > 0 && getOriginalFaction() == FACTION_HOSTILE)
+	if (getUnitRules() && getOriginalFaction() == FACTION_HOSTILE)
 	{
 		addItem(mod->getItem(getUnitRules()->getPsiWeapon()));
 	}
@@ -6497,6 +6530,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
 	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will spawn");
 	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will spawn");
+
+
+	bu.addPair<BattleUnit, &BattleUnit::getPreviousOwner, &BattleUnit::getPreviousOwner>("getPreviousOwner");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");

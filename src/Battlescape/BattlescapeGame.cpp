@@ -1870,12 +1870,33 @@ void BattlescapeGame::primaryAction(Position pos)
 		}
 		else if ((_currentAction.type == BA_PANIC || _currentAction.type == BA_MINDCONTROL || _currentAction.type == BA_USE) && _currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP)
 		{
-			auto targetUnit = _save->selectUnit(pos);
-			if (targetUnit && targetUnit->getVisible())
+			auto* targetUnit = _save->selectUnit(pos);
+			if (targetUnit)
 			{
-				auto targetFaction = targetUnit->getFaction();
-				bool psiTargetAllowed = _currentAction.weapon->getRules()->isTargetAllowed(targetFaction);
-				if (_currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
+				const UnitFaction targetFaction = targetUnit->getFaction();
+				const UnitFaction attackerFaction = _currentAction.actor->getFaction();
+
+				bool knowTarget = true;
+				if (attackerFaction == FACTION_PLAYER || attackerFaction == FACTION_NEUTRAL)
+				{
+					knowTarget = targetUnit->getVisible();
+				}
+				else if (attackerFaction == FACTION_HOSTILE) // for debugging
+				{
+					if (targetFaction != FACTION_HOSTILE)
+					{
+						knowTarget = _currentAction.actor->getAIModule()
+							? _currentAction.actor->getAIModule()->validTarget(targetUnit, false, true) // different flags than AI used because AI consider strategy
+							: false;
+					}
+					else
+					{
+						knowTarget = true;
+					}
+				}
+
+				bool psiTargetAllowed = knowTarget && _currentAction.weapon->getRules()->isTargetAllowed(targetFaction, attackerFaction);
+				if (_currentAction.type == BA_MINDCONTROL && attackerFaction == targetFaction)
 				{
 					// no mind controlling allies, unwanted side effects
 					psiTargetAllowed = false;
@@ -1888,12 +1909,13 @@ void BattlescapeGame::primaryAction(Position pos)
 				{
 					psiTargetAllowed = false;
 				}
+
 				if (psiTargetAllowed)
 				{
 					_currentAction.updateTU();
 					_currentAction.target = pos;
 					if (!_currentAction.weapon->getRules()->isLOSRequired() ||
-						(_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
+						(attackerFaction == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
 						std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 					{
 						// get the sound/animation started
@@ -1906,6 +1928,10 @@ void BattlescapeGame::primaryAction(Position pos)
 					{
 						_parentState->warning("STR_LINE_OF_SIGHT_REQUIRED");
 					}
+				}
+				else if (knowTarget)
+				{
+					//TODO: add `warning` that we can't target given unit
 				}
 			}
 		}
@@ -2228,11 +2254,22 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		return;
 	}
 
+
+	BattleUnit* owner = attack.attacker;
+	if (owner == nullptr)
+	{
+		owner = attack.damage_item->getOwner();
+		if (owner == nullptr)
+		{
+			owner = attack.damage_item->getPreviousOwner();
+		}
+	}
+
 	// Check which faction the new unit will be
 	UnitFaction faction;
-	if (item->getSpawnUnitFaction() == FACTION_NONE && attack.attacker)
+	if (item->getSpawnUnitFaction() == FACTION_NONE && owner)
 	{
-		faction = attack.attacker->getFaction();
+		faction = owner->getFaction();
 	}
 	else
 	{
@@ -2295,10 +2332,10 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 		newUnit->setPosition(position);
 		newUnit->setDirection(unitDirection);
 		newUnit->clearTimeUnits();
-		getSave()->getUnits()->push_back(newUnit);
-		bool visible = faction == FACTION_PLAYER;
-		newUnit->setVisible(visible);
-		getSave()->initUnit(newUnit, itemLevel);
+		newUnit->setPreviousOwner(owner);
+		newUnit->setVisible(faction == FACTION_PLAYER);
+		_save->getUnits()->push_back(newUnit);
+		_save->initUnit(newUnit, itemLevel);
 
 		getTileEngine()->applyGravity(newUnit->getTile());
 		getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
@@ -2335,6 +2372,16 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 		return;
 	}
 
+	BattleUnit* owner = attack.attacker;
+	if (owner == nullptr)
+	{
+		owner = attack.damage_item->getOwner();
+		if (owner == nullptr)
+		{
+			owner = attack.damage_item->getPreviousOwner();
+		}
+	}
+
 	// Create the item
 	auto* newItem = _save->createTempItem(type);
 
@@ -2343,8 +2390,9 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 	if (tile) // Place the item and initialize it in the battlescape
 	{
 		tile->addItem(newItem, getMod()->getInventoryGround());
+		newItem->setPreviousOwner(owner);
 		_save->getItems()->push_back(newItem);
-		_save->initItem(newItem, attack.attacker);
+		_save->initItem(newItem, owner);
 
 		getTileEngine()->applyGravity(newItem->getTile());
 		if (newItem->getGlow())
@@ -3148,7 +3196,7 @@ int BattlescapeGame::checkForProximityGrenades(BattleUnit *unit)
 		ss << "STR_DEATH_TRAP_" << deathTrapTile->getFloorSpecialTileType();
 		auto deathTrapRule = getMod()->getItem(ss.str());
 		if (deathTrapRule &&
-			deathTrapRule->isTargetAllowed(unit->getOriginalFaction()) &&
+			deathTrapRule->isTargetAllowed(unit->getOriginalFaction(), FACTION_PLAYER) && // FACTION_PLAYER for backward compatibility reasons
 			(deathTrapRule->getBattleType() == BT_PROXIMITYGRENADE || deathTrapRule->getBattleType() == BT_MELEE))
 		{
 			BattleItem* deathTrapItem = nullptr;
