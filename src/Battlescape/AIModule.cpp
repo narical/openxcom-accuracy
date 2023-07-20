@@ -3597,8 +3597,13 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if (shouldPeak && !wantToFuse && hasTileSight(pos, peakPosition))
-						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					if (shouldPeak && !wantToFuse)
+					{
+						if (pos == peakPosition)
+							indirectPeakScore = _unit->getTimeUnits();
+						else if (hasTileSight(pos, peakPosition))
+							indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					}
 				}
 			}
 			float discoverThreat = 0;
@@ -3808,7 +3813,10 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				bestIndirectPeakScore = indirectPeakScore;
 				bestIndirectPeakPosition = pos;
-				peakDirection = _save->getTileEngine()->getDirectionTo(pos, peakPosition);
+				if (bestIndirectPeakPosition == peakPosition)
+					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
+				else
+					peakDirection = _save->getTileEngine()->getDirectionTo(pos, peakPosition);
 				usePeakDirection = true;
 			}
 			if (fallbackScore > bestFallbackScore)
