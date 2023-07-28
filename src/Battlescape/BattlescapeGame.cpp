@@ -2411,6 +2411,7 @@ void BattlescapeGame::removeSummonedPlayerUnits()
 			}
 
 			bu->setTile(nullptr, _save);
+			_save->clearUnitSelection(bu);
 			delete bu;
 			buIt = _save->getUnits()->erase(buIt);
 		}

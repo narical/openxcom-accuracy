@@ -952,6 +952,21 @@ void SavedBattleGame::setSelectedUnit(BattleUnit *unit)
 }
 
 /**
+ * Clear state that given unit is selected.
+ */
+void SavedBattleGame::clearUnitSelection(BattleUnit *unit)
+{
+	if (_selectedUnit == unit)
+	{
+		_selectedUnit = nullptr;
+	}
+	if (_lastSelectedUnit == unit)
+	{
+		_lastSelectedUnit = nullptr;
+	}
+}
+
+/**
  * Selects the previous player unit.
  * @param checkReselect Whether to check if we should reselect a unit.
  * @param setReselect Don't reselect a unit.
@@ -1510,6 +1525,8 @@ void SavedBattleGame::endTurn()
 	{
 		if (_selectedUnit && _selectedUnit->getOriginalFaction() == FACTION_PLAYER)
 			_lastSelectedUnit = _selectedUnit;
+		else
+			_lastSelectedUnit = nullptr;
 		_selectedUnit =  0;
 		_side = FACTION_HOSTILE;
 	}
@@ -1542,6 +1559,8 @@ void SavedBattleGame::endTurn()
 			selectNextPlayerUnit();
 		while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
 			selectNextPlayerUnit();
+
+		_lastSelectedUnit = nullptr;
 	}
 
 	BattlescapeTally tally = _battleState->getBattleGame()->tallyUnits();
@@ -2101,10 +2120,7 @@ BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
 
 	bool visible = unit->getVisible();
 
-	if (getSelectedUnit() == unit)
-	{
-		setSelectedUnit(nullptr);
-	}
+	clearUnitSelection(unit);
 
 	// in case the unit was unconscious
 	removeUnconsciousBodyItem(unit);

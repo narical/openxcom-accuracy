@@ -366,6 +366,8 @@ public:
 	BattleUnit *getSelectedUnit() const;
 	/// Sets the currently selected unit.
 	void setSelectedUnit(BattleUnit *unit);
+	/// Clear state that given unit is selected.
+	void clearUnitSelection(BattleUnit *unit);
 	/// Selects the previous soldier.
 	BattleUnit *selectPreviousPlayerUnit(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 	/// Selects the next soldier.
