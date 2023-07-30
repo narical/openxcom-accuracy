@@ -3146,9 +3146,6 @@ void AIModule::brutalThink(BattleAction* action)
 			brutalSelectSpottedUnitForSniper();
 		if (_attackAction.type == BA_RETHINK && _grenade)
 			brutalGrenadeAction();
-		// if (_attackAction.type == BA_RETHINK && _unit->aiTargetMode() >= 3)
-		//	blindFire();
-
 		if (_attackAction.type != BA_RETHINK)
 		{
 			action->type = _attackAction.type;
@@ -4439,7 +4436,7 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 			targetNode = targetNode->getPrevNode();
 		}
 	}
-	return false;
+	return true;
 }
 
 bool AIModule::brutalPsiAction()
