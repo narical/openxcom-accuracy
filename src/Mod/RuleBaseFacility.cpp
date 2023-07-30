@@ -244,8 +244,20 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 		}
 	}
 
-	if (((_crafts > 1) && (_craftSlots.size() != _crafts)) || ((_crafts == 1) && (_craftSlots.size() > 1))){
-		throw Exception("Not enough position vectors for crafts allocation.");
+	if (_crafts > 1 && _craftSlots.size() != _crafts)
+	{
+		Log(LOG_ERROR) << _type << " can hold " << _crafts << " crafts but has " << _craftSlots.size() << " craft-slots defined. Will draw all crafts in the center.";
+		while (_craftSlots.size() < _crafts)
+		{
+			Position pos;
+			_craftSlots.push_back(pos);
+		}
+	}
+
+	if (_crafts == 1 && _craftSlots.size() > 1)
+	{
+		_crafts = _craftSlots.size();
+		Log(LOG_WARNING) << _type << " had more craft-slots than craft-capacity. Increased craft-capacity to match craft-slots.";
 	}
 
 	if (_craftSlots.empty()){ 
