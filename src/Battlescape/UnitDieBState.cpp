@@ -251,10 +251,8 @@ void UnitDieBState::think()
 		{
 			convertUnitToCorpse();
 		}
-		if (_unit == _parent->getSave()->getSelectedUnit())
-		{
-			_parent->getSave()->setSelectedUnit(0);
-		}
+
+		_parent->getSave()->clearUnitSelection(_unit);
 	}
 
 }
