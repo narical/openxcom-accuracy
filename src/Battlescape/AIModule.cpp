@@ -3003,7 +3003,7 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->getAggressiveness() > 2 || _unit->isLeeroyJenkins();
+	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins();
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	for (BattleUnit* target : *(_save->getUnits()))
@@ -3126,6 +3126,8 @@ void AIModule::brutalThink(BattleAction* action)
 	_attackAction.type = BA_RETHINK;
 	_psiAction.type = BA_NONE;
 	bool checkedAttack = false;
+	if (_unit->getTimeUnits() == getMaxTU(_unit))
+		_positionAtStartOfTurn = myPos;
 	if ((_turnPositionToBreakLosWasChecked == _save->getTurn() && myPos == _positionFromWhichPositionToBreakLosWasChecked && _tuWhenChecking == _unit->getTimeUnits()) || _unit->getTimeUnits() == getMaxTU(_unit) || sweepMode || _reposition)
 	{
 		checkedAttack = true;
@@ -3272,7 +3274,14 @@ void AIModule::brutalThink(BattleAction* action)
 		if (tileOfTarget->getSmoke() > 0)
 			targetIsInSmoke = true;
 		int tuCost = tuCostToReachPosition(targetPosition, _allPathFindingNodes);
-		iHaveLof = quickLineOfFire(myPos, unitToWalkTo, false, !_unit->isCheatOnMovement());
+		if (Options::aiPerformanceOptimization)
+			iHaveLof = quickLineOfFire(myPos, unitToWalkTo, false, !_unit->isCheatOnMovement());
+		else
+		{
+			Position origin = _save->getTileEngine()->getOriginVoxel((*action), myTile);
+			Position ref;
+			iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+		}
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
 		if (encircleTile)
@@ -3400,6 +3409,8 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
 		float lowestDiscoverThread = FLT_MAX;
+		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
+		float myWalkToDist = myMaxTU + myTuDistFromTarget;
 		for (auto pu : _allPathFindingNodes)
 		{
 			Position pos = pu->getPosition();
@@ -3426,11 +3437,13 @@ void AIModule::brutalThink(BattleAction* action)
 			bool lineOfFireBeforeFriendCheck = false;
 			bool avoidLoF = false;
 			float closestAnyOneDist = FLT_MAX;
+			Position origin = _save->getTileEngine()->getOriginVoxel((*action), tile);
+			Position ref;
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
+				Position unitPosition = unit->getPosition();
 				if (unit->isOut())
 					continue;
-				Position unitPosition = unit->getPosition();
 				if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
 					unitPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 				float unitDist = Position::distance(pos, unitPosition);
@@ -3460,9 +3473,12 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					if (!IAmPureMelee)
 					{
-						if (!lineOfFire && brutalValidTarget(unit, true))
+						if (!lineOfFire)
 						{
-							lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
+							if (Options::aiPerformanceOptimization)
+								lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
+							else
+								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), &ref, _unit, false, unit);
 							if (!_unit->isCheatOnMovement() && !lineOfFire)
 								lineOfFire = clearSight(pos, unitPosition);
 							if (lineOfFire)
@@ -3490,7 +3506,10 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (!IAmPureMelee && unitToWalkTo && (brutalValidTarget(unitToWalkTo, true)))
 				{
-					lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
+					if (Options::aiPerformanceOptimization)
+						lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
+					else
+						lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
 					if (!_unit->isCheatOnMovement() && !lineOfFire)
 						lineOfFire = clearSight(pos, targetPosition);
 					if (lineOfFire)
@@ -3671,6 +3690,15 @@ void AIModule::brutalThink(BattleAction* action)
 					goodCoverScore = 100 / (distMod + discoverThreat);
 				else
 					okayCoverScore = 100 / (distMod + discoverThreat);
+				if (_unit->getAggressiveness() > 2)
+				{
+					if (walkToDist >= myWalkToDist && !contact)
+					{
+						greatCoverScore = 0;
+						goodCoverScore = 0;
+						okayCoverScore = 0;
+					}
+				}
 				if ((_unit->getAggressiveness() < 2 || discoverThreat < getMaxTU(_unit) / 2.0) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
 				{
 					_closestPositionToBreakLos = pos;
@@ -3935,13 +3963,24 @@ void AIModule::brutalThink(BattleAction* action)
 		Position targetPosition = target->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
-		bool haveLof = quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement()) || shouldHaveLofAfterMove;
+		bool haveLof = shouldHaveLofAfterMove;
 		std::vector<Position> _trajectory;
 		_trajectory.clear();
 		if (hasTileSight(action->target, targetPosition))
 			haveLof = true;
 		if (!_unit->isCheatOnMovement())
 			haveLof = haveLof || clearSight(action->target, targetPosition);
+		if (!haveLof)
+		{
+			if (Options::aiPerformanceOptimization)
+				quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement());
+			else
+			{
+				Position origin = _save->getTileEngine()->getOriginVoxel((*action), myTile);
+				Position ref;
+				haveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+			}
+		}
 		if (!haveLof)
 			continue;
 		float currentDist = Position::distance(action->target, targetPosition);
@@ -4617,65 +4656,68 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 		}
 	}
 	// Now lets check them from the furtest tile each action can be performed from
-	for (auto& i : attackOptions)
+	if (!_reposition)
 	{
-		testAction.type = i;
-		bool extraCostForCover = false;
-		if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
-			extraCostForCover = true;
-		Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
-		Tile* simulationTile = _save->getTile(simulationPosition);
-		for (auto& j : attackOptions)
+		for (auto& i : attackOptions)
 		{
-			testAction.type = j;
-			float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile);
 
-			if (newScore > score && simulationPosition != _unit->getPosition())
-			{
-				score = newScore;
-				chosenBattleAction.type = BA_WALK;
-				chosenBattleAction.run = wantToRun();
-				chosenBattleAction.target = simulationPosition;
-				chosenBattleAction.weapon = _attackAction.weapon;
-				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
-			}
-		}
-		// Now let's check all tiles in the radius of 2 around myself and the target
-		std::vector<Position> attackPositions;
-		for (int x = -2; x <= 2; ++x)
-		{
-			for (int y = -2; y <= 2; ++y)
-			{
-				if (x != 0 || y != 0)
-				{
-					Position attPos = originPosition + Position(x, y, 0);
-					if (_unit->getTimeUnits() - testAction.Time - extraCostForCover ? tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) * 2 + _tuCostToReachClosestPositionToBreakLos : tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) > 0)
-						attackPositions.push_back(attPos);
-					attPos = _attackAction.target + Position(x, y, 0);
-					if (_unit->getTimeUnits() - testAction.Time - extraCostForCover ? tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) * 2 + _tuCostToReachClosestPositionToBreakLos : tuCostToReachPosition(attPos, _allPathFindingNodes, _unit, true) > 0)
-					{
-						if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
-							attackPositions.push_back(attPos);
-					}
-				}
-			}
-		}
-		for (Position simPos : attackPositions)
-		{
-			Tile* simulationTile = _save->getTile(simPos);
+			bool extraCostForCover = false;
+			if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
+				extraCostForCover = true;
+			Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
+			Tile* simulationTile = _save->getTile(simulationPosition);
 			for (auto& j : attackOptions)
 			{
 				testAction.type = j;
-				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile);
+				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
 
-				if (newScore > score && simPos != _unit->getPosition())
+				if (newScore > score && simulationPosition != _unit->getPosition())
 				{
 					score = newScore;
 					chosenBattleAction.type = BA_WALK;
 					chosenBattleAction.run = wantToRun();
-					chosenBattleAction.target = simPos;
+					chosenBattleAction.target = simulationPosition;
 					chosenBattleAction.weapon = _attackAction.weapon;
-					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
+					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
+				}
+			}
+			// Now let's check all tiles in the radius of 2 around myself and the target
+			std::vector<Position> attackPositions;
+			int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
+			if (actionTUs > 0)
+			{
+				for (int x = -2; x <= 2; ++x)
+				{
+					for (int y = -2; y <= 2; ++y)
+					{
+						if (x != 0 || y != 0)
+						{
+							Position attPos = originPosition + Position(x, y, 0);
+							attackPositions.push_back(attPos);
+							attPos = _attackAction.target + Position(x, y, 0);
+							if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
+								attackPositions.push_back(attPos);
+						}
+					}
+				}
+			}
+			for (Position simPos : attackPositions)
+			{
+				Tile* simulationTile = _save->getTile(simPos);
+				for (auto& j : attackOptions)
+				{
+					testAction.type = j;
+					float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
+
+					if (newScore > score && simPos != _unit->getPosition())
+					{
+						score = newScore;
+						chosenBattleAction.type = BA_WALK;
+						chosenBattleAction.run = wantToRun();
+						chosenBattleAction.target = simPos;
+						chosenBattleAction.weapon = _attackAction.weapon;
+						chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
+					}
 				}
 			}
 		}
@@ -4691,7 +4733,7 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
  * @param checkLOF Set to true if you want to check for a valid line of fire
  * @return The calculated score
  */
-float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile)
+float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, bool checkLOF, Tile* simulationTile, bool needToHideAfterwards)
 {
 	// Sanity check first, if the passed action has no type or weapon, return 0.
 	if (!action->type || !action->weapon)
@@ -4716,13 +4758,18 @@ float AIModule::brutalScoreFiringMode(BattleAction *action, BattleUnit *target, 
 
 	if (simulationTile)
 	{
-		tuTotal -= tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true);
+		int tuCostToReach = tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true);
+		tuTotal -= tuCostToReach;
+		if (needToHideAfterwards)
+			tuTotal -= tuCostToReach;
 		bool proxySave = true;
 		if (!isPathToPositionSave(simulationTile->getPosition(), proxySave) || simulationTile->getDangerous() || simulationTile->getFire())
 			dangerMod /= 2;
 		if (!proxySave)
 			return 0;
 	}
+	if (needToHideAfterwards)
+		tuTotal -= _tuCostToReachClosestPositionToBreakLos;
 
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{

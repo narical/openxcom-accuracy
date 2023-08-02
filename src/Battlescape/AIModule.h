@@ -58,6 +58,7 @@ private:
 	std::vector<PathfindingNode*> _allPathFindingNodes;
 	Position _closestPositionToBreakLos;
 	Position _positionFromWhichPositionToBreakLosWasChecked;
+	Position _positionAtStartOfTurn;
 	int _tuCostToReachClosestPositionToBreakLos;
 	int _energyCostToReachClosestPositionToBreakLos;
 	int _turnPositionToBreakLosWasChecked;
@@ -172,7 +173,7 @@ public:
 	/// Chooses a firing mode for the AI based on expected damage dealt
 	float brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false, float previousHighScore = 0);
 	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
-	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile = NULL);
+	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile = NULL, bool needToHideAfterwards = false);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
 	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false, bool validOnly = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
