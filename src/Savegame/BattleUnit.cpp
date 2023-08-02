@@ -5745,7 +5745,7 @@ int BattleUnit::getAggressiveness() const
 	if (getFaction() == FACTION_PLAYER)
 		return Options::autoAggression;
 	else if (Options::inheritAggression)
-		return std::min(2, getAggression());
+		return std::min(3, getAggression());
 	else
 		return Options::aiAggression;
 }
