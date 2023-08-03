@@ -3589,7 +3589,7 @@ void AIModule::brutalThink(BattleAction* action)
 				saveFromGrenades = true;
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 			float walkToDist = myMaxTU + tuDistFromTarget;
-			if (!sweepMode)
+			if (!sweepMode && _unit->getAggressiveness() > 0)
 			{
 				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo)
 				{
@@ -3978,7 +3978,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				Position origin = _save->getTileEngine()->getOriginVoxel((*action), myTile);
 				Position ref;
-				haveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+				haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &ref, _unit, false, target);
 			}
 		}
 		if (!haveLof)
