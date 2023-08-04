@@ -2165,6 +2165,128 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 }
 
 /**
+ * Checks for another unit available for targeting and what particular voxel.
+ * @param originVoxel Voxel of trace origin (eye or gun's barrel).
+ * @param tile The tile to check for.
+ * @param scanVoxel is returned coordinate of hit.
+ * @param excludeUnit is self (not to hit self).
+ * @param rememberObstacles Remember obstacles for no LOF indicator?
+ * @param potentialUnit is a hypothetical unit to draw a virtual line of fire for AI. if left blank, this function behaves normally.
+ * @return a hitability score
+ */
+float TileEngine::targetQuality(Position* originVoxel, Tile* tile, Position* scanVoxel, BattleUnit* excludeUnit, bool rememberObstacles, BattleUnit* potentialUnit)
+{
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(7, 8, 0);
+	std::vector<Position> _trajectory;
+	bool hypothetical = potentialUnit != 0;
+	if (potentialUnit == 0)
+	{
+		potentialUnit = tile->getUnit();
+		if (potentialUnit == 0)
+			return false; // no unit in this tile, even if it elevated and appearing in it.
+	}
+
+	if (potentialUnit == excludeUnit)
+		return false; // skip self
+
+	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
+	targetMinHeight += potentialUnit->getFloatHeight();
+
+	int targetMaxHeight = targetMinHeight;
+	int targetCenterHeight;
+	// if there is an other unit on target tile, we assume we want to check against this unit's height
+	int heightRange;
+
+	int unitRadius = potentialUnit->getLoftemps(); // width == loft in default loftemps set
+	int targetSize = potentialUnit->getArmor()->getSize() - 1;
+	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
+	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
+	if (targetSize > 0)
+	{
+		unitRadius = 3;
+	}
+	// vector manipulation to make scan work in view-space
+	Position relPos = targetVoxel - *originVoxel;
+	float normal = unitRadius / sqrt((float)(relPos.x * relPos.x + relPos.y * relPos.y));
+	int relX = floor(((float)relPos.y) * normal + 0.5);
+	int relY = floor(((float)-relPos.x) * normal + 0.5);
+
+	int sliceTargets[] = {0, 0, relX, relY, -relX, -relY, relY, -relX, -relY, relX};
+
+	if (!potentialUnit->isOut())
+	{
+		heightRange = potentialUnit->getHeight();
+	}
+	else
+	{
+		heightRange = 12;
+	}
+
+	targetMaxHeight += heightRange;
+	targetCenterHeight = (targetMaxHeight + targetMinHeight) / 2;
+	heightRange /= 2;
+	if (heightRange > 10)
+		heightRange = 10;
+	if (heightRange <= 0)
+		heightRange = 0;
+
+	float hitableVoxels = 0;
+	float theoreticalMaxVoxels = 0;
+	// scan ray from top to bottom  plus different parts of target cylinder
+	for (int i = 0; i <= heightRange; ++i)
+	{
+		scanVoxel->z = targetCenterHeight + heightFromCenter[i];
+		for (int j = 0; j < 5; ++j)
+		{
+			if (i < (heightRange - 1) && j > 2)
+				break; // skip unnecessary checks
+			scanVoxel->x = targetVoxel.x + sliceTargets[j * 2];
+			scanVoxel->y = targetVoxel.y + sliceTargets[j * 2 + 1];
+			_trajectory.clear();
+			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
+			if (test == V_UNIT)
+			{
+				for (int x = 0; x <= targetSize; ++x)
+				{
+					for (int y = 0; y <= targetSize; ++y)
+					{
+						// voxel of hit must be inside of scanned box
+						if (_trajectory.at(0).x / 16 == (scanVoxel->x / 16) + x + xOffset &&
+							_trajectory.at(0).y / 16 == (scanVoxel->y / 16) + y + yOffset &&
+							_trajectory.at(0).z >= targetMinHeight &&
+							_trajectory.at(0).z <= targetMaxHeight)
+						{
+							hitableVoxels++;
+						}
+					}
+				}
+			}
+			else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
+			{
+				hitableVoxels++;
+			}
+			for (int x = 0; x <= targetSize; ++x)
+			{
+				for (int y = 0; y <= targetSize; ++y)
+				{
+					theoreticalMaxVoxels++;
+				}
+			}
+			if (rememberObstacles && _trajectory.size() > 0)
+			{
+				Tile* tileObstacle = _save->getTile(_trajectory.at(0).toTile());
+				if (tileObstacle)
+					tileObstacle->setObstacle(test);
+			}
+		}
+	}
+	if (theoreticalMaxVoxels > 0)
+		return hitableVoxels / theoreticalMaxVoxels;
+	else
+		return 0;
+}
+
+/**
  * Checks for a tile part available for targeting and what particular voxel.
  * @param originVoxel Voxel of trace origin (gun's barrel).
  * @param tile The tile to check for.

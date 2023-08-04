@@ -3265,6 +3265,9 @@ void AIModule::brutalThink(BattleAction* action)
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	BattleActionCost hitCost = BattleActionCost(BA_HIT, _unit, action->weapon);
 	bool targetIsInSmoke = false;
+	BattleAction originAction;
+	originAction.actor = _unit;
+	originAction.weapon = action->weapon;
 	if (unitToWalkTo != NULL)
 	{
 		Position targetPosition = unitToWalkTo->getPosition();
@@ -3278,7 +3281,8 @@ void AIModule::brutalThink(BattleAction* action)
 			iHaveLof = quickLineOfFire(myPos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 		else
 		{
-			Position origin = _save->getTileEngine()->getOriginVoxel((*action), myTile);
+			originAction.target = unitToWalkTo->getPosition();
+			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 			Position ref;
 			iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
 		}
@@ -3437,7 +3441,6 @@ void AIModule::brutalThink(BattleAction* action)
 			bool lineOfFireBeforeFriendCheck = false;
 			bool avoidLoF = false;
 			float closestAnyOneDist = FLT_MAX;
-			Position origin = _save->getTileEngine()->getOriginVoxel((*action), tile);
 			Position ref;
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
@@ -3478,7 +3481,11 @@ void AIModule::brutalThink(BattleAction* action)
 							if (Options::aiPerformanceOptimization)
 								lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
 							else
+							{
+								originAction.target = unit->getPosition();
+								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
 								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), &ref, _unit, false, unit);
+							}
 							if (!_unit->isCheatOnMovement() && !lineOfFire)
 								lineOfFire = clearSight(pos, unitPosition);
 							if (lineOfFire)
@@ -3509,7 +3516,11 @@ void AIModule::brutalThink(BattleAction* action)
 					if (Options::aiPerformanceOptimization)
 						lineOfFire = quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement());
 					else
+					{
+						originAction.target = unitToWalkTo->getPosition();
+						Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
 						lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+					}
 					if (!_unit->isCheatOnMovement() && !lineOfFire)
 						lineOfFire = clearSight(pos, targetPosition);
 					if (lineOfFire)
@@ -3593,8 +3604,6 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo)
 				{
-					if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
-						smokePeakScore = 100 / walkToDist;
 					int viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo->getArmor());
 					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
 						viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo->getArmor());
@@ -3615,6 +3624,8 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					if (shouldPeak && !wantToFuse)
 					{
+						if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
+							smokePeakScore = 100 / walkToDist;
 						if (pos == peakPosition)
 							indirectPeakScore = _unit->getTimeUnits();
 						else if (hasTileSight(pos, peakPosition))
@@ -3849,12 +3860,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && validCover)
+			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && tile->getSmoke() && _unit->getTimeUnits() == getMaxTU(_unit))
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
 			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(walkToDist);
 			//}
 		}
 		if (_traceAI)
@@ -3976,7 +3987,8 @@ void AIModule::brutalThink(BattleAction* action)
 				quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement());
 			else
 			{
-				Position origin = _save->getTileEngine()->getOriginVoxel((*action), myTile);
+				originAction.target = target->getPosition();
+				Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 				Position ref;
 				haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &ref, _unit, false, target);
 			}
@@ -4760,6 +4772,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	{
 		int tuCostToReach = tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true);
 		tuTotal -= tuCostToReach;
+		tuTotal -= 4; //we potentially have to turn up to 4 after moving
 		if (needToHideAfterwards)
 			tuTotal -= tuCostToReach;
 		bool proxySave = true;
@@ -4770,7 +4783,6 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	}
 	if (needToHideAfterwards)
 		tuTotal -= _tuCostToReachClosestPositionToBreakLos;
-
 	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{
 		int upperLimit;
@@ -4858,7 +4870,6 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
-	tuTotal -= getTurnCostTowards(action->target, originPosition);
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
 	if (action->type == BA_THROW && _grenade && action->weapon == _unit->getGrenadeFromBelt())
@@ -4945,6 +4956,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), simulationTile);
 	Position targetPosition;
+	float targetQuality = 1;
 	if (action->type != BA_HIT) //Melee-attacks have their own validity check. This additional check can cause false negatives!
 	{
 		if (checkLOF)
@@ -4958,10 +4970,9 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 			else
 			{
-				if (!_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &targetPosition, _unit, false, target))
-				{
+				targetQuality = _save->getTileEngine()->targetQuality(&origin, target->getTile(), &targetPosition, _unit, false, target);
+				if (targetQuality == 0)
 					return 0;
-				}
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
@@ -4986,16 +4997,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 		}
 	}
-	//if (_traceAI)
+	if (_traceAI)
 	//{
 	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
 	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
 	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
 	//				  << " from: " << originPosition << " to: "<<action->target
 	//				  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
-	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod;
+	//				  << " targetQuality: " << targetQuality
+	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
 	//}
-	return damage * accuracy * numberOfShots * dangerMod * explosionMod;
+	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
 }
 
 /**
