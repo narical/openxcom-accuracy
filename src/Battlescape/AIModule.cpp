@@ -3740,7 +3740,7 @@ void AIModule::brutalThink(BattleAction* action)
 				indirectPeakScore *= shadeBonus;
 				fallbackScore *= shadeBonus;
 			}
-			if (tile->getDangerous() || tile->getFire())
+			if (tile->getDangerous() || (tile->getFire() && _unit->avoidsFire()))
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
 				{
@@ -3756,7 +3756,7 @@ void AIModule::brutalThink(BattleAction* action)
 				else
 				{
 					attackScore /= 2;
-					if (_unit->getTile()->getDangerous() || _unit->getTile()->getFire())
+					if (_unit->getTile()->getDangerous() || (_unit->getTile()->getFire() && _unit->avoidsFire()))
 					{
 						greatCoverScore /= 10;
 						goodCoverScore /= 10;
@@ -4776,7 +4776,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 		if (needToHideAfterwards)
 			tuTotal -= tuCostToReach;
 		bool proxySave = true;
-		if (!isPathToPositionSave(simulationTile->getPosition(), proxySave) || simulationTile->getDangerous() || simulationTile->getFire())
+		if (!isPathToPositionSave(simulationTile->getPosition(), proxySave) || simulationTile->getDangerous() || (simulationTile->getFire() && _unit->avoidsFire()))
 			dangerMod /= 2;
 		if (!proxySave)
 			return 0;
