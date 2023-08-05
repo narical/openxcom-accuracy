@@ -4997,7 +4997,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 		}
 	}
-	if (_traceAI)
+	//if (_traceAI)
 	//{
 	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
 	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
