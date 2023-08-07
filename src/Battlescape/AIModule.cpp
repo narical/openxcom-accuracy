@@ -2865,7 +2865,11 @@ void AIModule::freePatrolTarget()
 
 bool AIModule::visibleToAnyFriend(BattleUnit* target) const
 {
-	return target->getTurnsSinceSeen(_unit->getFaction()) == 0;
+	// The player is at a disadvantage as per the engine and can't directly target units he can't see. So autoplay must be aware of this disadvantage.
+	if (_unit->getFaction() == FACTION_PLAYER)
+		return target->getVisible();
+	else
+		return target->getTurnsSinceSeen(_unit->getFaction()) == 0;
 }
 
 void AIModule::brutalThink(BattleAction* action)
@@ -3382,8 +3386,7 @@ void AIModule::brutalThink(BattleAction* action)
 				return;
 			}
 		}
-		else
-			wantToFuse = true;
+		wantToFuse = true;
 	}
 	bool winnerWasSpecialDoorCase = false;
 	bool iGlow = 15 - _unit->getArmor()->getPersonalLight() >= _save->getMod()->getMaxDarknessToSeeUnits();
@@ -3624,7 +3627,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					if (shouldPeak && !wantToFuse)
 					{
-						if (tile->getSmoke() > 0 || _save->getTile(targetPosition)->getSmoke() > 0)
+						if (tile->getSmoke() > 0 && _save->getTile(targetPosition)->getSmoke() > 0)
 							smokePeakScore = 100 / walkToDist;
 						if (pos == peakPosition)
 							indirectPeakScore = _unit->getTimeUnits();
@@ -3860,12 +3863,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && _unit->getFaction() == FACTION_HOSTILE && tile->getSmoke() && _unit->getTimeUnits() == getMaxTU(_unit))
+			//if (_traceAI)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	//tile->setTUMarker(enemyReachable[pos]);
-			//	tile->setTUMarker(walkToDist);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -5760,7 +5762,11 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 {
 	Tile *TileToCheckNext = NULL;
 	int LowestTuCost = INT_MAX;
+	int LowestLastExplored = INT_MAX;
 	float maxDistFromLastSeen = unit->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(unit) / 4;
+	bool exploreMode = false;
+	if (maxDistFromLastSeen > _save->getMapSizeX() + _save->getMapSizeY())
+		exploreMode = true;
 	Position lastSpottedPositon = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	bool dummy;
 	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), dummy, true, NULL, &previousPosition);
@@ -5779,7 +5785,22 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 		if (lastExplored < _save->getTurn())
 		{
 			int TUCost = pn->getTUCost(false).time;
-			if (TUCost < LowestTuCost)
+			if (exploreMode)
+			{
+				if (lastExplored <= LowestLastExplored)
+				{
+					if (TUCost < LowestTuCost)
+					{
+						LowestTuCost = TUCost;
+						TileToCheckNext = tile;
+					}
+				}
+				else
+				{
+					LowestTuCost = INT_MAX;
+				}
+			}
+			else if (TUCost < LowestTuCost)
 			{
 				LowestTuCost = TUCost;
 				TileToCheckNext = tile;
