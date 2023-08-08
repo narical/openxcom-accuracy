@@ -4588,10 +4588,11 @@ VoxelType TileEngine::voxelCheck(Position voxel, BattleUnit *excludeUnit, bool e
 				if (unit->isBigUnit())
 				{
 					tilepos = tile->getPosition();
-					part = tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2;
+					constexpr static int parts[] = {1,0,3,2}; // Change order 0,1,2,3 -> 1,0,3,2
+					part = parts[tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2];
 				}
 				int idx = (unit->getLoftemps(part) * 16) + y;
-				if (_voxelData->at(idx) & (1 << x))
+				if (_voxelData->at(idx) & (0x8000 >> x))
 				{
 					return V_UNIT;
 				}
