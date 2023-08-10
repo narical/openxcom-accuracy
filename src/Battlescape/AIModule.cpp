@@ -3596,7 +3596,8 @@ void AIModule::brutalThink(BattleAction* action)
 					float viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo->getArmor());
 					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
 						viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo->getArmor());
-					viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + unitToWalkTo->getTile()->getSmoke() / 3.0)));
+					int higherSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), myTile->getSmoke());
+					viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + higherSmoke / 3.0)));
 					if (Position::distance(pos, targetPosition) <= viewDistance)
 					{
 						Tile* targetTile = _save->getTile(targetPosition);
