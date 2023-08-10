@@ -3622,80 +3622,83 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			float discoverThreat = 0;
-			bool validCover = true;
-			bool isNode = false;
-			if (Options::aiPerformanceOptimization)
+			if (!lineOfFireBeforeFriendCheck)
 			{
-				if (tile->hasNoFloor())
+				float discoverThreat = 0;
+				bool validCover = true;
+				bool isNode = false;
+				if (Options::aiPerformanceOptimization)
 				{
-					Tile* tileBelow = _save->getBelowTile(tile);
-					if (tileBelow && tileBelow->hasNoFloor())
+					if (tile->hasNoFloor())
+					{
+						Tile* tileBelow = _save->getBelowTile(tile);
+						if (tileBelow && tileBelow->hasNoFloor())
+							validCover = false;
+					}
+					for (const auto* node : *_save->getNodes())
+					{
+						if (node->getPosition() == pos)
+						{
+							isNode = true;
+							break;
+						}
+					}
+					if (!isNode && getCoverValue(tile, _unit, 3) == 0)
+						validCover = false;
+					if (bestDirectPeakScore > 0 || bestIndirectPeakScore > 0)
 						validCover = false;
 				}
-				for (const auto* node : *_save->getNodes())
-				{
-					if (node->getPosition() == pos)
-					{
-						isNode = true;
-						break;
-					}
-				}
-				if (!isNode && getCoverValue(tile, _unit, 3) == 0)
+				// If the tile is good for peaking, it's probably not good for cover, so don't waste time to analyze it for that purpose
+				if (directPeakScore > 0 || indirectPeakScore > 0)
 					validCover = false;
-				if (bestDirectPeakScore > 0 || bestIndirectPeakScore > 0)
-					validCover = false;
-			}
-			// If the tile is good for peaking, it's probably not good for cover, so don't waste time to analyze it for that purpose
-			if (directPeakScore > 0 || indirectPeakScore > 0)
-				validCover = false;
-			if (!sweepMode && validCover)
-			{
-				bool inReachable = false;
-				for (auto& reachable : enemyReachable)
+				if (!sweepMode && validCover)
 				{
-					if (reachable.second > discoverThreat)
+					bool inReachable = false;
+					for (auto& reachable : enemyReachable)
 					{
-						for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+						if (reachable.second > discoverThreat)
 						{
-							for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+							for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 							{
-								Position compPos = pos;
-								compPos.x += x;
-								compPos.y += y;
-								if (hasTileSight(compPos, reachable.first))
-									discoverThreat = reachable.second;
+								for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+								{
+									Position compPos = pos;
+									compPos.x += x;
+									compPos.y += y;
+									if (hasTileSight(compPos, reachable.first))
+										discoverThreat = reachable.second;
+								}
 							}
 						}
 					}
-				}
-				discoverThreat = std::max(0.0f, discoverThreat);
-				if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile))
-					greatCoverScore = 100 / walkToDist;
-				else
-				{
-					if (!_save->getTileEngine()->isNextToDoor(tile))
-						goodCoverScore = 100 / discoverThreat;
+					discoverThreat = std::max(0.0f, discoverThreat);
+					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile))
+						greatCoverScore = 100 / walkToDist;
 					else
-						okayCoverScore = 100 / discoverThreat;
-				}
-				if (_unit->getAggressiveness() > 2)
-				{
-					if (walkToDist >= myWalkToDist && !contact)
 					{
-						greatCoverScore = 0;
-						goodCoverScore = 0;
-						okayCoverScore = 0;
+						if (!_save->getTileEngine()->isNextToDoor(tile))
+							goodCoverScore = 100 / discoverThreat;
+						else
+							okayCoverScore = 100 / discoverThreat;
 					}
-				}
-				if ((_unit->getAggressiveness() < 2 || discoverThreat == 0) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
-				{
-					_closestPositionToBreakLos = pos;
-					_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
-					_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
-					_turnPositionToBreakLosWasChecked = _save->getTurn();
-					_positionFromWhichPositionToBreakLosWasChecked = myPos;
-					_tuWhenChecking = _unit->getTimeUnits();
+					if (_unit->getAggressiveness() > 2)
+					{
+						if (walkToDist >= myWalkToDist && !contact)
+						{
+							greatCoverScore = 0;
+							goodCoverScore = 0;
+							okayCoverScore = 0;
+						}
+					}
+					if ((_unit->getAggressiveness() < 2 || discoverThreat == 0) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
+					{
+						_closestPositionToBreakLos = pos;
+						_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
+						_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
+						_turnPositionToBreakLosWasChecked = _save->getTurn();
+						_positionFromWhichPositionToBreakLosWasChecked = myPos;
+						_tuWhenChecking = _unit->getTimeUnits();
+					}
 				}
 			}
 			fallbackScore = 100 / walkToDist;
