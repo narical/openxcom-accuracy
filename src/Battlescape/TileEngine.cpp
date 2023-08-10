@@ -1637,8 +1637,8 @@ Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 
 	// determine the origin and target voxels for the raytrace
 	Position originVoxel;
-	originVoxel = Position((currentUnit->getPosition().x * 16) + 8, (currentUnit->getPosition().y * 16) + 8, currentUnit->getPosition().z*24);
-	originVoxel.z += -_save->getTile(currentUnit->getPosition())->getTerrainLevel();
+	originVoxel = pos.toVoxel() + Position(8, 8, 0);
+	originVoxel.z += -tile->getTerrainLevel();
 	originVoxel.z += currentUnit->getHeight() + currentUnit->getFloatHeight() - 1; //one voxel lower (eye level)
 	Tile *tileAbove = _save->getAboveTile(tile);
 	if (currentUnit->isBigUnit())
@@ -1996,7 +1996,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, BattleUnit *excludeAllBut)
 {
-	Position targetVoxel = Position((tile->getPosition().x * 16) + 8, (tile->getPosition().y * 16) + 8, tile->getPosition().z * 24);
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	Position scanVoxel;
 	std::vector<Position> _trajectory;
 	BattleUnit *otherUnit = tile->getUnit();
@@ -2075,7 +2075,8 @@ int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	Position targetVoxel = Position((tile->getPosition().x * 16) + 8, (tile->getPosition().y * 16) + 8, tile->getPosition().z * 24);
+	static constexpr int MAX_UNIT_RADIUS = 3;
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 	bool hypothetical = potentialUnit != 0;
 	if (potentialUnit == 0)
@@ -2102,13 +2103,24 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	{
 		unitRadius = 3;
 	}
+	assert(unitRadius <= MAX_UNIT_RADIUS);
+
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
-	float normal = unitRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
-	int relX = floor(((float)relPos.y)*normal+0.5);
-	int relY = floor(((float)-relPos.x)*normal+0.5);
+	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsY[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
 
-	int sliceTargets[] = {0,0, relX,relY, -relX,-relY, relY,-relX, -relY,relX};
+	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
+	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
+	{
+		float normal = testRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
+		int relX = floor(((float)relPos.y)*normal+0.5);
+		int relY = floor(((float)-relPos.x)*normal+0.5);
+		sliceTargetsX[ unitRadius - testRadius ] = relX;
+		sliceTargetsY[ unitRadius - testRadius ] = relY;
+		sliceTargetsX[ unitRadius + testRadius ] = -relX;
+		sliceTargetsY[ unitRadius + testRadius ] = -relY;
+	}
 
 	if (!potentialUnit->isOut())
 	{
@@ -2129,11 +2141,12 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	for (int i = 0; i <= heightRange; ++i)
 	{
 		scanVoxel->z=targetCenterHeight+heightFromCenter[i];
-		for (int j = 0; j < 5; ++j)
+
+		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-			if (i < (heightRange-1) && j>2) break; //skip unnecessary checks
-			scanVoxel->x=targetVoxel.x + sliceTargets[j*2];
-			scanVoxel->y=targetVoxel.y + sliceTargets[j*2+1];
+			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks
+			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
+			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
