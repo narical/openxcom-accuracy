@@ -3127,8 +3127,11 @@ void AIModule::brutalThink(BattleAction* action)
 	_psiAction.type = BA_NONE;
 	bool checkedAttack = false;
 	if (_unit->getTimeUnits() == getMaxTU(_unit))
+	{
 		_positionAtStartOfTurn = myPos;
-	if ((_turnPositionToBreakLosWasChecked == _save->getTurn() && myPos == _positionFromWhichPositionToBreakLosWasChecked && _tuWhenChecking == _unit->getTimeUnits()) || _unit->getTimeUnits() == getMaxTU(_unit) || sweepMode || _reposition)
+		_reposition = false;
+	}
+	if ((_turnPositionToBreakLosWasChecked == _save->getTurn() && myPos == _positionFromWhichPositionToBreakLosWasChecked && _tuWhenChecking == _unit->getTimeUnits()) || sweepMode || _reposition)
 	{
 		checkedAttack = true;
 		if (brutalPsiAction())
@@ -3534,8 +3537,15 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			bool shouldHaveBeenAbleToAttack = pos == myPos && _positionFromWhichPositionToBreakLosWasChecked == myPos && _tuWhenChecking == _unit->getTimeUnits();
+			int saveTUs = 0;
 			if (_tuCostToReachClosestPositionToBreakLos != -1)
-				attackTU += _tuCostToReachClosestPositionToBreakLos;
+				saveTUs = _tuCostToReachClosestPositionToBreakLos;
+			if ((_unit->getAggressiveness() < 2 || immobileEnemies))
+			{
+				saveTUs = std::max(saveTUs, (int)pu->getTUCost(false).time);
+			}
+			attackTU += saveTUs;
+
 			bool realLineOfFire = lineOfFire;
 			bool specialDoorCase = false;
 			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > myMaxTU * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
@@ -3679,7 +3689,7 @@ void AIModule::brutalThink(BattleAction* action)
 					discoverThreat = std::max(0.0f, discoverThreat);
 					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile))
 						greatCoverScore = 100 / walkToDist;
-					else
+					else if (discoverThreat > 0)
 					{
 						if (!_save->getTileEngine()->isNextToDoor(tile))
 							goodCoverScore = 100 / discoverThreat;
@@ -3695,7 +3705,7 @@ void AIModule::brutalThink(BattleAction* action)
 							okayCoverScore = 0;
 						}
 					}
-					if ((_unit->getAggressiveness() < 2 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
+					if ((_unit->getAggressiveness() < 2 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
 					{
 						_closestPositionToBreakLos = pos;
 						_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
