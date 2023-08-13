@@ -3028,7 +3028,7 @@ void AIModule::brutalThink(BattleAction* action)
 		// Seems redundant but isn't. This is necessary because we also don't want to attack the units that we have mind-controlled
 		if (target->getFaction() == _unit->getFaction())
 			continue;
-		if (!target->getArmor()->allowsMoving() || target->getEnergy() == 0)
+		if (!target->getArmor()->allowsMoving() || target->getBaseStats()->stamina == 0)
 			immobileEnemies = true;
 		Position targetPosition = target->getPosition();
 		int turnsLastSeen = 0;
