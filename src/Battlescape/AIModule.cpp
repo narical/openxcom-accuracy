@@ -3019,14 +3019,14 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (target->getTileLastSpotted(_unit->getFaction()) == -1)
 			{
-				if (target->getFaction() == _targetFaction)
+				if (isEnemy(target))
 					target->setTileLastSpotted(getClosestSpawnTileId(), _unit->getFaction());
 				if (target->getTileLastSpotted(_unit->getFaction()) == -1)
 					continue;
 			}
 		}
 		// Seems redundant but isn't. This is necessary because we also don't want to attack the units that we have mind-controlled
-		if (target->getFaction() == _unit->getFaction())
+		if (!isEnemy(target))
 			continue;
 		if (!target->getArmor()->allowsMoving() || target->getBaseStats()->stamina == 0)
 			immobileEnemies = true;
@@ -3606,7 +3606,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			if (!sweepMode && _unit->getAggressiveness() > 0)
 			{
-				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo)
+				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
 					float viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo->getArmor());
 					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
@@ -4627,63 +4627,65 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 		}
 	}
 	// Now lets check them from the furtest tile each action can be performed from
-	for (auto& i : attackOptions)
+	if (!_reposition) //after repositioning we should first go through the normal check again
 	{
-
-		bool extraCostForCover = false;
-		if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
-			extraCostForCover = true;
-		Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
-		Tile* simulationTile = _save->getTile(simulationPosition);
-		for (auto& j : attackOptions)
+		for (auto& i : attackOptions)
 		{
-			testAction.type = j;
-			float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
-
-			if (newScore > score && simulationPosition != _unit->getPosition())
-			{
-				score = newScore;
-				chosenBattleAction.type = BA_WALK;
-				chosenBattleAction.run = wantToRun();
-				chosenBattleAction.target = simulationPosition;
-				chosenBattleAction.weapon = _attackAction.weapon;
-				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
-			}
-		}
-		// Now let's check all tiles in the radius of 2 around myself and the target
-		std::vector<Position> attackPositions;
-		int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
-		if (actionTUs > 0)
-		{
-			for (int x = -2; x <= 2; ++x)
-			{
-				for (int y = -2; y <= 2; ++y)
-				{
-					if (x != 0 || y != 0)
-					{
-						Position attPos = _attackAction.target + Position(x, y, 0);
-						if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
-							attackPositions.push_back(attPos);
-					}
-				}
-			}
-		}
-		for (Position simPos : attackPositions)
-		{
-			Tile* simulationTile = _save->getTile(simPos);
+			bool extraCostForCover = false;
+			if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
+				extraCostForCover = true;
+			Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
+			Tile* simulationTile = _save->getTile(simulationPosition);
 			for (auto& j : attackOptions)
 			{
 				testAction.type = j;
 				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
 
-				if (newScore > score && simPos != _unit->getPosition())
+				if (newScore > score && simulationPosition != _unit->getPosition())
 				{
 					score = newScore;
 					chosenBattleAction.type = BA_WALK;
 					chosenBattleAction.run = wantToRun();
-					chosenBattleAction.target = simPos;
+					chosenBattleAction.target = simulationPosition;
 					chosenBattleAction.weapon = _attackAction.weapon;
-					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
+					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
+				}
+			}
+			// Now let's check all tiles in the radius of 2 around myself and the target
+			std::vector<Position> attackPositions;
+			int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
+			if (actionTUs > 0)
+			{
+				for (int x = -2; x <= 2; ++x)
+				{
+					for (int y = -2; y <= 2; ++y)
+					{
+						if (x != 0 || y != 0)
+						{
+							Position attPos = _attackAction.target + Position(x, y, 0);
+							if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
+								attackPositions.push_back(attPos);
+						}
+					}
+				}
+			}
+			for (Position simPos : attackPositions)
+			{
+				Tile* simulationTile = _save->getTile(simPos);
+				for (auto& j : attackOptions)
+				{
+					testAction.type = j;
+					float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
+
+					if (newScore > score && simPos != _unit->getPosition())
+					{
+						score = newScore;
+						chosenBattleAction.type = BA_WALK;
+						chosenBattleAction.run = wantToRun();
+						chosenBattleAction.target = simPos;
+						chosenBattleAction.weapon = _attackAction.weapon;
+						chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
+					}
 				}
 			}
 		}
