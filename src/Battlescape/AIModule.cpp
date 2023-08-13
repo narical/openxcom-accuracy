@@ -3010,6 +3010,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins();
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
+	bool immobileEnemies = false;
 	for (BattleUnit* target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3027,6 +3028,8 @@ void AIModule::brutalThink(BattleAction* action)
 		// Seems redundant but isn't. This is necessary because we also don't want to attack the units that we have mind-controlled
 		if (target->getFaction() == _unit->getFaction())
 			continue;
+		if (!target->getArmor()->allowsMoving() || target->getEnergy() == 0)
+			immobileEnemies = true;
 		Position targetPosition = target->getPosition();
 		int turnsLastSeen = 0;
 		if (!_unit->isCheatOnMovement() && !visibleToAnyFriend(target))
@@ -3358,6 +3361,8 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit);
 	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
+	if (_traceAI && immobileEnemies)
+		Log(LOG_INFO) << "Immobile enemies detected. Taking cover takes precedent over attacking.";
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt()->getRules()->isExplodingInHands())
 	{
 		if (saveDistance)
@@ -3690,7 +3695,7 @@ void AIModule::brutalThink(BattleAction* action)
 							okayCoverScore = 0;
 						}
 					}
-					if ((_unit->getAggressiveness() < 2 || discoverThreat == 0) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
+					if ((_unit->getAggressiveness() < 2 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !lineOfFireBeforeFriendCheck && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _positionFromWhichPositionToBreakLosWasChecked != myPos || _tuCostToReachClosestPositionToBreakLos == -1 || _tuWhenChecking != _unit->getTimeUnits()))
 					{
 						_closestPositionToBreakLos = pos;
 						_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
