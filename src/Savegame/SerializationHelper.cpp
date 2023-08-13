@@ -21,6 +21,9 @@
 #include <sstream>
 #include <cfloat>
 
+#include "../Engine/Logger.h"
+#include "../Engine/CrossPlatform.h"
+
 namespace OpenXcom
 {
 
@@ -35,7 +38,9 @@ int unserializeInt(Uint8 **buffer, Uint8 sizeKey)
 	switch(sizeKey)
 	{
 	case 1:
-		ret = **buffer;
+		Uint8 tmp;
+		memcpy(&tmp, *buffer, sizeof(tmp));
+		ret = tmp;
 		break;
 	case 2:
 	{
@@ -44,9 +49,6 @@ int unserializeInt(Uint8 **buffer, Uint8 sizeKey)
 		ret = tmp;
 		break;
 	}
-	case 3:
-		assert(false); // no.
-		break;
 	case 4:
 	{
 		Uint32 tmp;
@@ -55,7 +57,16 @@ int unserializeInt(Uint8 **buffer, Uint8 sizeKey)
 		break;
 	}
 	default:
-		assert(false); // get out.
+	{
+		// XXX: if this unreachable block gets hit, check to see
+		//   that sizeKey is being properly initialized
+		#ifdef NDEBUG
+			Log(LOG_WARNING) << "unserializeInt has invalid sizeKey of " << sizeKey
+				<< " .. this can mean deserialization data is ill-formed";
+		#else
+			CrossPlatform::unreachable();
+		#endif
+	}
 	}
 
 	*buffer += sizeKey;
@@ -73,9 +84,12 @@ void serializeInt(Uint8 **buffer, Uint8 sizeKey, int value)
 	switch(sizeKey)
 	{
 	case 1:
+	{
+		Uint8 u8Value = value;
 		assert(value < 256);
-		**buffer = value;
+		memcpy(*buffer, &u8Value, sizeof(Uint8));
 		break;
+	}
 	case 2:
 	{
 		Sint16 s16Value = value;
@@ -83,9 +97,6 @@ void serializeInt(Uint8 **buffer, Uint8 sizeKey, int value)
 		memcpy(*buffer, &s16Value, sizeof(Sint16));
 		break;
 	}
-	case 3:
-		assert(false); // no.
-		break;
 	case 4:
 	{
 		Uint32 u32Value = value;
@@ -93,7 +104,16 @@ void serializeInt(Uint8 **buffer, Uint8 sizeKey, int value)
 		break;
 	}
 	default:
-		assert(false); // get out.
+	{
+		// XXX: if this unreachable block gets hit, check to see
+		//   that sizeKey is being properly initialized
+		#ifdef NDEBUG
+			Log(LOG_WARNING) << "serializeInt has invalid sizeKey of " << sizeKey
+				<< " .. this can mean serialization data is ill-formed";
+		#else
+			CrossPlatform::unreachable();
+		#endif
+	}
 	}
 
 	*buffer += sizeKey;
