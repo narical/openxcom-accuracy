@@ -239,7 +239,7 @@ public:
 	/// Gets the AI to look through a window.
 	int faceWindow(Position position);
 	/// Checks a unit's % exposure on a tile.
-	int checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, BattleUnit *excludeAllBut);
+	float checkVoxelExposure(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
 	/// Checks validity for targetting a unit.
 	bool canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
 	/// like canTargetUnit but returns a numeric value of how hitable the target is

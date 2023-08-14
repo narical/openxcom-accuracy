@@ -1994,73 +1994,107 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  * @param excludeAllBut [Optional] is unit which is the only one to be considered for ray hits.
  * @return Degree of exposure (as percent).
  */
-int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, BattleUnit *excludeAllBut)
+float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
+	static constexpr int MAX_UNIT_RADIUS = 3;
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
-	Position scanVoxel;
 	std::vector<Position> _trajectory;
-	BattleUnit *otherUnit = tile->getUnit();
-	if (otherUnit == 0) return 0; //no unit in this tile, even if it elevated and appearing in it.
-	if (otherUnit == excludeUnit) return 0; //skip self
+
+	bool hypothetical = potentialUnit != 0;
+	if (potentialUnit == 0)
+	{
+		potentialUnit = tile->getUnit();
+		if (potentialUnit == 0) return false; //no unit in this tile, even if it elevated and appearing in it.
+	}
+	if (potentialUnit == excludeUnit) return false; //skip self
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
-	if (otherUnit)
-		 targetMinHeight += otherUnit->getFloatHeight();
+	targetMinHeight += potentialUnit->getFloatHeight();
 
 	// if there is an other unit on target tile, we assume we want to check against this unit's height
 	int heightRange;
-
-	int unitRadius = otherUnit->getLoftemps(); //width == loft in default loftemps set
-	if (otherUnit->isBigUnit())
+	if (!potentialUnit->isOut())
 	{
-		unitRadius = 3;
-	}
-
-	// vector manipulation to make scan work in view-space
-	Position relPos = targetVoxel - *originVoxel;
-	float normal = unitRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
-	int relX = floor(((float)relPos.y)*normal+0.5);
-	int relY = floor(((float)-relPos.x)*normal+0.5);
-
-	int sliceTargets[] = {0,0, relX,relY, -relX,-relY};
-
-	if (!otherUnit->isOut())
-	{
-		heightRange = otherUnit->getHeight();
+		heightRange = potentialUnit->getHeight();
 	}
 	else
 	{
 		heightRange = 12;
 	}
-
 	int targetMaxHeight=targetMinHeight+heightRange;
-	// scan ray from top to bottom  plus different parts of target cylinder
+
+	int unitRadius = potentialUnit->getLoftemps(); //width == loft in default loftemps set
+	int targetSize = potentialUnit->getArmor()->getSize() - 1;
+	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
+	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
+	if (targetSize > 0)
+	{
+		unitRadius = 3;
+	}
+	assert(unitRadius <= MAX_UNIT_RADIUS);
+
+	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
+	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsY[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
+
+	// vector manipulation to make scan work in view-space
+	Position relPos = targetVoxel - *originVoxel;
+
+	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
+	{
+		float normal = testRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
+		int relX = floor(((float)relPos.y)*normal+0.5);
+		int relY = floor(((float)-relPos.x)*normal+0.5);
+		sliceTargetsX[ unitRadius - testRadius ] = relX;
+		sliceTargetsY[ unitRadius - testRadius ] = relY;
+		sliceTargetsX[ unitRadius + testRadius ] = -relX;
+		sliceTargetsY[ unitRadius + testRadius ] = -relY;
+	}
+
+	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
 	int visible=0;
-	for (int i = heightRange; i >=0; i-=2)
+	for (int i = heightRange; i > 0; i-=2)
 	{
-		++total;
-		scanVoxel.z=targetMinHeight+i;
-		for (int j = 0; j < 3; ++j)
+		scanVoxel->z = targetMinHeight + i;
+
+		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-			scanVoxel.x=targetVoxel.x + sliceTargets[j*2];
-			scanVoxel.y=targetVoxel.y + sliceTargets[j*2+1];
+			++total;
+			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
+			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
 			_trajectory.clear();
-			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit, excludeAllBut);
+			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
 			{
-				//voxel of hit must be inside of scanned box
-				if (_trajectory.at(0).x/16 == scanVoxel.x/16 &&
-					_trajectory.at(0).y/16 == scanVoxel.y/16 &&
-					_trajectory.at(0).z >= targetMinHeight &&
-					_trajectory.at(0).z <= targetMaxHeight)
+				for (int x = 0; x <= targetSize; ++x)
 				{
-					++visible;
+					for (int y = 0; y <= targetSize; ++y)
+					{
+						//voxel of hit must be inside of scanned box
+						if (_trajectory.at(0).x/16 == (scanVoxel->x/16) + x + xOffset &&
+							_trajectory.at(0).y/16 == (scanVoxel->y/16) + y + yOffset &&
+							_trajectory.at(0).z >= targetMinHeight &&
+							_trajectory.at(0).z <= targetMaxHeight)
+						{
+							++visible;
+						}
+					}
 				}
+			}
+			else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
+			{
+				++visible;
+			}
+			if (rememberObstacles && _trajectory.size()>0)
+			{
+				Tile *tileObstacle = _save->getTile(_trajectory.at(0).toTile());
+				if (tileObstacle) tileObstacle->setObstacle(test);
 			}
 		}
 	}
-	return (visible*100)/total;
+	float exposure = (double)visible/total;
+	return exposure;
 }
 
 /**
@@ -2078,13 +2112,13 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	static constexpr int MAX_UNIT_RADIUS = 3;
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
+
 	bool hypothetical = potentialUnit != 0;
 	if (potentialUnit == 0)
 	{
 		potentialUnit = tile->getUnit();
 		if (potentialUnit == 0) return false; //no unit in this tile, even if it elevated and appearing in it.
 	}
-
 	if (potentialUnit == excludeUnit) return false; //skip self
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
@@ -2144,7 +2178,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks
+//			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks
 			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
 			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
 			_trajectory.clear();
