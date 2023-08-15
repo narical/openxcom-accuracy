@@ -511,6 +511,11 @@ void InventoryState::init()
 			}
 			surf->blitNShade(_soldier, 0, 0);
 		}
+		if (!_game->getMod()->getSurface(look, false))
+		{
+			look = s->getArmor()->getSpriteInventory();
+		}
+		_game->getMod()->getSurface(look)->blit(_soldier);
 	}
 	else
 	{

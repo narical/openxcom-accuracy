@@ -112,6 +112,11 @@ namespace OpenXcom
 			}
 			_game->getMod()->getSurface(look, true)->blitNShade(_bg, 0, 0);
 		}
+		if (!_game->getMod()->getSurface(look, false))
+		{
+			look = armor->getSpriteInventory();
+		}
+		_game->getMod()->getSurface(look)->blit(_image);
 
 
 		_lstInfo = new TextList(150, 96, 150, 46);
