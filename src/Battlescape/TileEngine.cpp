@@ -2176,7 +2176,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
  */
 float TileEngine::targetQuality(Position* originVoxel, Tile* tile, Position* scanVoxel, BattleUnit* excludeUnit, bool rememberObstacles, BattleUnit* potentialUnit)
 {
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(7, 8, 0);
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 	bool hypothetical = potentialUnit != 0;
 	if (potentialUnit == 0)
