@@ -4640,66 +4640,62 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 			chosenBattleAction.weapon = _attackAction.weapon;
 		}
 	}
-	// Now lets check them from the furtest tile each action can be performed from
-	if (!_reposition) //after repositioning we should first go through the normal check again
+	for (auto& i : attackOptions)
 	{
-		for (auto& i : attackOptions)
+		bool extraCostForCover = false;
+		if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
+			extraCostForCover = true;
+		Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
+		Tile* simulationTile = _save->getTile(simulationPosition);
+		for (auto& j : attackOptions)
 		{
-			bool extraCostForCover = false;
-			if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
-				extraCostForCover = true;
-			Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
-			Tile* simulationTile = _save->getTile(simulationPosition);
+			testAction.type = j;
+			float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
+
+			if (newScore > score && simulationPosition != _unit->getPosition())
+			{
+				score = newScore;
+				chosenBattleAction.type = BA_WALK;
+				chosenBattleAction.run = wantToRun();
+				chosenBattleAction.target = simulationPosition;
+				chosenBattleAction.weapon = _attackAction.weapon;
+				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
+			}
+		}
+		// Now let's check all tiles in the radius of 2 around myself and the target
+		std::vector<Position> attackPositions;
+		int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
+		if (actionTUs > 0)
+		{
+			for (int x = -2; x <= 2; ++x)
+			{
+				for (int y = -2; y <= 2; ++y)
+				{
+					if (x != 0 || y != 0)
+					{
+						Position attPos = _attackAction.target + Position(x, y, 0);
+						if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
+							attackPositions.push_back(attPos);
+					}
+				}
+			}
+		}
+		for (Position simPos : attackPositions)
+		{
+			Tile* simulationTile = _save->getTile(simPos);
 			for (auto& j : attackOptions)
 			{
 				testAction.type = j;
 				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
 
-				if (newScore > score && simulationPosition != _unit->getPosition())
+				if (newScore > score && simPos != _unit->getPosition())
 				{
 					score = newScore;
 					chosenBattleAction.type = BA_WALK;
 					chosenBattleAction.run = wantToRun();
-					chosenBattleAction.target = simulationPosition;
+					chosenBattleAction.target = simPos;
 					chosenBattleAction.weapon = _attackAction.weapon;
-					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
-				}
-			}
-			// Now let's check all tiles in the radius of 2 around myself and the target
-			std::vector<Position> attackPositions;
-			int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
-			if (actionTUs > 0)
-			{
-				for (int x = -2; x <= 2; ++x)
-				{
-					for (int y = -2; y <= 2; ++y)
-					{
-						if (x != 0 || y != 0)
-						{
-							Position attPos = _attackAction.target + Position(x, y, 0);
-							if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
-								attackPositions.push_back(attPos);
-						}
-					}
-				}
-			}
-			for (Position simPos : attackPositions)
-			{
-				Tile* simulationTile = _save->getTile(simPos);
-				for (auto& j : attackOptions)
-				{
-					testAction.type = j;
-					float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
-
-					if (newScore > score && simPos != _unit->getPosition())
-					{
-						score = newScore;
-						chosenBattleAction.type = BA_WALK;
-						chosenBattleAction.run = wantToRun();
-						chosenBattleAction.target = simPos;
-						chosenBattleAction.weapon = _attackAction.weapon;
-						chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
-					}
+					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
 				}
 			}
 		}
