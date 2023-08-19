@@ -159,6 +159,8 @@ en-US:
   STR_STRAFE_DESC: "Enables strafing, running, and independent tank turret movement when holding CTRL."
   STR_BATTLEEXPLOSIONHEIGHT: "Explosion height"
   STR_BATTLEEXPLOSIONHEIGHT_DESC: "Change how far height-wise explosions may spread.{NEWLINE}(Flat: 0, Round: 3)"
+  STR_BATTLETERRAINSQUISHYNESS: "Terrain destructibility"
+  STR_BATTLETERRAINSQUISHYNESS_DESC: "Determines how destructible the terrain is 0> indestructible 1> default Further options at most as strong as: 2> alien alloy 3> brick 4> wood 5> straw"
   STR_AUTOSAVE: "Autosave"
   STR_AUTOSAVE_DESC: "Automatically saves the game at specified intervals. Doesn't apply to Ironman Mode."
   STR_AUTOSAVE_FREQUENCY: "Autosave Frequency"

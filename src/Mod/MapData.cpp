@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapData.h"
+#include "../Engine/Options.h"
 
 namespace OpenXcom
 {
@@ -174,7 +175,24 @@ int MapData::getBlock(ItemDamageType type) const
 	else if (type == DT_SMOKE)
 		return _block[3];
 	else if (type > DT_NONE && type < DAMAGE_TYPES)
+	{
+		switch (Options::battleTerrainSquishyness)
+		{
+		case 0:
+			return 255;
+		case 1:
+			return _block[2];
+		case 2:
+			return std::min(_block[2], 100);
+		case 3:
+			return std::min(_block[2], 25);
+		case 4:
+			return std::min(_block[2], 12);
+		case 5:
+			return std::min(_block[2], 4);
+		}
 		return _block[2];
+	}
 
 	return 0;
 }
@@ -397,6 +415,21 @@ void MapData::setLightSource(int value)
  */
 int MapData::getArmor() const
 {
+	switch (Options::battleTerrainSquishyness)
+	{
+	case 0:
+		return 255;
+	case 1:
+		return _armor;
+	case 2:
+		return std::min(_armor, 100);
+	case 3:
+		return std::min(_armor, 25);
+	case 4:
+		return std::min(_armor, 12);
+	case 5:
+		return std::min(_armor, 4);
+	}
 	return _armor;
 }
 
