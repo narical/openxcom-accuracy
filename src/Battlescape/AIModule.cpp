@@ -3401,7 +3401,7 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		Position targetPosition = encircleTile->getPosition();
 		bool justNeedToTurn = false;
-		Position peakPosition;
+		Position peakPosition = getPeakPosition();
 		if (unitToWalkTo)
 		{
 			targetPosition = unitToWalkTo->getPosition();
@@ -3409,7 +3409,8 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
-			peakPosition = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
+			if (peakPosition == myPos)
+				peakPosition = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
 		}
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
@@ -6361,6 +6362,19 @@ bool AIModule::wantToRun()
 		return true;
 	}
 	return false;
+}
+
+Position AIModule::getPeakPosition()
+{
+	for (PathfindingNode* pn : _allPathFindingNodes)
+	{
+		Tile* tile = _save->getTile(pn->getPosition());
+		if (tile->getLastExplored(_myFaction) < _save->getTurn())
+		{
+			return pn->getPosition();
+		}
+	}
+	return _unit->getPosition();
 }
 
 }

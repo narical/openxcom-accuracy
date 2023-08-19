@@ -249,6 +249,8 @@ public:
 	bool wantToRun();
 	/// Pointer to save so that unit can access it
 	SavedBattleGame* getSave() { return _save; };
+	/// Determine a good position for indirect peeking
+	Position getPeakPosition();
 };
 
 }
