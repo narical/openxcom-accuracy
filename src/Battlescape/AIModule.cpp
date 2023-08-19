@@ -3366,12 +3366,14 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (_traceAI && immobileEnemies)
 		Log(LOG_INFO) << "Immobile enemies detected. Taking cover takes precedent over attacking.";
+	bool wantToPrime = false;
+	int primeCost = 0;
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt()->getRules()->isExplodingInHands())
 	{
+		BattleItem* grenade = _unit->getGrenadeFromBelt();
+		primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
 		if (saveDistance)
 		{
-			BattleItem* grenade = _unit->getGrenadeFromBelt();
-			int primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
 			if (primeCost <= _unit->getTimeUnits())
 			{
 				_unit->spendTimeUnits(4);
@@ -3383,6 +3385,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->number -= 1;
 				return;
 			}
+		}
+		else
+		{
+			wantToPrime = true;
 		}
 	}
 	bool winnerWasSpecialDoorCase = false;
@@ -3455,7 +3461,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (unitDist < 5)
 					{
 						if (quickLineOfFire(pos, unit))
-							cuddleAvoidModifier += 5 - unitDist;
+							cuddleAvoidModifier += 1 - unitDist * 0.2;
 					}
 				}
 				if (unitDist < closestAnyOneDist && unit != _unit)
@@ -3633,12 +3639,12 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
+			float discoverThreat = 0;
 			if (!lineOfFireBeforeFriendCheck)
 			{
 				bool validCover = true;
 				if (_unit->getAggressiveness() > 2 && walkToDist >= myWalkToDist && !contact)
 					validCover = false;
-				float discoverThreat = 0;
 				bool isNode = false;
 				if (Options::aiPerformanceOptimization && validCover)
 				{
@@ -3685,15 +3691,12 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 					discoverThreat = std::max(0.0f, discoverThreat);
-					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && _unit->getAggressiveness() < 2)
+					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (_unit->getAggressiveness() < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
 						greatCoverScore = 100 / walkToDist;
-					else if (discoverThreat > 0)
-					{
-						if (!_save->getTileEngine()->isNextToDoor(tile))
-							goodCoverScore = 100 / (discoverThreat + walkToDist);
-						else
-							okayCoverScore = 100 / (discoverThreat + walkToDist);
-					}
+					if (!_save->getTileEngine()->isNextToDoor(tile))
+						goodCoverScore = 100 / (discoverThreat + walkToDist);
+					else
+						okayCoverScore = 100 / (discoverThreat + walkToDist);
 					if (_unit->getAggressiveness() > 2)
 					{
 						if (walkToDist >= myWalkToDist && !contact)
@@ -3828,7 +3831,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId());
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(getMaxTU(_unit) - pu->getTUCost(false).time);
+			//	tile->setTUMarker(discoverThreat + walkToDist);
 			//}
 		}
 		if (_traceAI)
