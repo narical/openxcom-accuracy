@@ -54,6 +54,7 @@ private:
 	BattlescapeButton *_btnInventory, *_btnCenter, *_btnNextSoldier, *_btnNextStop, *_btnShowLayers, *_btnHelp;
 	BattlescapeButton *_btnEndTurn, *_btnAbort, *_btnLaunch, *_btnPsi, *_btnSpecial, *_btnSkills, *_reserve;
 	BattlescapeButton *_btnCtrl, *_btnAlt, *_btnShift, *_btnRMB, *_btnMMB;
+	BattlescapeButton *_btnAI;
 	bool _touchButtonsEnabled, _touchButtonsEnabledLastTurn;
 	InteractiveSurface *_btnStats;
 	BattlescapeButton *_btnReserveNone, *_btnReserveSnap, *_btnReserveAimed, *_btnReserveAuto, *_btnReserveKneel, *_btnZeroTUs;
@@ -287,6 +288,9 @@ public:
 	void autosave(int currentTurn);
 	/// Is busy?
 	bool isBusy() const;
+	
+	/// Handler for clicking the AI button.
+	void btnAIClick(Action *action);
 };
 
 }

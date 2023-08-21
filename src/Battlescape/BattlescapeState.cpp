@@ -87,6 +87,7 @@
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleVideo.h"
 #include <algorithm>
+#include "../Basescape/SoldiersAIState.h"
 
 namespace OpenXcom
 {
@@ -2761,6 +2762,10 @@ inline void BattlescapeState::handle(Action *action)
 					else
 						Options::autoCombat = true;
 				}
+				else if (key == Options::keyAIList)
+				{
+					btnAIClick(action);
+				}
 				if (Options::debug)
 				{
 					// "ctrl-d" - enable debug mode
@@ -3814,6 +3819,19 @@ void BattlescapeState::autosave(int currentTurn)
 bool BattlescapeState::isBusy() const
 {
 	return (_map->getCursorType() == CT_NONE || _battleGame->isBusy());
+}
+
+
+/// Handler for clicking the AI button.
+void BattlescapeState::btnAIClick(Action *action)
+{
+	std::vector<Soldier*> soldiers;
+	for (const auto* bu : *_battleGame->getSave()->getUnits())
+	{
+		auto* s = bu->getGeoscapeSoldier();
+		if (s != nullptr) {soldiers.push_back(s);}
+	}
+	_game->pushState(new SoldiersAIState(soldiers));
 }
 
 }

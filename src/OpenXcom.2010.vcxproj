@@ -273,6 +273,7 @@
     <ClCompile Include="Basescape\SoldierMemorialState.cpp" />
     <ClCompile Include="Basescape\SoldierRankState.cpp" />
     <ClCompile Include="Basescape\SoldierSortUtil.cpp" />
+    <ClCompile Include="Basescape\SoldiersAIState.cpp" />
     <ClCompile Include="Basescape\SoldiersState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformationListState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformationState.cpp" />

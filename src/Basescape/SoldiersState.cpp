@@ -44,6 +44,7 @@
 #include "../Savegame/SavedBattleGame.h"
 #include <algorithm>
 #include "../Engine/Unicode.h"
+#include "SoldiersAIState.h"
 
 namespace OpenXcom
 {
@@ -98,6 +99,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_btnOk->onMouseClick((ActionHandler)&SoldiersState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnInventoryClick, Options::keyBattleInventory);
+	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnAIClick, Options::keyAIList);
 
     // _cbxScreenActions
 
@@ -128,6 +130,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 			deadMan->prepareStatsWithBonuses(_game->getMod()); // refresh stats for sorting
 		}
 	}
+	_availableOptions.push_back("STR_AI_LISTBUTTON");
 
 	_cbxScreenActions->setOptions(_availableOptions, true);
 	_cbxScreenActions->setSelected(0);
@@ -592,6 +595,11 @@ void SoldiersState::cbxScreenActionsChange(Action *action)
 		_cbxScreenActions->setSelected(0);
 		btnInventoryClick(nullptr);
 	}
+	else if (selAction == "STR_AI_LISTBUTTON")
+	{
+		_cbxScreenActions->setSelected(0);
+		_game->pushState(new SoldiersAIState(*_base->getSoldiers()));
+	}
 	else if (selAction == "STR_PSI_TRAINING")
 	{
 		_cbxScreenActions->setSelected(0);
@@ -715,6 +723,12 @@ void SoldiersState::lstSoldiersMousePress(Action *action)
 			moveSoldierDown(action, row);
 		}
 	}
+}
+
+/// Handler for clicking the AI button.
+void SoldiersState::btnAIClick(Action *action)
+{
+	_game->pushState(new SoldiersAIState(*_base->getSoldiers()));
 }
 
 }
