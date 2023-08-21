@@ -3397,11 +3397,12 @@ void AIModule::brutalThink(BattleAction* action)
 	bool usePeakDirection = false;
 	int myMaxTU = getMaxTU(_unit);
 	int lastStepCost = 0;
+	Position peakPosition = getPeakPosition();
 	if (unitToWalkTo != NULL || encircleTile)
 	{
 		Position targetPosition = encircleTile->getPosition();
 		bool justNeedToTurn = false;
-		Position peakPosition = getPeakPosition();
+		bool justNeedToTurnToPeek = false;
 		if (unitToWalkTo)
 		{
 			targetPosition = unitToWalkTo->getPosition();
@@ -3409,15 +3410,19 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
 				justNeedToTurn = true;
-			if (peakPosition == myPos)
-				peakPosition = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
+			Position towardsPeekPos = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
+			Tile* towardsPeekTile = _save->getTile(towardsPeekPos);
+			if (towardsPeekTile->getLastExplored(_myFaction) < _save->getTurn())
+				peakPosition = towardsPeekPos;
 		}
+		if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
+			justNeedToTurnToPeek = true;
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
 		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek <<" tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
 		float lowestDiscoverThread = FLT_MAX;
 		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
@@ -3609,7 +3614,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			if (!sweepMode && _unit->getAggressiveness() > 0)
 			{
-				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && pos != myPos && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
+				if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
 					float viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo->getArmor());
 					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
@@ -3631,13 +3636,8 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if (shouldPeak)
-					{
-						if (pos == peakPosition)
-							indirectPeakScore = _unit->getTimeUnits();
-						else if (hasTileSight(pos, peakPosition))
-							indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					}
+					if (hasTileSight(pos, peakPosition) || pos == peakPosition)
+						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
 			float discoverThreat = 0;
@@ -3665,12 +3665,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					if (!isNode && getCoverValue(tile, _unit, 3) == 0)
 						validCover = false;
-					if (bestDirectPeakScore > 0 || bestIndirectPeakScore > 0)
-						validCover = false;
 				}
-				// If the tile is good for peaking, it's probably not good for cover, so don't waste time to analyze it for that purpose
-				if (directPeakScore > 0 || indirectPeakScore > 0)
-					validCover = false;
 				if (!sweepMode && validCover)
 				{
 					bool inReachable = false;
@@ -3830,9 +3825,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			//if (_traceAI)
 			//{
-			//	tile->setMarkerColor(_unit->getId());
+			//	tile->setMarkerColor(tile->getLastExplored(_myFaction));
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat + walkToDist);
+			//	tile->setTUMarker(tile->getLastExplored(_myFaction));
 			//}
 		}
 		if (_traceAI)
@@ -4049,16 +4044,23 @@ void AIModule::brutalThink(BattleAction* action)
 		if (action->finalFacing != _unit->getDirection() && action->finalFacing != -1)
 		{
 			action->type = BA_TURN;
-			if (unitToFaceTo != NULL)
+			if (usePeakDirection && !winnerWasSpecialDoorCase)
 			{
-				Position targetPosition = unitToFaceTo->getPosition();
-				if (!_unit->isCheatOnMovement())
-					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
-				action->target = targetPosition;
+				action->target = peakPosition;
 			}
-			if (!iHaveLof && encircleTile && encircleTile->getPosition() != myPos && !winnerWasSpecialDoorCase)
+			else
 			{
-				action->target = encircleTile->getPosition();
+				if (unitToFaceTo != NULL)
+				{
+					Position targetPosition = unitToFaceTo->getPosition();
+					if (!_unit->isCheatOnMovement())
+						targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
+					action->target = targetPosition;
+				}
+				if (!iHaveLof && encircleTile && encircleTile->getPosition() != myPos && !winnerWasSpecialDoorCase)
+				{
+					action->target = encircleTile->getPosition();
+				}
 			}
 			if (_traceAI)
 			{
