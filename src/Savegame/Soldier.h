@@ -76,6 +76,7 @@ private:
 	int _manaMissing = 0;   // amount of mana missing until full mana recovery
 	float _recovery = 0.0;  // amount of hospital attention soldier needs... used to calculate recovery time
 	bool _recentlyPromoted, _psiTraining, _training, _returnToTrainingWhenHealed;
+	bool _allowAutoCombat;
 	Armor *_armor;
 	Armor *_replacedArmor;
 	Armor *_transformedArmor;
@@ -279,6 +280,12 @@ public:
 	void setReturnToTrainingWhenHealed(bool returnToTrainingWhenHealed);
 	/// Sets whether the soldier's body was recovered from a battle
 	void setCorpseRecovered(bool corpseRecovered);
+	/// Does the soldier participate in autocombat?
+	bool getAllowAutoCombat() const {return _allowAutoCombat;}
+	///
+	void setAllowAutoCombat(const bool newValue) {_allowAutoCombat = newValue;}
+	/// Returns new value
+	bool toggleAllowAutoCombat() {_allowAutoCombat = !_allowAutoCombat; return _allowAutoCombat;}
 	/// Gets the previous transformations performed on this soldier
 	std::map<std::string, int> &getPreviousTransformations();
 	/// Returns whether the unit is eligible for a certain transformation

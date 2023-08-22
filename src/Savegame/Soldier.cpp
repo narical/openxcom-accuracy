@@ -55,7 +55,8 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
-	_corpseRecovered(false)
+	_corpseRecovered(false),
+	_allowAutoCombat(true)
 {
 	if (id != 0)
 	{
@@ -190,6 +191,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	_manaMissing = node["manaMissing"].as<int>(_manaMissing);
 	_healthMissing = node["healthMissing"].as<int>(_healthMissing);
 	_recovery = node["recovery"].as<float>(_recovery);
+	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
 	Armor *armor = _armor;
 	if (node["armor"])
 	{
@@ -340,6 +342,8 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 		node["previousTransformations"] = _previousTransformations;
 	if (!_transformationBonuses.empty())
 		node["transformationBonuses"] = _transformationBonuses;
+
+	node["allowAutoCombat"] = _allowAutoCombat;
 
 	_scriptValues.save(node, shared);
 
