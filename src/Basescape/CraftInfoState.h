@@ -45,6 +45,7 @@ private:
 	int _weaponNum;
 
 	TextButton *_btnOk, *_btnW[RuleCraft::WeaponMax], *_btnCrew, *_btnEquip, *_btnArmor, *_btnPilots, *_btnNewBattle;
+	TextButton *_btnAI;
 	Window *_window;
 	TextEdit *_edtCraft;
 	Text *_txtDamage, *_txtShield, *_txtFuel, *_txtSkin;
@@ -82,6 +83,9 @@ public:
 	void btnPilotsClick(Action *action);
 	/// Handler for changing the text on the Name edit.
 	void edtCraftChange(Action *action);
+
+	/// Handler for clicking the AI button.
+	void btnAIClick(Action *action);
 };
 
 }
