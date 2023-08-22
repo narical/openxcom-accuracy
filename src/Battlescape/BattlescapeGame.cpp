@@ -272,6 +272,7 @@ void BattlescapeGame::init()
 	{
 		_playerPanicHandled = false;
 	}
+	if (Options::autoCombat && !Options::autoCombatEachCombat) { Options::autoCombat = false; }
 }
 
 
@@ -661,6 +662,7 @@ void BattlescapeGame::endTurn()
 	if (_save->getSide() == FACTION_PLAYER)
 	{
 		setupCursor();
+		if (Options::autoCombat && !Options::autoCombatEachTurn) { Options::autoCombat = false; }
 	}
 	else
 	{

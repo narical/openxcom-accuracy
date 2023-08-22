@@ -10,7 +10,7 @@
  *
  * OpenXcom is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See thea
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -229,6 +229,8 @@ void create()
 	_info.push_back(OptionInfo("inheritAggression", &inheritAggression, false, "STR_INHERITAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, false, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   false, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
 	_info.push_back(OptionInfo("autoAggression", &autoAggression, 3, "STR_AUTOAGGRESSION", "STR_AI"));
 
 	// OXCE GUI
