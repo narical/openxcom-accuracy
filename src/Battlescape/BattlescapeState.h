@@ -287,9 +287,6 @@ public:
 	void autosave(int currentTurn);
 	/// Is busy?
 	bool isBusy() const;
-	
-	/// Handler for clicking the AI button.
-	void btnAIClick(Action *action);
 };
 
 }

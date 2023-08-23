@@ -45,7 +45,6 @@
 #include "CraftArmorState.h"
 #include "CraftPilotsState.h"
 #include "../Ufopaedia/Ufopaedia.h"
-#include "SoldiersAIState.h"
 
 namespace OpenXcom
 {
@@ -161,9 +160,6 @@ CraftInfoState::CraftInfoState(Base *base, size_t craftId) : _base(base), _craft
 	_btnOk->onMouseClick((ActionHandler)&CraftInfoState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftInfoState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftInfoState::btnUfopediaClick, Options::keyGeoUfopedia);
-
-	// AI
-	_btnAI->onKeyboardPress((ActionHandler)&CraftInfoState::btnAIClick, Options::keyAIList);
 
 	_btnNewBattle->setText(tr("STR_NEW_BATTLE"));
 	_btnNewBattle->onMouseClick((ActionHandler)&CraftInfoState::btnNewBattleClick);
@@ -628,12 +624,6 @@ void CraftInfoState::edtCraftChange(Action *action)
 	{
 		_edtCraft->setText(_craft->getName(_game->getLanguage()));
 	}
-}
-
-/// Handler for clicking the AI button.
-void CraftInfoState::btnAIClick(Action *action)
-{
-	_game->pushState(new SoldiersAIState(_craft));
 }
 
 }

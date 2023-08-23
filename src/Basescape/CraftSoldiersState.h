@@ -42,7 +42,6 @@ class CraftSoldiersState : public State
 private:
 	TextButton *_btnOk;
 	TextButton *_btnPreview;
-	TextButton *_btnAI;
 	Window *_window;
 	Text *_txtTitle, *_txtName, *_txtRank, *_txtCraft, *_txtAvailable, *_txtUsed;
 	ComboBox *_cbxSortBy;
@@ -84,8 +83,6 @@ public:
 	/// Handler for clicking the De-assign All Soldiers button.
 	void btnDeassignAllSoldiersClick(Action *action);
 	void btnDeassignCraftSoldiersClick(Action *action);
-	/// Handler for clicking the AI button.
-	void btnAIClick(Action *action);
 };
 
 }

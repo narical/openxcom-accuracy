@@ -51,7 +51,6 @@ set ( basescape_src
   Basescape/SoldierMemorialState.cpp
   Basescape/SoldierRankState.cpp
   Basescape/SoldierSortUtil.cpp
-  Basescape/SoldiersAIState.cpp
   Basescape/SoldiersState.cpp
   Basescape/SoldierTransformationState.cpp
   Basescape/SoldierTransformationListState.cpp

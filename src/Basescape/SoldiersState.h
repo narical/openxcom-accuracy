@@ -41,7 +41,6 @@ class SoldiersState : public State
 {
 private:
 	TextButton *_btnOk;
-	TextButton *_btnAI;
 	Window *_window;
 	Text *_txtTitle, *_txtName, *_txtRank, *_txtCraft;
 	ComboBox *_cbxSortBy, *_cbxScreenActions, *_cbxFilterByCraft;
@@ -84,8 +83,6 @@ public:
 	void lstSoldiersClick(Action *action);
 	/// Handler for pressing-down a mouse-button in the list.
 	void lstSoldiersMousePress(Action *action);
-	/// Handler for clicking the AI button.
-	void btnAIClick(Action *action);
 };
 
 }
