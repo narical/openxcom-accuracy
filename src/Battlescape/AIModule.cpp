@@ -5761,6 +5761,7 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 			{
 				if (lastExplored <= LowestLastExplored)
 				{
+					LowestLastExplored = lastExplored;
 					if (TUCost < LowestTuCost)
 					{
 						LowestTuCost = TUCost;
