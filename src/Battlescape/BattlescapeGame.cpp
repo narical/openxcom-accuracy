@@ -193,6 +193,8 @@ BattlescapeGame::BattlescapeGame(SavedBattleGame *save, BattlescapeState *parent
 
 	checkForCasualties(nullptr, BattleActionAttack{ }, true);
 	cancelCurrentAction();
+	if (Options::autoCombat && !Options::autoCombatEachCombat)
+		Options::autoCombat = false;
 }
 
 
@@ -223,7 +225,8 @@ void BattlescapeGame::think()
 			return;
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
-		if (_save->getSide() != FACTION_PLAYER || (Options::autoCombat && _playerPanicHandled))
+		// Note by Xilmi: "|| (!_save->getSelectedUnit() && Options::autoCombat)" is necessary because otherwise the case where a unit dies by reaction-fire during autoplay isn't handled and waits for the player to select something
+		if (_save->getSide() != FACTION_PLAYER || ((_save->getSelectedUnit() && _save->getSelectedUnit()->isAIControlled()) || (!_save->getSelectedUnit() && Options::autoCombat) && _playerPanicHandled))
 		{
 			_save->resetUnitHitStates();
 			if (!_debugPlay)
@@ -272,7 +275,6 @@ void BattlescapeGame::init()
 	{
 		_playerPanicHandled = false;
 	}
-	if (Options::autoCombat && !Options::autoCombatEachCombat) { Options::autoCombat = false; }
 }
 
 
@@ -288,8 +290,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		unit->dontReselect();
 	}
-	const bool skip = (unit->getFaction() == FACTION_PLAYER) && Options::autoCombatControlPerUnit && (unit->getGeoscapeSoldier() != nullptr) && !unit->getGeoscapeSoldier()->getAllowAutoCombat();
-	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || skip || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
+	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || !unit->isAIControlled() || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) // stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
 	{
 		if (_save->selectNextPlayerUnit(true, unit->getWantToEndTurn()) == 0)
 		{
@@ -371,7 +372,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 			else
 				Log(LOG_INFO) << "#" << action.actor->getId() << "--" << action.actor->getType() << " I am out of ammo or have no weapon and should now try to find a new weapon or ammunition.";
 		}
-		if (unit->getOriginalFaction() != FACTION_PLAYER || Options::autoCombat)
+		if (unit->getOriginalFaction() != FACTION_PLAYER || unit->isAIControlled())
 		{
 			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
 			{
@@ -663,7 +664,8 @@ void BattlescapeGame::endTurn()
 	if (_save->getSide() == FACTION_PLAYER)
 	{
 		setupCursor();
-		if (Options::autoCombat && !Options::autoCombatEachTurn) { Options::autoCombat = false; }
+		if (Options::autoCombat && !Options::autoCombatEachTurn)
+			Options::autoCombat = false;
 	}
 	else
 	{

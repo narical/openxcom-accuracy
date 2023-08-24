@@ -2914,8 +2914,8 @@ void AIModule::brutalThink(BattleAction* action)
 			continue;
 		if (!ally->reselectAllowed() || !ally->isSelectable(_unit->getFaction(), false, false))
 			continue;
-		const bool skip = (_unit->getFaction() == FACTION_PLAYER) && Options::autoCombatControlPerUnit && (_unit->getGeoscapeSoldier() != nullptr) && !_unit->getGeoscapeSoldier()->getAllowAutoCombat();
-		if (skip) { continue; }
+		if (!ally->isAIControlled())
+			continue;
 		int allyReachable = 0;
 		bool allyRanOutOfTUs = false;
 		float allyDist = 0;

@@ -5592,6 +5592,26 @@ bool BattleUnit::isIgnoredByAI() const
 }
 
 /**
+ * Is the unit controlled by AI?
+ */
+bool BattleUnit::isAIControlled() const
+{
+	if (_faction != FACTION_PLAYER)
+		return true;
+	if (Options::autoCombat)
+	{
+		if (Options::autoCombatControlPerUnit)
+			if (getGeoscapeSoldier() && getGeoscapeSoldier()->getAllowAutoCombat())
+				return true;
+			else
+				return false;
+		else
+			return true;
+	}
+	return false;
+}
+
+/**
  * Is the unit afraid to pathfind through fire?
  * @return True if this unit has a penalty when pathfinding through fire.
  */

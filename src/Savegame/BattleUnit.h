@@ -843,6 +843,8 @@ public:
 	bool isVIP() const { return _vip; }
 	/// Is this unit banned in the next stage?
 	bool isBannedInNextStage() const { return _bannedInNextStage; }
+	/// Checks whether the unit is controlled by the AI or not
+	bool isAIControlled() const;
 	/// Is the unit eagerly picking up weapons?
 	bool getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
 	/// Is the unit afraid to pathfind through fire?
