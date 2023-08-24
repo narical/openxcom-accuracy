@@ -229,6 +229,9 @@ void create()
 	_info.push_back(OptionInfo("inheritAggression", &inheritAggression, false, "STR_INHERITAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, false, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   false, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatControlPerUnit", &autoCombatControlPerUnit, false, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
 	_info.push_back(OptionInfo("autoAggression", &autoAggression, 3, "STR_AUTOAGGRESSION", "STR_AI"));
 
 	// OXCE GUI
@@ -430,6 +433,8 @@ void create()
 	_info.push_back(OptionInfo("keyNightVisionToggle", &keyNightVisionToggle, SDLK_SCROLLOCK, "STR_TOGGLE_NIGHT_VISION", "STR_OXCE"));
 	_info.push_back(OptionInfo("keyNightVisionHold", &keyNightVisionHold, SDLK_SPACE, "STR_HOLD_NIGHT_VISION", "STR_OXCE"));
 	_info.push_back(OptionInfo("keySelectMusicTrack", &keySelectMusicTrack, SDLK_END, "STR_SELECT_MUSIC_TRACK", "STR_OXCE"));
+	
+	_info.push_back(OptionInfo("keyAIList", &keyAIList, SDLK_c, "STR_keyAIList", "STR_OXCE"));
 
 #ifdef __MORPHOS__
 	_info.push_back(OptionInfo("FPS", &FPS, 15, "STR_FPS_LIMIT", "STR_GENERAL"));
