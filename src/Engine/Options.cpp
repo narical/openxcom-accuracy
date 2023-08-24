@@ -229,9 +229,9 @@ void create()
 	_info.push_back(OptionInfo("inheritAggression", &inheritAggression, false, "STR_INHERITAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
-	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, false, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
-	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   false, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
-	_info.push_back(OptionInfo("autoCombatControlPerUnit", &autoCombatControlPerUnit, false, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   true, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
+	_info.push_back(OptionInfo("autoCombatControlPerUnit", &autoCombatControlPerUnit, true, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
 	_info.push_back(OptionInfo("autoAggression", &autoAggression, 3, "STR_AUTOAGGRESSION", "STR_AI"));
 
 	// OXCE GUI
