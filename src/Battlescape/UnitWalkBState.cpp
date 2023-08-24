@@ -486,7 +486,7 @@ void UnitWalkBState::cancel()
 void UnitWalkBState::postPathProcedures()
 {
 	_action.clearTU();
-	if (_unit->getFaction() != FACTION_PLAYER || Options::autoCombat)
+	if (_unit->isAIControlled())
 	{
 		int dir = _action.finalFacing;
 		if (_action.finalAction)

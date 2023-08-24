@@ -5643,7 +5643,7 @@ bool BattleUnit::isBrutal() const
 	else if (getFaction() == FACTION_NEUTRAL)
 		brutal = Options::brutalCivilians;
 	else if (getFaction() == FACTION_PLAYER)
-		brutal = Options::autoCombat;
+		brutal = isAIControlled();
 	if (_unitRules && _unitRules->isBrutal())
 		brutal = true;
 	return brutal;
