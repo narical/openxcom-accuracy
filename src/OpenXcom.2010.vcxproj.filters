@@ -2333,6 +2333,7 @@
     <ClInclude Include="Mod\LoadYaml.h">
       <Filter>Mod</Filter>
     </ClInclude>
+    <ClInclude Include="Basescape\SoldiersAIState.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Geoscape">
