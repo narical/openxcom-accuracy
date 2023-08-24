@@ -42,6 +42,7 @@
 #include "../Battlescape/BattlescapeGenerator.h"
 #include "../Battlescape/BriefingState.h"
 #include "../Savegame/SavedBattleGame.h"
+#include "SoldiersAIState.h"
 
 namespace OpenXcom
 {
@@ -103,6 +104,7 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnDeassignAllSoldiersClick, Options::keyRemoveSoldiersFromAllCrafts);
 	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnDeassignCraftSoldiersClick, Options::keyRemoveSoldiersFromCraft);
+	_btnOk->onKeyboardPress((ActionHandler)&CraftSoldiersState::btnAIClick, Options::keyAIList);
 
 	_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
 	_btnPreview->setVisible(!hidePreview);
@@ -631,6 +633,14 @@ void CraftSoldiersState::btnDeassignCraftSoldiersClick(Action *action)
 
 	_txtAvailable->setText(tr("STR_SPACE_AVAILABLE").arg(c->getSpaceAvailable()));
 	_txtUsed->setText(tr("STR_SPACE_USED").arg(c->getSpaceUsed()));
+}
+
+/// Handler for clicking the AI button.
+void CraftSoldiersState::btnAIClick(Action *action)
+{
+	Craft *c = _base->getCrafts()->at(_craft);
+	_game->pushState(new SoldiersAIState(c));
+
 }
 
 }

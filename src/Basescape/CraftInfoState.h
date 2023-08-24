@@ -82,6 +82,9 @@ public:
 	void btnPilotsClick(Action *action);
 	/// Handler for changing the text on the Name edit.
 	void edtCraftChange(Action *action);
+
+	/// Handler for clicking the AI button.
+	void btnAIClick(Action *action);
 };
 
 }

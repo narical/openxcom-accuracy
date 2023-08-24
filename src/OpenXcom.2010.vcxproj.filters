@@ -26,6 +26,9 @@
     <ClCompile Include="Basescape\SoldierInfoState.cpp">
       <Filter>Basescape</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\SoldiersAIState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
     <ClCompile Include="Basescape\SoldiersState.cpp">
       <Filter>Basescape</Filter>
     </ClCompile>

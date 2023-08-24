@@ -272,6 +272,7 @@ void BattlescapeGame::init()
 	{
 		_playerPanicHandled = false;
 	}
+	if (Options::autoCombat && !Options::autoCombatEachCombat) { Options::autoCombat = false; }
 }
 
 
@@ -287,7 +288,8 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		unit->dontReselect();
 	}
-	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
+	const bool skip = (unit->getFaction() == FACTION_PLAYER) && Options::autoCombatControlPerUnit && (unit->getGeoscapeSoldier() != nullptr) && !unit->getGeoscapeSoldier()->getAllowAutoCombat();
+	if (_AIActionCounter >= 2 || !unit->reselectAllowed() || skip || (unit->getTurnsSinceStunned() == 0 && !unit->isBrutal())) //stun check for restoring OXC behavior that AI does not attack after waking up even having full TU
 	{
 		if (_save->selectNextPlayerUnit(true, unit->getWantToEndTurn()) == 0)
 		{
@@ -661,6 +663,7 @@ void BattlescapeGame::endTurn()
 	if (_save->getSide() == FACTION_PLAYER)
 	{
 		setupCursor();
+		if (Options::autoCombat && !Options::autoCombatEachTurn) { Options::autoCombat = false; }
 	}
 	else
 	{
