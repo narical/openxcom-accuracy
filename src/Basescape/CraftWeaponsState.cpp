@@ -28,8 +28,10 @@
 #include "../Interface/TextList.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/CraftWeapon.h"
+#include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
+#include "../Mod/RuleInterface.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/SavedGame.h"
@@ -164,6 +166,50 @@ void CraftWeaponsState::btnCancelClick(Action *)
 void CraftWeaponsState::lstWeaponsClick(Action *)
 {
 	CraftWeapon *current = _craft->getWeapons()->at(_weapon);
+
+	const RuleCraftWeapon* refWeapon = _weapons[_lstWeapons->getSelectedRow()];
+	const RuleCraftWeapon* currWeapon = current ? current->getRules() : nullptr;
+	{
+		int refCapBonus1 = refWeapon ? refWeapon->getBonusStats().soldiers : 0;
+		int currCapBonus1 = currWeapon ? currWeapon->getBonusStats().soldiers : 0;
+		int diff1 = (refCapBonus1 - currCapBonus1);
+		if (diff1)
+		{
+			if ((_craft->getMaxUnitsRaw() - _craft->getSpaceUsed() + diff1) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_CARGO_SPACE"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+	{
+		int refCapBonus2 = refWeapon ? refWeapon->getBonusStats().vehicles : 0;
+		int currCapBonus2 = currWeapon ? currWeapon->getBonusStats().vehicles : 0;
+		int diff2 = (refCapBonus2 - currCapBonus2);
+		if (diff2)
+		{
+			if ((_craft->getMaxVehiclesAndLargeSoldiersRaw() - _craft->getNumVehiclesAndLargeSoldiers() + diff2) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_HWP_CAPACITY"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+
 	// Remove current weapon
 	if (current != 0)
 	{

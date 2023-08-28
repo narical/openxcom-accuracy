@@ -34,7 +34,7 @@ const std::string RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW = "STR_CRAFT_DEPLO
  * @param type String defining the type.
  */
 RuleCraft::RuleCraft(const std::string &type, int listOrder) :
-	_type(type), _sprite(-1), _marker(-1), _weapons(0), _soldiers(0), _pilots(0), _vehicles(0),
+	_type(type), _sprite(-1), _marker(-1), _weapons(0), _maxUnitsLimit(-1), _pilots(0), _maxVehiclesAndLargeSoldiersLimit(-1),
 	_maxSmallSoldiers(-1), _maxLargeSoldiers(-1), _maxSmallVehicles(-1), _maxLargeVehicles(-1),
 	_maxSmallUnits(-1), _maxLargeUnits(-1), _maxSoldiers(-1), _maxVehicles(-1),
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
@@ -109,9 +109,9 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 		_marker = mod->getOffset(node["marker"].as<int>(_marker), 8);
 	}
 	_weapons = node["weapons"].as<int>(_weapons);
-	_soldiers = node["soldiers"].as<int>(_soldiers);
+	_maxUnitsLimit = node["maxUnitsLimit"].as<int>(_maxUnitsLimit);
 	_pilots = node["pilots"].as<int>(_pilots);
-	_vehicles = node["vehicles"].as<int>(_vehicles);
+	_maxVehiclesAndLargeSoldiersLimit = node["maxHWPUnitsLimit"].as<int>(_maxVehiclesAndLargeSoldiersLimit);
 	_maxSmallSoldiers = node["maxSmallSoldiers"].as<int>(_maxSmallSoldiers);
 	_maxLargeSoldiers = node["maxLargeSoldiers"].as<int>(_maxLargeSoldiers);
 	_maxSmallVehicles = node["maxSmallVehicles"].as<int>(_maxSmallVehicles);
@@ -196,6 +196,30 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 
 	_craftScripts.load(_type, node, parsers.craftScripts);
 	_scriptValues.load(node, parsers.getShared());
+}
+
+/**
+ * Cross link with other rules.
+ */
+void RuleCraft::afterLoad(const Mod* mod)
+{
+	// No turning soldiers into antimatter
+	mod->checkForSoftError(_stats.soldiers < 0, _type, "Default unit capacity cannot be negative.", LOG_ERROR);
+	mod->checkForSoftError(_stats.vehicles < 0, _type, "Default HWP capacity cannot be negative.", LOG_ERROR);
+
+	// Backwards-compatibility
+	if (_maxUnitsLimit < 0)
+	{
+		_maxUnitsLimit = _stats.soldiers;
+	}
+	if (_maxVehiclesAndLargeSoldiersLimit < 0)
+	{
+		_maxVehiclesAndLargeSoldiersLimit = _stats.vehicles;
+	}
+
+	// Sanity checks
+	mod->checkForSoftError(_maxUnitsLimit < _stats.soldiers, _type, "Maximum unit capacity is smaller than the default unit capacity.", LOG_ERROR);
+	mod->checkForSoftError(_maxVehiclesAndLargeSoldiersLimit < _stats.vehicles, _type, "Maximum HWP capacity is smaller than the default HWP capacity.", LOG_ERROR);
 }
 
 /**
@@ -295,13 +319,21 @@ int RuleCraft::getWeapons() const
 }
 
 /**
+ * Checks if this craft is supported in the New Battle mode (and Preview mode).
+ */
+bool RuleCraft::isForNewBattle() const
+{
+	return getBattlescapeTerrainData() && getMaxUnitsLimit() > 0 && getAllowLanding();
+}
+
+/**
  * Gets the maximum number of units (soldiers and vehicles, small and large) that
  * the craft can carry.
  * @return The maximum unit capacity.
  */
 int RuleCraft::getMaxUnits() const
 {
-	return _soldiers;
+	return _stats.soldiers;
 }
 
 /**
@@ -320,7 +352,7 @@ int RuleCraft::getPilots() const
  */
 int RuleCraft::getMaxVehiclesAndLargeSoldiers() const
 {
-	return _vehicles;
+	return _stats.vehicles;
 }
 
 /**

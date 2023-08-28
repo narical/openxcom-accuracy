@@ -92,6 +92,8 @@
 #include "../Savegame/Soldier.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/Craft.h"
+#include "../Savegame/CraftWeapon.h"
+#include "../Savegame/ItemContainer.h"
 #include "../Savegame/Transfer.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Savegame/AlienStrategy.h"
@@ -2240,6 +2242,7 @@ void Mod::loadAll()
 	afterLoadHelper("skills", this, _skills, &RuleSkill::afterLoad);
 	afterLoadHelper("craftWeapons", this, _craftWeapons, &RuleCraftWeapon::afterLoad);
 	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
+	afterLoadHelper("crafts", this, _crafts, &RuleCraft::afterLoad);
 
 	for (auto& a : _armors)
 	{
@@ -3744,6 +3747,25 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 		save->getId(craft->getRules()->getType());
 	}
 
+	// Remove craft weapons if needed
+	for (auto* craft : *base->getCrafts())
+	{
+		if (craft->getMaxUnitsRaw() < 0 || craft->getMaxVehiclesAndLargeSoldiersRaw() < 0)
+		{
+			size_t weaponIndex = 0;
+			for (auto* current : *craft->getWeapons())
+			{
+				base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
+				base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded());
+				craft->addCraftStats(-current->getRules()->getBonusStats());
+				craft->setShield(craft->getShield());
+				delete current;
+				craft->getWeapons()->at(weaponIndex) = 0;
+				weaponIndex++;
+			}
+		}
+	}
+
 	// Determine starting soldier types
 	std::vector<std::string> soldierTypes = _soldiersIndex; // copy!
 	for (auto iter = soldierTypes.begin(); iter != soldierTypes.end();)
@@ -3820,7 +3842,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceAvailable() > 0)
 					{
 						// Remember transporter as fall-back, but search further for interceptors
 						found = craft;
@@ -3838,7 +3860,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (craft->getRules()->getAllowLanding() && craft->getSpaceAvailable() > 0)
 					{
 						// First available transporter will do
 						found = craft;
