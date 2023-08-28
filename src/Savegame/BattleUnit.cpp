@@ -5601,10 +5601,17 @@ bool BattleUnit::isAIControlled() const
 	if (Options::autoCombat)
 	{
 		if (Options::autoCombatControlPerUnit)
-			if (getGeoscapeSoldier() && getGeoscapeSoldier()->getAllowAutoCombat())
-				return true;
+		{
+			if (getGeoscapeSoldier())
+			{
+				if (getGeoscapeSoldier()->getAllowAutoCombat())
+					return true;
+				else
+					return false;
+			}
 			else
-				return false;
+				return true;
+		}
 		else
 			return true;
 	}
