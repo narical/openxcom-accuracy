@@ -29,6 +29,7 @@ class Text;
 class TextList;
 class ComboBox;
 class Base;
+class BattleUnit;
 class Craft;
 class Soldier;
 struct SortFunctor;
@@ -47,6 +48,7 @@ private:
 	TextList *_lstSoldiers;
 
 	std::vector<Soldier *> _soldiers;
+	std::vector<BattleUnit *> _units;
 	/// initializes the display list based on the soldiers given in the constructor
 	void initList(size_t scrl);
 	/// Proxy for constructor
@@ -55,6 +57,8 @@ public:
 	/// Creates the Soldiers AI state.
 	SoldiersAIState(std::vector<Soldier*>& soldiers);
 	SoldiersAIState(const Craft* craft);
+	/// Creates the Soldiers AI state in Battle.
+	SoldiersAIState(std::vector<BattleUnit*>& units);
 	/// Cleans up the Soldiers AI state.
 	~SoldiersAIState();
 	/// Handler for clicking the OK button.

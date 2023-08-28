@@ -113,6 +113,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_statistics = new BattleUnitStatistics();
 
 	deriveRank();
+	
+	_allowAutoCombat = soldier->getAllowAutoCombat();
 
 	updateArmorFromSoldier(mod, soldier, soldier->getArmor(), depth, false, sc);
 }
@@ -399,7 +401,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
 	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
-	_vip(false), _bannedInNextStage(false)
+	_vip(false), _bannedInNextStage(false), _allowAutoCombat(true)
 {
 	if (enviro)
 	{
@@ -5601,10 +5603,9 @@ bool BattleUnit::isAIControlled() const
 	if (Options::autoCombat)
 	{
 		if (Options::autoCombatControlPerUnit)
-			if (getGeoscapeSoldier())
-				return getGeoscapeSoldier()->getAllowAutoCombat();
-			else
-				return true;	//enemy under mind control, HWP, unit spawned from item/weapon
+		{
+			return _allowAutoCombat;
+		}
 		else
 			return true;
 	}

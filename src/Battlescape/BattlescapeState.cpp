@@ -3825,13 +3825,12 @@ bool BattlescapeState::isBusy() const
 /// Handler for clicking the AI button.
 void BattlescapeState::btnAIClick(Action *action)
 {
-	std::vector<Soldier*> soldiers;
-	for (const auto* bu : *_battleGame->getSave()->getUnits())
+	std::vector<BattleUnit*> units;
+	for (auto* bu : *_battleGame->getSave()->getUnits())
 	{
-		auto* s = bu->getGeoscapeSoldier();
-		if (s != nullptr) {soldiers.push_back(s);}
+		if (bu->getFaction() == FACTION_PLAYER) {units.push_back(bu);}
 	}
-	_game->pushState(new SoldiersAIState(soldiers));
+	_game->pushState(new SoldiersAIState(units));
 }
 
 }

@@ -31,6 +31,7 @@
 #include "../Interface/TextList.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Savegame/Base.h"
+#include "../Savegame/BattleUnit.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/Soldier.h"
 #include "../Mod/RuleInterface.h"
@@ -60,6 +61,16 @@ SoldiersAIState::SoldiersAIState(const Craft* craft)
 		if (soldier->getCraft() == craft)
 			_soldiers.push_back(soldier);
 	}
+	_commonConstruct();
+}
+
+/**
+ * Initializes all the elements in the Soldiers AI screen.
+ * @param soldiers Soldiers to manipulate AI control
+ */
+SoldiersAIState::SoldiersAIState(std::vector<BattleUnit*>& units)
+		: _units(units)
+{
 	_commonConstruct();
 }
 
@@ -142,23 +153,51 @@ void SoldiersAIState::initList(size_t scrl)
 
 	_lstSoldiers->setColumns(3, 106, 98, 76);
 
-	for (const auto* soldier : _soldiers)
+	if (!_soldiers.empty())
 	{
-		_lstSoldiers->addRow(3, soldier->getName(true, 30).c_str(), tr(soldier->getRankString()).c_str(), "");
+		for (const auto* soldier : _soldiers)
+		{
+			_lstSoldiers->addRow(3, soldier->getName(true, 30).c_str(), tr(soldier->getRankString()).c_str(), "");
 
-		Uint8 color;
-		if (soldier->getAllowAutoCombat())
-		{
-			color = _lstSoldiers->getSecondaryColor();
-			_lstSoldiers->setCellText(row, 2, tr("True"));
+			Uint8 color;
+			if (soldier->getAllowAutoCombat())
+			{
+				color = _lstSoldiers->getSecondaryColor();
+				_lstSoldiers->setCellText(row, 2, tr("True"));
+			}
+			else
+			{
+				color = _lstSoldiers->getColor();
+				_lstSoldiers->setCellText(row, 2, tr("False"));
+			}
+			_lstSoldiers->setRowColor(row, color);
+			row++;
 		}
-		else
+	}
+	else
+	{
+		for (const auto* unit : _units)
 		{
-			color = _lstSoldiers->getColor();
-			_lstSoldiers->setCellText(row, 2, tr("False"));
-		}
-		_lstSoldiers->setRowColor(row, color);
-		row++;
+			const std::string name = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getName(true, 30) : unit->getName(_game->getLanguage());
+			const std::string rank = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getRankString() : std::string("");
+			_lstSoldiers->addRow(3, name.c_str(), tr(rank).c_str(), "");
+			//_lstSoldiers->addRow(2, name.c_str(), "");
+
+			Uint8 color;
+			const bool allow = unit->getAllowAutoCombat();
+			if (allow)
+			{
+				color = _lstSoldiers->getSecondaryColor();
+				_lstSoldiers->setCellText(row, 2, tr("True"));
+			}
+			else
+			{
+				color = _lstSoldiers->getColor();
+				_lstSoldiers->setCellText(row, 2, tr("False"));
+			}
+			_lstSoldiers->setRowColor(row, color);
+			row++;
+		}		
 	}
 	if (scrl)
 		_lstSoldiers->scrollTo(scrl);
@@ -206,8 +245,16 @@ void SoldiersAIState::lstSoldiersClick(Action *action)
 
 bool SoldiersAIState::toggleAI()
 {
-	Soldier *s = _soldiers.at(_lstSoldiers->getSelectedRow());
-	return s->toggleAllowAutoCombat();
+	if (!_soldiers.empty())
+	{
+		Soldier *s = _soldiers.at(_lstSoldiers->getSelectedRow());
+		return s->toggleAllowAutoCombat();
+	}
+	else
+	{
+		auto* bu = _units.at(_lstSoldiers->getSelectedRow());
+		return bu->toggleAllowAutoCombat();
+	}
 }
 
 void SoldiersAIState::setAI(const bool AI)
