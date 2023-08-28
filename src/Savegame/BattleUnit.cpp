@@ -5601,10 +5601,10 @@ bool BattleUnit::isAIControlled() const
 	if (Options::autoCombat)
 	{
 		if (Options::autoCombatControlPerUnit)
-			if (getGeoscapeSoldier() && getGeoscapeSoldier()->getAllowAutoCombat())
-				return true;
+			if (getGeoscapeSoldier())
+				return getGeoscapeSoldier()->getAllowAutoCombat();
 			else
-				return false;
+				return true;	//enemy under mind control, HWP, unit spawned from item/weapon
 		else
 			return true;
 	}
