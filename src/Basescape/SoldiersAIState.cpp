@@ -68,10 +68,9 @@ SoldiersAIState::SoldiersAIState(const Craft* craft)
  */
 void SoldiersAIState::_commonConstruct()
 {
-	const bool hidePreview = true;
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
-	_btnOk = new TextButton(hidePreview ? 148 : 30, 16, hidePreview ? 164 : 274, 176);
+	_btnOk = new TextButton(148, 16, 164, 176);
 	_txtTitle = new Text(300, 17, 16, 7);
 	_txtName = new Text(114, 9, 16, 32);
 	_txtRank = new Text(102, 9, 122, 32);
