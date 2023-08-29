@@ -323,32 +323,73 @@ void ProjectileFlyBState::init()
 			}
 			else
 			{
-				bool foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
-
-				if (!foundLoF && Options::oxceEnableOffCentreShooting)
+				if (Options::battleRealisticAccuracy)
 				{
-					// If we can't target from the standard shooting position, try a bit left and right from the centre.
-					for (auto& rel_pos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+					std::vector<Position> exposedVoxels;
+					size_t best_score = 0;
+					BattleActionOrigin selected_origin = BattleActionOrigin::CENTRE;
+
+					for (auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT }) // Check out 3 LOFs
 					{
+						exposedVoxels.clear();
 						_action.relativeOrigin = rel_pos;
 						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
-						foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
-						if (foundLoF)
+						_parent->getTileEngine()->checkVoxelExposure( &originVoxel,targetTile,_unit, &exposedVoxels );
+
+						if ( exposedVoxels.size() > best_score ) // Find the best LOF with maximum target exposure
 						{
-							break;
+							selected_origin = rel_pos;
+							best_score = exposedVoxels.size();
 						}
 					}
-				}
 
-				if (!foundLoF)
-				{
-					// Failed to find LOF
-					_action.relativeOrigin = BattleActionOrigin::CENTRE; // reset to the normal origin
+					_action.relativeOrigin = selected_origin;
 
-					_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
-					if (isPlayer)
+					if (best_score == 0) // No LOF found!
 					{
-						forceEnableObstacles = true;
+						_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
+						if (isPlayer)
+						{
+							forceEnableObstacles = true;
+						}
+					}
+					else
+					{
+						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
+
+						// _targetVoxel was prepared and set in applyAccuracy
+						_parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer); // FIRE !!!
+					}
+				}
+				else // "classic" XCOM
+				{
+					bool foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
+
+					if (!foundLoF && Options::oxceEnableOffCentreShooting)
+					{
+						// If we can't target from the standard shooting position, try a bit left and right from the centre.
+						for (auto& rel_pos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+						{
+							_action.relativeOrigin = rel_pos;
+							originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
+							foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
+							if (foundLoF)
+							{
+								break;
+							}
+						}
+					}
+
+					if (!foundLoF)
+					{
+						// Failed to find LOF
+						_action.relativeOrigin = BattleActionOrigin::CENTRE; // reset to the normal origin
+
+						_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
+						if (isPlayer)
+						{
+							forceEnableObstacles = true;
+						}
 					}
 				}
 			}
