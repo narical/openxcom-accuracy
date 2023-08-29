@@ -2109,7 +2109,7 @@ float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	static constexpr int MAX_UNIT_RADIUS = 3;
+	static constexpr int MAX_UNIT_RADIUS = 3; // Look at checkVoxelExposure() for comments
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 
@@ -2173,7 +2173,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-//			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks
+//			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks (left from old code, should be modified or deleted)
 			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
 			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
 			_trajectory.clear();
