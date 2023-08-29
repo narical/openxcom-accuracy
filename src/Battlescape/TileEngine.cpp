@@ -5862,8 +5862,12 @@ int TileEngine::getArcDirection(int directionA, int directionB) const
  */
 Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 {
-	const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
-	const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
+	int unit_size = action.actor->getArmor()->getSize();
+	int weapon_shift = 4; // Original weapon position shift from the top of units head
+
+	if (Options::battleRealisticAccuracy && unit_size == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled())) // If small unit goes precise aiming or kneeling
+		weapon_shift = 1; // ...move weapon to the eyes level
+
 	if (!tile)
 	{
 		tile = action.actor->getTile();
@@ -5887,7 +5891,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		else
 		{
-			originVoxel.z -= 4;
+			originVoxel.z -= weapon_shift;
 		}
 
 		if (originVoxel.z >= (origin.z + 1)*24)
@@ -5902,31 +5906,62 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				{
 					originVoxel.z--;
 				}
-				originVoxel.z -= 4;
+				originVoxel.z -= weapon_shift;
 			}
 		}
 		int direction = getDirectionTo(origin, action.target);
 
-		// Offset for different relativeOrigin values
-		switch (action.relativeOrigin)
+		if (Options::battleRealisticAccuracy)
 		{
-		case BattleActionOrigin::CENTRE:
-			// Standard offset.
-			originVoxel.x += dirXshift[direction] * action.actor->getArmor()->getSize();
-			originVoxel.y += dirYshift[direction] * action.actor->getArmor()->getSize();
-			break;
+			const int dirXshift[8] = {6, 6, 8,10,10,10, 8, 6};
+			const int dirYshift[8] = {8, 6, 6, 6, 8,10,10,10};
 
-			// 2:1 Weighted average of the standard offset and a rotation, either left or right.
-		case BattleActionOrigin::LEFT:
-			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			break;
+			// Offset for different relativeOrigin values
+			switch (action.relativeOrigin)
+			{
+			case BattleActionOrigin::CENTRE:
+				originVoxel.x += 8 * unit_size; // Shoot straight from the eye point
+				originVoxel.y += 8 * unit_size; // moving barrel in front of unit breaks LOF near walls with existing LOS above them
+				break;
 
-		case BattleActionOrigin::RIGHT:
-			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction + 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction + 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			break;
-		};
+			case BattleActionOrigin::LEFT:
+				originVoxel.x += dirXshift[ direction ] * unit_size;
+				originVoxel.y += dirYshift[ direction ] * unit_size;
+				break;
+
+			case BattleActionOrigin::RIGHT:
+				direction = (direction + 4) % 8;
+				originVoxel.x += dirXshift[ direction ] * unit_size;
+				originVoxel.y += dirYshift[ direction ] * unit_size;
+				break;
+			};
+		}
+		else // "classic" XCOM
+		{
+			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
+			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
+
+			// Offset for different relativeOrigin values
+			switch (action.relativeOrigin)
+			{
+			case BattleActionOrigin::CENTRE:
+				// Standard offset.
+				originVoxel.x += dirXshift[ direction ] * unit_size;
+				originVoxel.y += dirYshift[ direction ] * unit_size;
+				break;
+
+				// 2:1 Weighted average of the standard offset and a rotation, either left or right.
+			case BattleActionOrigin::LEFT:
+				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction - 1) % 8]) * unit_size + 1) / 3;
+				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction - 1) % 8]) * unit_size + 1) / 3;
+				break;
+
+			case BattleActionOrigin::RIGHT:
+				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 1) % 8]) * unit_size + 1) / 3;
+				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 1) % 8]) * unit_size + 1) / 3;
+				break;
+			};
+		}
 	}
 	else
 	{
