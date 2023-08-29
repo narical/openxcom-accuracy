@@ -238,8 +238,8 @@ public:
 	bool validTerrainMeleeRange(BattleAction* action);
 	/// Gets the AI to look through a window.
 	int faceWindow(Position position);
-	/// Checks a unit's % exposure on a tile.
-	float checkVoxelExposure(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
+	/// Checks a unit's % exposure on a tile, and fills array of exposed voxels
+	double checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels = nullptr);
 	/// Checks validity for targetting a unit.
 	bool canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
 	/// like canTargetUnit but returns a numeric value of how hitable the target is

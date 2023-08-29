@@ -1991,47 +1991,39 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  * @param originVoxel Voxel of trace origin (eye or gun's barrel).
  * @param tile The tile to check for.
  * @param excludeUnit Is self (not to hit self).
- * @param excludeAllBut [Optional] is unit which is the only one to be considered for ray hits.
+ * @param exposedVoxels [Optional] Array of positions of exposed voxels (function fills it)
  * @return Degree of exposure (as percent).
  */
-float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
+double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
 {
-	static constexpr int MAX_UNIT_RADIUS = 3;
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
+	static constexpr int MAX_UNIT_RADIUS = 3; // THIS COULD BE CHANGED IF SOMEONE NEED BIGGER UNITS!
 	std::vector<Position> _trajectory;
-
-	bool hypothetical = potentialUnit != 0;
-	if (potentialUnit == 0)
-	{
-		potentialUnit = tile->getUnit();
-		if (potentialUnit == 0) return false; //no unit in this tile, even if it elevated and appearing in it.
-	}
-	if (potentialUnit == excludeUnit) return false; //skip self
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
+	Position scanVoxel;
+	BattleUnit *targetUnit = tile->getUnit();
+	if (targetUnit == nullptr) return 0; //no unit in this tile, even if it elevated and appearing in it.
+	if (targetUnit == excludeUnit) return 0; //skip self
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
-	targetMinHeight += potentialUnit->getFloatHeight();
+	targetMinHeight += targetUnit->getFloatHeight();
 
 	// if there is an other unit on target tile, we assume we want to check against this unit's height
 	int heightRange;
-	if (!potentialUnit->isOut())
-	{
-		heightRange = potentialUnit->getHeight();
-	}
+	if (!targetUnit->isOut())
+		heightRange = targetUnit->getHeight();
 	else
-	{
 		heightRange = 12;
-	}
+
 	int targetMaxHeight=targetMinHeight+heightRange;
 
-	int unitRadius = potentialUnit->getLoftemps(); //width == loft in default loftemps set
-	int targetSize = potentialUnit->getArmor()->getSize() - 1;
-	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
-	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
+	int unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
+	int targetSize = targetUnit->getArmor()->getSize() - 1;
+	int xOffset = targetUnit->getPosition().x - tile->getPosition().x;
+	int yOffset = targetUnit->getPosition().y - tile->getPosition().y;
 	if (targetSize > 0)
-	{
 		unitRadius = 3;
-	}
-	assert(unitRadius <= MAX_UNIT_RADIUS);
+
+	assert(unitRadius <= MAX_UNIT_RADIUS); // IT WON'T WORK IN RELEASE BUILD(?)
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
@@ -2040,7 +2032,7 @@ float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
 
-	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
+	for ( int testRadius = unitRadius; testRadius > 0; --testRadius) // slice for every voxel of radius!
 	{
 		float normal = testRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
 		int relX = floor(((float)relPos.y)*normal+0.5);
@@ -2054,17 +2046,22 @@ float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position
 	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
 	int visible=0;
-	for (int i = heightRange; i > 0; i-=2)
+
+	for (int height = heightRange; height > 0; height-=2)
 	{
-		scanVoxel->z = targetMinHeight + i;
+		// For units with odd height, bottom slice should be 2 instead of 1, which is bugged(?) for raycasting
+		// using sliceTargetsZ instead of "if (height == 1) height = 2" to reduce branching
+		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+		scanVoxel.z = targetMinHeight + sliceTargetsZ[ height ];
 
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
 			++total;
-			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
-			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
+			scanVoxel.x=targetVoxel.x + sliceTargetsX[j];
+			scanVoxel.y=targetVoxel.y + sliceTargetsY[j];
+
 			_trajectory.clear();
-			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
+			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
 			{
 				for (int x = 0; x <= targetSize; ++x)
@@ -2072,28 +2069,20 @@ float TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, Position
 					for (int y = 0; y <= targetSize; ++y)
 					{
 						//voxel of hit must be inside of scanned box
-						if (_trajectory.at(0).x/16 == (scanVoxel->x/16) + x + xOffset &&
-							_trajectory.at(0).y/16 == (scanVoxel->y/16) + y + yOffset &&
+						if (_trajectory.at(0).x/16 == (scanVoxel.x/16) + x + xOffset &&
+							_trajectory.at(0).y/16 == (scanVoxel.y/16) + y + yOffset &&
 							_trajectory.at(0).z >= targetMinHeight &&
 							_trajectory.at(0).z <= targetMaxHeight)
 						{
 							++visible;
+							if (exposedVoxels) exposedVoxels->push_back(scanVoxel);
 						}
 					}
 				}
 			}
-			else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
-			{
-				++visible;
-			}
-			if (rememberObstacles && _trajectory.size()>0)
-			{
-				Tile *tileObstacle = _save->getTile(_trajectory.at(0).toTile());
-				if (tileObstacle) tileObstacle->setObstacle(test);
-			}
 		}
 	}
-	float exposure = (double)visible/total;
+	double exposure = (double)visible / total;
 	return exposure;
 }
 
