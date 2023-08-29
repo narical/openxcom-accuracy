@@ -161,6 +161,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_cacheIsCtrlPressed = false;
 	_cacheCursorPosition = TileEngine::invalid;
 	_cacheHasLOS = -1;
+	_cacheAccuracy = -1;
 
 	_nightVisionOn = false;
 	if (Options::oxceToggleNightVisionType == 2)
@@ -1358,17 +1359,104 @@ void Map::drawTerrain(Surface *surface)
 										}
 									}
 
-									bool outOfRange = weapon->isOutOfRange(distanceSq);
-									// zero accuracy or out of range: set it red.
-									if (accuracy <= 0 || outOfRange)
+									if ( Options::battleRealisticAccuracy )
 									{
-										accuracy = 0;
-										_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+										bool isCtrlPressed = _game->isCtrlPressed(true); // Just in case it'll be used sometimes
+										if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheAccuracy != -1)
+										{
+											// use cached result
+											accuracy = _cacheAccuracy;
+										}
+										else
+										{
+											int max_voxels = 0;
+											int distance_in_tiles = 0;
+											Tile *target = nullptr;
+											BattleUnit *shooterUnit = action->actor;
+
+											if (unit) // Targeting unit
+											{
+												double max_exposure = 0.0;
+												std::vector<Position> exposedVoxels;
+												target = unit->getTile();
+												BattleAction temp_action = *action;
+
+												for ( const auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+												{
+													exposedVoxels.clear();
+													temp_action.relativeOrigin = rel_pos;
+													Position origin = _save->getTileEngine()->getOriginVoxel(temp_action, shooterUnit->getTile());
+													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, &exposedVoxels);
+
+													if ((int)exposedVoxels.size() >  max_voxels )
+													{
+														max_exposure = exposure;
+														max_voxels = exposedVoxels.size();
+													}
+												}
+												accuracy = (int)ceil((double)accuracy * max_exposure);
+											}
+											else
+												target = _save->getTile(Position(itX, itY,itZ)); // We are targeting empty terrain tile
+
+											if ( unit && max_voxels == 0)
+											{
+												accuracy = 0;
+											}
+											else
+											{
+												Position origin = _save->getTileEngine()->getOriginVoxel( *action, shooterUnit->getTile());
+												int xdiff = origin.x/16 - target->getPosition().x;
+												int ydiff = origin.y/16 - target->getPosition().y;
+
+												double zdiff = (origin.z/24 - target->getPosition().z)*1.5;
+												distance_in_tiles = (int)floor(sqrt((double)(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff))); // Distance in cube 16x16x16 tiles
+
+												if (distance_in_tiles==0)
+													accuracy = 100;
+
+												else if (distance_in_tiles <= 10 && weapon->getMinRange() == 0 && action->type == BA_AIMEDSHOT) // For aimed shot...
+												{
+													if (accuracy*2 >= 100)
+														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance_in_tiles-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
+													else
+														accuracy += (100 - accuracy)/distance_in_tiles; // Or just evenly divide to get 100% accuracy on tile adjanced to a target
+												}
+
+												else if (distance_in_tiles <= 5 && weapon->getMinRange() == 0 && (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT)) // For snap/auto
+												{
+													if (accuracy*2 >= 100)
+														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance_in_tiles-1)/5))); // Multiplier x1.2..x2 for 5 nearest tiles
+													else
+														accuracy += (100 - accuracy)/distance_in_tiles;
+												}
+
+												if (accuracy < 5) // Rule for difficult/long-range shots
+												{
+													accuracy = 5; // If there's LOF - accuracy should be at least 5%
+													if (max_voxels > 0 && max_voxels < 5) accuracy = max_voxels; // Except cases when less than 5 voxels exposed
+													if (shooterUnit->isKneeled()) accuracy += 2; // And let's make kneeling more meaningful for such shots
+													_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+												}
+
+												bool outOfRange = weapon->isOutOfRange(distanceSq);
+												// zero accuracy or out of range: set it red.
+												if (accuracy <= 0 || outOfRange)
+												{
+													accuracy = 0;
+													_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+												}
+											}
+
+											// remember
+											_cacheIsCtrlPressed = isCtrlPressed;
+											_cacheCursorPosition = Position(itX, itY, itZ);
+											_cacheAccuracy = accuracy;
+										}
 									}
 									ss << accuracy;
 									ss << "%";
 								}
-
 								//TODO: merge this code with `InventoryState::calculateCurrentDamageTooltip` as 90% is same or should be same
 								// display additional damage and psi-effectiveness info
 								if (_isAltPressed)

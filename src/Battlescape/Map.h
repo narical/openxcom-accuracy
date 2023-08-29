@@ -84,6 +84,7 @@ private:
 	bool _cacheIsCtrlPressed;
 	Position _cacheCursorPosition;
 	int _cacheHasLOS; // -1 = unknown, 0 = no LOS, 1 = has LOS
+	int _cacheAccuracy; // -1 = unknown
 	int _animFrame;
 	Projectile *_projectile;
 	bool _followProjectile;
