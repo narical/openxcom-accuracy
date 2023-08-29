@@ -282,7 +282,7 @@ public:
 	void setCorpseRecovered(bool corpseRecovered);
 	/// Does the soldier participate in autocombat?
 	bool getAllowAutoCombat() const {return _allowAutoCombat;}
-	///
+	/// Sets wheter the soldier participate in autocombat
 	void setAllowAutoCombat(const bool newValue) {_allowAutoCombat = newValue;}
 	/// Returns new value
 	bool toggleAllowAutoCombat() {_allowAutoCombat = !_allowAutoCombat; return _allowAutoCombat;}

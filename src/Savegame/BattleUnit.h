@@ -105,6 +105,7 @@ private:
 	std::vector<BattleItem*> _inventory;
 	BattleItem* _specWeapon[SPEC_WEAPON_MAX];
 	AIModule *_currentAIState;
+	bool _allowAutoCombat;
 	bool _visible;
 	UnitStats _exp, _expTmp;
 	int _motionPoints;
@@ -439,6 +440,12 @@ public:
 	AIModule *getAIModule() const;
 	/// Set AI Module.
 	void setAIModule(AIModule *ai);
+	/// Does the unit participate in autocombat?
+	bool getAllowAutoCombat() const {return _allowAutoCombat;}
+	/// Sets whether the unit participates in autocombat
+	void setAllowAutoCombat(const bool newValue) {_allowAutoCombat = newValue;}
+	/// Returns new value
+	bool toggleAllowAutoCombat() {_allowAutoCombat = !_allowAutoCombat; return _allowAutoCombat;}
 	/// Tells the unit whether it wants to end the turn or not
 	void setWantToEndTurn(bool wantToEndTurn);
 	/// Asks the unit's AI whether it wants to end the turn or not
