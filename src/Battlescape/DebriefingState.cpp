@@ -20,6 +20,7 @@
 #include <climits>
 #include "TileEngine.h"
 #include "DebriefingState.h"
+#include <functional>
 #include "CannotReequipState.h"
 #include "../Geoscape/GeoscapeEventState.h"
 #include "../Geoscape/GeoscapeState.h"

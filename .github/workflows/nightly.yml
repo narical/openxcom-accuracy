@@ -1,0 +1,111 @@
+name: Nightly
+on:
+  push:
+    branches:
+      - master
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        shell: bash
+        run: |
+          echo 'DESCRIBE=$(git describe)' >> $GITHUB_ENV
+          echo 'DATEFILE=$(git log -1 --date=format:"%Y_%m_%d_%H%M" --format="%ad")' >> $GITHUB_ENV
+          echo 'DATEVERSION=$(git log -1 --date=format:"%Y-%m-%d %H:%M" --format="%ad")' >> $GITHUB_ENV
+
+      - name: Setup version info
+        shell: bash
+        run: |
+          sed -i "s/GAME_VERSION_GIT \"[^\"]*\"/GAME_VERSION_GIT \" git ${{ env.DATEVERSION }}\"/" install/win/version.nsh
+          sed -i "s/GAME_DATE_GIT \"[^\"]*\"/GAME_DATE_GIT \"${{ env.DATEFILE }}\"/" install/win/version.nsh
+
+          sed -i "s/OPENXCOM_VERSION_GIT \"[^\"]*\"/OPENXCOM_VERSION_GIT \" git ${{ env.DATEVERSION }}\"/" src/version.h
+
+          echo 'FILENAME=openxcom_git_${{ env.DATEFILE }}' >> $GITHUB_ENV
+
+      - name: Install XP Toolset
+        shell: powershell
+        run: |
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP'
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -eq 0) {
+              Write-Host "components have been successfully added"
+          } else {
+              Write-Host "components were not installed"
+          }
+
+      - name: Download dependencies
+        run: |
+          Invoke-WebRequest -Uri "https://openxcom.org/download/dev/openxcom-deps-win-vc2017.zip" -OutFile "openxcom-deps-win-vc2017-newest.zip"
+          Expand-Archive -Path "openxcom-deps-win-vc2017-newest.zip"
+          Move-Item -Path "openxcom-deps-win-vc2017-newest\deps\*" -Destination "deps"
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1.3
+
+      - name: Compile source (x86 & x64)
+        env:
+          VC_FLAGS: /v:minimal /m /p:BuildInParallel=true /p:PreferredToolArchitecture=x64 /p:Configuration=Release_XP
+        run: |
+          cd src
+          msbuild OpenXcom.2010.sln ${{ env.VC_FLAGS }} /p:Platform=Win32
+          msbuild OpenXcom.2010.sln ${{ env.VC_FLAGS }} /p:Platform=x64
+          cd ..
+
+#      - name: Pull translations
+#        uses: transifex/cli-action@v2
+#        with:
+#          token: ${{ secrets.TX_TOKEN }}
+#          args: pull --all --minimum-perc=10
+
+      - name: Pull data patch
+        uses: actions/checkout@v3
+        with:
+          repository: OpenXcom/XcomDataPatch
+          path: ./patch
+
+      - name: Copy data to bin
+        run: |
+          Move-Item -Path "translations\openxcom\common\*" -Destination "bin\common"
+          Move-Item -Path "translations\openxcom\standard\*" -Destination "bin\standard"
+          Move-Item -Path "patch\xcom1\*" -Destination "bin\standard\xcom1"
+          Move-Item -Path "patch\xcom2\*" -Destination "bin\standard\xcom2"
+
+      - name: Get SHA hashes
+        uses: nrwl/nx-set-shas@v3
+
+      - name: Generate build log
+        run: |
+          git log --pretty=format:"<strong>%an, %ad</strong>%n%B" -n 10 --date=iso-local ${{ env.NX_BASE }}..${{ env.NX_HEAD }} > ${{ env.FILENAME }}.log
+
+      - name: Archive log
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ env.FILENAME }}.log
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILENAME }}_win
+          path: bin/**/*
+          
+      - name: Build installer
+        uses: joncloud/makensis-action@v4
+        with:
+          script-file: "install/win/installer.nsi"
+        
+      - name: Archive installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILENAME }}_win_install
+          path: install/win/*.exe

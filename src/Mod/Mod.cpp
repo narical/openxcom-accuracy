@@ -19,6 +19,7 @@
 #include "Mod.h"
 #include "ModScript.h"
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <climits>
 #include <cassert>
@@ -2060,7 +2061,8 @@ void Mod::loadAll()
 	for (size_t i = 0; _modData.size() > i; ++i)
 	{
 		_modCurrent = &_modData.at(i);
-		//if (_modCurrent->info->isMaster())
+		const ModInfo *info = _modCurrent->info;
+		if (!info->getResourceConfigFile().empty())
 		{
 			auto file = FileMap::getModRuleFile(_modCurrent->info, _modCurrent->info->getResourceConfigFile());
 			if (file)

@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <ctime>
+#include <functional>
 #include <yaml-cpp/yaml.h>
 #include "../version.h"
 #include "../Engine/Logger.h"

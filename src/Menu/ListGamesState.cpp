@@ -18,6 +18,7 @@
  */
 #include <algorithm>
 #include "ListGamesState.h"
+#include <functional>
 #include "../Engine/Logger.h"
 #include "../Savegame/SavedGame.h"
 #include "../Engine/Game.h"

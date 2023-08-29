@@ -69,7 +69,9 @@ deps/
 docs/html/
 build/
 Dependencies/
+translations/
 *.*.user
+!install/win/plugins/**/*.dll
 #Ignore Vim swap files
 *.swp
 #Ignore NetBeans project directory
@@ -81,3 +83,5 @@ bin/user
 /.kdev4/
 /*.kdev4
 bin/Win32/stderr.txt
+/makefile
+--------------
