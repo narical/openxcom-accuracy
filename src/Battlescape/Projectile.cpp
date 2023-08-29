@@ -17,9 +17,9 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Projectile.h"
+#include "BattlescapeState.h"
 #include "TileEngine.h"
 #include "Map.h"
-#include "Camera.h"
 #include "Particle.h"
 #include "Pathfinding.h"
 #include "../Mod/Mod.h"

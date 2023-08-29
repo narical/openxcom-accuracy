@@ -2134,9 +2134,8 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
 	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
 	if (targetSize > 0)
-	{
 		unitRadius = 3;
-	}
+
 	assert(unitRadius <= MAX_UNIT_RADIUS);
 
 	// vector manipulation to make scan work in view-space
@@ -2157,13 +2156,9 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	}
 
 	if (!potentialUnit->isOut())
-	{
 		heightRange = potentialUnit->getHeight();
-	}
 	else
-	{
 		heightRange = 12;
-	}
 
 	targetMaxHeight += heightRange;
 	targetCenterHeight=(targetMaxHeight+targetMinHeight)/2;

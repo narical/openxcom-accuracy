@@ -18,7 +18,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/InteractiveSurface.h"
-#include "../Engine/Options.h"
 #include "../Engine/Collections.h"
 #include "../Mod/MapData.h"
 #include "Position.h"
