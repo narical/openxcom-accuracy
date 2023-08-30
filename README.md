@@ -12,6 +12,20 @@ and the [wiki](https://www.ufopaedia.org/index.php/OpenXcom).
 
 Uses modified code from SDL\_gfx (LGPL) with permission from author.
 
+## Realistic accuracy and cover system
+[Video](https://www.youtube.com/watch?v=S9lrOClZVQQ)
+
+Features:
+* new, more predictable, shooting spread. Shots won't fly miles away from target, and in case when you've taken really good aim and missed - your bullet will zip an inch above targets ear 
+* "Chance to hit" number now precisely correct - it works like rolling dice in D&D. If you get 5% accuracy number, it means that game rolls 1-100 and if it's less or equal 5 - you hit. If you get 100% shot accuracy - you'll get it one hundred percent sure.
+* If you see the target - you can shoot it. Now for aimed shot or kneeled position x-com operative will raise his weapon to the eyes level. That means you can shoot above stone fence while kneeled. 
+* Shot accuracy highly depends on how much of a target is exposed. If you've got just the tip of your head over the fence - that pesky muton have a merely 5% to shoot you. Generally it works in both ways, but you'll get additional 2% for kneeling (aliens can't do that). You can fire a single snap shot while kneeled, triggering enemy's return fire which he will most probably miss, then stand up for full height and shoot with better accuracy.
+* Units aim to the middle of the exposed part, so shots spread around that point.
+* Similar to "off-center shooting" option, firing unit will check three lines of fire, shifting weapon slightly left and right, and select variant where its target is more exposed
+* Due to a less shooting spread, missed shots will often hit your cover, often destroyng it, which makes you exposed for next shots. So pay attention to that, some objects are more sturdy and can endure more damage
+* If distance to a target is 10 tiles or less - you'll get additional 10% accuracy multiplier per tile. Same for snap/auto, but it's 5 tiles and +20% per tile
+* If that is not enough to get 100% shot accuracy for a tile adjanced to enemy - instead of multiplier, as a bonus you'll get the difference between your accuracy and 100%, divided by number of tiles
+
 ## 'Rejected features' fork
 
 This is a fork from official master of OXCE+ which allows some new features which
