@@ -1996,7 +1996,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
 {
-	static constexpr int MAX_UNIT_RADIUS = 7; // THIS WAS CHANGED BECAUSE ROSIGMA NEEDED BIGGER UNITS!
+	static constexpr int MAX_UNIT_RADIUS = 5; // THIS WAS CHANGED BECAUSE ROSIGMA NEEDED BIGGER UNITS!
 	std::vector<Position> _trajectory;
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	Position scanVoxel;
@@ -2023,7 +2023,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	assert(unitRadius <= MAX_UNIT_RADIUS); // IT WON'T WORK IN RELEASE BUILD(?)
+	if (unitRadius >= MAX_UNIT_RADIUS)
+		unitRadius = MAX_UNIT_RADIUS;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
@@ -2098,7 +2099,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	static constexpr int MAX_UNIT_RADIUS = 7; // Look at checkVoxelExposure() for comments
+	static constexpr int MAX_UNIT_RADIUS = 5; // Look at checkVoxelExposure() for comments
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 
@@ -2125,7 +2126,8 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	assert(unitRadius <= MAX_UNIT_RADIUS);
+	if (unitRadius >= MAX_UNIT_RADIUS)
+		unitRadius = MAX_UNIT_RADIUS;
 
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
