@@ -4913,7 +4913,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 
 	Position origin = _save->getTileEngine()->getOriginVoxel((*action), simulationTile);
 	Position targetPosition;
-	float targetQuality = 1;
+	double targetQuality = 1;
 	if (action->type != BA_HIT) //Melee-attacks have their own validity check. This additional check can cause false negatives!
 	{
 		if (checkLOF)
@@ -4927,7 +4927,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 			else
 			{
-				targetQuality = _save->getTileEngine()->targetQuality(&origin, target->getTile(), &targetPosition, _unit, false, target);
+				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
 				if (targetQuality == 0)
 					return 0;
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))

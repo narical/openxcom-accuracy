@@ -242,8 +242,6 @@ public:
 	double checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels = nullptr);
 	/// Checks validity for targetting a unit.
 	bool canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
-	/// like canTargetUnit but returns a numeric value of how hitable the target is
-	float targetQuality(Position* originVoxel, Tile* tile, Position* scanVoxel, BattleUnit* excludeUnit, bool rememberObstacles, BattleUnit* potentialUnit = 0);
 	/// Check validity for targetting a tile.
 	bool canTargetTile(Position *originVoxel, Tile *tile, int part, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles);
 	/// Calculates the z voxel for shadows.
