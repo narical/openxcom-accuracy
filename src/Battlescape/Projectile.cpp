@@ -422,11 +422,11 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
 
-		if (targetUnit && exposedVoxels.empty()) // We target a unit but can't see it
+		if (targetUnit && exposedVoxels.empty()) // We target a unit but can't get LOF
 		{
 			real_accuracy = 0;
 		}
-		else
+		else if (targetTile)
 		{
 			int deltaX = origin.x/16 - targetTile->getPosition().x;
 			int deltaY = origin.y/16 - targetTile->getPosition().y;
