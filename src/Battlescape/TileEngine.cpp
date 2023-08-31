@@ -1996,7 +1996,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
 {
-	static constexpr int MAX_UNIT_RADIUS = 3; // THIS COULD BE CHANGED IF SOMEONE NEED BIGGER UNITS!
+	static constexpr int MAX_UNIT_RADIUS = 7; // THIS WAS CHANGED BECAUSE ROSIGMA NEEDED BIGGER UNITS!
 	std::vector<Position> _trajectory;
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	Position scanVoxel;
@@ -2098,7 +2098,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	static constexpr int MAX_UNIT_RADIUS = 3; // Look at checkVoxelExposure() for comments
+	static constexpr int MAX_UNIT_RADIUS = 7; // Look at checkVoxelExposure() for comments
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 
