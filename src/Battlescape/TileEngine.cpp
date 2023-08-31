@@ -2023,7 +2023,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	if (unitRadius >= MAX_UNIT_RADIUS)
+	if (unitRadius > MAX_UNIT_RADIUS)
 		unitRadius = MAX_UNIT_RADIUS;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
@@ -2126,7 +2126,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	if (unitRadius >= MAX_UNIT_RADIUS)
+	if (unitRadius > MAX_UNIT_RADIUS)
 		unitRadius = MAX_UNIT_RADIUS;
 
 	// vector manipulation to make scan work in view-space
