@@ -4506,7 +4506,7 @@ VoxelType TileEngine::voxelCheck(Position voxel, BattleUnit *excludeUnit, bool e
 					part = parts[tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2];
 				}
 				int idx = (unit->getLoftemps(part) * 16) + y;
-				if (_voxelData->at(idx) & (0x8000 >> x))
+				if (_voxelData->at(idx) & (1 << x))
 				{
 					return V_UNIT;
 				}
