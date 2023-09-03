@@ -1361,8 +1361,15 @@ void Map::drawTerrain(Surface *surface)
 
 									if ( Options::battleRealisticAccuracy )
 									{
-										bool isCtrlPressed = _game->isCtrlPressed(true); // Just in case it'll be used sometimes
-										if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheAccuracy != -1)
+										BattleUnit* shooterUnit = action->actor;
+
+										const bool isCtrlPressed = _game->isCtrlPressed(true); // Just in case it'll be used sometimes
+										const bool isKneeled = shooterUnit->isKneeled();
+
+										if (Position(itX, itY, itZ) == _cacheCursorPosition
+											&& isCtrlPressed == _cacheIsCtrlPressed
+											&& isKneeled == _cacheIsKneeled
+											&& _cacheAccuracy != -1)
 										{
 											// use cached result
 											accuracy = _cacheAccuracy;
@@ -1372,7 +1379,6 @@ void Map::drawTerrain(Surface *surface)
 											int max_voxels = 0;
 											int distance_in_tiles = 0;
 											Tile *target = nullptr;
-											BattleUnit *shooterUnit = action->actor;
 
 											if (unit) // Targeting unit
 											{
@@ -1435,7 +1441,8 @@ void Map::drawTerrain(Surface *surface)
 												{
 													accuracy = 5; // If there's LOF - accuracy should be at least 5%
 													if (max_voxels > 0 && max_voxels < 5) accuracy = max_voxels; // Except cases when less than 5 voxels exposed
-													if (shooterUnit->isKneeled()) accuracy += 2; // And let's make kneeling more meaningful for such shots
+													if (isKneeled)
+														accuracy += 2; // And let's make kneeling more meaningful for such shots
 													_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
 												}
 
@@ -1452,6 +1459,7 @@ void Map::drawTerrain(Surface *surface)
 											_cacheIsCtrlPressed = isCtrlPressed;
 											_cacheCursorPosition = Position(itX, itY, itZ);
 											_cacheAccuracy = accuracy;
+											_cacheIsKneeled = isKneeled;
 										}
 									}
 									ss << accuracy;
