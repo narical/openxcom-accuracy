@@ -82,6 +82,7 @@ private:
 	int _cursorSize;
 	int _cacheActiveWeaponUfopediaArticleUnlocked; // -1 = unknown, 0 = locked, 1 = unlocked
 	bool _cacheIsCtrlPressed;
+	bool _cacheIsKneeled = false;
 	Position _cacheCursorPosition;
 	int _cacheHasLOS; // -1 = unknown, 0 = no LOS, 1 = has LOS
 	int _cacheAccuracy; // -1 = unknown
