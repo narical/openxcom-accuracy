@@ -1996,13 +1996,18 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
 {
+//	Log(LOG_INFO) << "inside checkVoxelExposure()";
+//	Log(LOG_INFO) << "originVoxel: " << *originVoxel << " tile: " << tile->getPosition();
+
 	std::vector<Position> _trajectory;
-	Position targetVoxel = tile->getPosition().toVoxel();
-	Log(LOG_INFO) << "Target voxel 1: " << targetVoxel;
+//	Position targetVoxel = tile->getPosition().toVoxel();
 	Position scanVoxel;
 	BattleUnit *targetUnit = tile->getUnit();
 	if (targetUnit == nullptr) return 0; //no unit in this tile, even if it elevated and appearing in it.
 	if (targetUnit == excludeUnit) return 0; //skip self
+	Position targetVoxel = targetUnit->getPosition().toVoxel();
+//	Log(LOG_INFO) << "targetVoxel position from input tile: " << targetVoxel;
+//	Log(LOG_INFO) << "unit position from input tile: " << targetVoxel.toTile();
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
 	targetMinHeight += targetUnit->getFloatHeight();
@@ -2020,11 +2025,6 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int targetSize = targetUnit->getArmor()->getSize();
 	int xOffset = targetUnit->getPosition().x - tile->getPosition().x;
 	int yOffset = targetUnit->getPosition().y - tile->getPosition().y;
-	Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << tile->getPosition();
-
-
-	targetVoxel = targetUnit->getPosition().toVoxel();
-	Log(LOG_INFO) << "Target voxel 2: " << targetVoxel;
 
 	if (targetSize == 1)
 	{
@@ -2040,12 +2040,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	else
 		assert(false); // Crash immediately if someone, someday makes a unit of other size
 
-	Log(LOG_INFO) << "Target voxel 3: " << targetVoxel;
-	Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
-	Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
-	Log(LOG_INFO) << "Target Radius: " << unitRadius << " Max height: " << targetMaxHeight;
-
-
+//	Log(LOG_INFO) << "Modified targetVoxel: " << targetVoxel;
+//	Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
+//	Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
+//	Log(LOG_INFO) << "Target Radius: " << unitRadius;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	int sliceTargetsX[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
@@ -2068,25 +2066,37 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 //	for ( int i = 0; i <= TileEngine::maxBigUnitRadius*2; ++i ) Log(LOG_INFO) << "Slice X: " << sliceTargetsX[i] << " Y: " << sliceTargetsY[i];
 
+	std::vector<std::string> scanArray;
+	scanArray.reserve(24);
+	std::vector<char> symbols{'.','_','/','\\','O','#','x'};
+
+
 	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
 	int visible=0;
 
-	for (int height = heightRange; height > 0; height-=2)
+	// check bottom of the unit too
+	// for examlpe hovertank/plasma has floating height of 6, so his bottom is on level 6, with voxels 0-5 below it.
+	// levels for checking = unit height range / 2 + 1
+	int bottomHeight = ( targetMinHeight < 2 ? 2 : targetMinHeight ); // can't check height 0-1 (bug?)
+
+	for (int height = targetMaxHeight; height >= bottomHeight; height -= 2) //====================================================== HEIGHT
 	{
-		// For units with odd height, bottom slice should be 2 instead of 1, which is bugged(?) for raycasting
+		std::string scanLine;
+		// For units with odd max height, bottom slice should be 2 instead of 0 or 1, which are bugged(?) for raycasting
 		// using sliceTargetsZ instead of "if (height == 1) height = 2" to reduce branching
-		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
-		scanVoxel.z = targetMinHeight + sliceTargetsZ[ height ];
-		Log(LOG_INFO) << "----=={ " << scanVoxel.z << " }==----";
+//		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+
+		scanVoxel.z = height; // = targetMinHeight + sliceTargetsZ[ height ];
+//		Log(LOG_INFO) << "----=={ " << height << " }==----";
 
 		int start_pos = (TileEngine::maxBigUnitRadius*2 + 1)/2 - unitRadius; // Only middle of the array is used for small units
 		int end_pos = start_pos + unitRadius*2;
-		for (int j = start_pos; j <= end_pos; ++j)
+		for (int j = start_pos; j <= end_pos; ++j) //=============================================================================== LEFT TO RIGHT
 		{
 			++total;
-			scanVoxel.x=targetVoxel.x + sliceTargetsX[j];
-			scanVoxel.y=targetVoxel.y + sliceTargetsY[j];
+			scanVoxel.x = targetVoxel.x + sliceTargetsX[j];
+			scanVoxel.y = targetVoxel.y + sliceTargetsY[j];
 //			Log(LOG_INFO) << "Scan voxel: " << scanVoxel << " SliceTarget: " << sliceTargetsX[j] << " " << sliceTargetsY[j];
 
 			_trajectory.clear();
@@ -2094,11 +2104,13 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 			if (test == V_UNIT)
 			{
 				bool pointFound = false;
-				for (int x = 0; x <= targetSize-1; ++x)
+				for (int x = 0; x <= targetSize-1; ++x) //========================================================================== CHECK 4 TILES FOR BIG UNITS
 				{
 					if (pointFound) break; // we found the point and can skip other tiles
 					for (int y = 0; y <= targetSize-1; ++y)
 					{
+//						Log(LOG_INFO) << "Scanvoxel: " << scanVoxel << " Impact: (" << _trajectory.at(0);
+
 						if (pointFound) break; // we found the point and can skip other tiles
 						int xxx = (scanVoxel.x/16) + x + xOffset;
 						int yyy = (scanVoxel.y/16) + y + yOffset;
@@ -2120,25 +2132,36 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 							++visible;
 							pointFound = true;
 							if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
-//							Log(LOG_INFO) << scanVoxel.x << " " << scanVoxel.y << " - visible";
+//							Log(LOG_INFO) << scanVoxel << " - visible";
 						}
 //						else
-//							Log(LOG_INFO) << scanVoxel.x << " " << scanVoxel.y << " - not visible";
+//							Log(LOG_INFO) << "Scanvoxel: " << scanVoxel << " Impact: (" << _trajectory.at(0);
+//							Log(LOG_INFO) << scanVoxel << " - not visible";
 					}
 				}
+				scanLine += ( pointFound ? '#' : '?' );
 			}
-		}
-	}
+			else if ( test == V_EMPTY )
+			{
+				--total;
+				scanLine += symbols[ test + 1 ];
+			}
 
-//	if (_save->getDebugMode())
-//	{
+		}
+		scanArray.emplace_back( scanLine );
+	}
+	double exposure = (double)visible / total;
+
+	if (_save->getDebugMode())
+	{
+	for ( const auto &line : scanArray )
+		Log(LOG_INFO) << line;
 //		std::ostringstream ss;
 //		ss << "H: " << heightRange << " W: " << unitRadius*2+1 << " Float: " << targetMinHeight;
-//		ss << " Exposure: " << visible << "/" << total << " = " << result.value*100 << "%";
+//		ss << " Exposure: " << visible << "/" << total << " = " << exposure*100 << "%";
 //		_save->getBattleState()->debug(ss.str());
-//	}
+	}
 
-	double exposure = (double)visible / total;
 	return exposure;
 }
 
@@ -2154,7 +2177,6 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	static constexpr int MAX_UNIT_RADIUS = 5; // Look at checkVoxelExposure() for comments
 	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 

@@ -332,6 +332,10 @@ int Projectile::calculateThrow(double accuracy)
  */
 void Projectile::applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine)
 {
+//	Log(LOG_INFO) << "inside applyAccuracy()";
+//	Log(LOG_INFO) << "origin: " << origin << " target: " << *target;
+//	Log(LOG_INFO) << "origin tile: " << origin.toTile() << " target tile: " << target->toTile();
+
 	int xdiff = origin.x - target->x;
 	int ydiff = origin.y - target->y;
 	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff));
@@ -419,21 +423,20 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		if (targetUnit)
 		{
-			Log(LOG_INFO) << "!!!! Unit: " << targetUnit->getPosition() << "!!!! Tile: " << targetTile->getPosition();
-
+//			Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << targetTile->getPosition();
 
 			int unitSize = targetUnit->getArmor()->getSize();
-			int heightCount = targetUnit->getHeight()/2;
+			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( unitSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
-			tempVoxels.reserve(heightCount * widthCount);
-			exposedVoxels.reserve(heightCount * widthCount);
+			tempVoxels.reserve( heightCount * widthCount );
+			exposedVoxels.reserve( heightCount * widthCount );
 			BattleActionOrigin selected_origin = BattleActionOrigin::CENTRE;
 
 			for (auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT }) // Check out 3 LOFs
 			{
 				tempVoxels.clear();
 				_action.relativeOrigin = rel_pos;
-				tempExposure = _save->getTileEngine()->checkVoxelExposure( &origin,targetTile,shooterUnit, &tempVoxels );
+				tempExposure = _save->getTileEngine()->checkVoxelExposure( &origin, targetTile, shooterUnit, &tempVoxels );
 
 				if ( tempVoxels.size() > exposedVoxelsCount ) // We've found better LOF !
 				{

@@ -323,47 +323,31 @@ void ProjectileFlyBState::init()
 			}
 			else
 			{
+				bool foundLoF = false;
+
 				if (Options::battleRealisticAccuracy)
 				{
-					std::vector<Position> exposedVoxels;
-					size_t best_score = 0;
-					BattleActionOrigin selected_origin = BattleActionOrigin::CENTRE;
+					foundLoF = true;
+					_originVoxel = originVoxel;
 
-					for (auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT }) // Check out 3 LOFs
+					BattleUnit *targetUnit = targetTile->getUnit();
+
+					if (targetUnit)
 					{
-						exposedVoxels.clear();
-						_action.relativeOrigin = rel_pos;
-						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
-						_parent->getTileEngine()->checkVoxelExposure( &originVoxel,targetTile,_unit, &exposedVoxels );
-
-						if ( exposedVoxels.size() > best_score ) // Find the best LOF with maximum target exposure
-						{
-							selected_origin = rel_pos;
-							best_score = exposedVoxels.size();
-						}
-					}
-
-					_action.relativeOrigin = selected_origin;
-
-					if (best_score == 0) // No LOF found!
-					{
-						_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
-						if (isPlayer)
-						{
-							forceEnableObstacles = true;
-						}
+						int targetMinHeight = targetUnit->getPosition().toVoxel().z - targetTile->getTerrainLevel();
+						targetMinHeight += targetUnit->getFloatHeight();
+						int targetHeightRange = ( targetUnit->isOut() ? 12 : targetUnit->getHeight() );
+						int targetMiddleZ = ( targetMinHeight * 2 + targetHeightRange ) / 2;
+						_targetVoxel = _action.target.toVoxel() + Position{8, 8, targetMiddleZ};
 					}
 					else
-					{
-						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
+						_targetVoxel = _action.target.toVoxel() + Position{8, 8, 0};
 
-						// _targetVoxel was prepared and set in applyAccuracy
-						_parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer); // FIRE !!!
-					}
+
 				}
 				else // "classic" XCOM
 				{
-					bool foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
+					foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
 
 					if (!foundLoF && Options::oxceEnableOffCentreShooting)
 					{
@@ -379,17 +363,17 @@ void ProjectileFlyBState::init()
 							}
 						}
 					}
+				}
 
-					if (!foundLoF)
+				if (!foundLoF)
+				{
+					// Failed to find LOF
+					_action.relativeOrigin = BattleActionOrigin::CENTRE; // reset to the normal origin
+
+					_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
+					if (isPlayer)
 					{
-						// Failed to find LOF
-						_action.relativeOrigin = BattleActionOrigin::CENTRE; // reset to the normal origin
-
-						_targetVoxel = TileEngine::invalid.toVoxel(); // out of bounds, even after voxel to tile calculation.
-						if (isPlayer)
-						{
-							forceEnableObstacles = true;
-						}
+						forceEnableObstacles = true;
 					}
 				}
 			}
@@ -488,9 +472,11 @@ bool ProjectileFlyBState::createNewProjectile()
 
 		_action.waypoints.pop_back();
 	}
+	Log(LOG_INFO) << "1) _originVoxel: " << _originVoxel;
 
 	// create a new projectile
 	Projectile *projectile = new Projectile(_parent->getMod(), _parent->getSave(), _action, _origin, _targetVoxel, _ammo);
+	Log(LOG_INFO) << "2) _originVoxel: " << _originVoxel;
 
 	// add the projectile on the map
 	_parent->getMap()->setProjectile(projectile);
@@ -580,9 +566,15 @@ bool ProjectileFlyBState::createNewProjectile()
 	}
 	else
 	{
-		if (_originVoxel != TileEngine::invalid)
+		Log(LOG_INFO) << "3) _originVoxel: " << _originVoxel;
+
+		if (_originVoxel != TileEngine::invalid && !Options::battleRealisticAccuracy)
 		{
 			_projectileImpact = projectile->calculateTrajectory(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider, _originVoxel, false);
+		}
+		else if ( Options::battleRealisticAccuracy ) // In RA mod, weapon's barrel shifted inside unit's radius
+		{
+			_projectileImpact = projectile->calculateTrajectory(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider, _originVoxel, true);
 		}
 		else
 		{
