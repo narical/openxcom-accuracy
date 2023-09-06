@@ -400,10 +400,13 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	{
 		int distance_in_tiles = 0;
 		double exposure = 0.0;
+		double tempExposure = 0.0;
 		int real_accuracy = 0; // separate variable for realistic accuracy, just in case
 
 		BattleUnit *shooterUnit = _action.actor;
+		std::vector<Position> tempVoxels;
 		std::vector<Position> exposedVoxels;
+		size_t exposedVoxelsCount = 0; // maximum of exposed voxels for left, center or right shooting position
 
 		BattleUnit *targetUnit = nullptr;
 		Tile *targetTile = _save->getTile(target->toTile());
@@ -414,15 +417,40 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			targetUnit = nullptr;
 		}
 
-		if (targetUnit) // Do we still target a unit?
+		if (targetUnit)
 		{
-			exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, shooterUnit, &exposedVoxels);
+			Log(LOG_INFO) << "!!!! Unit: " << targetUnit->getPosition() << "!!!! Tile: " << targetTile->getPosition();
+
+
+			int unitSize = targetUnit->getArmor()->getSize();
+			int heightCount = targetUnit->getHeight()/2;
+			int widthCount = 1 + ( unitSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
+			tempVoxels.reserve(heightCount * widthCount);
+			exposedVoxels.reserve(heightCount * widthCount);
+			BattleActionOrigin selected_origin = BattleActionOrigin::CENTRE;
+
+			for (auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT }) // Check out 3 LOFs
+			{
+				tempVoxels.clear();
+				_action.relativeOrigin = rel_pos;
+				tempExposure = _save->getTileEngine()->checkVoxelExposure( &origin,targetTile,shooterUnit, &tempVoxels );
+
+				if ( tempVoxels.size() > exposedVoxelsCount ) // We've found better LOF !
+				{
+					selected_origin = rel_pos;
+					exposedVoxelsCount = tempVoxels.size();
+					exposure = tempExposure;
+					std::swap(tempVoxels, exposedVoxels);
+				}
+			}
+			_action.relativeOrigin = selected_origin;
+
 			real_accuracy = (int)ceil((double)accuracy * exposure * 100);
 		}
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
 
-		if (targetUnit && exposedVoxels.empty()) // We target a unit but can't get LOF
+		if (targetUnit && exposedVoxelsCount == 0) // We target a unit but can't get LOF
 		{
 			real_accuracy = 0;
 		}
@@ -433,7 +461,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;
 			distance_in_tiles = (int)floor(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ))); // Distance in cube 16x16x16 tiles!
 
-			if (distance_in_tiles==0)
+			if (distance_in_tiles == 0)
 				real_accuracy = 100;
 
 			if (weapon->getMinRange() == 0 && _action.type == BA_AIMEDSHOT && distance_in_tiles <= 10) // For aimed shot...
@@ -455,13 +483,13 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			if (real_accuracy < 5) // Rule for difficult/long-range shots
 			{
 				real_accuracy = 5; // If there's LOF - accuracy should be at least 5%
-				if (exposedVoxels.size() > 0 && exposedVoxels.size() < 5) real_accuracy=exposedVoxels.size(); // Except cases when less than 5 voxels exposed
+				if (exposedVoxelsCount > 0 && exposedVoxelsCount < 5) real_accuracy = exposedVoxelsCount; // Except cases when less than 5 voxels exposed
 				if (shooterUnit->isKneeled()) real_accuracy += 2; // And let's make kneeling more meaningful for such shots
 			}
 		}
 
 		int accuracy_check = RNG::generate(1, 100);
-		bool hit_successful = accuracy_check <= real_accuracy;
+		bool hit_successful = ( accuracy_check <= real_accuracy );
 
 		if (_save->getDebugMode())
 		{
@@ -475,40 +503,42 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// If there's no target unit - do nothing, leave target voxel "as is", as we've successfully hit the terrain, yay!
 		if (hit_successful)
 		{
-			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxels.size()-1)); // Aim to random exposed voxel of the target
+			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 		}
-		else // We missed, time to find MISSING line of fire with realistic deviation
+		else // We missed, time to find a line of fire to perform a miss with a realistic deviation
 		{
-			int heightRange = 0;
-			int unitRadius = 4; // Targeting to empty terrain tile will use this size for fire deviation
-			int targetSize = 0;
+			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
+			int unitRadius = 4; // and this radius
+			int targetSize = 1; // and targeting to a single tile
+			if (targetSize > 2)
+				assert(false); // Crash immediately if someone, someday makes a unit of other size
 
-			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
-			int targetMaxHeight = targetMinHeight;
+//			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
+			int targetMinHeight = target->z - targetTile->getTerrainLevel();
 
 			if (targetUnit) // Finding boundaries of target unit
 			{
 				targetMinHeight += targetUnit->getFloatHeight();
-				if (!targetUnit->isOut())
-				{
-					heightRange = targetUnit->getHeight();
-				}
-				else
-				{
-					heightRange = 12;
-				}
-				targetMaxHeight=targetMinHeight + heightRange;
-				unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
-				targetSize = targetUnit->getArmor()->getSize() - 1;
 
-				if (targetSize > 0)
-				{
-					unitRadius = 3;
-				}
+				if (!targetUnit->isOut())
+					heightRange = targetUnit->getHeight();
+				else
+					heightRange = 12;
+
+				unitRadius = targetUnit->getLoftemps();
+				targetSize = targetUnit->getArmor()->getSize();
+
+				if (targetSize == 1 && unitRadius > TileEngine::maxSmallUnitRadius)
+					unitRadius = TileEngine::maxSmallUnitRadius;
+
+				else if (targetSize == 2 && unitRadius > TileEngine::maxBigUnitRadius)
+					unitRadius = TileEngine::maxBigUnitRadius; // For large 2x2 units
 			}
 
+			int targetMaxHeight = targetMinHeight + heightRange;
+
 			Position visibleCenter{0,0,0};
-			if (exposedVoxels.empty())
+			if (exposedVoxelsCount == 0)
 			{
 				visibleCenter = *target; // No exposed voxels? Use initial target point as unit center
 			}
@@ -535,16 +565,17 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			std::vector<Position> trajectory;
 			int accuracy_deviation = (accuracy_check - real_accuracy)/4; //  Highly accurate shots will land close to the target even if they miss
 			int distance_deviation = tilesDistance/7; // 1 voxel of deviation per 7 tiles of distance
-			int deviation = unitRadius + accuracy_deviation + distance_deviation;
+			int horizontal_deviation = unitRadius + accuracy_deviation + distance_deviation;
+			int vertical_deviation = ( targetSize == 2 ? heightRange / 2 : unitRadius ) + accuracy_deviation + distance_deviation;
 \
 			for ( int i=0; i<5; ++i) // Maximum possible deviation is deviation + 5, in case you're extremely unlucky
 			{
 				for ( int j=0; j<10; ++j ) // Randomly try to "shoot" to different points around the center of visible part
 				{
 					deviate = visibleCenter;
-					deviate.x += RNG::generate(-deviation,deviation);
-					deviate.y += RNG::generate(-deviation,deviation);
-					deviate.z += RNG::generate(-deviation,deviation);
+					deviate.x += RNG::generate(-horizontal_deviation, horizontal_deviation);
+					deviate.y += RNG::generate(-horizontal_deviation, horizontal_deviation);
+					deviate.z += RNG::generate(-vertical_deviation,   vertical_deviation);
 
 					// if the point is between shooter and target - we don't like it, look for the next one
 					// we need a point close to normal to LOS, or behind that normal
@@ -561,9 +592,11 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					{
 						int xOffset = targetUnit->getPosition().x - deviate.x/16;
 						int yOffset = targetUnit->getPosition().y - deviate.y/16;
-						for (int x = 0; x <= targetSize; ++x)
+						int missed_tiles = 0; // Should be 4 for a total miss
+
+						for (int x = 0; x <= targetSize-1; ++x)
 						{
-							for (int y = 0; y <= targetSize; ++y)
+							for (int y = 0; y <= targetSize-1; ++y)
 							{
 								//voxel of hit must be outside of scanned box
 								if (trajectory.at(0).x/16 != (deviate.x/16) + x + xOffset || // If shot impact point is outside our target
@@ -571,10 +604,14 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 									trajectory.at(0).z < targetMinHeight ||
 									trajectory.at(0).z > targetMaxHeight)
 								{
-									*target = deviate;
-									goto target_calculated;
+									++missed_tiles;
 								}
 							}
+						}
+						if (missed_tiles == 4)
+						{
+							*target = deviate;
+							goto target_calculated;
 						}
 					}
 					else // Just in case of something unexpected
@@ -583,7 +620,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 						goto target_calculated;
 					}
 				}
-				++deviation; // Tried to miss many times but failed? Increase the deviation slightly and try again
+				++horizontal_deviation;
+				++vertical_deviation; // Tried to miss many times but failed? Increase the deviation slightly and try again
 			}
 			target->z -= target->z%24; // Can't miss after even more tries? Just shoot to the ground under target and call it a day
 		}

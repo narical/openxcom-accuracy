@@ -1996,9 +1996,9 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
 {
-	static constexpr int MAX_UNIT_RADIUS = 5; // THIS WAS CHANGED BECAUSE ROSIGMA NEEDED BIGGER UNITS!
 	std::vector<Position> _trajectory;
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
+	Position targetVoxel = tile->getPosition().toVoxel();
+	Log(LOG_INFO) << "Target voxel 1: " << targetVoxel;
 	Position scanVoxel;
 	BattleUnit *targetUnit = tile->getUnit();
 	if (targetUnit == nullptr) return 0; //no unit in this tile, even if it elevated and appearing in it.
@@ -2014,35 +2014,59 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	else
 		heightRange = 12;
 
-	int targetMaxHeight=targetMinHeight+heightRange;
+	int targetMaxHeight = targetMinHeight + heightRange;
 
 	int unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
-	int targetSize = targetUnit->getArmor()->getSize() - 1;
+	int targetSize = targetUnit->getArmor()->getSize();
 	int xOffset = targetUnit->getPosition().x - tile->getPosition().x;
 	int yOffset = targetUnit->getPosition().y - tile->getPosition().y;
-	if (targetSize > 0)
-		unitRadius = 3;
+	Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << tile->getPosition();
 
-	if (unitRadius > MAX_UNIT_RADIUS)
-		unitRadius = MAX_UNIT_RADIUS;
+
+	targetVoxel = targetUnit->getPosition().toVoxel();
+	Log(LOG_INFO) << "Target voxel 2: " << targetVoxel;
+
+	if (targetSize == 1)
+	{
+		if (unitRadius > TileEngine::maxSmallUnitRadius) // For small units - fix if their loft was mistakenly set to >5
+			unitRadius = TileEngine::maxSmallUnitRadius;
+		targetVoxel += Position(8, 8, 0); // center of small unit
+	}
+	else if (targetSize == 2)
+	{
+		unitRadius = TileEngine::maxBigUnitRadius; // For large 2x2 units
+		targetVoxel += Position(16, 16, 0); // center of big unit
+	}
+	else
+		assert(false); // Crash immediately if someone, someday makes a unit of other size
+
+	Log(LOG_INFO) << "Target voxel 3: " << targetVoxel;
+	Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
+	Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
+	Log(LOG_INFO) << "Target Radius: " << unitRadius << " Max height: " << targetMaxHeight;
+
+
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
-	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
-	int sliceTargetsY[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsX[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
+	int sliceTargetsY[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
 
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
 
 	for ( int testRadius = unitRadius; testRadius > 0; --testRadius) // slice for every voxel of radius!
 	{
-		float normal = testRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
-		int relX = floor(((float)relPos.y)*normal+0.5);
-		int relY = floor(((float)-relPos.x)*normal+0.5);
+		double normal = testRadius/sqrt((double)(relPos.x*relPos.x + relPos.y*relPos.y));
+		int relX = (int)floor(((double)relPos.y)*normal+0.5);
+		int relY = (int)floor(((double)-relPos.x)*normal+0.5);
+
 		sliceTargetsX[ unitRadius - testRadius ] = relX;
 		sliceTargetsY[ unitRadius - testRadius ] = relY;
 		sliceTargetsX[ unitRadius + testRadius ] = -relX;
 		sliceTargetsY[ unitRadius + testRadius ] = -relY;
 	}
+
+//	for ( int i = 0; i <= TileEngine::maxBigUnitRadius*2; ++i ) Log(LOG_INFO) << "Slice X: " << sliceTargetsX[i] << " Y: " << sliceTargetsY[i];
 
 	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
@@ -2054,35 +2078,66 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		// using sliceTargetsZ instead of "if (height == 1) height = 2" to reduce branching
 		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 		scanVoxel.z = targetMinHeight + sliceTargetsZ[ height ];
+		Log(LOG_INFO) << "----=={ " << scanVoxel.z << " }==----";
 
-		for (int j = 0; j <= unitRadius*2; ++j)
+		int start_pos = (TileEngine::maxBigUnitRadius*2 + 1)/2 - unitRadius; // Only middle of the array is used for small units
+		int end_pos = start_pos + unitRadius*2;
+		for (int j = start_pos; j <= end_pos; ++j)
 		{
 			++total;
 			scanVoxel.x=targetVoxel.x + sliceTargetsX[j];
 			scanVoxel.y=targetVoxel.y + sliceTargetsY[j];
+//			Log(LOG_INFO) << "Scan voxel: " << scanVoxel << " SliceTarget: " << sliceTargetsX[j] << " " << sliceTargetsY[j];
 
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
 			{
-				for (int x = 0; x <= targetSize; ++x)
+				bool pointFound = false;
+				for (int x = 0; x <= targetSize-1; ++x)
 				{
-					for (int y = 0; y <= targetSize; ++y)
+					if (pointFound) break; // we found the point and can skip other tiles
+					for (int y = 0; y <= targetSize-1; ++y)
 					{
+						if (pointFound) break; // we found the point and can skip other tiles
+						int xxx = (scanVoxel.x/16) + x + xOffset;
+						int yyy = (scanVoxel.y/16) + y + yOffset;
+						int traj_xxx = _trajectory.at(0).x/16;
+						int traj_yyy = _trajectory.at(0).y/16;
+						int traj_zzz = _trajectory.at(0).z;
+
 						//voxel of hit must be inside of scanned box
-						if (_trajectory.at(0).x/16 == (scanVoxel.x/16) + x + xOffset &&
-							_trajectory.at(0).y/16 == (scanVoxel.y/16) + y + yOffset &&
-							_trajectory.at(0).z >= targetMinHeight &&
-							_trajectory.at(0).z <= targetMaxHeight)
+//						if (_trajectory.at(0).x/16 == (scanVoxel.x/16) + x + xOffset &&
+//							_trajectory.at(0).y/16 == (scanVoxel.y/16) + y + yOffset &&
+//							_trajectory.at(0).z >= targetMinHeight &&
+//							_trajectory.at(0).z <= targetMaxHeight)
+
+						if (traj_xxx == xxx &&
+							traj_yyy == yyy &&
+							traj_zzz >= targetMinHeight &&
+							traj_zzz <= targetMaxHeight)
 						{
 							++visible;
-							if (exposedVoxels) exposedVoxels->push_back(scanVoxel);
+							pointFound = true;
+							if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
+//							Log(LOG_INFO) << scanVoxel.x << " " << scanVoxel.y << " - visible";
 						}
+//						else
+//							Log(LOG_INFO) << scanVoxel.x << " " << scanVoxel.y << " - not visible";
 					}
 				}
 			}
 		}
 	}
+
+//	if (_save->getDebugMode())
+//	{
+//		std::ostringstream ss;
+//		ss << "H: " << heightRange << " W: " << unitRadius*2+1 << " Float: " << targetMinHeight;
+//		ss << " Exposure: " << visible << "/" << total << " = " << result.value*100 << "%";
+//		_save->getBattleState()->debug(ss.str());
+//	}
+
 	double exposure = (double)visible / total;
 	return exposure;
 }
@@ -2126,13 +2181,13 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	if (unitRadius > MAX_UNIT_RADIUS)
-		unitRadius = MAX_UNIT_RADIUS;
+	if (unitRadius > TileEngine::maxSmallUnitRadius)
+		unitRadius = TileEngine::maxSmallUnitRadius;
 
-	// vector manipulation to make scan work in view-space
+		   // vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
-	int sliceTargetsX[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
-	int sliceTargetsY[ MAX_UNIT_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsX[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
+	int sliceTargetsY[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
@@ -2164,7 +2219,6 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-//			if (i < (heightRange-1) && j==unitRadius) break; //skip unnecessary checks (left from old code, should be modified or deleted)
 			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
 			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
 			_trajectory.clear();

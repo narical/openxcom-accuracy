@@ -1384,12 +1384,14 @@ void Map::drawTerrain(Surface *surface)
 											int max_voxels = 0;
 											int distance_in_tiles = 0;
 											Tile *target = nullptr;
+											std::vector<Position> exposedVoxels;
+											exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 
 											if (unit) // Targeting unit
 											{
 												double max_exposure = 0.0;
-												std::vector<Position> exposedVoxels;
 												target = unit->getTile();
+
 												BattleAction temp_action = *action;
 
 												for ( const auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
@@ -1399,7 +1401,7 @@ void Map::drawTerrain(Surface *surface)
 													Position origin = _save->getTileEngine()->getOriginVoxel(temp_action, shooterUnit->getTile());
 													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, &exposedVoxels);
 
-													if ((int)exposedVoxels.size() >  max_voxels )
+													if ((int)exposedVoxels.size() >  max_voxels)
 													{
 														max_exposure = exposure;
 														max_voxels = exposedVoxels.size();

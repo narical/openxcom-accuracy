@@ -51,6 +51,10 @@ enum LightLayers : Uint8;
 class TileEngine
 {
 public:
+    /// Maximum radius of units
+    static constexpr int maxSmallUnitRadius = 5;
+    static constexpr int maxBigUnitRadius = 15;
+
 	/// Value representing non-existing position.
 	static constexpr Position invalid = { -1, -1, -1 };
 
