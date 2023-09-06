@@ -433,7 +433,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			{
 				tempVoxels.clear();
 				_action.relativeOrigin = rel_pos;
-				tempExposure = _save->getTileEngine()->checkVoxelExposure( &origin,targetTile,shooterUnit, &tempVoxels );
+				tempExposure = _save->getTileEngine()->checkVoxelExposure( &origin,targetTile,shooterUnit, &tempVoxels, false );
 
 				if ( tempVoxels.size() > exposedVoxelsCount ) // We've found better LOF !
 				{

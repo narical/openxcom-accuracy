@@ -1994,7 +1994,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  * @param exposedVoxels [Optional] Array of positions of exposed voxels (function fills it)
  * @return Degree of exposure (as percent).
  */
-double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
+double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels, bool isSimpleMode)
 {
 	std::vector<Position> _trajectory;
 	Position targetVoxel = tile->getPosition().toVoxel();
@@ -2072,6 +2072,9 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int total=0;
 	int visible=0;
 
+	int simplifyDivider = unitRadius;
+	if (targetSize == 2) simplifyDivider = 4;
+
 	for (int height = heightRange; height > 0; height-=2)
 	{
 		// For units with odd height, bottom slice should be 2 instead of 1, which is bugged(?) for raycasting
@@ -2084,6 +2087,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		int end_pos = start_pos + unitRadius*2;
 		for (int j = start_pos; j <= end_pos; ++j)
 		{
+			if (isSimpleMode && (height+j) % simplifyDivider != 0 ) continue;
+
 			++total;
 			scanVoxel.x=targetVoxel.x + sliceTargetsX[j];
 			scanVoxel.y=targetVoxel.y + sliceTargetsY[j];
