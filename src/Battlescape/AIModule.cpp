@@ -4927,7 +4927,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 			else
 			{
-				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit, false);
+				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
 				if (targetQuality == 0)
 					return 0;
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))
@@ -6341,7 +6341,7 @@ bool AIModule::wantToRun()
 {
 	if (!Options::strafe || !_unit->getArmor()->allowsRunning())
 		return false;
-	if ((float)_unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
+	if (_unit->getTimeUnits() > 0 && (float) _unit->getEnergy() / _unit->getTimeUnits() > (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent)
 	{
 		if (_traceAI)
 			Log(LOG_INFO) << "Wants to run since energy is decent: " << (float)_unit->getEnergy() / _unit->getTimeUnits() << " / " << (float)_unit->getArmor()->getMoveCostRun().EnergyPercent / _unit->getArmor()->getMoveCostRun().TimePercent;

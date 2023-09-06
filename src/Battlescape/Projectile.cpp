@@ -417,16 +417,14 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		if (targetUnit)
 		{
-//			Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << targetTile->getPosition();
-
 			int unitSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( unitSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
 			exposedVoxels.reserve( heightCount * widthCount );
 			_action.relativeOrigin = BattleActionOrigin::CENTRE;
 			exposedVoxels.clear();
-			origin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
 
+			origin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
 			exposure = _save->getTileEngine()->checkVoxelExposure( &origin, targetTile, shooterUnit, true, &exposedVoxels, false );
 			exposedVoxelsCount = exposedVoxels.size();
 

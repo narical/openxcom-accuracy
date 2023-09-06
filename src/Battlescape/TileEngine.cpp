@@ -2044,7 +2044,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
 
-	for ( int testRadius = unitRadius; testRadius > 0; --testRadius) // slice for every voxel of radius!
+	for ( int testRadius = unitRadius; testRadius > 0; --testRadius) // slice for every voxel of a radius!
 	{
 		double normal = testRadius/sqrt((double)(relPos.x*relPos.x + relPos.y*relPos.y));
 		int relX = (int)floor(((double)relPos.y)*normal+0.5);
