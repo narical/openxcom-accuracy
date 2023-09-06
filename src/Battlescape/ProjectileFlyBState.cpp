@@ -324,43 +324,19 @@ void ProjectileFlyBState::init()
 			else
 			{
 				bool foundLoF = false;
+				foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
 
-				if (Options::battleRealisticAccuracy)
+				if (!foundLoF && Options::oxceEnableOffCentreShooting)
 				{
-					foundLoF = true;
-					_originVoxel = originVoxel;
-
-					BattleUnit *targetUnit = targetTile->getUnit();
-
-					if (targetUnit)
+					// If we can't target from the standard shooting position, try a bit left and right from the centre.
+					for (auto& rel_pos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
 					{
-						int targetMinHeight = targetUnit->getPosition().toVoxel().z - targetTile->getTerrainLevel();
-						targetMinHeight += targetUnit->getFloatHeight();
-						int targetHeightRange = ( targetUnit->isOut() ? 12 : targetUnit->getHeight() );
-						int targetMiddleZ = ( targetMinHeight * 2 + targetHeightRange ) / 2;
-						_targetVoxel = _action.target.toVoxel() + Position{8, 8, targetMiddleZ};
-					}
-					else
-						_targetVoxel = _action.target.toVoxel() + Position{8, 8, 0};
-
-
-				}
-				else // "classic" XCOM
-				{
-					foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
-
-					if (!foundLoF && Options::oxceEnableOffCentreShooting)
-					{
-						// If we can't target from the standard shooting position, try a bit left and right from the centre.
-						for (auto& rel_pos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+						_action.relativeOrigin = rel_pos;
+						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
+						foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
+						if (foundLoF)
 						{
-							_action.relativeOrigin = rel_pos;
-							originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
-							foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
-							if (foundLoF)
-							{
-								break;
-							}
+							break;
 						}
 					}
 				}
@@ -472,11 +448,9 @@ bool ProjectileFlyBState::createNewProjectile()
 
 		_action.waypoints.pop_back();
 	}
-	Log(LOG_INFO) << "1) _originVoxel: " << _originVoxel;
 
 	// create a new projectile
 	Projectile *projectile = new Projectile(_parent->getMod(), _parent->getSave(), _action, _origin, _targetVoxel, _ammo);
-	Log(LOG_INFO) << "2) _originVoxel: " << _originVoxel;
 
 	// add the projectile on the map
 	_parent->getMap()->setProjectile(projectile);
@@ -566,15 +540,10 @@ bool ProjectileFlyBState::createNewProjectile()
 	}
 	else
 	{
-		Log(LOG_INFO) << "3) _originVoxel: " << _originVoxel;
 
-		if (_originVoxel != TileEngine::invalid && !Options::battleRealisticAccuracy)
+		if (_originVoxel != TileEngine::invalid)
 		{
 			_projectileImpact = projectile->calculateTrajectory(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider, _originVoxel, false);
-		}
-		else if ( Options::battleRealisticAccuracy ) // In RA mod, weapon's barrel shifted inside unit's radius
-		{
-			_projectileImpact = projectile->calculateTrajectory(BattleUnit::getFiringAccuracy(attack, _parent->getMod()) / accuracyDivider, _originVoxel, true);
 		}
 		else
 		{

@@ -415,7 +415,7 @@ static bool positionInRangeXY(Position a, Position b, int diff)
 
 namespace
 {
-
+static const std::vector<std::string> shootingRelativeOriginsDesc = {"Center view", "Left shift", "Right shift"};
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
 
 int getArrowBobForFrame(int frame)
@@ -1392,25 +1392,17 @@ void Map::drawTerrain(Surface *surface)
 												double max_exposure = 0.0;
 												target = unit->getTile();
 
-												BattleAction temp_action = *action;
+												exposedVoxels.clear();
+												Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
+												double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, false, &exposedVoxels, false);
+												max_exposure = exposure;
+												max_voxels = exposedVoxels.size();
 
-												for ( const auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
-												{
-													exposedVoxels.clear();
-													temp_action.relativeOrigin = rel_pos;
-													Position origin = _save->getTileEngine()->getOriginVoxel(temp_action, shooterUnit->getTile());
-													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, &exposedVoxels);
 
-													if ((int)exposedVoxels.size() >  max_voxels)
-													{
-														max_exposure = exposure;
-														max_voxels = exposedVoxels.size();
-													}
-												}
 												accuracy = (int)ceil((double)accuracy * max_exposure);
 											}
 											else
-												target = _save->getTile(Position(itX, itY,itZ)); // We are targeting empty terrain tile
+												target = _save->getTile(Position(itX, itY, itZ)); // We are targeting empty terrain tile
 
 											if ( unit && max_voxels == 0)
 											{

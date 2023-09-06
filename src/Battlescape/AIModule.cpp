@@ -4927,7 +4927,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 			else
 			{
-				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
+				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit, false);
 				if (targetQuality == 0)
 					return 0;
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))

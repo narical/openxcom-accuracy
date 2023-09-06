@@ -1994,25 +1994,19 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  * @param exposedVoxels [Optional] Array of positions of exposed voxels (function fills it)
  * @return Degree of exposure (as percent).
  */
-double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, std::vector<Position> *exposedVoxels)
+double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug, std::vector<Position> *exposedVoxels, bool isSimpleMode)
 {
-//	Log(LOG_INFO) << "inside checkVoxelExposure()";
-//	Log(LOG_INFO) << "originVoxel: " << *originVoxel << " tile: " << tile->getPosition();
-
+	isDebug = isDebug && _save->getDebugMode();
 	std::vector<Position> _trajectory;
-//	Position targetVoxel = tile->getPosition().toVoxel();
 	Position scanVoxel;
 	BattleUnit *targetUnit = tile->getUnit();
 	if (targetUnit == nullptr) return 0; //no unit in this tile, even if it elevated and appearing in it.
 	if (targetUnit == excludeUnit) return 0; //skip self
 	Position targetVoxel = targetUnit->getPosition().toVoxel();
-//	Log(LOG_INFO) << "targetVoxel position from input tile: " << targetVoxel;
-//	Log(LOG_INFO) << "unit position from input tile: " << targetVoxel.toTile();
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
 	targetMinHeight += targetUnit->getFloatHeight();
 
-	// if there is an other unit on target tile, we assume we want to check against this unit's height
 	int heightRange;
 	if (!targetUnit->isOut())
 		heightRange = targetUnit->getHeight();
@@ -2023,8 +2017,6 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 	int unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
 	int targetSize = targetUnit->getArmor()->getSize();
-	int xOffset = targetUnit->getPosition().x - tile->getPosition().x;
-	int yOffset = targetUnit->getPosition().y - tile->getPosition().y;
 
 	if (targetSize == 1)
 	{
@@ -2040,10 +2032,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	else
 		assert(false); // Crash immediately if someone, someday makes a unit of other size
 
-//	Log(LOG_INFO) << "Modified targetVoxel: " << targetVoxel;
-//	Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
-//	Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
-//	Log(LOG_INFO) << "Target Radius: " << unitRadius;
+	int unitMin_X = targetVoxel.x - unitRadius - 1;
+	int unitMin_Y = targetVoxel.y - unitRadius - 1;
+	int unitMax_X = targetVoxel.x + unitRadius + 1;
+	int unitMax_Y = targetVoxel.y + unitRadius + 1;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	int sliceTargetsX[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
@@ -2064,12 +2056,9 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		sliceTargetsY[ unitRadius + testRadius ] = -relY;
 	}
 
-//	for ( int i = 0; i <= TileEngine::maxBigUnitRadius*2; ++i ) Log(LOG_INFO) << "Slice X: " << sliceTargetsX[i] << " Y: " << sliceTargetsY[i];
-
 	std::vector<std::string> scanArray;
 	scanArray.reserve(24);
-	std::vector<char> symbols{'.','_','/','\\','O','#','x'};
-
+	const char symbols[] = {'.','_','/','\\','O','@','x'};
 
 	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
@@ -2080,88 +2069,67 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	// levels for checking = unit height range / 2 + 1
 	int bottomHeight = ( targetMinHeight < 2 ? 2 : targetMinHeight ); // can't check height 0-1 (bug?)
 
-	for (int height = targetMaxHeight; height >= bottomHeight; height -= 2) //====================================================== HEIGHT
+	int simplifyDivider = unitRadius;
+	if (targetSize == 2) simplifyDivider = 4;
+
+	for (int height = targetMaxHeight; height >= bottomHeight; height -= 2)
 	{
 		std::string scanLine;
-		// For units with odd max height, bottom slice should be 2 instead of 0 or 1, which are bugged(?) for raycasting
-		// using sliceTargetsZ instead of "if (height == 1) height = 2" to reduce branching
-//		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
-
-		scanVoxel.z = height; // = targetMinHeight + sliceTargetsZ[ height ];
-//		Log(LOG_INFO) << "----=={ " << height << " }==----";
+		scanVoxel.z = height;
 
 		int start_pos = (TileEngine::maxBigUnitRadius*2 + 1)/2 - unitRadius; // Only middle of the array is used for small units
 		int end_pos = start_pos + unitRadius*2;
-		for (int j = start_pos; j <= end_pos; ++j) //=============================================================================== LEFT TO RIGHT
+		for (int j = start_pos; j <= end_pos; ++j)
 		{
+			if (isSimpleMode && (height + j) % simplifyDivider != 0)
+			{
+				scanLine += '.';
+				continue; // scan every N-th voxel
+			}
+
 			++total;
 			scanVoxel.x = targetVoxel.x + sliceTargetsX[j];
 			scanVoxel.y = targetVoxel.y + sliceTargetsY[j];
-//			Log(LOG_INFO) << "Scan voxel: " << scanVoxel << " SliceTarget: " << sliceTargetsX[j] << " " << sliceTargetsY[j];
 
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
 			{
-				bool pointFound = false;
-				for (int x = 0; x <= targetSize-1; ++x) //========================================================================== CHECK 4 TILES FOR BIG UNITS
+				int impactX = _trajectory.at(0).x;
+				int impactY = _trajectory.at(0).y;
+				int impactZ = _trajectory.at(0).z;
+
+				if (impactX >= unitMin_X && impactX <= unitMax_X &&
+					impactY >= unitMin_Y && impactY <= unitMax_Y &&
+					impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
 				{
-					if (pointFound) break; // we found the point and can skip other tiles
-					for (int y = 0; y <= targetSize-1; ++y)
-					{
-//						Log(LOG_INFO) << "Scanvoxel: " << scanVoxel << " Impact: (" << _trajectory.at(0);
-
-						if (pointFound) break; // we found the point and can skip other tiles
-						int xxx = (scanVoxel.x/16) + x + xOffset;
-						int yyy = (scanVoxel.y/16) + y + yOffset;
-						int traj_xxx = _trajectory.at(0).x/16;
-						int traj_yyy = _trajectory.at(0).y/16;
-						int traj_zzz = _trajectory.at(0).z;
-
-						//voxel of hit must be inside of scanned box
-//						if (_trajectory.at(0).x/16 == (scanVoxel.x/16) + x + xOffset &&
-//							_trajectory.at(0).y/16 == (scanVoxel.y/16) + y + yOffset &&
-//							_trajectory.at(0).z >= targetMinHeight &&
-//							_trajectory.at(0).z <= targetMaxHeight)
-
-						if (traj_xxx == xxx &&
-							traj_yyy == yyy &&
-							traj_zzz >= targetMinHeight &&
-							traj_zzz <= targetMaxHeight)
-						{
-							++visible;
-							pointFound = true;
-							if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
-//							Log(LOG_INFO) << scanVoxel << " - visible";
-						}
-//						else
-//							Log(LOG_INFO) << "Scanvoxel: " << scanVoxel << " Impact: (" << _trajectory.at(0);
-//							Log(LOG_INFO) << scanVoxel << " - not visible";
-					}
+					++visible;
+					if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
+					scanLine += '#';
 				}
-				scanLine += ( pointFound ? '#' : '?' );
 			}
-			else if ( test == V_EMPTY )
+			else
 			{
-				--total;
-				scanLine += symbols[ test + 1 ];
+				if ( test == V_EMPTY )	--total;
+				scanLine += symbols[ test+1 ]; // V_EMPTY = -1
 			}
-
 		}
 		scanArray.emplace_back( scanLine );
 	}
 	double exposure = (double)visible / total;
 
-	if (_save->getDebugMode())
+	if (isDebug)
 	{
-	for ( const auto &line : scanArray )
-		Log(LOG_INFO) << line;
+		Log(LOG_INFO) << " ";
+		for ( const auto &line : scanArray )
+			Log(LOG_INFO) << line;
+		Log(LOG_INFO) << " ";
+
 //		std::ostringstream ss;
 //		ss << "H: " << heightRange << " W: " << unitRadius*2+1 << " Float: " << targetMinHeight;
 //		ss << " Exposure: " << visible << "/" << total << " = " << exposure*100 << "%";
 //		_save->getBattleState()->debug(ss.str());
 	}
-
 	return exposure;
 }
 
@@ -5807,11 +5775,11 @@ int TileEngine::getArcDirection(int directionA, int directionB) const
  */
 Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 {
-	int unit_size = action.actor->getArmor()->getSize();
-	int weapon_shift = 4; // Original weapon position shift from the top of units head
+	int unitSize = action.actor->getArmor()->getSize();
+	int weaponShift = 4; // Original weapon position shift from the top of units head
 
-	if (Options::battleRealisticAccuracy && unit_size == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled())) // If small unit goes precise aiming or kneeling
-		weapon_shift = 1; // ...move weapon to the eyes level
+	if (Options::battleRealisticAccuracy && unitSize == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled())) // If small unit goes precise aiming or kneeling
+		weaponShift = 1; // ...move weapon to the eyes level
 
 	if (!tile)
 	{
@@ -5836,7 +5804,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		else
 		{
-			originVoxel.z -= weapon_shift;
+			originVoxel.z -= weaponShift;
 		}
 
 		if (originVoxel.z >= (origin.z + 1)*24)
@@ -5851,62 +5819,34 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				{
 					originVoxel.z--;
 				}
-				originVoxel.z -= weapon_shift;
+				originVoxel.z -= weaponShift;
 			}
 		}
 		int direction = getDirectionTo(origin, action.target);
 
-		if (Options::battleRealisticAccuracy)
+		const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
+		const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
+
+		// Offset for different relativeOrigin values
+		switch (action.relativeOrigin)
 		{
-			const int dirXshift[8] = {6, 6, 8,10,10,10, 8, 6};
-			const int dirYshift[8] = {8, 6, 6, 6, 8,10,10,10};
+		case BattleActionOrigin::CENTRE:
+			// Standard offset.
+			originVoxel.x += dirXshift[ direction ] * unitSize;
+			originVoxel.y += dirYshift[ direction ] * unitSize;
+			break;
 
-			// Offset for different relativeOrigin values
-			switch (action.relativeOrigin)
-			{
-			case BattleActionOrigin::CENTRE:
-				originVoxel.x += 8 * unit_size; // Shoot straight from the eye point
-				originVoxel.y += 8 * unit_size; // moving barrel in front of unit breaks LOF near walls with existing LOS above them
-				break;
+			// 2:1 Weighted average of the standard offset and a rotation, either left or right.
+		case BattleActionOrigin::LEFT:
+			originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 7) % 8]) * unitSize + 1) / 3;
+			originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 7) % 8]) * unitSize + 1) / 3;
+			break;
 
-			case BattleActionOrigin::LEFT:
-				originVoxel.x += dirXshift[ direction ] * unit_size;
-				originVoxel.y += dirYshift[ direction ] * unit_size;
-				break;
-
-			case BattleActionOrigin::RIGHT:
-				direction = (direction + 4) % 8;
-				originVoxel.x += dirXshift[ direction ] * unit_size;
-				originVoxel.y += dirYshift[ direction ] * unit_size;
-				break;
-			};
-		}
-		else // "classic" XCOM
-		{
-			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
-			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
-
-			// Offset for different relativeOrigin values
-			switch (action.relativeOrigin)
-			{
-			case BattleActionOrigin::CENTRE:
-				// Standard offset.
-				originVoxel.x += dirXshift[ direction ] * unit_size;
-				originVoxel.y += dirYshift[ direction ] * unit_size;
-				break;
-
-				// 2:1 Weighted average of the standard offset and a rotation, either left or right.
-			case BattleActionOrigin::LEFT:
-				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction - 1) % 8]) * unit_size + 1) / 3;
-				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction - 1) % 8]) * unit_size + 1) / 3;
-				break;
-
-			case BattleActionOrigin::RIGHT:
-				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 1) % 8]) * unit_size + 1) / 3;
-				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 1) % 8]) * unit_size + 1) / 3;
-				break;
-			};
-		}
+		case BattleActionOrigin::RIGHT:
+			originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 1) % 8]) * unitSize + 1) / 3;
+			originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 1) % 8]) * unitSize + 1) / 3;
+			break;
+		};
 	}
 	else
 	{
