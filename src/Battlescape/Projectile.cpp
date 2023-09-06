@@ -484,11 +484,13 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		}
 
 		// If there's no target unit - do nothing, leave target voxel "as is", as we've successfully hit the terrain, yay!
+		if (!targetTile) Log(LOG_INFO) << " No target tile!";
+
 		if (hit_successful)
 		{
 			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 		}
-		else // We missed, time to find a line of fire to perform a miss with a realistic deviation
+		else if (targetTile) // We missed, time to find a line of fire to perform a miss with a realistic deviation
 		{
 			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
 			int unitRadius = 4; // and this radius
