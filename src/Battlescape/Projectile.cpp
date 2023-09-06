@@ -570,6 +570,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				break;
 			case BA_AUTOSHOT:
 				accuracyDivider = 3;
+				if (weapon->isTwoHanded()) accuracyDivider = 4; // Better autoshot accuracy with two-handers
 				break;
 			default:
 				break;
