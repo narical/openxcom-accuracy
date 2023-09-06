@@ -1280,6 +1280,8 @@ void Map::drawTerrain(Surface *surface)
 							// UFO extender accuracy: display adjusted accuracy value on crosshair in real-time.
 							if ((_cursorType == CT_AIM || _cursorType == CT_PSI || _cursorType == CT_WAYPOINT) && Options::battleUFOExtenderAccuracy)
 							{
+								bool cacheIsUpdated = false;
+
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
 								std::ostringstream ss;
@@ -1350,6 +1352,7 @@ void Map::drawTerrain(Surface *surface)
 											_cacheIsCtrlPressed = isCtrlPressed;
 											_cacheCursorPosition = Position(itX, itY, itZ);
 											_cacheHasLOS = hasLOS ? 1 : 0;
+											cacheIsUpdated = true;
 										}
 
 										if (!hasLOS)
@@ -1369,7 +1372,9 @@ void Map::drawTerrain(Surface *surface)
 										if (Position(itX, itY, itZ) == _cacheCursorPosition
 											&& isCtrlPressed == _cacheIsCtrlPressed
 											&& isKneeled == _cacheIsKneeled
-											&& _cacheAccuracy != -1)
+											&& _cacheAccuracy != -1
+											&& !cacheIsUpdated)
+
 										{
 											// use cached result
 											accuracy = _cacheAccuracy;
@@ -1456,10 +1461,19 @@ void Map::drawTerrain(Surface *surface)
 											}
 
 											// remember
-											_cacheIsCtrlPressed = isCtrlPressed;
 											_cacheCursorPosition = Position(itX, itY, itZ);
 											_cacheAccuracy = accuracy;
 											_cacheIsKneeled = isKneeled;
+										}
+									}
+									else
+									{
+										bool outOfRange = weapon->isOutOfRange(distanceSq);
+										// zero accuracy or out of range: set it red.
+										if (accuracy <= 0 || outOfRange)
+										{
+											accuracy = 0;
+											_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
 										}
 									}
 									ss << accuracy;
