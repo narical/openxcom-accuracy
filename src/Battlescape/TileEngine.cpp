@@ -1998,7 +1998,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 {
 	std::vector<Position> _trajectory;
 	Position targetVoxel = tile->getPosition().toVoxel();
-	Log(LOG_INFO) << "Target voxel 1: " << targetVoxel;
+	//Log(LOG_INFO) << "Target voxel 1: " << targetVoxel;
 	Position scanVoxel;
 	BattleUnit *targetUnit = tile->getUnit();
 	if (targetUnit == nullptr) return 0; //no unit in this tile, even if it elevated and appearing in it.
@@ -2020,11 +2020,11 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int targetSize = targetUnit->getArmor()->getSize();
 	int xOffset = targetUnit->getPosition().x - tile->getPosition().x;
 	int yOffset = targetUnit->getPosition().y - tile->getPosition().y;
-	Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << tile->getPosition();
+	//Log(LOG_INFO) << "Unit: " << targetUnit->getPosition() << " Tile: " << tile->getPosition();
 
 
 	targetVoxel = targetUnit->getPosition().toVoxel();
-	Log(LOG_INFO) << "Target voxel 2: " << targetVoxel;
+	//Log(LOG_INFO) << "Target voxel 2: " << targetVoxel;
 
 	if (targetSize == 1)
 	{
@@ -2040,10 +2040,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	else
 		assert(false); // Crash immediately if someone, someday makes a unit of other size
 
-	Log(LOG_INFO) << "Target voxel 3: " << targetVoxel;
-	Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
-	Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
-	Log(LOG_INFO) << "Target Radius: " << unitRadius << " Max height: " << targetMaxHeight;
+	//Log(LOG_INFO) << "Target voxel 3: " << targetVoxel;
+	//Log(LOG_INFO) << "Offset X: " << xOffset << " Offset Y: " << yOffset;
+	//Log(LOG_INFO) << "Target min height: " << targetMinHeight << " Max height: " << targetMaxHeight;
+	//Log(LOG_INFO) << "Target Radius: " << unitRadius << " Max height: " << targetMaxHeight;
 
 
 
@@ -2081,7 +2081,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		// using sliceTargetsZ instead of "if (height == 1) height = 2" to reduce branching
 		static constexpr int sliceTargetsZ[Position::TileZ] = {0,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 		scanVoxel.z = targetMinHeight + sliceTargetsZ[ height ];
-		Log(LOG_INFO) << "----=={ " << scanVoxel.z << " }==----";
+		//Log(LOG_INFO) << "----=={ " << scanVoxel.z << " }==----";
 
 		int start_pos = (TileEngine::maxBigUnitRadius*2 + 1)/2 - unitRadius; // Only middle of the array is used for small units
 		int end_pos = start_pos + unitRadius*2;
