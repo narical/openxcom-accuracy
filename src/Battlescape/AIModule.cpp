@@ -3284,7 +3284,7 @@ void AIModule::brutalThink(BattleAction* action)
 			originAction.target = unitToWalkTo->getPosition();
 			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 			Position ref;
-			iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+			iHaveLof = _save->getTileEngine()->checkVoxelExposure(&origin, unitToWalkTo->getTile(), _unit) > 0;
 		}
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
@@ -3485,7 +3485,7 @@ void AIModule::brutalThink(BattleAction* action)
 							{
 								originAction.target = unit->getPosition();
 								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), &ref, _unit, false, unit);
+								lineOfFire = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit) > 0;
 							}
 							if (!_unit->isCheatOnMovement() && !lineOfFire)
 								lineOfFire = clearSight(pos, unitPosition);
@@ -3520,7 +3520,7 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						originAction.target = unitToWalkTo->getPosition();
 						Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-						lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), &ref, _unit, false, unitToWalkTo);
+						lineOfFire = _save->getTileEngine()->checkVoxelExposure(&origin, unitToWalkTo->getTile(), _unit) > 0;
 					}
 					if (!_unit->isCheatOnMovement() && !lineOfFire)
 						lineOfFire = clearSight(pos, targetPosition);
@@ -3949,8 +3949,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				originAction.target = target->getPosition();
 				Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
-				Position ref;
-				haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &ref, _unit, false, target);
+				haveLof = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit) > 0;
 			}
 		}
 		if (!haveLof)
@@ -4528,19 +4527,6 @@ bool AIModule::brutalPsiAction()
 					}
 					// when we rolled a 55 or higher on our test-attempt, we are guaranteed to hit which maximizes the successMod's impact on the final score
 					psiActionScore = std::min(psiActionScore, 55.0f) / 55.0f;
-
-					// For everyone unit this unit can see we increase the score, regardless of faction
-					Position origin = _save->getTileEngine()->getSightOriginVoxel(victim);
-					Position targetReference;
-					for (BattleUnit *target : *(_save->getUnits()))
-					{
-						if (target->isOut())
-							continue;
-						if (Position::distance2d(victim->getPosition(), target->getPosition()) > _save->getMod()->getMaxViewDistance())
-							continue;
-						if (_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), &targetReference, victim, false, target))
-							psiActionScore += 0.1;
-					}
 
 					// different bonus per attack.
 					if (cost[j].type == BA_MINDCONTROL)
