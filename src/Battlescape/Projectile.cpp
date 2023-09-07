@@ -484,7 +484,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		}
 
 		// If there's no target unit - do nothing, leave target voxel "as is", as we've successfully hit the terrain, yay!
-		if (!targetTile) Log(LOG_INFO) << " No target tile!";
+		if (!targetTile)
+		{
+			Log(LOG_INFO) << " No target tile!";
+		}
 
 		if (hit_successful)
 		{
@@ -497,7 +500,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			int targetSize = 1; // and targeting to a single tile by default
 
 			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
-			int unitMin_X, unitMin_Y, unitMax_X, unitMax_Y; //Unit's bounds
+			int unitMin_X{0}, unitMin_Y{0}, unitMax_X{0}, unitMax_Y{0}; //Unit's bounds
 
 			if (targetUnit) // Finding boundaries of target unit
 			{
