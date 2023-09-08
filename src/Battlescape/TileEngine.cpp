@@ -5757,8 +5757,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 
 			// 2:1 Weighted average of the standard offset and a rotation, either left or right.
 		case BattleActionOrigin::LEFT:
-			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
+			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction + 7) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
+			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction + 7) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
 			break;
 
 		case BattleActionOrigin::RIGHT:
