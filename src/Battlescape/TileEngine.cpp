@@ -2077,9 +2077,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		std::string scanLine;
 		scanVoxel.z = height;
 
-		int start_pos = (TileEngine::maxBigUnitRadius*2 + 1)/2 - unitRadius; // Only middle of the array is used for small units
-		int end_pos = start_pos + unitRadius*2;
-		for (int j = start_pos; j <= end_pos; ++j)
+		for (int j = 0; j <= unitRadius*2; ++j)
 		{
 			if (isSimpleMode && (height + j) % simplifyDivider != 0)
 			{
@@ -2124,12 +2122,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		for ( const auto &line : scanArray )
 			Log(LOG_INFO) << line;
 		Log(LOG_INFO) << " ";
-
-//		std::ostringstream ss;
-//		ss << "H: " << heightRange << " W: " << unitRadius*2+1 << " Float: " << targetMinHeight;
-//		ss << " Exposure: " << visible << "/" << total << " = " << exposure*100 << "%";
-//		_save->getBattleState()->debug(ss.str());
 	}
+
 	return exposure;
 }
 
