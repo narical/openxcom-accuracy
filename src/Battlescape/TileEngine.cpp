@@ -5824,28 +5824,56 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		int direction = getDirectionTo(origin, action.target);
 
-		const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
-		const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
-
-		// Offset for different relativeOrigin values
-		switch (action.relativeOrigin)
+		if (Options::battleRealisticAccuracy)
 		{
-		case BattleActionOrigin::CENTRE:
-			// Standard offset.
-			originVoxel.x += dirXshift[ direction ] * unitSize;
-			originVoxel.y += dirYshift[ direction ] * unitSize;
-			break;
+			const int dirXshift[8] = {6, 6, 8,10,10,10, 8, 6};
+			const int dirYshift[8] = {8, 6, 6, 6, 8,10,10,10};
 
-			// 2:1 Weighted average of the standard offset and a rotation, either left or right.
-		case BattleActionOrigin::LEFT:
-			originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 7) % 8]) * unitSize + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 7) % 8]) * unitSize + 1) / 3;
-			break;
+			// Offset for different relativeOrigin values
+			switch (action.relativeOrigin)
+			{
+			case BattleActionOrigin::CENTRE:
+				originVoxel.x += 8 * unitSize; // Shoot straight from the eye point
+				originVoxel.y += 8 * unitSize; // moving barrel in front of unit breaks LOF near walls with existing LOS above them
+				break;
 
-		case BattleActionOrigin::RIGHT:
-			originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 1) % 8]) * unitSize + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 1) % 8]) * unitSize + 1) / 3;
-			break;
+			case BattleActionOrigin::LEFT:
+				originVoxel.x += dirXshift[ direction ] * unitSize;
+				originVoxel.y += dirYshift[ direction ] * unitSize;
+				break;
+
+			case BattleActionOrigin::RIGHT:
+				direction = (direction + 4) % 8;
+				originVoxel.x += dirXshift[ direction ] * unitSize;
+				originVoxel.y += dirYshift[ direction ] * unitSize;
+				break;
+			};
+		}
+		else
+		{
+			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
+			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
+
+			// Offset for different relativeOrigin values
+			switch (action.relativeOrigin)
+			{
+			case BattleActionOrigin::CENTRE:
+				// Standard offset.
+				originVoxel.x += dirXshift[ direction ] * unitSize;
+				originVoxel.y += dirYshift[ direction ] * unitSize;
+				break;
+
+				// 2:1 Weighted average of the standard offset and a rotation, either left or right.
+			case BattleActionOrigin::LEFT:
+				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 7) % 8]) * unitSize + 1) / 3;
+				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 7) % 8]) * unitSize + 1) / 3;
+				break;
+
+			case BattleActionOrigin::RIGHT:
+				originVoxel.x += ((2 * dirXshift[ direction ] + dirXshift[(direction + 1) % 8]) * unitSize + 1) / 3;
+				originVoxel.y += ((2 * dirYshift[ direction ] + dirYshift[(direction + 1) % 8]) * unitSize + 1) / 3;
+				break;
+			};
 		};
 	}
 	else
