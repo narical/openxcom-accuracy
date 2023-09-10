@@ -420,13 +420,29 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			int unitSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( unitSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
-			exposedVoxels.reserve( heightCount * widthCount );
-			_action.relativeOrigin = BattleActionOrigin::CENTRE;
-			exposedVoxels.clear();
 
-			origin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-			exposure = _save->getTileEngine()->checkVoxelExposure( &origin, targetTile, shooterUnit, true, &exposedVoxels, false );
-			exposedVoxelsCount = exposedVoxels.size();
+			std::vector<Position> tempVoxels;
+			tempVoxels.reserve( heightCount * widthCount );
+			exposedVoxels.reserve( heightCount * widthCount );
+
+			BattleActionOrigin selectedOrigin = BattleActionOrigin::CENTRE;
+
+			for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+			{
+				tempVoxels.clear();
+				_action.relativeOrigin = relPos;
+				Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
+				double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, false, &tempVoxels, false);
+
+				if (tempVoxels.size() > exposedVoxelsCount)
+				{
+					exposedVoxelsCount = tempVoxels.size();
+					exposure = tempExposure;
+					selectedOrigin = relPos;
+					exposedVoxels.swap( tempVoxels );
+				}
+			}
+			_action.relativeOrigin = selectedOrigin;
 
 			real_accuracy = (int)ceil((double)accuracy * exposure * 100);
 		}
@@ -441,8 +457,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			int deltaX = origin.x/16 - targetTile->getPosition().x;
 			int deltaY = origin.y/16 - targetTile->getPosition().y;
-			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;
-			distance_in_tiles = (int)floor(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ))); // Distance in cube 16x16x16 tiles!
+			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
+
+			distance_in_tiles = (int)floor(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
 
 			if (distance_in_tiles == 0)
 				real_accuracy = 100;
@@ -602,6 +619,15 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 					trajectory.clear();
 					int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
+
+					if (!trajectory.empty() && distance_in_tiles > 1)
+					{
+						// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
+						if (Position::distanceSq( origin, trajectory.at(0)) < 3*30*30) // Almost 2 tiles diagonally
+						{
+							continue; // No accidental hits please!
+						}
+					}
 					if (test != V_UNIT) // We successfully missed the target, use the point we found
 					{
 						*target = deviate;
