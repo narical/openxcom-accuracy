@@ -1381,30 +1381,38 @@ void Map::drawTerrain(Surface *surface)
 										}
 										else
 										{
-											int max_voxels = 0;
+											int maxVoxels = 0;
+											double maxExposure = 0.0;
 											int distance_in_tiles = 0;
 											Tile *target = nullptr;
 											std::vector<Position> exposedVoxels;
-											exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 
 											if (unit) // Targeting unit
 											{
-												double max_exposure = 0.0;
+												exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
+												BattleActionOrigin tempOrigin = action->relativeOrigin;
 
-												exposedVoxels.clear();
-												Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
-												double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, false, &exposedVoxels, false);
-												max_exposure = exposure;
-												max_voxels = exposedVoxels.size();
+												for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+												{
+													exposedVoxels.clear();
+													action->relativeOrigin = relPos;
+													Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
+													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, target, shooterUnit, false, &exposedVoxels, false);
 
-
-												accuracy = (int)ceil((double)accuracy * max_exposure);
+													if ((int)exposedVoxels.size() > maxVoxels)
+													{
+														maxVoxels = exposedVoxels.size();
+														maxExposure = exposure;
+													}
+												}
+												action->relativeOrigin = tempOrigin;
+												accuracy = (int)ceil((double)accuracy * maxExposure);
 											}
 											else
 												target = _save->getTile(Position(itX, itY, itZ)); // We are targeting empty terrain tile
 
-											if ( unit && max_voxels == 0)
+											if ( unit && maxVoxels == 0)
 											{
 												accuracy = 0;
 											}
@@ -1439,7 +1447,7 @@ void Map::drawTerrain(Surface *surface)
 												if (accuracy < 5) // Rule for difficult/long-range shots
 												{
 													accuracy = 5; // If there's LOF - accuracy should be at least 5%
-													if (max_voxels > 0 && max_voxels < 5) accuracy = max_voxels; // Except cases when less than 5 voxels exposed
+													if (maxVoxels > 0 && maxVoxels < 5) accuracy = maxVoxels; // Except cases when less than 5 voxels exposed
 													if (isKneeled)
 														accuracy += 2; // And let's make kneeling more meaningful for such shots
 													_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
@@ -1470,6 +1478,7 @@ void Map::drawTerrain(Surface *surface)
 											_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
 										}
 									}
+
 									ss << accuracy;
 									ss << "%";
 								}
