@@ -19,6 +19,7 @@
 #include "Mod.h"
 #include "ModScript.h"
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <climits>
 #include <cassert>
