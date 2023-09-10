@@ -323,6 +323,8 @@ void ProjectileFlyBState::init()
 			}
 			else
 			{
+				_action.relativeOrigin = BattleActionOrigin::CENTRE;
+
 				bool foundLoF = false;
 				foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
 
