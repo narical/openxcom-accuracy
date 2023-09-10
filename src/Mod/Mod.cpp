@@ -4809,7 +4809,7 @@ const std::vector<std::string> &Mod::getPsiRequirements() const
  * @param type The soldier type to generate.
  * @return Newly generated soldier.
  */
-Soldier *Mod::genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int nationality) const
+Soldier *Mod::genSoldier(SavedGame *save, const RuleSoldier* ruleSoldier, int nationality) const
 {
 	Soldier *soldier = 0;
 	int newId = save->getId("STR_SOLDIER");
@@ -4820,7 +4820,7 @@ Soldier *Mod::genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int national
 	for (int tries = 0; tries < 10 && duplicate; ++tries)
 	{
 		delete soldier;
-		soldier = new Soldier(ruleSoldier, ruleSoldier->getDefaultArmor(), nationality, newId);
+		soldier = new Soldier(const_cast<RuleSoldier*>(ruleSoldier), ruleSoldier->getDefaultArmor(), nationality, newId);
 		duplicate = false;
 		for (auto* xbase : *save->getBases())
 		{

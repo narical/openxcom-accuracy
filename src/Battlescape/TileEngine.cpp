@@ -5830,7 +5830,6 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				originVoxel.x += 8 * unitSize; // Shoot straight from the eye point
 				originVoxel.y += 8 * unitSize; // moving barrel in front of unit breaks LOF near walls with existing LOS above them
 				break;
-
 			case BattleActionOrigin::LEFT:
 				originVoxel.x += dirXshift[ direction ] * unitSize;
 				originVoxel.y += dirYshift[ direction ] * unitSize;

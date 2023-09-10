@@ -77,9 +77,9 @@ translations/
 #Ignore NetBeans project directory
 nbproject/
 .tx/
+/makefile
 src/OpenXcom.2010.VC.opendb
 bin/user
-/makefile
 /.kdev4/
 /*.kdev4
 bin/Win32/stderr.txt
