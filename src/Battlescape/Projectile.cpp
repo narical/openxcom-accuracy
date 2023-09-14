@@ -449,22 +449,18 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
 
+		int deltaX = origin.x/16 - targetTile->getPosition().x;
+		int deltaY = origin.y/16 - targetTile->getPosition().y;
+		double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
+		distance_in_tiles = (int)ceil(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
+
 		if (targetUnit && exposedVoxelsCount == 0) // We target a unit but can't get LOF
 		{
 			real_accuracy = 0;
 		}
-		else if (targetTile)
+		else if (targetTile && distance_in_tiles > 0)
 		{
-			int deltaX = origin.x/16 - targetTile->getPosition().x;
-			int deltaY = origin.y/16 - targetTile->getPosition().y;
-			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
-
-			distance_in_tiles = (int)floor(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
-
-			if (distance_in_tiles == 0)
-				real_accuracy = 100;
-
-			else if (weapon->getMinRange() == 0 && _action.type == BA_AIMEDSHOT && distance_in_tiles <= 10) // For aimed shot...
+			if (weapon->getMinRange() == 0 && _action.type == BA_AIMEDSHOT && distance_in_tiles <= 10) // For aimed shot...
 			{
 				if (real_accuracy*2 >= 100) // Use one of two algorithms, depending on which one gives better numbers
 					real_accuracy = std::min(100, (int)ceil(real_accuracy*(2-((double)distance_in_tiles-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
@@ -486,6 +482,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				if (exposedVoxelsCount > 0 && exposedVoxelsCount < 5) real_accuracy = exposedVoxelsCount; // Except cases when less than 5 voxels exposed
 				if (shooterUnit->isKneeled()) real_accuracy += 2; // And let's make kneeling more meaningful for such shots
 			}
+		}
+		else if (distance_in_tiles == 0)
+		{
+			real_accuracy = 100;
 		}
 
 		int accuracy_check = RNG::generate(1, 100);
