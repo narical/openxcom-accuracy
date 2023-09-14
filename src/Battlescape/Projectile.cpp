@@ -334,8 +334,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 {
 	int xdiff = origin.x - target->x;
 	int ydiff = origin.y - target->y;
-	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff));
-	double tilesDistance = realDistance / 16;
+	int zdiff = origin.z - target->z;
+
+	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff)+(double)(zdiff*zdiff));
+	double tilesDistance = std::ceil(realDistance / 16);
 	// maxRange is the maximum range a projectile shall ever travel in voxel space
 	double maxRange = keepRange?realDistance:16*1000; // 1000 tiles
 	maxRange = _action.type == BA_HIT?46:maxRange; // up to 2 tiles diagonally (as in the case of reaper v reaper)
@@ -445,7 +447,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 			_action.relativeOrigin = selectedOrigin;
 
-			real_accuracy = (int)ceil((double)accuracy * exposure * 100);
+			real_accuracy = (int)round((double)accuracy * exposure * 100);
 		}
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
