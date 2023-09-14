@@ -1449,13 +1449,18 @@ void Map::drawTerrain(Surface *surface)
 														accuracy += (100 - accuracy)/distance_in_tiles;
 												}
 
-												if (accuracy < 5) // Rule for difficult/long-range shots
+												if (accuracy <= AccuracyMod.MinCap) // Rule for difficult/long-range shots
 												{
-													accuracy = 5; // If there's LOF - accuracy should be at least 5%
-													if (maxVoxels > 0 && maxVoxels < 5) accuracy = maxVoxels; // Except cases when less than 5 voxels exposed
-													if (isKneeled)
-														accuracy += 2; // And let's make kneeling more meaningful for such shots
+													accuracy = AccuracyMod.MinCap;
+													int hardShotAccuracy = (int)(maxExposure / targetSize * 100);
+													if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod.MinCap) accuracy = hardShotAccuracy; // Accuracy can be below minimal cap for covered targets
+													if (isKneeled) accuracy += AccuracyMod.KneelBonus; // And let's make kneeling more meaningful for such shots
+													if (action->type == BA_AIMEDSHOT) accuracy += AccuracyMod.AimBonus;
 													_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+												}
+												else if (accuracy > AccuracyMod.MaxCap)
+												{
+													accuracy = AccuracyMod.MaxCap;
 												}
 
 												bool outOfRange = weapon->isOutOfRange(distanceSq);

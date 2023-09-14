@@ -30,6 +30,14 @@ class Surface;
 class Tile;
 class Mod;
 
+struct
+{
+	int MinCap = 5;
+	int MaxCap = 95;
+	int AimBonus = 3;
+	int KneelBonus = 2;
+} AccuracyMod;
+
 /**
  * A class that represents a projectile. Map is the owner of an instance of this class during its short life.
  * It calculates its own trajectory and then moves along this pre-calculated trajectory in voxel space.

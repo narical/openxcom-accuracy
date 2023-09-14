@@ -15,16 +15,15 @@ Uses modified code from SDL\_gfx (LGPL) with permission from author.
 ## Realistic accuracy and cover system
 [Video](https://www.youtube.com/watch?v=S9lrOClZVQQ)
 
-Features:
-* new, more predictable, shooting spread. Shots won't fly miles away from target, and in case when you've taken really good aim and missed - your bullet will zip an inch above targets ear 
-* "Chance to hit" number now precisely correct - it works like rolling dice in D&D. If you get 5% accuracy number, it means that game rolls 1-100 and if it's less or equal 5 - you hit. If you get 100% shot accuracy - you'll get it one hundred percent sure.
-* If you see the target - you can shoot it. Now for aimed shot or kneeled position x-com operative will raise his weapon to the eyes level. That means you can shoot above stone fence while kneeled. 
-* Shot accuracy highly depends on how much of a target is exposed. If you've got just the tip of your head over the fence - that pesky muton have a merely 5% to shoot you. Generally it works in both ways, but you'll get additional 2% for kneeling (aliens can't do that). You can fire a single snap shot while kneeled, triggering enemy's return fire which he will most probably miss, then stand up for full height and shoot with better accuracy.
-* Units aim to the middle of the exposed part, so shots spread around that point.
-* Similar to "off-center shooting" option, firing unit will check three lines of fire, shifting weapon slightly left and right, and select variant where its target is more exposed
-* Due to a less shooting spread, missed shots will often hit your cover, often destroyng it, which makes you exposed for next shots. So pay attention to that, some objects are more sturdy and can endure more damage
-* If distance to a target is 10 tiles or less - you'll get additional 10% accuracy multiplier per tile. Same for snap/auto, but it's 5 tiles and +20% per tile
-* If that is not enough to get 100% shot accuracy for a tile adjanced to enemy - instead of multiplier, as a bonus you'll get the difference between your accuracy and 100%, divided by number of tiles
+### Features:
+* **Precise probabilities distrubution**. Accuracy number represents real chance to hit, which wasn't the case with "classic" x-com accuracy. New accuracy works just like dice rolling in D&D - for 40% accuracy shot, the game rolls random number in 1-100 range, where 1-40 counts as hit, and 41-100 as miss.
+* **Less shooting spread**. Cone of fire is more tight, making it possible to use it tactically. You can intentionally aim to a target, trying to get other targets in fire range - to a greater efficiency than in "classic". Bear in mind, that units aim to the middle of the exposed part of target, so shots spread around that point.
+* **Type of shot (aimed/snap/auto) affects spread**. For the same final accuracy, aimed shot will miss closer to a target, snap/auto will be less accurate, and auto with one-handed weapon will be even worse. Combined with reduced spread, it provides a variety of options, for example with high exposive type of ammo, which is much more potent now, especially at long ranges.
+* **Soldiers raise weapon to aim**. For an aimed shot or while kneeling, soldiers will raise their weapons to eye level. That means, if they see an enemy - they can shoot it. For example, now it's possible to fire a shot targeting sectoid (16 voxels high unit) while kneeling behind a stone wall.
+* **Cover matters!** For every shot, accuracy is multiplied by percent of targets surface, visible to attacker. taking into consideration how accuracy rolls, every bit of cover can determine the difference between life and death. A piece of wooden fence, landing gear of Skyranger or its ramp, high crops or even that lone head of cabbage. Everything.
+* **Accidental suicide protection**. After rolling a miss, game looks for some "missing" trajectory. If target is far enough, that trajectory will never be selected if it ends on nearest two tiles from the attacker. That means, you can shoot with rockets or high explosive ammunition through windows, from Skyranger ramp, throught narrow gaps etc. without a fear of accidently blowing yourself up.
+* **Less confusing close-range accuracy numbers**. In "classic" x-com, dispayed  accuracy doesn't match with real, especially in close range shooting, where the real one is much higher. In this mod, there are two formulas for close range. First one gives accuracy multiplier. For aimed shots, last 10 tiles to target give you additional +0.1 to accuracy multiplier, up to x2 for point-blank shot. For snap/auto, it's +0.2 multiplier for last 5 tiles. If your accuracy is not enough to get upper cap with x2 multiplier, another formula applies, where delta between that cap and your accuracy is divided by number of tiles to target evenly. You'll gain maximum possible accuracy for point-blank either way, but first formula makes it possible to get that number even from a distance, if soldier is good at shooting.
+* **Min/max accuracy caps at 5%/95% respectively**. For 5% or less - kneeling grants additional 2%, and aiming another 3%
 
 ## 'Rejected features' fork
 

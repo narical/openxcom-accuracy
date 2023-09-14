@@ -479,11 +479,18 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					real_accuracy += (100 - real_accuracy)/distance_in_tiles;
 			}
 
-			if (real_accuracy < 5) // Rule for difficult/long-range shots
+			if (real_accuracy <= AccuracyMod.MinCap) // Rule for difficult/long-range shots
 			{
-				real_accuracy = 5; // If there's LOF - accuracy should be at least 5%
-				if (exposedVoxelsCount > 0 && exposedVoxelsCount < 5) real_accuracy = exposedVoxelsCount; // Except cases when less than 5 voxels exposed
-				if (shooterUnit->isKneeled()) real_accuracy += 2; // And let's make kneeling more meaningful for such shots
+				real_accuracy = AccuracyMod.MinCap;
+				int hardShotAccuracy = (int)(exposure / targetSize * 100);
+
+				if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod.MinCap) real_accuracy = hardShotAccuracy; // Accuracy can drop below its mininal cap for covered targets
+				if (shooterUnit->isKneeled()) real_accuracy += AccuracyMod.KneelBonus; // And let's make kneeling more meaningful for such shots
+				if (_action.type == BA_AIMEDSHOT) real_accuracy += AccuracyMod.AimBonus;
+			}
+			else if (real_accuracy > AccuracyMod.MaxCap)
+			{
+				real_accuracy = AccuracyMod.MaxCap;
 			}
 		}
 		else if (distance_in_tiles == 0)
