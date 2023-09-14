@@ -398,13 +398,14 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (Options::battleRealisticAccuracy)
 	{
+		int targetSize = 1;
 		int distance_in_tiles = 0;
 		double exposure = 0.0;
 		int real_accuracy = 0; // separate variable for realistic accuracy, just in case
 
 		BattleUnit *shooterUnit = _action.actor;
 		std::vector<Position> exposedVoxels;
-		size_t exposedVoxelsCount = 0; // maximum of exposed voxels for left, center or right shooting position
+		int exposedVoxelsCount = 0; // maximum of exposed voxels for left, center or right shooting position
 
 		BattleUnit *targetUnit = nullptr;
 		Tile *targetTile = _save->getTile(target->toTile());
@@ -417,9 +418,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		if (targetUnit)
 		{
-			int unitSize = targetUnit->getArmor()->getSize();
+			targetSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
-			int widthCount = 1 + ( unitSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
+			int widthCount = 1 + ( targetSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
 
 			std::vector<Position> tempVoxels;
 			tempVoxels.reserve( heightCount * widthCount );
@@ -434,7 +435,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
 				double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, false, &tempVoxels, false);
 
-				if (tempVoxels.size() > exposedVoxelsCount)
+				if ((int)tempVoxels.size() > exposedVoxelsCount)
 				{
 					exposedVoxelsCount = tempVoxels.size();
 					exposure = tempExposure;
@@ -514,8 +515,6 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
 			int unitRadius = 4; // and this radius
-			int targetSize = 1; // and targeting to a single tile by default
-
 			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
 			int unitMin_X{0}, unitMin_Y{0}, unitMax_X{0}, unitMax_Y{0}; //Unit's bounds
 

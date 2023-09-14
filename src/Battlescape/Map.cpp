@@ -1381,6 +1381,7 @@ void Map::drawTerrain(Surface *surface)
 										}
 										else
 										{
+											int targetSize = 1;
 											int maxVoxels = 0;
 											double maxExposure = 0.0;
 											int distance_in_tiles = 0;
@@ -1389,6 +1390,7 @@ void Map::drawTerrain(Surface *surface)
 
 											if (unit) // Targeting unit
 											{
+												targetSize = unit->getArmor()->getSize();
 												exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
 												BattleActionOrigin tempOrigin = action->relativeOrigin;
@@ -1412,7 +1414,11 @@ void Map::drawTerrain(Surface *surface)
 											else
 												target = _save->getTile(Position(itX, itY, itZ)); // We are targeting empty terrain tile
 
-											if ( unit && maxVoxels == 0)
+											if ( unit && unit == shooterUnit)
+											{
+												accuracy = 100;
+											}
+											else if ( unit && maxVoxels == 0)
 											{
 												accuracy = 0;
 											}
@@ -1425,8 +1431,7 @@ void Map::drawTerrain(Surface *surface)
 												double zdiff = (origin.z/24 - target->getPosition().z)*1.5;
 												distance_in_tiles = (int)floor(sqrt((double)(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff))); // Distance in cube 16x16x16 tiles
 
-												if (distance_in_tiles==0)
-													accuracy = 100;
+												if (distance_in_tiles==0) accuracy = 100;
 
 												else if (distance_in_tiles <= 10 && weapon->getMinRange() == 0 && action->type == BA_AIMEDSHOT) // For aimed shot...
 												{
