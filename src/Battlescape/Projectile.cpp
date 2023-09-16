@@ -401,7 +401,6 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	if (Options::battleRealisticAccuracy)
 	{
 		int targetSize = 1;
-		int distance_in_tiles = 0;
 		double exposure = 0.0;
 		int real_accuracy = 0; // separate variable for realistic accuracy, just in case
 
@@ -452,10 +451,14 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
 
-		int deltaX = origin.x/16 - targetTile->getPosition().x;
-		int deltaY = origin.y/16 - targetTile->getPosition().y;
-		double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
-		distance_in_tiles = (int)ceil(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
+		int distance_in_tiles = 0;
+		if (targetTile)
+		{
+			int deltaX = origin.x/16 - targetTile->getPosition().x;
+			int deltaY = origin.y/16 - targetTile->getPosition().y;
+			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
+			distance_in_tiles = (int)ceil(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
+		}
 
 		if (targetUnit && exposedVoxelsCount == 0) // We target a unit but can't get LOF
 		{
