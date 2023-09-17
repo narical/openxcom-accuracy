@@ -608,9 +608,17 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider; //  Highly accurate shots will land close to the target even if they miss
 			int distance_deviation = tilesDistance / 7; // 1 voxel of deviation per 7 tiles of distance
+			int hor_size_deviation = unitRadius;
+			int ver_size_deviation = unitRadius;
 
-			int horizontal_deviation = unitRadius + accuracy_deviation + distance_deviation;
-			int vertical_deviation = ( targetSize == 2 ? heightRange / 2 : unitRadius ) + accuracy_deviation + distance_deviation;
+			if ( targetSize == 2 )
+			{
+				hor_size_deviation = unitRadius * 0.7;
+				ver_size_deviation = heightRange / 2;
+			}
+
+			int horizontal_deviation = hor_size_deviation + accuracy_deviation + distance_deviation;
+			int vertical_deviation = ver_size_deviation + accuracy_deviation + distance_deviation;
 \
 			Position deviate;
 			std::vector<Position> trajectory;
