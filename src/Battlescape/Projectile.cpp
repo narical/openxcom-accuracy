@@ -398,7 +398,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		}
 	}
 
-	if (Options::battleRealisticAccuracy)
+	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
 	{
 		int targetSize = 1;
 		double exposure = 0.0;
