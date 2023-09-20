@@ -4879,7 +4879,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
 	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
-	damage = std::max(damage, 1.0f);
+	if (damage == 0)
+		return 0;
+	float damageTypeMod = 0;
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getStunFinalDamage(damage) / (2 * damage);
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
+	damageTypeMod += action->weapon->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
 
@@ -4950,7 +4960,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	//				  << " targetQuality: " << targetQuality
 	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
 	//}
-	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
+	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality * damageTypeMod;
 }
 
 /**
