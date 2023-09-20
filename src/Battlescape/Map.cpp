@@ -1393,6 +1393,7 @@ void Map::drawTerrain(Surface *surface)
 												targetSize = unit->getArmor()->getSize();
 												exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
+												action->target = target->getPosition();
 												BattleActionOrigin tempOrigin = action->relativeOrigin;
 
 												for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
@@ -1412,7 +1413,10 @@ void Map::drawTerrain(Surface *surface)
 												accuracy = (int)ceil((double)accuracy * maxExposure);
 											}
 											else
+											{
 												target = _save->getTile(Position(itX, itY, itZ)); // We are targeting empty terrain tile
+												action->target = target->getPosition();
+											}
 
 											if ( unit && unit == shooterUnit)
 											{
