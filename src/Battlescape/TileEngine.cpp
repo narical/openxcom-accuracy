@@ -5820,8 +5820,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 
 		if (Options::battleRealisticAccuracy)
 		{
-			const int dirXshift[8] = {6, 6, 8,10,10,10, 8, 6};
-			const int dirYshift[8] = {8, 6, 6, 6, 8,10,10,10};
+			const int dirXshift[8] = {5, 6, 8,10,11,10, 8, 6};
+			const int dirYshift[8] = {8, 6, 5, 6, 8,10,11,10};
 
 			// Offset for different relativeOrigin values
 			switch (action.relativeOrigin)
