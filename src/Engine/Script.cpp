@@ -41,6 +41,27 @@ namespace OpenXcom
 {
 
 ////////////////////////////////////////////////////////////
+//						const definition
+////////////////////////////////////////////////////////////
+
+constexpr ScriptRef KnowNamesPrefix[] = {
+	ScriptRef{ "ModList" },
+	ScriptRef{ "Tag" },
+};
+
+constexpr bool isKnowNamePrefix(ScriptRef name)
+{
+	for (ScriptRef r : KnowNamesPrefix)
+	{
+		if (r == name)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////
 //						arg definition
 ////////////////////////////////////////////////////////////
 #define MACRO_QUOTE(...) __VA_ARGS__
@@ -1275,11 +1296,31 @@ ScriptRefOperation findOperationAndArg(const ParserWriter& ph, ScriptRef op)
 			return result;
 		}
 
-		result.argName = op.substr(0, first_dot);
+		result.argName = op.head(first_dot);
 		result.argRef = ph.getReferece(result.argName);
 		if (!result.argRef)
 		{
-			return result;
+			auto origArgName = result.argName;
+
+			++first_dot; //skip '.'
+			auto second_dot = op.tail(first_dot).find('.');
+			if (second_dot == std::string::npos)
+			{
+				return result;
+			}
+			second_dot += first_dot;
+			result.argName = op.head(second_dot);
+			result.argRef = ph.getReferece(result.argName);
+			if (!result.argRef)
+			{
+				// restore initial name for error propose, but only if is unknown. Other wise typo should be in next part
+				if (isKnowNamePrefix(origArgName) == false)
+				{
+					result.argName = origArgName;
+				}
+				return result;
+			}
+			first_dot = second_dot;
 		}
 
 		auto name = ph.parser.getTypeName(result.argRef.type);
@@ -1288,7 +1329,7 @@ ScriptRefOperation findOperationAndArg(const ParserWriter& ph, ScriptRef op)
 			return result;
 		}
 
-		result.procName.parts = { name, op.substr(first_dot) };
+		result.procName.parts = { name, op.tail(first_dot) };
 		result.procList = ph.parser.getProc(result.procName);
 	}
 
@@ -4034,6 +4075,7 @@ void ScriptGlobal::load(const YAML::Node& node)
 namespace
 {
 
+
 struct Func_test_a
 {
 	[[gnu::always_inline]]
@@ -4064,6 +4106,7 @@ struct Func_test_c
 	}
 };
 
+[[maybe_unused]]
 static auto dummyTestScriptOverload = ([]
 {
 	ScriptProcData data_a {	};
@@ -4171,6 +4214,7 @@ void dummyFunctionClass(const DummyClass* c)
 
 }
 
+[[maybe_unused]]
 static auto dummyTestScriptFunctionParser = ([]
 {
 	ScriptGlobal g;
@@ -4181,6 +4225,7 @@ static auto dummyTestScriptFunctionParser = ([]
 	Bind<DummyClass> bind{ &f };
 	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionInt)>>("test1");
 	bind.add<&dummyFunctionClass>("test2");
+	bind.add<&dummyFunctionClass>("test3");
 
 
 	ScriptContainerBase tempScript;
@@ -4190,11 +4235,47 @@ static auto dummyTestScriptFunctionParser = ([]
 		f
 	);
 	help.addReg<DummyClass*&>(ScriptRef{"foo"});
+	help.addReg<DummyClass*&>(ScriptRef{"bar.a"});
+	help.addReg<DummyClass*&>(ScriptRef{"bar.b"});
+	help.addReg<DummyClass*&>(ScriptRef{"Tag.foo"});
+
 
 	{
 		auto r = help.getReferece(ScriptRef{"foo"});
 		assert(!!r && "reg 'foo'");
 	}
+
+	{
+		auto r = help.getReferece(ScriptRef{"bar.a"});
+		assert(!!r && "reg 'bar.a'");
+	}
+
+	{
+		auto r = help.getReferece(ScriptRef{"bar.b"});
+		assert(!!r && "reg 'bar.b'");
+	}
+
+	{
+		auto r = help.getReferece(ScriptRef{"Tag.foo"});
+		assert(!!r && "reg 'Tag.foo'");
+	}
+
+
+
+	{
+		auto getProcFromParser = [&](std::initializer_list<ScriptRef> l)
+		{
+			return !!help.parser.getProc(ScriptRange{ l.begin(), l.end() });
+		};
+		assert(getProcFromParser({ ScriptRef{"DummyClass.test2"} }));
+		assert(getProcFromParser({ ScriptRef{"DummyClass.test3"} }));
+		assert(getProcFromParser({ ScriptRef{"DummyClass"}, ScriptRef{".test2"} }));
+		assert(getProcFromParser({ ScriptRef{"DummyClass"}, ScriptRef{"."} , ScriptRef{"test2"} }));
+		assert(getProcFromParser({ ScriptRef{"DummyClass"}, ScriptRef{"."} , ScriptRef{"te"} , ScriptRef{"st2"} }));
+		assert(!getProcFromParser({ ScriptRef{"DummyClass.test1"} }));
+	}
+
+
 
 	{
 		auto r = findOperationAndArg(help, ScriptRef{"if"});
@@ -4225,10 +4306,47 @@ static auto dummyTestScriptFunctionParser = ([]
 		assert(r.haveProc() == true && "func 'foo.test2'");
 	}
 
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"bar.a.test2"});
+		assert(!!r && "func 'bar.a.test2'");
+		assert(r.haveArg() == true && "func 'bar.a.test2'");
+		assert(r.argName == ScriptRef{"bar.a"} && "func 'bar.a.test2'");
+		assert(r.haveProc() == true && "func 'bar.a.test2'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"Tag.foo.test2"});
+		assert(!!r && "func 'Tag.foo.test2'");
+		assert(r.haveArg() == true && "func 'Tag.foo.test2'");
+		assert(r.argName == ScriptRef{"Tag.foo"} && "func 'Tag.foo.test2'");
+		assert(r.haveProc() == true && "func 'Tag.foo.test2'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"bar.a2.test2"});
+		assert(!r && "func 'bar.a2.test2'");
+		assert(r.haveArg() == true && "func 'bar.a2.test2'");
+		assert(r.argName == ScriptRef{"bar"} && "func 'bar.a2.test2'");
+	}
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"Tag.foo2.test2"});
+		assert(!r && "func 'Tag.foo.test2'");
+		assert(r.haveArg() == true && "func 'Tag.foo2.test2'");
+		assert(r.argName == ScriptRef{"Tag.foo2"} && "func 'Tag.foo2.test2'");
+	}
+
+
+	{
+		auto r = findOperationAndArg(help, ScriptRef{"Tag.foo.test2"});
+		assert(!!r && "func 'Tag.foo.test2'");
+	}
+
 	return 0;
 })();
 
 
+[[maybe_unused]]
 static auto dummyTestScriptStringRef = ([]
 {
 	assert(ScriptRef{"foo"} == ScriptRef{"foo"}.substr(0));
@@ -4281,6 +4399,7 @@ static auto dummyTestScriptStringRef = ([]
 
 
 
+[[maybe_unused]]
 static auto dummyTestScriptLowerBound = ([]
 {
 	std::vector<ScriptTypeData> test;
