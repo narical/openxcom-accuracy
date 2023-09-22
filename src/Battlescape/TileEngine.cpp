@@ -2038,8 +2038,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int unitMax_Y = targetVoxel.y + unitRadius + 1;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
-	int sliceTargetsX[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
-	int sliceTargetsY[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
+	int sliceTargetsX[ BattleUnit::BIG_MAX_RADIUS*2 + 1 ] = { 0 };
+	int sliceTargetsY[ BattleUnit::BIG_MAX_RADIUS*2 + 1 ] = { 0 };
 
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
@@ -2170,8 +2170,8 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 		   // vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
-	int sliceTargetsX[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
-	int sliceTargetsY[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
+	int sliceTargetsX[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsY[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
@@ -5844,6 +5844,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		else
 		{
+
 			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
 			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
 

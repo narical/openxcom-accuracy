@@ -1391,7 +1391,7 @@ void Map::drawTerrain(Surface *surface)
 											if (unit) // Targeting unit
 											{
 												targetSize = unit->getArmor()->getSize();
-												exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
+												exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
 												action->target = target->getPosition();
 												BattleActionOrigin tempOrigin = action->relativeOrigin;

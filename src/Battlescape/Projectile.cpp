@@ -422,7 +422,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
-			int widthCount = 1 + ( targetSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
+			int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
 
 			std::vector<Position> tempVoxels;
 			tempVoxels.reserve( heightCount * widthCount );
