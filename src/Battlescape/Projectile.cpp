@@ -540,23 +540,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				else
 					heightRange = 12;
 
-				unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
+				unitRadius = targetUnit->getRadiusVoxels();
 				targetSize = targetUnit->getArmor()->getSize();
 				Position unitCenter = targetUnit->getPosition().toVoxel();
-
-				if (targetSize == 1)
-				{
-					if (unitRadius > TileEngine::maxSmallUnitRadius) // For small units - fix if their loft was mistakenly set to >5
-						unitRadius = TileEngine::maxSmallUnitRadius;
-					unitCenter += Position(8, 8, 0); // center of small unit
-				}
-				else if (targetSize == 2)
-				{
-					unitRadius = TileEngine::maxBigUnitRadius; // For large 2x2 units
-					unitCenter += Position(16, 16, 0); // center of big unit
-				}
-				else
-					assert(false); // Crash immediately if someone, someday makes a unit of other size
+				unitCenter += Position{ 8*targetSize, 8*targetSize, 0 };
 
 				unitMin_X = unitCenter.x - unitRadius - 1;
 				unitMin_Y = unitCenter.y - unitRadius - 1;
