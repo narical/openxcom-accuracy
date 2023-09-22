@@ -974,6 +974,30 @@ Position BattleUnit::getPositionVexels() const
 }
 
 /**
+ * Gets radius of unit in voxels.
+ * @return radius in voxels
+ */
+int BattleUnit::getRadiusVoxels() const
+{
+	int unitRadius = this->getLoftemps(); //width == loft in default loftemps set
+	int targetSize = this->getArmor()->getSize();
+
+	if (targetSize == 1)
+	{
+		if (unitRadius > SMALL_MAX_RADIUS) // For small units - fix if their loft was mistakenly set to >5
+			unitRadius = SMALL_MAX_RADIUS;
+	}
+	else if (targetSize == 2)
+	{
+		unitRadius = BIG_MAX_RADIUS; // For large 2x2 units
+	}
+	else
+		assert(false); // Crash immediately if someone, someday makes a unit of other size
+
+	return unitRadius;
+}
+
+/**
  * Gets the BattleUnit's destination.
  * @return destination
  */
