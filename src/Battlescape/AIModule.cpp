@@ -3009,7 +3009,11 @@ void AIModule::brutalThink(BattleAction* action)
 
 	Position furthestPositionEnemyCanReach = myPos;
 	float closestDistanceofFurthestPosition = FLT_MAX;
-	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins();
+	bool immobile = false;
+	// Check if I'm a turret. In this case I can skip everything about walking
+	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
+		immobile = true;
+	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins() || immobile;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	bool immobileEnemies = false;
@@ -3202,7 +3206,7 @@ void AIModule::brutalThink(BattleAction* action)
 	_reposition = false;
 
 	// Check if I'm a turret. In this case I can skip everything about walking
-	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
+	if (immobile && _tuWhenChecking == _unit->getTimeUnits())
 	{
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
@@ -4879,8 +4883,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
 	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
-	if (damage == 0)
-		return 0;
+	damage = std::max(damage, 1.0f);
 	float damageTypeMod = 0;
 	damageTypeMod += action->weapon->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
 	damageTypeMod += action->weapon->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
@@ -4950,16 +4953,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 		}
 	}
-	//if (_traceAI)
-	//{
-	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
-	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
-	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
-	//				  << " from: " << originPosition << " to: "<<action->target
-	//				  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
-	//				  << " targetQuality: " << targetQuality
-	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
-	//}
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
+					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
+					  << " from: " << originPosition << " to: "<<action->target
+					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
+					  << " targetQuality: " << targetQuality
+					  << " damageTypeMod: " << damageTypeMod
+					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
+	}
 	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality * damageTypeMod;
 }
 
