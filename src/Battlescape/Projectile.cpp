@@ -419,6 +419,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		if (targetUnit)
 		{
+			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( targetSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
