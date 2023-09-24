@@ -1410,7 +1410,8 @@ void Map::drawTerrain(Surface *surface)
 													}
 												}
 												action->relativeOrigin = tempOrigin;
-												accuracy = (int)ceil((double)accuracy * maxExposure);
+												double sizeMultiplier = (targetSize == 1 ? 1 : 1.5);
+												accuracy = (int)ceil((double)accuracy * maxExposure * sizeMultiplier);
 											}
 											else
 											{

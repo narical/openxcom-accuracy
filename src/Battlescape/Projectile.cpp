@@ -446,8 +446,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				}
 			}
 			_action.relativeOrigin = selectedOrigin;
-
-			real_accuracy = (int)round((double)accuracy * exposure * 100);
+			double sizeMultiplier = (targetSize == 1 ? 1 : 1.5);
+			real_accuracy = (int)round((double)accuracy * exposure * 100 * sizeMultiplier);
 		}
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
