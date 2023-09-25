@@ -5922,6 +5922,8 @@ bool AIModule::isArmed(BattleUnit *unit) const
 
 void AIModule::tryToPickUpGrenade(Tile *tile, BattleAction *action)
 {
+	if (!_unit->hasInventory())
+		return;
 	for (BattleItem *item : *(tile->getInventory()))
 	{
 		if (item->isFuseEnabled())
