@@ -1393,7 +1393,11 @@ void Map::drawTerrain(Surface *surface)
 												exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
 												action->target = target->getPosition();
-												BattleActionOrigin tempOrigin = action->relativeOrigin;
+
+												// This is TEMPORARY SOLUTION
+												// selectedOrigin is saved to action->relativeOrigin
+												// which is then used by canTargetUnit() in ProjectileFlyBState::init()
+												BattleActionOrigin selectedOrigin = BattleActionOrigin::CENTRE;
 
 												for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
 												{
@@ -1404,11 +1408,12 @@ void Map::drawTerrain(Surface *surface)
 
 													if ((int)exposedVoxels.size() > maxVoxels)
 													{
+														selectedOrigin = relPos;
 														maxVoxels = exposedVoxels.size();
 														maxExposure = exposure;
 													}
 												}
-												action->relativeOrigin = tempOrigin;
+												action->relativeOrigin = selectedOrigin;
 												double sizeMultiplier = (targetSize == 1 ? 1 : 1.5);
 												accuracy = (int)ceil((double)accuracy * maxExposure * sizeMultiplier);
 											}
