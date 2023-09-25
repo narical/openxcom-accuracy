@@ -384,6 +384,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 			if (targetUnit)
 			{
+				t = targetUnit->getTile();
 				hasLOS = _save->getTileEngine()->visible(bu, t);
 			}
 			else
