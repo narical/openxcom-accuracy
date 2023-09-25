@@ -2015,22 +2015,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 	int targetMaxHeight = targetMinHeight + heightRange;
 
-	int unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
+	int unitRadius = targetUnit->getRadiusVoxels();
 	int targetSize = targetUnit->getArmor()->getSize();
 
-	if (targetSize == 1)
-	{
-		if (unitRadius > TileEngine::maxSmallUnitRadius) // For small units - fix if their loft was mistakenly set to >5
-			unitRadius = TileEngine::maxSmallUnitRadius;
-		targetVoxel += Position(8, 8, 0); // center of small unit
-	}
-	else if (targetSize == 2)
-	{
-		unitRadius = TileEngine::maxBigUnitRadius; // For large 2x2 units
-		targetVoxel += Position(16, 16, 0); // center of big unit
-	}
-	else
-		assert(false); // Crash immediately if someone, someday makes a unit of other size
+	targetVoxel += Position(8*targetSize, 8*targetSize, 0); // center of unit
 
 	int unitMin_X = targetVoxel.x - unitRadius - 1;
 	int unitMin_Y = targetVoxel.y - unitRadius - 1;
@@ -2038,8 +2026,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int unitMax_Y = targetVoxel.y + unitRadius + 1;
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
-	int sliceTargetsX[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
-	int sliceTargetsY[ TileEngine::maxBigUnitRadius*2 + 1 ] = { 0 };
+	int sliceTargetsX[ BattleUnit::BIG_MAX_RADIUS*2 + 1 ] = { 0 };
+	int sliceTargetsY[ BattleUnit::BIG_MAX_RADIUS*2 + 1 ] = { 0 };
 
 	// vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
@@ -2158,20 +2146,18 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	// if there is an other unit on target tile, we assume we want to check against this unit's height
 	int heightRange;
 
-	int unitRadius = potentialUnit->getLoftemps(); //width == loft in default loftemps set
-	int targetSize = potentialUnit->getArmor()->getSize() - 1;
 	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
 	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
+
+	int unitRadius = potentialUnit->getRadiusVoxels();
+	int targetSize = potentialUnit->getArmor()->getSize() - 1;
 	if (targetSize > 0)
 		unitRadius = 3;
 
-	if (unitRadius > TileEngine::maxSmallUnitRadius)
-		unitRadius = TileEngine::maxSmallUnitRadius;
-
-		   // vector manipulation to make scan work in view-space
+   // vector manipulation to make scan work in view-space
 	Position relPos = targetVoxel - *originVoxel;
-	int sliceTargetsX[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
-	int sliceTargetsY[ TileEngine::maxSmallUnitRadius*2+1 ] = { 0 };
+	int sliceTargetsX[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
+	int sliceTargetsY[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
 
 	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
 	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
@@ -5820,8 +5806,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 
 		if (Options::battleRealisticAccuracy)
 		{
-			const int dirXshift[8] = {6, 6, 8,10,10,10, 8, 6};
-			const int dirYshift[8] = {8, 6, 6, 6, 8,10,10,10};
+			const int dirXshift[8] = {5, 6, 8,10,11,10, 8, 6};
+			const int dirYshift[8] = {8, 6, 5, 6, 8,10,11,10};
 
 			// Offset for different relativeOrigin values
 			switch (action.relativeOrigin)
@@ -5844,6 +5830,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		else
 		{
+
 			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
 			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
 

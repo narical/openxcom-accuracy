@@ -205,6 +205,8 @@ public:
 	static const int MAX_SOLDIER_ID = 1000000;
 	static const int BUBBLES_FIRST_FRAME = 3;
 	static const int BUBBLES_LAST_FRAME = BUBBLES_FIRST_FRAME + 15;
+	static const int SMALL_MAX_RADIUS = 5;
+	static const int BIG_MAX_RADIUS = 15;
 
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "BattleUnit";
@@ -241,6 +243,8 @@ public:
 	Position getLastPosition() const;
 	/// Gets the unit's position of center in voxels.
 	Position getPositionVexels() const;
+	/// Gets unit radius in voxels
+	int getRadiusVoxels() const;
 	/// Sets the unit's direction 0-7.
 	void setDirection(int direction);
 	/// Sets the unit's face direction (only used by strafing moves)

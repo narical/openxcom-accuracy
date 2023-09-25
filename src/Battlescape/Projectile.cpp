@@ -384,6 +384,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 			if (targetUnit)
 			{
+				t = targetUnit->getTile();
 				hasLOS = _save->getTileEngine()->visible(bu, t);
 			}
 			else
@@ -422,7 +423,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
-			int widthCount = 1 + ( targetSize > 1 ? TileEngine::maxBigUnitRadius*2 : TileEngine::maxSmallUnitRadius*2 );
+			int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
 
 			std::vector<Position> tempVoxels;
 			tempVoxels.reserve( heightCount * widthCount );
@@ -446,41 +447,32 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				}
 			}
 			_action.relativeOrigin = selectedOrigin;
-
-			real_accuracy = (int)round((double)accuracy * exposure * 100);
+			double sizeMultiplier = (targetSize == 1 ? 1 : 1.5);
+			real_accuracy = (int)round((double)accuracy * exposure * 100 * sizeMultiplier);
 		}
 		else
 			real_accuracy = (int)ceil(accuracy * 100); // ...or just an empty terrain tile?
-
-		int distance_in_tiles = 0;
-		if (targetTile)
-		{
-			int deltaX = origin.x/16 - targetTile->getPosition().x;
-			int deltaY = origin.y/16 - targetTile->getPosition().y;
-			double deltaZ = (origin.z/24 - targetTile->getPosition().z)*1.5;  // Distance in cube 16x16x16 tiles!
-			distance_in_tiles = (int)ceil(sqrt((double)(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ)));
-		}
 
 		if (targetUnit && exposedVoxelsCount == 0) // We target a unit but can't get LOF
 		{
 			real_accuracy = 0;
 		}
-		else if (targetTile && distance_in_tiles > 0)
+		else if (targetTile && tilesDistance > 0)
 		{
-			if (weapon->getMinRange() == 0 && _action.type == BA_AIMEDSHOT && distance_in_tiles <= 10) // For aimed shot...
+			if (weapon->getMinRange() == 0 && _action.type == BA_AIMEDSHOT && tilesDistance <= 10) // For aimed shot...
 			{
 				if (real_accuracy*2 >= 100) // Use one of two algorithms, depending on which one gives better numbers
-					real_accuracy = std::min(100, (int)ceil(real_accuracy*(2-((double)distance_in_tiles-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
+					real_accuracy = std::min(100, (int)ceil(real_accuracy*(2-((double)tilesDistance-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
 				else
-					real_accuracy += (100 - real_accuracy)/distance_in_tiles; // Or just evenly divide to get 100% accuracy on tile adjanced to a target
+					real_accuracy += (100 - real_accuracy)/tilesDistance; // Or just evenly divide to get 100% accuracy on tile adjanced to a target
 			}
 
-			else if (weapon->getMinRange() == 0 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT) && distance_in_tiles <= 5) // For snap/auto
+			else if (weapon->getMinRange() == 0 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT) && tilesDistance <= 5) // For snap/auto
 			{
 				if (real_accuracy*2 >= 100)
-					real_accuracy = std::min(100, (int)ceil(real_accuracy*(2-((double)distance_in_tiles-1)/5))); // Multiplier x1.2..x2 for 5 nearest tiles
+					real_accuracy = std::min(100, (int)ceil(real_accuracy*(2-((double)tilesDistance-1)/5))); // Multiplier x1.2..x2 for 5 nearest tiles
 				else
-					real_accuracy += (100 - real_accuracy)/distance_in_tiles;
+					real_accuracy += (100 - real_accuracy)/tilesDistance;
 			}
 
 			if (real_accuracy <= AccuracyMod.MinCap) // Rule for difficult/long-range shots
@@ -497,7 +489,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				real_accuracy = AccuracyMod.MaxCap;
 			}
 		}
-		else if (distance_in_tiles == 0)
+		else if (tilesDistance == 0)
 		{
 			real_accuracy = 100;
 		}
@@ -509,7 +501,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			std::ostringstream ss;
 			ss << "Acc:" << accuracy*100 << " Exposure " << exposure*100 << "%";
-			ss << " Dist:" << distance_in_tiles << " Total:" << real_accuracy << "%";
+			ss << " Dist:" << tilesDistance << " Total:" << real_accuracy << "%";
 			ss << " Check:" << accuracy_check << " HIT? " << hit_successful;
 			_save->getBattleState()->debug(ss.str());
 		}
@@ -540,23 +532,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				else
 					heightRange = 12;
 
-				unitRadius = targetUnit->getLoftemps(); //width == loft in default loftemps set
+				unitRadius = targetUnit->getRadiusVoxels();
 				targetSize = targetUnit->getArmor()->getSize();
 				Position unitCenter = targetUnit->getPosition().toVoxel();
-
-				if (targetSize == 1)
-				{
-					if (unitRadius > TileEngine::maxSmallUnitRadius) // For small units - fix if their loft was mistakenly set to >5
-						unitRadius = TileEngine::maxSmallUnitRadius;
-					unitCenter += Position(8, 8, 0); // center of small unit
-				}
-				else if (targetSize == 2)
-				{
-					unitRadius = TileEngine::maxBigUnitRadius; // For large 2x2 units
-					unitCenter += Position(16, 16, 0); // center of big unit
-				}
-				else
-					assert(false); // Crash immediately if someone, someday makes a unit of other size
+				unitCenter += Position{ 8*targetSize, 8*targetSize, 0 };
 
 				unitMin_X = unitCenter.x - unitRadius - 1;
 				unitMin_Y = unitCenter.y - unitRadius - 1;
@@ -645,7 +624,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					trajectory.clear();
 					int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
 
-					if (!trajectory.empty() && distance_in_tiles > 1)
+					if (!trajectory.empty() && tilesDistance > 1)
 					{
 						// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
 						if (Position::distanceSq( origin, trajectory.at(0)) < 3*30*30) // Almost 2 tiles diagonally

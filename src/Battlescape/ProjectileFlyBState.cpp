@@ -323,7 +323,14 @@ void ProjectileFlyBState::init()
 			}
 			else
 			{
-				_action.relativeOrigin = BattleActionOrigin::CENTRE;
+				// _action.relativeOrigin = BattleActionOrigin::CENTER; <--- COMMENTED AS TEMPORARY SOLUTION !!!
+				// Temporarily, _action.relativeOrigin is set inside Map::drawTerrain()
+				// so canTargetUnit() here starts to look for LoF from already selected origin (left, right or center)
+				// It prevents the bug where checkVoxelExposure selects best direction but canTargetUnit() here uses its own
+				// In that case, shot goes from wrong origin to a voxel, exposed to other origin, and can hit the obstacle
+				// albeit successfull hit is rolled
+
+				// This could be fixed in case checkVoxelExposure will replace canTargetUnit() here. Someday.
 
 				bool foundLoF = false;
 				foundLoF = _parent->getTileEngine()->canTargetUnit(&originVoxel, targetTile, &_targetVoxel, _unit, isPlayer);
@@ -331,7 +338,7 @@ void ProjectileFlyBState::init()
 				if (!foundLoF && Options::oxceEnableOffCentreShooting)
 				{
 					// If we can't target from the standard shooting position, try a bit left and right from the centre.
-					for (auto& rel_pos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+					for (auto& rel_pos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
 					{
 						_action.relativeOrigin = rel_pos;
 						originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));

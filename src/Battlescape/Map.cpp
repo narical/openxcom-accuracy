@@ -1384,17 +1384,20 @@ void Map::drawTerrain(Surface *surface)
 											int targetSize = 1;
 											int maxVoxels = 0;
 											double maxExposure = 0.0;
-											int distance_in_tiles = 0;
 											Tile *target = nullptr;
 											std::vector<Position> exposedVoxels;
 
 											if (unit) // Targeting unit
 											{
 												targetSize = unit->getArmor()->getSize();
-												exposedVoxels.reserve(( 1 + TileEngine::maxBigUnitRadius * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
+												exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 ); // this much
 												target = unit->getTile();
 												action->target = target->getPosition();
-												BattleActionOrigin tempOrigin = action->relativeOrigin;
+
+												// This is TEMPORARY SOLUTION
+												// selectedOrigin is saved to action->relativeOrigin
+												// which is then used by canTargetUnit() in ProjectileFlyBState::init()
+												BattleActionOrigin selectedOrigin = BattleActionOrigin::CENTRE;
 
 												for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
 												{
@@ -1405,12 +1408,14 @@ void Map::drawTerrain(Surface *surface)
 
 													if ((int)exposedVoxels.size() > maxVoxels)
 													{
+														selectedOrigin = relPos;
 														maxVoxels = exposedVoxels.size();
 														maxExposure = exposure;
 													}
 												}
-												action->relativeOrigin = tempOrigin;
-												accuracy = (int)ceil((double)accuracy * maxExposure);
+												action->relativeOrigin = selectedOrigin;
+												double sizeMultiplier = (targetSize == 1 ? 1 : 1.5);
+												accuracy = (int)ceil((double)accuracy * maxExposure * sizeMultiplier);
 											}
 											else
 											{
@@ -1428,29 +1433,22 @@ void Map::drawTerrain(Surface *surface)
 											}
 											else
 											{
-												Position origin = _save->getTileEngine()->getOriginVoxel( *action, shooterUnit->getTile());
-												int xdiff = origin.x/16 - target->getPosition().x;
-												int ydiff = origin.y/16 - target->getPosition().y;
+												if (distance==0) accuracy = 100;
 
-												double zdiff = (origin.z/24 - target->getPosition().z)*1.5;
-												distance_in_tiles = (int)floor(sqrt((double)(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff))); // Distance in cube 16x16x16 tiles
-
-												if (distance_in_tiles==0) accuracy = 100;
-
-												else if (distance_in_tiles <= 10 && weapon->getMinRange() == 0 && action->type == BA_AIMEDSHOT) // For aimed shot...
+												else if (distance <= 10 && weapon->getMinRange() == 0 && action->type == BA_AIMEDSHOT) // For aimed shot...
 												{
 													if (accuracy*2 >= 100)
-														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance_in_tiles-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
+														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance-1)/10))); // Multiplier x1.1..x2 for 10 tiles, nearest to target
 													else
-														accuracy += (100 - accuracy)/distance_in_tiles; // Or just evenly divide to get 100% accuracy on tile adjanced to a target
+														accuracy += (100 - accuracy)/distance; // Or just evenly divide to get 100% accuracy on tile adjanced to a target
 												}
 
-												else if (distance_in_tiles <= 5 && weapon->getMinRange() == 0 && (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT)) // For snap/auto
+												else if (distance <= 5 && weapon->getMinRange() == 0 && (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT)) // For snap/auto
 												{
 													if (accuracy*2 >= 100)
-														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance_in_tiles-1)/5))); // Multiplier x1.2..x2 for 5 nearest tiles
+														accuracy = std::min(100, (int)ceil(accuracy*(2-((double)distance-1)/5))); // Multiplier x1.2..x2 for 5 nearest tiles
 													else
-														accuracy += (100 - accuracy)/distance_in_tiles;
+														accuracy += (100 - accuracy)/distance;
 												}
 
 												if (accuracy <= AccuracyMod.MinCap) // Rule for difficult/long-range shots
