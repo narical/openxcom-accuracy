@@ -233,6 +233,8 @@ public:
 	int getId() const;
 	/// Calculates the distance squared between the unit and a given position.
 	int distance3dToPositionSq(const Position& pos) const;
+	/// Calculates precise distance between the unit and a given position.
+	int distance3dToPositionPrecise(const Position& pos) const;
 	/// Calculates the distance squared between the unit and a given other unit.
 	int distance3dToUnitSq(BattleUnit* otherUnit) const;
 	/// Sets the unit's position
