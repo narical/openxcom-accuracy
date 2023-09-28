@@ -2186,11 +2186,17 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 	for (int i = 0; i <= heightRange; ++i)
 	{
 		scanVoxel->z=targetCenterHeight+heightFromCenter[i];
-
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
-			scanVoxel->x=targetVoxel.x + sliceTargetsX[j];
-			scanVoxel->y=targetVoxel.y + sliceTargetsY[j];
+			int minus1 = (j + 1)%2 - 1; // 0, -1,  0, -1,  0, -1...
+			int plus1  = (j + 1)%2;     // 1,  0,  1,  0,  1,  0...
+			int shift  = (j + 1)/2;     // 0,  1,  1,  2,  2,  3...
+
+			// Radius +0, -1, +1, -2, +2, ...
+			int j_centered = unitRadius + minus1*shift + plus1*shift;
+
+			scanVoxel->x=targetVoxel.x + sliceTargetsX[ j_centered ];
+			scanVoxel->y=targetVoxel.y + sliceTargetsY[ j_centered ];
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
