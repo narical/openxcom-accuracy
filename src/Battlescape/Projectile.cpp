@@ -504,6 +504,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			ss << " Dist:" << tilesDistance << " Total:" << real_accuracy << "%";
 			ss << " Check:" << accuracy_check << " HIT? " << hit_successful;
 			_save->getBattleState()->debug(ss.str());
+
+			Log(LOG_DEBUG) << "Acc:" << accuracy*100 << " Exposure " << exposure*100 << "%"
+						   << " Dist:" << tilesDistance << " Total:" << real_accuracy << "%"
+						   << " Check:" << accuracy_check << " HIT? " << hit_successful;
 		}
 
 		// If there's no target unit - do nothing, leave target voxel "as is", as we've successfully hit the terrain, yay!
