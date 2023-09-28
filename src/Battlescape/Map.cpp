@@ -1287,7 +1287,7 @@ void Map::drawTerrain(Surface *surface)
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
 								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
-								int distance = (int)std::ceil(sqrt(float(distanceSq)));
+								int distance = (int)std::floor(sqrt(float(distanceSq)));
 
 								if (_cursorType == CT_AIM)
 								{
