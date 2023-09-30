@@ -82,6 +82,8 @@ OPT bool oxceUfoLandingAlert;
 OPT int oxceWoundedDefendBaseIf;
 OPT bool oxcePlayBriefingMusicDuringEquipment;
 OPT int oxceNightVisionColor;
+OPT bool oxceFOW;
+OPT int oxceFOWColor;
 OPT bool oxceAutoSell;
 OPT int oxceAutoNightVisionThreshold;
 OPT bool oxceRememberDisabledCraftWeapons;

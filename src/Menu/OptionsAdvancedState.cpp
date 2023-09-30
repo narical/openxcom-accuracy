@@ -343,6 +343,16 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = _isTFTD ? 2 : 1;
 			max = _isTFTD ? 16 : 15;
 		}
+		else if (i == &Options::oxceFOWColor)
+		{
+			// UFO: 1-15, TFTD: 2-16 except 8 and 10
+			if (_isTFTD && ((*i) == 8 || (*i) == 10))
+			{
+				*i += increment;
+			}
+			min = _isTFTD ? 2 : 1;
+			max = _isTFTD ? 16 : 15;
+		}
 
 		if (*i < min)
 		{

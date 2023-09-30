@@ -707,6 +707,7 @@ void Map::drawTerrain(Surface *surface)
 	int tileShade, tileColor, obstacleShade;
 	UnitSprite unitSprite(surface, _game->getMod(), _save, _animFrame, _save->getDepth() != 0);
 	ItemSprite itemSprite(surface, _game->getMod(), _save, _animFrame);
+	int colorBeforeFoW = _nvColor;
 
 	const int halfAnimFrame = (_animFrame / 2) % 4;
 	const int halfAnimFrameRest = (_animFrame % 2);
@@ -884,6 +885,10 @@ void Map::drawTerrain(Surface *surface)
 					}
 
 					tileColor = tile->getMarkerColor();
+					if (Options::oxceFOW && tile->getLastExplored(FACTION_PLAYER) != _save->getTurn())
+						_nvColor = Options::oxceFOWColor;
+					else
+						_nvColor = colorBeforeFoW;
 
 					// Draw floor
 					tmpSurface = tile->getSprite(O_FLOOR);
@@ -1660,6 +1665,7 @@ void Map::drawTerrain(Surface *surface)
 			}
 		}
 	}
+	_nvColor = colorBeforeFoW;
 	if (pathfinderTurnedOn)
 	{
 		if (_numWaypid)
