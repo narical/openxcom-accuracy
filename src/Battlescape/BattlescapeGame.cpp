@@ -226,7 +226,7 @@ void BattlescapeGame::think()
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
 		// Note by Xilmi: "|| (!_save->getSelectedUnit() && Options::autoCombat)" is necessary because otherwise the case where a unit dies by reaction-fire during autoplay isn't handled and waits for the player to select something
-		if (_save->getSide() != FACTION_PLAYER || (_save->getSelectedUnit() && _save->getSelectedUnit()->isAIControlled() && _playerPanicHandled) || !_save->getSelectedUnit())
+		if (_save->getSide() != FACTION_PLAYER || (_save->getSelectedUnit() && _save->getSelectedUnit()->isAIControlled() && _playerPanicHandled) || (!_save->getSelectedUnit() && Options::autoCombat))
 		{
 			_save->resetUnitHitStates();
 			if (!_debugPlay)
