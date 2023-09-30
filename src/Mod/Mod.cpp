@@ -2741,7 +2741,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id");
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("enviroEffects", "type"))
