@@ -246,7 +246,7 @@ void create()
 	_info.push_back(OptionInfo("oxceWoundedDefendBaseIf", &oxceWoundedDefendBaseIf, 100, "STR_WOUNDED_DEFEND_BASE_IF", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxcePlayBriefingMusicDuringEquipment", &oxcePlayBriefingMusicDuringEquipment, false, "STR_PLAY_BRIEFING_MUSIC_DURING_EQUIPMENT", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceNightVisionColor", &oxceNightVisionColor, 5, "STR_NIGHT_VISION_COLOR", "STR_OXCE"));
-	_info.push_back(OptionInfo("oxceFOW", &oxceFOW, false, "STR_FOW", "STR_OXCE"));
+	_info.push_back(OptionInfo("oxceFOW", &oxceFOW, 0, "STR_FOW", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceFOWColor", &oxceFOWColor, 1, "STR_FOW_COLOR", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceAutoNightVisionThreshold", &oxceAutoNightVisionThreshold, 15, "STR_AUTO_NIGHT_VISION_THRESHOLD", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_OXCE"));

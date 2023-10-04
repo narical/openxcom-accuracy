@@ -876,10 +876,19 @@ void Map::drawTerrain(Surface *surface)
 					auto isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
 
 
-					const int oxceFOWshade = 4; // needs to be zero if FOW is off
-					if (Options::oxceFOW)
+					int oxceFOWshade = 0; // needs to be zero if FOW is off
+					if (Options::oxceFOW > 0)
 					{
-						_thisTileVisible = _save->isTileVisible(tile);
+						oxceFOWshade = 4;
+						if (Options::oxceFOW == 1)
+						{
+							if (tile->getLastExplored(FACTION_PLAYER) == _save->getTurn())
+								_thisTileVisible = true;
+							else
+								_thisTileVisible = false;
+						}
+						else
+							_thisTileVisible = _save->isTileVisible(tile);
 						if (_thisTileVisible)
 						{
 							tileShade = reShade(tile);

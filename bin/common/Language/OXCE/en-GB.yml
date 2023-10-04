@@ -318,7 +318,7 @@ en-GB:
   STR_NIGHT_VISION_COLOR: "Select Night Vision colour"
   STR_NIGHT_VISION_COLOR_DESC: "Values from 1 to 15, each representing a different shade colour."
   STR_FOW: "Fog of war"
-  STR_FOW_DESC: "Whether areas not currently visible should be drawn in a different colour."
+  STR_FOW_DESC: "Whether and when tiles not visible by your units are greyed-out. 0> disabled 1> turn-based-mode 2> live-mode"
   STR_FOW_COLOR: "Select fog of war colour"
   STR_FOW_COLOR_DESC: "Values from 1 to 15, each representing a different shade colour. Hint: 1 and 6 look good."
   STR_AUTO_NIGHT_VISION_THRESHOLD: "Auto Night Vision threshold"
