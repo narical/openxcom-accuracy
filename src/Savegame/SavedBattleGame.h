@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <unordered_set>
 #include <vector>
 #include <string>
 #include <yaml-cpp/yaml.h>
@@ -125,6 +126,7 @@ private:
 	std::string _hiddenMovementBackground;
 	HitLog *_hitLog;
 	ScriptValues<SavedBattleGame> _scriptValues;
+	std::unordered_set<Tile*> _currentlyVisibleTiles;
 	/// Selects a soldier.
 	BattleUnit *selectPlayerUnit(int dir, bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 	/// Run newTurnUnit and newTurnItem scripts
@@ -647,6 +649,13 @@ public:
 	const HitLog *getHitLog() const;
 	/// Reset all the unit hit state flags.
 	void resetUnitHitStates();
+
+
+	/// used for FOW updates
+	/// called in BattleGame popState and init, and when unit is moving in map.cpp
+	void updateVisibleTiles();
+	/// Returns if tile is visible to player
+	bool isTileVisible(Tile* sometile);
 };
 
 }

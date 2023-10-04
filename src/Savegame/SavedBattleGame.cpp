@@ -3677,4 +3677,29 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.addCustomConst("DIFF_SUPERHUMAN", DIFF_SUPERHUMAN);
 }
 
+
+/*
+* Used for FOW updates
+* Called in BattleGame popState and init, and when unit is moving in map.cpp
+*/
+void SavedBattleGame::updateVisibleTiles()
+{
+	_currentlyVisibleTiles.clear();
+	for (BattleUnit* unit : _units)
+	{
+		if (unit->getFaction() == FACTION_PLAYER)
+			_currentlyVisibleTiles.insert(unit->getVisibleTiles()->begin(), unit->getVisibleTiles()->end());
+	}
+}
+
+/*
+*
+* Returns true if tile is visible to player
+*/
+bool SavedBattleGame::isTileVisible(Tile* sometile)
+{
+	return (_currentlyVisibleTiles.find(sometile) != _currentlyVisibleTiles.end());
+}
+
+
 }
