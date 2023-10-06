@@ -3666,7 +3666,8 @@ void GeoscapeState::determineAlienMissions()
 			(month < 1 || command->getMaxScore() >= currentScore) &&
 			(month < 1 || command->getMinFunds() <= currentFunds) &&
 			(month < 1 || command->getMaxFunds() >= currentFunds) &&
-			command->getMinDifficulty() <= save->getDifficulty())
+			command->getMinDifficulty() <= save->getDifficulty() &&
+			command->getMaxDifficulty() >= save->getDifficulty())
 		{
 			// level two condition check: make sure we meet any research requirements, if any.
 			bool triggerHappy = true;
