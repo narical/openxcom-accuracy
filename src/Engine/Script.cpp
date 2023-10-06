@@ -2623,10 +2623,16 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 
 	auto labelName = addNameRef("label");
 	auto nullName = addNameRef("null");
+	auto phName = addNameRef("_");
+	auto seperatorName = addNameRef("__");
+	auto varName = addNameRef("var");
 
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
+	addSortHelper(_refList, { phName, ArgInvalid });
+	addSortHelper(_refList, { seperatorName, ArgInvalid });
+	addSortHelper(_refList, { varName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
 }
