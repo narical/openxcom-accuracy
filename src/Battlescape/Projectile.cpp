@@ -641,7 +641,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 						*target = deviate;
 						goto target_calculated;
 					}
-					else if (targetUnit && !trajectory.empty()) // Hit some unit eh?
+					else if ( test == V_UNIT && targetUnit && !trajectory.empty()) // Hit some unit eh?
 					{
 						int impactX = trajectory.at(0).x;
 						int impactY = trajectory.at(0).y;
@@ -657,10 +657,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 						*target = deviate;
 						goto target_calculated;
 					}
-					else // Shouldn't happen, something is wrong!
+					else // Targeted empty tile but hit a unit? It's a miss)
 					{
-						assert(false);
-						continue; // If happens - removing assert will be a quick fix (but still wrong!)
+						*target = deviate;
+						goto target_calculated;
 					}
 				}
 				++horizontal_deviation;
