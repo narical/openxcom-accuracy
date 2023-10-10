@@ -854,8 +854,7 @@ void iterateTilesLightMaxBound(SavedBattleGame* save, Position position, int eve
 
 } // namespace
 
-constexpr int TileEngine::heightFromCenter[11];
-
+constexpr int TileEngine::heightFromCenter[13];
 
 constexpr Position TileEngine::invalid;
 constexpr Position TileEngine::voxelTileSize;
@@ -2177,15 +2176,21 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 		heightRange = 12;
 
 	targetMaxHeight += heightRange;
-	targetCenterHeight=(targetMaxHeight+targetMinHeight)/2;
-	heightRange/=2;
-	if (heightRange>10) heightRange=10;
+	int oddHeightFix = heightRange % 2;
+	targetCenterHeight=(targetMaxHeight + targetMinHeight) / 2 + oddHeightFix;
+
+	heightRange = heightRange / 2 + oddHeightFix;
+	if (heightRange>12) heightRange=12;
 	if (heightRange<=0) heightRange=0;
 
 	// scan ray from top to bottom  plus different parts of target cylinder
 	for (int i = 0; i <= heightRange; ++i)
 	{
-		scanVoxel->z=targetCenterHeight+heightFromCenter[i];
+		scanVoxel->z = targetCenterHeight + heightFromCenter[i];
+
+		if (scanVoxel->z < targetMinHeight || scanVoxel->z > targetMaxHeight)
+			continue;
+
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
 			int minus1 = (j + 1)%2 - 1; // 0, -1,  0, -1,  0, -1...
