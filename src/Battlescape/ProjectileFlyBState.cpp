@@ -323,7 +323,11 @@ void ProjectileFlyBState::init()
 			}
 			else
 			{
-				// _action.relativeOrigin = BattleActionOrigin::CENTER; <--- COMMENTED AS TEMPORARY SOLUTION !!!
+				if ((Options::battleRealisticAccuracy && !Options::oxceEnableOffCentreShooting)
+					|| !Options::battleRealisticAccuracy)
+						_action.relativeOrigin = BattleActionOrigin::CENTRE;
+
+				// TEMPORARY SOLUTION !!!
 				// Temporarily, _action.relativeOrigin is set inside Map::drawTerrain()
 				// so canTargetUnit() here starts to look for LoF from already selected origin (left, right or center)
 				// It prevents the bug where checkVoxelExposure selects best direction but canTargetUnit() here uses its own
