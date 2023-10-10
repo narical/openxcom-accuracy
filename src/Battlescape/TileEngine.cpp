@@ -2045,7 +2045,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 	std::vector<std::string> scanArray;
 	scanArray.reserve(24);
-	const char symbols[] = {'.','_','/','\\','O','@','x'};
+	const char symbols[] = {'.','_','/','\\','o','u','x'};
 
 	// scan rays from top to bottom, every voxel of target cylinder
 	int total=0;
@@ -2095,6 +2095,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 					if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
 					scanLine += '#';
 				}
+				else
+					scanLine += symbols[ test+1 ]; // overlapped by another unit
 			}
 			else
 			{
@@ -2102,7 +2104,11 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 				scanLine += symbols[ test+1 ]; // V_EMPTY = -1
 			}
 		}
+		scanLine += " " + std::to_string(height);
 		scanArray.emplace_back( scanLine );
+
+		// Additional bottom layer for units with odd height
+		if (targetMaxHeight % 2 && height - bottomHeight == 1) ++height;
 	}
 	double exposure = (double)visible / total;
 
