@@ -2054,7 +2054,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	// check bottom of the unit too
 	// for examlpe hovertank/plasma has floating height of 6, so his bottom is on level 6, with voxels 0-5 below it.
 	// levels for checking = unit height range / 2 + 1
-	int bottomHeight = ( targetMinHeight < 2 ? 2 : targetMinHeight ); // can't check height 0-1 (bug?)
+	int bottomHeight = targetMinHeight;
+	int floorElevation = targetMinHeight % Position::TileZ;
+	if (floorElevation < 2)
+		bottomHeight = targetMinHeight - floorElevation + 2; // can't check height 0-1 (bug?)
 
 	int simplifyDivider = unitRadius;
 	if (targetSize == 2) simplifyDivider = 4;
