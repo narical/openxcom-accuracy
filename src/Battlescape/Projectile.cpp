@@ -401,6 +401,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
 	{
+		bool isCtrlPressed = _save->isCtrlPressed(true);
 		int targetSize = 1;
 		double exposure = 0.0;
 		int real_accuracy = 0; // separate variable for realistic accuracy, just in case
@@ -577,7 +578,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			bool isSplashDamage = false;
 			auto ammo = _action.weapon->getAmmoForAction(_action.type);
 			if (ammo && !ammo->getRules()->getDamageType()->isDirect()) isSplashDamage = true;
-			if (targetUnit && ( targetSize == 2 || isSplashDamage )) visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
+			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
+				visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
 
 			int accuracyDivider = 4;
 			switch (_action.type)
