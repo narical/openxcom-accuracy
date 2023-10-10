@@ -1762,6 +1762,18 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 	std::vector<Position> _trajectory;
 	bool unitSeen = canTargetUnit(&originVoxel, tile, &scanVoxel, currentUnit, false);
 
+	if (!unitSeen &&
+		Options::battleRealisticAccuracy &&
+		Options::oxceEnableOffCentreShooting)
+	{
+		for (const auto &relPos : { BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+		{
+			originVoxel = getSightOriginVoxel(currentUnit, tile, relPos);
+			unitSeen = canTargetUnit(&originVoxel, tile, &scanVoxel, currentUnit, false);
+			if (unitSeen) break;
+		}
+	}
+
 	// heat vision 100% = smoke effectiveness 0%
 	int smokeDensityFactor = 100 - currentUnit->getArmor()->getHeatVision();
 
