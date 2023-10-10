@@ -1629,7 +1629,7 @@ bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRe
  * @param currentUnit The watcher.
  * @return Approximately an eyeball voxel.
  */
-Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
+Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit, Tile *tileTarget, BattleActionOrigin relOrigin)
 {
 	const auto pos = currentUnit->getPosition();
 	auto* tile = currentUnit->getTile();
@@ -1652,6 +1652,39 @@ Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 		{
 			originVoxel.z--;
 		}
+	}
+
+	if (Options::battleRealisticAccuracy &&
+		Options::oxceEnableOffCentreShooting &&
+		tileTarget)
+	{
+		int direction = getDirectionTo(pos, tileTarget->getPosition());
+		int unitSize = currentUnit->getArmor()->getSize();
+		originVoxel.x = pos.toVoxel().x;
+		originVoxel.y = pos.toVoxel().y;
+
+		const int dirXshift[8] = {5, 6, 8,10,11,10, 8, 6};
+		const int dirYshift[8] = {8, 6, 5, 6, 8,10,11,10};
+
+		// Offset for different relative origin values
+		switch (relOrigin)
+		{
+		case BattleActionOrigin::CENTRE:
+			originVoxel.x += 8 * unitSize;
+			originVoxel.y += 8 * unitSize;
+			break;
+
+		case BattleActionOrigin::LEFT:
+			originVoxel.x += dirXshift[ direction ] * unitSize;
+			originVoxel.y += dirYshift[ direction ] * unitSize;
+			break;
+
+		case BattleActionOrigin::RIGHT:
+			direction = (direction + 4) % 8;
+			originVoxel.x += dirXshift[ direction ] * unitSize;
+			originVoxel.y += dirYshift[ direction ] * unitSize;
+			break;
+		};
 	}
 
 	return originVoxel;

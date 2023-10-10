@@ -185,7 +185,7 @@ public:
 	/// Calculates a parabola trajectory.
 	int calculateParabolaVoxel(Position origin, Position target, bool storeTrajectory, std::vector<Position> *trajectory, BattleUnit *excludeUnit, double curvature, const Position delta);
 	/// Gets the origin voxel of a unit's eyesight.
-	Position getSightOriginVoxel(BattleUnit *currentUnit);
+	Position getSightOriginVoxel(BattleUnit *currentUnit, Tile *tileTarget = nullptr, BattleActionOrigin relOrigin = BattleActionOrigin::CENTRE);
 	/// Checks visibility of a unit on this tile.
 	bool visible(BattleUnit *currentUnit, Tile *tile);
 	/// Checks visibility of a tile.
