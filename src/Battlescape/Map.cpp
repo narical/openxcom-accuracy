@@ -163,7 +163,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_cacheHasLOS = -1;
 	_cacheAccuracy = -1;
 
-	_thisTileFOW = false;
+	_thisTileVisible = false;
 	_nightVisionOn = false;
 	if (Options::oxceToggleNightVisionType == 2)
 	{
@@ -692,19 +692,22 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
  * Keep this function as optimised as possible. It's big to minimise overhead of function calls.
  * @param surface The surface to draw on.
  */
-void Map::drawTerrain(Surface* surface)
+void Map::drawTerrain(Surface *surface)
 {
+	if (Options::oxceFOW)
+		_save->updateVisibleTiles();
+
 	_isAltPressed = _game->isAltPressed(true);
 	int frameNumber = 0;
 	SurfaceRaw<const Uint8> tmpSurface;
-	Tile* tile;
+	Tile *tile;
 	int beginX = 0, endX = _save->getMapSizeX() - 1;
 	int beginY = 0, endY = _save->getMapSizeY() - 1;
 	int beginZ = 0, endZ = _save->getMapSizeZ() - 1;
 	Position mapPosition, screenPosition, bulletPositionScreen, movingUnitPosition;
-	int bulletLowX = 16000, bulletLowY = 16000, bulletLowZ = 16000, bulletHighX = 0, bulletHighY = 0, bulletHighZ = 0;
+	int bulletLowX=16000, bulletLowY=16000, bulletLowZ=16000, bulletHighX=0, bulletHighY=0, bulletHighZ=0;
 	int dummy;
-	BattleUnit* movingUnit = _save->getTileEngine()->getMovingUnit();
+	BattleUnit *movingUnit = _save->getTileEngine()->getMovingUnit();
 	int tileShade, tileColor, obstacleShade;
 	UnitSprite unitSprite(surface, _game->getMod(), _save, _animFrame, _save->getDepth() != 0);
 	ItemSprite itemSprite(surface, _game->getMod(), _save, _animFrame);
@@ -713,26 +716,26 @@ void Map::drawTerrain(Surface* surface)
 	const int halfAnimFrame = (_animFrame / 2) % 4;
 	const int halfAnimFrameRest = (_animFrame % 2);
 
-	NumberText* _numWaypid = 0;
+	NumberText *_numWaypid = 0;
 
 	// if we got bullet, get the highest x and y tiles to draw it on
 	if (_projectile && _explosions.empty())
 	{
-		int part = _projectile->getItem() ? 0 : BULLET_SPRITES - 1;
+		int part = _projectile->getItem() ? 0 : BULLET_SPRITES-1;
 		for (int i = 0; i <= part; ++i)
 		{
-			if (_projectile->getPosition(1 - i).x < bulletLowX)
-				bulletLowX = _projectile->getPosition(1 - i).x;
-			if (_projectile->getPosition(1 - i).y < bulletLowY)
-				bulletLowY = _projectile->getPosition(1 - i).y;
-			if (_projectile->getPosition(1 - i).z < bulletLowZ)
-				bulletLowZ = _projectile->getPosition(1 - i).z;
-			if (_projectile->getPosition(1 - i).x > bulletHighX)
-				bulletHighX = _projectile->getPosition(1 - i).x;
-			if (_projectile->getPosition(1 - i).y > bulletHighY)
-				bulletHighY = _projectile->getPosition(1 - i).y;
-			if (_projectile->getPosition(1 - i).z > bulletHighZ)
-				bulletHighZ = _projectile->getPosition(1 - i).z;
+			if (_projectile->getPosition(1-i).x < bulletLowX)
+				bulletLowX = _projectile->getPosition(1-i).x;
+			if (_projectile->getPosition(1-i).y < bulletLowY)
+				bulletLowY = _projectile->getPosition(1-i).y;
+			if (_projectile->getPosition(1-i).z < bulletLowZ)
+				bulletLowZ = _projectile->getPosition(1-i).z;
+			if (_projectile->getPosition(1-i).x > bulletHighX)
+				bulletHighX = _projectile->getPosition(1-i).x;
+			if (_projectile->getPosition(1-i).y > bulletHighY)
+				bulletHighY = _projectile->getPosition(1-i).y;
+			if (_projectile->getPosition(1-i).z > bulletHighZ)
+				bulletHighZ = _projectile->getPosition(1-i).z;
 		}
 		// divide by 16 to go from voxel to tile position
 		bulletLowX = bulletLowX / 16;
@@ -748,7 +751,7 @@ void Map::drawTerrain(Surface* surface)
 		if (_projectileInFOV && _followProjectile)
 		{
 			Position newCam = _camera->getMapOffset();
-			if (newCam.z != bulletHighZ) // switch level
+			if (newCam.z != bulletHighZ) //switch level
 			{
 				newCam.z = bulletHighZ;
 				if (_projectileInFOV)
@@ -763,7 +766,7 @@ void Map::drawTerrain(Surface* surface)
 				{
 					_launch = false;
 					if ((bulletPositionScreen.x < 1 || bulletPositionScreen.x > surface->getWidth() - 1 ||
-						 bulletPositionScreen.y < 1 || bulletPositionScreen.y > _visibleMapHeight - 1))
+						bulletPositionScreen.y < 1 || bulletPositionScreen.y > _visibleMapHeight - 1))
 					{
 						_camera->centerOnPosition(Position(bulletLowX, bulletLowY, bulletHighZ), false);
 						_camera->convertVoxelToScreen(_projectile->getPosition(), &bulletPositionScreen);
@@ -809,7 +812,8 @@ void Map::drawTerrain(Surface* surface)
 						enough = false;
 					}
 					_camera->convertVoxelToScreen(_projectile->getPosition(), &bulletPositionScreen);
-				} while (!enough);
+				}
+				while (!enough);
 			}
 		}
 	}
@@ -831,6 +835,7 @@ void Map::drawTerrain(Surface* surface)
 		endZ = std::min(endZ, _camera->getViewLevel());
 	}
 
+
 	bool pathfinderTurnedOn = _save->getPathfinding()->isPathPreviewed();
 
 	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)))
@@ -844,7 +849,7 @@ void Map::drawTerrain(Surface* surface)
 	{
 		movingUnitPosition = movingUnit->getPosition();
 
-		// Update FOW if player unit moving
+		//Update FOW if player unit moving
 		if (Options::oxceFOW)
 			if (movingUnit->getFaction() == FACTION_PLAYER)
 				_save->updateVisibleTiles();
@@ -852,18 +857,6 @@ void Map::drawTerrain(Surface* surface)
 
 	surface->lock();
 	const auto cameraPos = _camera->getMapOffset();
-
-	int oxceFOWshade = 0; // needs to be zero if FOW is off
-	if (Options::oxceFOW == 2)
-	{
-		_save->updateVisibleTiles();
-		oxceFOWshade = 4;
-	}
-	else if (Options::oxceFOW == 1)
-	{
-		oxceFOWshade = 4;
-	}
-
 	for (int itZ = beginZ; itZ <= endZ; itZ++)
 	{
 		bool topLayer = itZ == endZ;
@@ -883,29 +876,42 @@ void Map::drawTerrain(Surface* surface)
 					auto isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
 
 
-					
+					int oxceFOWshade = 0; // needs to be zero if FOW is off
 					if (Options::oxceFOW > 0)
 					{
-						_thisTileFOW = _save->isTileFOW(tile);
-						if (_thisTileFOW)
+						oxceFOWshade = 4;
+						if (Options::oxceFOW == 1)
+						{
+							if (tile->getLastExplored(FACTION_PLAYER) == _save->getTurn())
+								_thisTileVisible = true;
+							else
+								_thisTileVisible = false;
+						}
+						else
+							_thisTileVisible = _save->isTileVisible(tile);
+						if (_thisTileVisible)
+						{
+							tileShade = reShade(tile);
+							_nvColor = colorBeforeFoW; // reset if previous tile was FOW
+							obstacleShade = tileShade;
+							if (_showObstacles)
+							{
+								if (tile->isObstacle())
+								{
+									obstacleShade = getShadePulseForFrame(tileShade, _animFrame);
+								}
+							}
+						}
+						else if (tile->isDiscovered(O_FLOOR))
 						{
 							tileShade = reShade(tile) + oxceFOWshade; // make non visible tiles darker
-							_nvColor = Options::oxceFOWColor;         // set FOW color
+							_nvColor = Options::oxceFOWColor;        // set FOW color
 							if (tileShade > 15)
 								tileShade = 15;
 							obstacleShade = tileShade;
 							if (_showObstacles)
 								if (tile->isObstacle())
 									obstacleShade = getShadePulseForFrame(tileShade, _animFrame) + oxceFOWshade;
-						}
-						else if (tile->isDiscovered(O_FLOOR))
-						{
-							tileShade = reShade(tile);
-							_nvColor = colorBeforeFoW; // reset if previous tile was FOW
-							obstacleShade = tileShade;
-							if (_showObstacles)
-								if (tile->isObstacle())
-									obstacleShade = getShadePulseForFrame(tileShade, _animFrame);					
 						}
 						else
 						{
@@ -1005,10 +1011,10 @@ void Map::drawTerrain(Surface* surface)
 							auto wallShade = getWallShade(O_WESTWALL, tile);
 							if (tile->getObstacle(O_WESTWALL))
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), obstacleShade, false, _nvColor);
-							else if (_thisTileFOW)
-								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), wallShade + oxceFOWshade, false, _nvColor);
-							else
+							else if (_thisTileVisible)
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), wallShade, false, _nvColor);
+							else
+								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), wallShade + oxceFOWshade, false, _nvColor);
 						}
 						// Draw north wall
 						tmpSurface = tile->getSprite(O_NORTHWALL);
@@ -1017,10 +1023,10 @@ void Map::drawTerrain(Surface* surface)
 							auto wallShade = getWallShade(O_NORTHWALL, tile);
 							if (tile->getObstacle(O_NORTHWALL))
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_NORTHWALL), obstacleShade, bool(tile->getSprite(O_WESTWALL)), _nvColor);
-							else if (_thisTileFOW)
-								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_NORTHWALL), wallShade + oxceFOWshade, bool(tile->getSprite(O_WESTWALL)), _nvColor);
-							else
+							else if (_thisTileVisible)
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_NORTHWALL), wallShade, bool(tile->getSprite(O_WESTWALL)), _nvColor);
+							else
+								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_NORTHWALL), wallShade + oxceFOWshade, bool(tile->getSprite(O_WESTWALL)), _nvColor);
 						}
 						// Draw object
 						tmpSurface = tile->getSprite(O_OBJECT);
@@ -1717,9 +1723,7 @@ void Map::drawTerrain(Surface* surface)
 			}
 		}
 	}
-
 	_nvColor = colorBeforeFoW;
-
 	if (pathfinderTurnedOn)
 	{
 		if (_numWaypid)
