@@ -407,6 +407,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		int real_accuracy = 0; // separate variable for realistic accuracy, just in case
 
 		BattleUnit *shooterUnit = _action.actor;
+		bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER);
+
 		std::vector<Position> exposedVoxels;
 		int exposedVoxelsCount = 0; // maximum of exposed voxels for left, center or right shooting position
 
@@ -630,9 +632,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					trajectory.clear();
 					int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
 
-					if (!trajectory.empty() && tilesDistance > 1)
+					// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
+					if (isPlayer && !isCtrlPressed && !trajectory.empty() && tilesDistance > 1)
 					{
-						// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
 						if (Position::distanceSq( origin, trajectory.at(0)) < 3*30*30) // Almost 2 tiles diagonally
 						{
 							continue; // No accidental hits please!
