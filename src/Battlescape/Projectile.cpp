@@ -638,6 +638,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					// we need a point close to normal to LOS, or behind that normal
 					if (Position::distanceSq(origin, deviate) < Position::distanceSq(origin,visibleCenter)) continue;
 
+					// Remove diagonal skew
+					if (Position::distance2dSq(visibleCenter, deviate) > horizontal_deviation * horizontal_deviation) continue;
+
 					trajectory.clear();
 					int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
 
