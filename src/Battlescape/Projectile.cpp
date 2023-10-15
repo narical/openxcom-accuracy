@@ -433,8 +433,17 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			exposedVoxels.reserve( heightCount * widthCount );
 
 			BattleActionOrigin selectedOrigin = BattleActionOrigin::CENTRE;
+			std::vector<BattleActionOrigin> originTypes;
 
-			for (const auto &relPos : { BattleActionOrigin::CENTRE, BattleActionOrigin::LEFT, BattleActionOrigin::RIGHT })
+			originTypes.push_back( BattleActionOrigin::CENTRE );
+
+			if (Options::oxceEnableOffCentreShooting)
+			{
+				originTypes.push_back( BattleActionOrigin::LEFT );
+				originTypes.push_back( BattleActionOrigin::RIGHT );
+			}
+
+			for (const auto &relPos : originTypes)
 			{
 				tempVoxels.clear();
 				_action.relativeOrigin = relPos;
