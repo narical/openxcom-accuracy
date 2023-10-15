@@ -2199,7 +2199,6 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 	int targetMaxHeight = targetMinHeight;
 	int targetCenterHeight;
-	// if there is an other unit on target tile, we assume we want to check against this unit's height
 	int heightRange;
 
 	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
@@ -2233,32 +2232,37 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 		heightRange = 12;
 
 	targetMaxHeight += heightRange;
-	int oddHeightFix = heightRange % 2;
-	targetCenterHeight=(targetMaxHeight + targetMinHeight) / 2 + oddHeightFix;
 
-	heightRange = heightRange / 2 + oddHeightFix;
-	if (heightRange>12) heightRange=12;
-	if (heightRange<=0) heightRange=0;
+	targetCenterHeight = (targetMaxHeight + targetMinHeight) / 2;
+	targetCenterHeight += (targetMaxHeight - targetCenterHeight) % 2; // Center should have even number of voxels above it
 
-	// scan ray from top to bottom  plus different parts of target cylinder
-	for (int i = 0; i <= heightRange; ++i)
+	int  horizontalCount = heightRange / 2; // Number of horizontal slices for a target
+	horizontalCount += horizontalCount % 2; // They are symmetrical relative to center so should be even number too
+
+	if (horizontalCount > 12) horizontalCount = 12;
+	if (horizontalCount <= 0) horizontalCount = 0;
+
+	// Scan ray for every horizontal slice including center
+	for (int vIdx = 0; vIdx <= horizontalCount; ++vIdx)
 	{
-		scanVoxel->z = targetCenterHeight + heightFromCenter[i];
+		// Start from the center, gradually increase vertical distance in both directions
+		scanVoxel->z = targetCenterHeight + heightFromCenter[ vIdx ];
 
-		if (scanVoxel->z < targetMinHeight || scanVoxel->z > targetMaxHeight)
+		if (scanVoxel->z < targetMinHeight+1 || scanVoxel->z > targetMaxHeight)
 			continue;
 
-		for (int j = 0; j <= unitRadius*2; ++j)
+		// Scan ray for every vertical slice in selected horizontal plane
+		for (int hIdx = 0; hIdx <= unitRadius*2; ++hIdx)
 		{
-			int minus1 = (j + 1)%2 - 1; // 0, -1,  0, -1,  0, -1...
-			int plus1  = (j + 1)%2;     // 1,  0,  1,  0,  1,  0...
-			int shift  = (j + 1)/2;     // 0,  1,  1,  2,  2,  3...
+			// Start from the center, gradually increase horizontal distance in both directions
+			int minus1 = (hIdx + 1)%2 - 1; // 0, -1,  0, -1,  0, -1...
+			int plus1  = (hIdx + 1)%2;     // 1,  0,  1,  0,  1,  0...
+			int shift  = (hIdx + 1)/2;     // 0,  1,  1,  2,  2,  3...
+			int hPosIdx = unitRadius + minus1*shift + plus1*shift; // Radius +0, -1, +1, -2, +2, ...
 
-			// Radius +0, -1, +1, -2, +2, ...
-			int j_centered = unitRadius + minus1*shift + plus1*shift;
+			scanVoxel->x = targetVoxel.x + sliceTargetsX[ hPosIdx ];
+			scanVoxel->y = targetVoxel.y + sliceTargetsY[ hPosIdx ];
 
-			scanVoxel->x=targetVoxel.x + sliceTargetsX[ j_centered ];
-			scanVoxel->y=targetVoxel.y + sliceTargetsY[ j_centered ];
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
 			if (test == V_UNIT)
@@ -2270,7 +2274,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 						//voxel of hit must be inside of scanned box
 						if (_trajectory.at(0).x/16 == (scanVoxel->x/16) + x + xOffset &&
 							_trajectory.at(0).y/16 == (scanVoxel->y/16) + y + yOffset &&
-							_trajectory.at(0).z >= targetMinHeight &&
+							_trajectory.at(0).z >= targetMinHeight+1 &&
 							_trajectory.at(0).z <= targetMaxHeight)
 						{
 							return true;
