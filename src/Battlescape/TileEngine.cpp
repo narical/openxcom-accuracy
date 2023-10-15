@@ -2049,7 +2049,8 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	Position targetVoxel = targetUnit->getPosition().toVoxel();
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
-	targetMinHeight += targetUnit->getFloatHeight();
+	int targetFloatHeight = targetUnit->getFloatHeight();
+	targetMinHeight += targetFloatHeight;
 
 	int heightRange;
 	if (!targetUnit->isOut())
@@ -2099,10 +2100,12 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	// check bottom of the unit too
 	// for examlpe hovertank/plasma has floating height of 6, so his bottom is on level 6, with voxels 0-5 below it.
 	// levels for checking = unit height range / 2 + 1
-	int bottomHeight = targetMinHeight;
+	int bottomHeight = targetMinHeight + 1;
 	int floorElevation = targetMinHeight % Position::TileZ;
 	if (floorElevation < 2)
+	{
 		bottomHeight = targetMinHeight - floorElevation + 2; // can't check height 0-1 (bug?)
+	}
 
 	int simplifyDivider = unitRadius;
 	if (targetSize == 2) simplifyDivider = 4;
@@ -2134,7 +2137,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 				if (impactX >= unitMin_X && impactX <= unitMax_X &&
 					impactY >= unitMin_Y && impactY <= unitMax_Y &&
-					impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
+					impactZ >= targetMinHeight+1 && impactZ <= targetMaxHeight)
 				{
 					++visible;
 					if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
@@ -2149,11 +2152,11 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 				scanLine += symbols[ test+1 ]; // V_EMPTY = -1
 			}
 		}
-		scanLine += " " + std::to_string(height);
+		scanLine += " " + std::to_string( height % Position::TileZ );
 		scanArray.emplace_back( scanLine );
 
 		// Additional bottom layer for units with odd height
-		if (targetMaxHeight % 2 && height - bottomHeight == 1) ++height;
+		if (targetFloatHeight > 1 && heightRange % 2 == 0 && height - bottomHeight == 1) ++height;
 	}
 	double exposure = (double)visible / total;
 
