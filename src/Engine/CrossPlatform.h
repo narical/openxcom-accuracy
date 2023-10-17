@@ -137,9 +137,9 @@ namespace CrossPlatform
 	// in Release, do nothing. in Debug, crash out
 	[[noreturn]] inline void unreachable()
 	{
-	#ifdef _WIN32 // MSVC
-	    __assume(false);
-	#else  // GCC, Clang
+	#if defined _WIN32 && !defined(__MINGW64__) && !defined(__MINGW32__) // MSVC
+		__assume(false);
+	#else // GCC, Clang
 		__builtin_unreachable();
 	#endif
 	}
