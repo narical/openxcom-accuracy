@@ -2767,6 +2767,7 @@ void StatsForNerdsState::initArmorList()
 		addSection("{Recovery}", "", _white);
 		addVectorOfRules(ss, armorRule->getCorpseBattlescape(), "corpseBattle");
 		addRule(ss, armorRule->getCorpseGeoscape(), "corpseGeo");
+		addRule(ss, armorRule->getSelfDestructItem(), "selfDestructItem");
 		addRule(ss, armorRule->getStoreItem(), "storeItem");
 
 		addSection("{Inventory}", "", _white);

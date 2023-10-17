@@ -182,7 +182,7 @@ void ExplosionBState::init()
 		_areaOfEffect = true;
 		if (_attack.attacker)
 		{
-			itemRule = _attack.attacker->getArmor()->getCorpseGeoscape(); //TODO: not getCorpseBattlescape ones?
+			itemRule = _attack.attacker->getArmor()->getSelfDestructItem();
 			_power = itemRule->getPowerBonus(_attack);
 			_damageType = itemRule->getDamageType();
 			_radius = itemRule->getExplosionRadius(_attack);
