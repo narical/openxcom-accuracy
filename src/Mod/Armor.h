@@ -209,7 +209,7 @@ public:
 	/// Gets the Battlescape corpse item.
 	const std::vector<const RuleItem*> &getCorpseBattlescape() const;
 	/// Gets the Geoscape corpse item.
-	const RuleItem* getSelfDestructItem() const { return _selfDestructItem ? _selfDestructItem : _corpseGeo; }
+	const RuleItem* getSelfDestructItem() const { return _selfDestructItem ? _selfDestructItem : _corpseGeo && _corpseGeo->getPower() > 0 ? _corpseGeo : nullptr; }
 	/// Gets the stores item.
 	const RuleItem* getStoreItem() const;
 	/// Gets the special weapon type.
