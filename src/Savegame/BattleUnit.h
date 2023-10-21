@@ -73,7 +73,7 @@ public:
 class BattleUnit
 {
 private:
-	static const int SPEC_WEAPON_MAX = 3;
+	static const int SPEC_WEAPON_MAX = 4;
 
 	UnitFaction _faction, _originalFaction;
 	UnitFaction _killedBy;

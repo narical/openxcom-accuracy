@@ -2012,12 +2012,13 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			}
 		}
 
+		auto* selfDestructItem = getSpecialWeapon(getArmor()->getSelfDestructItem());
 		if (rand.percent(std::get<arg_selfDestructChance>(args.data))
-			&& !hasAlreadyExploded())
+			&& !hasAlreadyExploded() && selfDestructItem)
 		{
 			setAlreadyExploded(true);
 			Position p = getPosition().toVoxel();
-			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, }, 0));
+			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, selfDestructItem, selfDestructItem }, 0));
 		}
 	}
 
@@ -5316,13 +5317,6 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	const Mod *mod = save->getMod();
 	int i = 0;
 
-	if (_specWeapon[0] && updateFromSave)
-	{
-		// new saves already contain special built-in weapons, we can stop here
-		return;
-		// old saves still need the below functionality to work properly
-	}
-
 	auto addItem = [&](const RuleItem *item)
 	{
 		if (item && i < SPEC_WEAPON_MAX)
@@ -5351,6 +5345,16 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 		}
 	};
 
+	if (_specWeapon[0] && updateFromSave)
+	{
+		// for backward compatibility, we try add corpse explosion
+		addItem(getArmor()->getSelfDestructItem());
+
+		// new saves already contain special built-in weapons, we can stop here
+		return;
+		// old saves still need the below functionality to work properly
+	}
+
 	if (getUnitRules())
 	{
 		addItem(mod->getItem(getUnitRules()->getMeleeWeapon()));
@@ -5366,6 +5370,8 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	{
 		addItem(getGeoscapeSoldier()->getRules()->getSpecialWeapon());
 	}
+
+	addItem(getArmor()->getSelfDestructItem());
 }
 
 /**

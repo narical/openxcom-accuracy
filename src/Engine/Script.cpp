@@ -2623,10 +2623,16 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 
 	auto labelName = addNameRef("label");
 	auto nullName = addNameRef("null");
+	auto phName = addNameRef("_");
+	auto seperatorName = addNameRef("__");
+	auto varName = addNameRef("var");
 
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
+	addSortHelper(_refList, { phName, ArgInvalid });
+	addSortHelper(_refList, { seperatorName, ArgInvalid });
+	addSortHelper(_refList, { varName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
 }
@@ -3161,10 +3167,10 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 			#define MACRO_STRCAT(...) #__VA_ARGS__
 			#define MACRO_ALL_LOG(NAME, Impl, Args, Desc, ...) \
 				if (validOverloadProc(helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) && strlen(Desc) != 0) opLog.get(LOG_DEBUG) \
-					<< "Op:    " << std::setw(tabSize*2) << #NAME \
-					<< "OpId:  " << std::setw(tabSize/2) << offset << "  + " <<  std::setw(tabSize) << helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver() \
-					<< "Args:  " << std::setw(tabSize*5) << displayOverloadProc(this, helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) \
-					<< "Desc:  " << Desc \
+					<< "Op:   " << std::setw(tabSize*2) << #NAME \
+					<< "OpId: " << std::setw(tabSize/2) << offset << " .. " <<  std::setw(tabSize) << (offset + helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver() - 1) \
+					<< "Args: " << std::setw(tabSize*5) << displayOverloadProc(this, helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) \
+					<< "Desc: " << Desc \
 					<< "\n"; \
 				offset += helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver();
 
@@ -3218,7 +3224,7 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 		);
 		for (auto& r : temp)
 		{
-			if (!ArgIsReg(r.type) && !ArgIsPtr(r.type) && Logger::reportingLevel() != LOG_VERBOSE)
+			if ((!ArgIsReg(r.type) && !ArgIsPtr(r.type) && Logger::reportingLevel() != LOG_VERBOSE) || ArgBase(r.type) == ArgInvalid)
 			{
 				continue;
 			}
@@ -3251,7 +3257,22 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 			{
 				if (p.parserArg != nullptr && p.overloadArg && p.description != ScriptRef{ BindBase::functionInvisible })
 				{
-					refLog.get(LOG_DEBUG) << "Name: " << std::setw(40) << p.name.toString() << "Args: " << std::setw(50) << displayOverloadProc(this, p.overloadArg) << (p.description != ScriptRef{ BindBase::functionWithoutDescription } ? std::string("Desc: ") + p.description.toString() + "\n" : "\n");
+					const auto tabStop = 4; // alignment of next part
+					const auto minSpace = 2; // min space to next part
+
+					auto name = p.name.toString();
+					auto nameTab = std::max(
+						(((int)name.size() + minSpace + tabStop - 1) & -tabStop),
+						40
+					);
+
+					auto args = displayOverloadProc(this, p.overloadArg);
+					auto argsTab = std::max(
+						(((int)args.size() + minSpace + tabStop - 1) & -tabStop),
+						48
+					);
+
+					refLog.get(LOG_DEBUG) << "Name: " << std::setw(nameTab) << name << "Args: " << std::setw(argsTab) << args << (p.description != ScriptRef{ BindBase::functionWithoutDescription } ? std::string("Desc: ") + p.description.toString() + "\n" : "\n");
 				}
 			}
 		}

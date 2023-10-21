@@ -95,6 +95,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	mod->loadNames(_type, _builtInWeaponsNames, node["builtInWeapons"]);
 	mod->loadName(_type, _corpseGeoName, node["corpseGeo"]);
 	mod->loadNameNull(_type, _storeItemName, node["storeItem"]);
+	mod->loadNameNull(_type, _selfDestructItemName, node["selfDestructItem"]);
 	mod->loadNameNull(_type, _specWeaponName, node["specialWeapon"]);
 	mod->loadNameNull(_type, _requiresName, node["requires"]);
 
@@ -276,6 +277,7 @@ void Armor::afterLoad(const Mod* mod)
 		_infiniteSupply = true;
 	}
 	mod->linkRule(_storeItem, _storeItemName); //special logic there: "STR_NONE" -> nullptr
+	mod->linkRule(_selfDestructItem, _selfDestructItemName);
 	mod->linkRule(_specWeapon, _specWeaponName);
 
 
