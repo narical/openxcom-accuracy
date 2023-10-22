@@ -391,7 +391,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			bool hasLOS = false;
 			BattleUnit *bu = _action.actor;
-			BattleUnit *targetUnit = t->getOverlappingUnit(_save);
+			BattleUnit *targetUnit = t->getUnit(); // we can call TileEngine::visible() only if the target unit is on the same tile
 
 			if (targetUnit)
 			{
