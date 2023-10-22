@@ -1807,6 +1807,11 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 			}
 		}
 		visibleDistanceMaxVoxel = getMaxVoxelViewDistance(); // reset again (because of smoke formula)
+
+		// 3  - coefficient of calculation (see above).
+		// 20 - maximum view distance in vanilla Xcom.
+		// 100 - % for smokeDensityFactor.
+		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
 		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * smokeDensityFactor * getMaxViewDistance()/(3 * 20 * 100);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke * smokeDensityFactor / 100, densityOfFire };
