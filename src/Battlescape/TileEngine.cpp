@@ -1823,7 +1823,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
  * @param tile The tile to check for.
  * @return True if visible.
  */
-bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
+bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 {
 	// if there is no tile, we can't see it
 	if (!tile)
@@ -1970,7 +1970,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
 				else if (test == V_UNIT)
 				{
 					BattleUnit *hitUnit = _save->getTile(hitPos)->getUnit();
-					BattleUnit *targetUnit = tile->getUnit();
+					BattleUnit *targetUnit = drawing ? tile->getUnit() : tile->getOverlappingUnit(_save);
 					if (hitUnit != targetUnit)
 					{
 						seen = false;
