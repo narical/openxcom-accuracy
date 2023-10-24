@@ -1658,7 +1658,17 @@ Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit, Tile *tileTarg
 		Options::oxceEnableOffCentreShooting &&
 		tileTarget)
 	{
-		int direction = getDirectionTo(pos, tileTarget->getPosition());
+		// Adjuct target tile to the centre of unit
+		Position adjustedPos;
+		BattleUnit *targetUnit = tileTarget->getUnit();
+		if (targetUnit)
+		{
+			int targetSize = targetUnit->getArmor()->getSize();
+			Position targetVoxel = targetUnit->getPosition().toVoxel() + Position(8*targetSize, 8*targetSize, 0);
+			adjustedPos = targetVoxel.toTile();
+		}
+
+		int direction = getDirectionTo(pos, adjustedPos);
 		int unitSize = currentUnit->getArmor()->getSize();
 		originVoxel.x = pos.toVoxel().x;
 		originVoxel.y = pos.toVoxel().y;
