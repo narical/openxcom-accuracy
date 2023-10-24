@@ -417,6 +417,11 @@ static bool positionInRangeXY(Position a, Position b, int diff)
 namespace
 {
 static const std::vector<std::string> shootingRelativeOriginsDesc = {"Center view", "Left shift", "Right shift"};
+static const int TXT_GREEN	= Palette::blockOffset(Pathfinding::green - 1) - 1;
+static const int TXT_YELLOW	= Palette::blockOffset(Pathfinding::yellow - 1) - 1;
+static const int TXT_RED	= Palette::blockOffset(Pathfinding::red - 1) - 1;
+static const int TXT_BROWN	= Palette::blockOffset(Pathfinding::brown - 1) - 1;
+
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
 
 int getArrowBobForFrame(int frame)
