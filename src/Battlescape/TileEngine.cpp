@@ -2041,6 +2041,8 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug, std::vector<Position> *exposedVoxels, bool isSimpleMode)
 {
 	isDebug = isDebug && _save->getDebugMode();
+	if (excludeUnit && excludeUnit->isAIControlled()) isSimpleMode = true;
+
 	std::vector<Position> _trajectory;
 	Position scanVoxel;
 	BattleUnit *targetUnit = tile->getUnit();
@@ -2062,7 +2064,6 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 	int unitRadius = targetUnit->getRadiusVoxels();
 	int targetSize = targetUnit->getArmor()->getSize();
-
 	targetVoxel += Position(8*targetSize, 8*targetSize, 0); // center of unit
 
 	int unitMin_X = targetVoxel.x - unitRadius - 1;
@@ -2097,16 +2098,16 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	int total=0;
 	int visible=0;
 
-	// check bottom of the unit too
-	// for examlpe hovertank/plasma has floating height of 6, so his bottom is on level 6, with voxels 0-5 below it.
-	// levels for checking = unit height range / 2 + 1
+	// for examlpe hovertank/plasma has floating height of 6, so its bottom is on level 7, with voxels 0-6 below it.
 	int bottomHeight = targetMinHeight + 1;
+
 	int floorElevation = targetMinHeight % Position::TileZ;
 	if (floorElevation < 2)
 	{
 		bottomHeight = targetMinHeight - floorElevation + 2; // can't check height 0-1 (bug?)
 	}
 
+	// Reduce number of checks in simple mode
 	int simplifyDivider = unitRadius;
 	if (targetSize == 2) simplifyDivider = 4;
 
@@ -2117,6 +2118,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 		for (int j = 0; j <= unitRadius*2; ++j)
 		{
+			// Skip voxels in "simple" mode. usually to speed up AI calculations
 			if (isSimpleMode && (height + j) % simplifyDivider != 0)
 			{
 				scanLine += '.';
@@ -2146,6 +2148,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 				else
 					scanLine += symbols[ test+1 ]; // overlapped by another unit
 			}
+
 			else
 			{
 				if ( test == V_EMPTY )	--total;
