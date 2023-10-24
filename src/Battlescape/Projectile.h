@@ -30,12 +30,23 @@ class Surface;
 class Tile;
 class Mod;
 
-struct
+struct	// Real Accuracy mod configuration
 {
-	int MinCap = 5;
-	int MaxCap = 95;
-	int AimBonus = 3;
-	int KneelBonus = 2;
+	int MinCap = 5;			// Minimum accuracy value
+	int MaxCap = 95;		// Maximum accuracy value
+	int AimBonus = 3;		// Additional bonus for aimed shot if total accuracy is 5% or less
+	int KneelBonus = 2;		// Additional bonus for kneeling if total accuracy is 5% or less
+	int aimedDivider = 4;
+	int snapDivider = 3;	// Dividers are used for adding roll-based deviation
+	int autoDivider = 3;
+	int twoHandsBonus = 1;	// Less shots dispersion for one weapon in both hands
+	int distanceDivider = 3;// Additional 1 voxel of deviation per this number of distance tiles
+
+	double SizeMultiplier = 1.35; // Accuracy multiplier when targeting big units
+
+	int suicideProtectionDistance = 50;			   // Missing shot shouldn't land too close to a shooter
+	int aimDistanceVoxels = Position::TileXY * 10; // Improved accuracy range for aimed shots
+	int snapDistanceVoxels = Position::TileXY * 5; // Improved accuracy range for snap/auto
 } AccuracyMod;
 
 /**
