@@ -3783,10 +3783,24 @@ void GeoscapeState::determineAlienMissions()
 			throw Exception(ss.str());
 		}
 		// level four condition check: does random chance favour this command's execution?
-		if (process && RNG::percent(command->getExecutionOdds()))
+		if (process)
 		{
-			// good news, little command pointer! you're FDA approved! off to the main processing facility with you!
-			success = processCommand(command);
+			bool rngret = RNG::percent(command->getExecutionOdds());
+			if (Options::verboseLogging && Options::oxceGeoscapeDebugLogMaxEntries > 0)
+			{
+				std::ostringstream ss;
+				ss << "month: " << month;
+				ss << " script: " << command->getType();
+				ss << " odds: " << command->getExecutionOdds();
+				ss << " rng: " << rngret;
+				save->getGeoscapeDebugLog().push_back(ss.str());
+			}
+			if (rngret)
+			{
+				// good news, little command pointer! you're FDA approved! off to the main processing facility with you!
+				success = processCommand(command);
+			}
+
 		}
 		if (command->getLabel() > 0)
 		{
