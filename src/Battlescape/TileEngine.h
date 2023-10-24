@@ -59,6 +59,23 @@ public:
 	/// Half of size of tile in voxels
 	static constexpr Position voxelTileCenter = { Position::TileXY / 2, Position::TileXY / 2, Position::TileZ / 2 };
 
+	/// Calculate distance of each step of trajectory.
+	static float trajectoryStepSize(const std::vector<Position>& voxelPath, size_t pos)
+	{
+		if (pos < voxelPath.size())
+		{
+			if (pos > 2)
+			{
+				return 0.5f * Position::distance(voxelPath[pos], voxelPath[pos - 2]);
+			}
+			else if (pos)
+			{
+				return Position::distance(voxelPath[1], voxelPath[0]);
+			}
+		}
+		return 0.0f;
+	}
+
 private:
 	/**
 	 * Helper class storing cached visibility blockage data.
