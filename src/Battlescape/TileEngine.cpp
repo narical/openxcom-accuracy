@@ -2183,117 +2183,235 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 
+	BattleUnit *targetUnit;
 	bool hypothetical = potentialUnit != 0;
 	if (potentialUnit == 0)
 	{
-		potentialUnit = tile->getUnit();
-		if (potentialUnit == 0) return false; //no unit in this tile, even if it elevated and appearing in it.
+		targetUnit = tile->getUnit();
+		if (targetUnit == 0) return false; //no unit in this tile, even if it elevated and appearing in it.
 	}
-	if (potentialUnit == excludeUnit) return false; //skip self
+	else
+		targetUnit = potentialUnit;
+
+	if (targetUnit == excludeUnit) return false; //skip self
+
+	bool isPlayer = true;
+	bool isUnderAIcontrol = false;
+
+	if (excludeUnit)
+	{
+		if (excludeUnit->getFaction() != FACTION_PLAYER ) isPlayer = false;
+		if (excludeUnit->isAIControlled()) isUnderAIcontrol = true;
+	}
+
+	Position targetVoxel = targetUnit->getPosition().toVoxel();
 
 	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
-	targetMinHeight += potentialUnit->getFloatHeight();
+	int targetFloatHeight = targetUnit->getFloatHeight();
+	targetMinHeight += targetFloatHeight;
 
-	int targetMaxHeight = targetMinHeight;
-	int targetCenterHeight;
 	int heightRange;
-
-	int xOffset = potentialUnit->getPosition().x - tile->getPosition().x;
-	int yOffset = potentialUnit->getPosition().y - tile->getPosition().y;
-
-	int unitRadius = potentialUnit->getRadiusVoxels();
-	int targetSize = potentialUnit->getArmor()->getSize() - 1;
-	if (targetSize > 0)
-		unitRadius = 3;
-
-   // vector manipulation to make scan work in view-space
-	Position relPos = targetVoxel - *originVoxel;
-	int sliceTargetsX[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
-	int sliceTargetsY[ BattleUnit::SMALL_MAX_RADIUS*2+1 ] = { 0 };
-
-	// sliceTargets[ unitRadius ] = {0, 0} and won't be overwritten further
-	for ( int testRadius = unitRadius; testRadius > 0; --testRadius)
-	{
-		float normal = testRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
-		int relX = floor(((float)relPos.y)*normal+0.5);
-		int relY = floor(((float)-relPos.x)*normal+0.5);
-		sliceTargetsX[ unitRadius - testRadius ] = relX;
-		sliceTargetsY[ unitRadius - testRadius ] = relY;
-		sliceTargetsX[ unitRadius + testRadius ] = -relX;
-		sliceTargetsY[ unitRadius + testRadius ] = -relY;
-	}
-
-	if (!potentialUnit->isOut())
-		heightRange = potentialUnit->getHeight();
+	if (!targetUnit->isOut())
+		heightRange = targetUnit->getHeight();
 	else
 		heightRange = 12;
 
-	targetMaxHeight += heightRange;
+	int targetMaxHeight = targetMinHeight + heightRange;
 
-	targetCenterHeight = (targetMaxHeight + targetMinHeight) / 2;
-	targetCenterHeight += (targetMaxHeight - targetCenterHeight) % 2; // Center should have even number of voxels above it
+	int unitRadius = targetUnit->getRadiusVoxels();
+	int targetSize = targetUnit->getArmor()->getSize();
 
-	int  horizontalCount = heightRange / 2; // Number of horizontal slices for a target
-	horizontalCount += horizontalCount % 2; // They are symmetrical relative to center so should be even number too
+	targetVoxel += Position(8*targetSize, 8*targetSize, 0); // center of unit
 
-	if (horizontalCount > 12) horizontalCount = 12;
-	if (horizontalCount <= 0) horizontalCount = 0;
+	int unitMin_X = targetVoxel.x - unitRadius - 1;
+	int unitMin_Y = targetVoxel.y - unitRadius - 1;
+	int unitMax_X = targetVoxel.x + unitRadius + 1;
+	int unitMax_Y = targetVoxel.y + unitRadius + 1;
 
-	// Scan ray for every horizontal slice including center
-	for (int vIdx = 0; vIdx <= horizontalCount; ++vIdx)
+	if (isPlayer && !isUnderAIcontrol) // Precise targeting for human player
 	{
-		// Start from the center, gradually increase vertical distance in both directions
-		scanVoxel->z = targetCenterHeight + heightFromCenter[ vIdx ];
+		static int verticalSlices[26] = { 0 }; // Up to 11 frontal section points and 2 for front/back
+		bool aimFromAbove = (originVoxel->z > targetMaxHeight ? true : false);
+		bool aimFromBelow = (originVoxel->z < targetMinHeight ? true : false);
 
-		if (scanVoxel->z < targetMinHeight+1 || scanVoxel->z > targetMaxHeight)
-			continue;
+		int shiftCount = 1; // indexes 0, 1 for (0,0)
+		Position relPos = targetVoxel - *originVoxel;
 
-		// Scan ray for every vertical slice in selected horizontal plane
-		for (int hIdx = 0; hIdx <= unitRadius*2; ++hIdx)
+		if (targetSize == 1)
 		{
-			// Start from the center, gradually increase horizontal distance in both directions
-			int minus1 = (hIdx + 1)%2 - 1; // 0, -1,  0, -1,  0, -1...
-			int plus1  = (hIdx + 1)%2;     // 1,  0,  1,  0,  1,  0...
-			int shift  = (hIdx + 1)/2;     // 0,  1,  1,  2,  2,  3...
-			int hPosIdx = unitRadius + minus1*shift + plus1*shift; // Radius +0, -1, +1, -2, +2, ...
-
-			scanVoxel->x = targetVoxel.x + sliceTargetsX[ hPosIdx ];
-			scanVoxel->y = targetVoxel.y + sliceTargetsY[ hPosIdx ];
-
-			_trajectory.clear();
-			int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
-			if (test == V_UNIT)
+			// Add (radius-1) and (radius) slices
+			for ( int testRadius = unitRadius-1; testRadius <= unitRadius; ++testRadius)
 			{
-				for (int x = 0; x <= targetSize; ++x)
+				float normal = testRadius / sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
+				int relX = floor(((float)relPos.y)*normal+0.5);
+				int relY = floor(((float)-relPos.x)*normal+0.5);
+
+				verticalSlices[ ++shiftCount ] = relX; // starting from index 2
+				verticalSlices[ ++shiftCount ] = relY;
+				verticalSlices[ ++shiftCount ] = -relX;
+				verticalSlices[ ++shiftCount ] = -relY;
+
+				if (testRadius == unitRadius && (aimFromAbove || aimFromBelow))
 				{
-					for (int y = 0; y <= targetSize; ++y)
-					{
-						//voxel of hit must be inside of scanned box
-						if (_trajectory.at(0).x/16 == (scanVoxel->x/16) + x + xOffset &&
-							_trajectory.at(0).y/16 == (scanVoxel->y/16) + y + yOffset &&
-							_trajectory.at(0).z >= targetMinHeight+1 &&
-							_trajectory.at(0).z <= targetMaxHeight)
-						{
-							return true;
-						}
-					}
+					verticalSlices[ ++shiftCount ] = relY;
+					verticalSlices[ ++shiftCount ] = -relX;
+					verticalSlices[ ++shiftCount ] = -relY;
+					verticalSlices[ ++shiftCount ] = relX;
 				}
 			}
-			else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
+		}
+		else // size = 2
+		{
+			for ( int testRadius = 3; testRadius <= 15; testRadius += 3 )
 			{
-				return true;
-			}
-			if (rememberObstacles && _trajectory.size()>0)
-			{
-				Tile *tileObstacle = _save->getTile(_trajectory.at(0).toTile());
-				if (tileObstacle) tileObstacle->setObstacle(test);
+				float normal = testRadius / sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
+				int relX = floor(((float)relPos.y)*normal+0.5);
+				int relY = floor(((float)-relPos.x)*normal+0.5);
+
+				verticalSlices[ ++shiftCount ] = relX;
+				verticalSlices[ ++shiftCount ] = relY;
+				verticalSlices[ ++shiftCount ] = -relX;
+				verticalSlices[ ++shiftCount ] = -relY;
+
+				if (testRadius == 15 && (aimFromAbove || aimFromBelow))
+				{
+					verticalSlices[ ++shiftCount ] = relY;
+					verticalSlices[ ++shiftCount ] = -relX;
+					verticalSlices[ ++shiftCount ] = -relY;
+					verticalSlices[ ++shiftCount ] = relX;
+				}
 			}
 		}
+
+		int pointsCount = (shiftCount + 1) / 2;
+
+		int targetCenterHeight;
+		targetCenterHeight = (targetMaxHeight + targetMinHeight) / 2;
+		targetCenterHeight += (targetMaxHeight - targetCenterHeight) % 2; // Center should have even number of voxels above it
+
+		int  horizontalCount = heightRange / 2; // Number of horizontal slices for a target
+		horizontalCount += horizontalCount % 2; // They are symmetrical relative to center so should be even number too
+
+		if (horizontalCount > 12) horizontalCount = 12;
+		if (horizontalCount <= 0) horizontalCount = 0;
+
+		// Scan ray for every horizontal slice including center
+		for (int hIdx = 0; hIdx <= horizontalCount; ++hIdx)
+		{
+			// Start from the center, gradually increase vertical distance in both directions
+			scanVoxel->z = targetCenterHeight + heightFromCenter[ hIdx ];
+
+			if (scanVoxel->z < targetMinHeight+1 || scanVoxel->z > targetMaxHeight)
+				continue;
+
+			// Scan ray for every vertical slice in selected horizontal plane
+			for (int vIdx = 0; vIdx < pointsCount; ++vIdx)
+			{
+				// Skip unnecessary checks
+				bool checkTopBottom = (aimFromAbove || aimFromBelow) && vIdx >= pointsCount - 2;
+				if (checkTopBottom && scanVoxel->z > targetMinHeight+2 && scanVoxel->z < targetMaxHeight ) continue;
+
+				// Start from the center, increase horizontal distance in both directions
+				scanVoxel->x = targetVoxel.x + verticalSlices[ vIdx * 2 ];
+				scanVoxel->y = targetVoxel.y + verticalSlices[ vIdx * 2 + 1 ];
+
+				_trajectory.clear();
+				int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
+				if (test == V_UNIT)
+				{
+					if (_trajectory.empty()) assert(false);
+
+					int impactX = _trajectory.at(0).x;
+					int impactY = _trajectory.at(0).y;
+					int impactZ = _trajectory.at(0).z;
+
+					//voxel of hit must be inside of scanned box
+					if (impactX >= unitMin_X && impactX <= unitMax_X &&
+						impactY >= unitMin_Y && impactY <= unitMax_Y &&
+						impactZ >= targetMinHeight+1 && impactZ <= targetMaxHeight)
+					{
+						return true;
+					}
+				}
+
+				else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
+				{
+					return true;
+				}
+
+				if (rememberObstacles && _trajectory.size()>0)
+				{
+					Tile *tileObstacle = _save->getTile(_trajectory.at(0).toTile());
+					if (tileObstacle) tileObstacle->setObstacle(test);
+				}
+			}
+		}
+		return false;
 	}
-	return false;
+
+	else // simplified targeting for AI
+	{
+		// vector manipulation to make scan work in view-space
+		Position relPos = targetVoxel - *originVoxel;
+
+		float normal = unitRadius/sqrt((float)(relPos.x*relPos.x + relPos.y*relPos.y));
+		int relX = floor(((float)relPos.y)*normal+0.5);
+		int relY = floor(((float)-relPos.x)*normal+0.5);
+
+		// Targeting order: center, right, left, front, back
+		int verticalSlices[] = { 0,0, relX,relY, -relX,-relY, relY,-relX, -relY,relX };
+
+		int horizontalSlices[] = // Targeting order: 3/4 height, 1/4 height, top, bottom
+			{
+				targetMinHeight + heightRange * 3 / 4,
+				targetMinHeight + 1 + (int)ceil(heightRange * 0.25f),
+				targetMaxHeight,
+				targetMinHeight + 1
+			};
+
+		// Scan for every horizontal slice
+		for (int hIdx = 0; hIdx < 4; ++hIdx)
+		{
+			scanVoxel->z = horizontalSlices[ hIdx ];
+
+			// Scan ray for every vertical slice in selected horizontal plane
+			for (int vIdx = 0; vIdx < 5; ++vIdx)
+			{
+				// Scan front/back slices only on top/bottom planes
+				if (hIdx < 2 && vIdx > 2) break;
+
+				scanVoxel->x = targetVoxel.x + verticalSlices[ vIdx * 2 ];
+				scanVoxel->y = targetVoxel.y + verticalSlices[ vIdx * 2 + 1];
+
+				_trajectory.clear();
+				int test = calculateLineVoxel(*originVoxel, *scanVoxel, false, &_trajectory, excludeUnit);
+				if (test == V_UNIT)
+				{
+					if (_trajectory.empty()) assert(false);
+
+					int impactX = _trajectory.at(0).x;
+					int impactY = _trajectory.at(0).y;
+					int impactZ = _trajectory.at(0).z;
+
+					//voxel of hit must be inside of scanned box
+					if (impactX >= unitMin_X && impactX <= unitMax_X &&
+						impactY >= unitMin_Y && impactY <= unitMax_Y &&
+						impactZ >= targetMinHeight+1 && impactZ <= targetMaxHeight)
+					{
+						return true;
+					}
+				}
+
+				else if (test == V_EMPTY && hypothetical && !_trajectory.empty())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
 
 /**
