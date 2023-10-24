@@ -621,24 +621,28 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
 				visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
 
-			int accuracyDivider = 4;
+			int accuracyDivider;
 			switch (_action.type)
 			{
 			case BA_AIMEDSHOT:
-				accuracyDivider = 5;
+				accuracyDivider = AccuracyMod.aimedDivider;
 				break;
 			case BA_SNAPSHOT:
-				accuracyDivider = 4;
+				accuracyDivider = AccuracyMod.snapDivider;
 				break;
 			case BA_AUTOSHOT:
-				accuracyDivider = 3;
-				if (weapon->isTwoHanded()) accuracyDivider = 4; // Better autoshot accuracy with two-handers
+				accuracyDivider = AccuracyMod.autoDivider;
 				break;
 			default:
+				accuracyDivider = AccuracyMod.autoDivider;
 				break;
 			}
-			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider; //  Highly accurate shots will land close to the target even if they miss
-			int distance_deviation = tilesDistance / 5; // 1 voxel of deviation per X tiles of distance
+
+			if (weapon->isTwoHanded()) accuracyDivider += AccuracyMod.twoHandsBonus; // Less dispersion with two-handers
+
+			//  Highly accurate shots will land close to the target even if they miss
+			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider;
+			int distance_deviation = distanceTiles / AccuracyMod.distanceDivider; // 1 voxel of deviation per X tiles of distance
 			int hor_size_deviation = unitRadius;
 			int ver_size_deviation = unitRadius;
 
@@ -675,7 +679,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
 					if (isPlayer && !isCtrlPressed && !trajectory.empty() && distanceTiles > 1)
 					{
-						if (Position::distanceSq( origin, trajectory.at(0)) < 3*30*30) // Almost 2 tiles diagonally
+						if (Position::distanceSq( origin, trajectory.at(0)) <
+							AccuracyMod.suicideProtectionDistance * AccuracyMod.suicideProtectionDistance)
 						{
 							continue; // No accidental hits please!
 						}
