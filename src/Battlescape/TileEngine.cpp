@@ -6003,7 +6003,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 	int unitSize = action.actor->getArmor()->getSize();
 	int weaponShift = 4; // Original weapon position shift from the top of units head
 
-	if (Options::battleRealisticAccuracy && unitSize == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled())) // If small unit goes precise aiming or kneeling
+	// If small unit goes either precise aiming or kneeling
+	if (Options::battleRealisticAccuracy && unitSize == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled()))
 		weaponShift = 1; // ...move weapon to the eyes level
 
 	if (!tile)
@@ -6047,12 +6048,26 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				originVoxel.z -= weaponShift;
 			}
 		}
-		int direction = getDirectionTo(origin, action.target);
 
 		if (Options::battleRealisticAccuracy)
 		{
 			const int dirXshift[8] = {5, 6, 8,10,11,10, 8, 6};
 			const int dirYshift[8] = {8, 6, 5, 6, 8,10,11,10};
+
+			// Adjuct target tile to the centre of unit
+			Tile *t = _save->getTile( action.target );
+			if (t)
+			{
+				BattleUnit *targetUnit = t->getUnit();
+				if (targetUnit)
+				{
+					int targetSize = targetUnit->getArmor()->getSize();
+					Position targetVoxel = targetUnit->getPosition().toVoxel() + Position(8*targetSize, 8*targetSize, 0);
+					action.target = targetVoxel.toTile();
+				}
+			}
+
+			int direction = getDirectionTo(origin, action.target);
 
 			// Offset for different relativeOrigin values
 			switch (action.relativeOrigin)
@@ -6061,6 +6076,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				originVoxel.x += 8 * unitSize; // Shoot straight from the eye point
 				originVoxel.y += 8 * unitSize; // moving barrel in front of unit breaks LOF near walls with existing LOS above them
 				break;
+
 			case BattleActionOrigin::LEFT:
 				originVoxel.x += dirXshift[ direction ] * unitSize;
 				originVoxel.y += dirYshift[ direction ] * unitSize;
@@ -6075,9 +6091,10 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 		}
 		else
 		{
-
 			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
 			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
+
+			int direction = getDirectionTo(origin, action.target);
 
 			// Offset for different relativeOrigin values
 			switch (action.relativeOrigin)
