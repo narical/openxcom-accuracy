@@ -1409,6 +1409,9 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 			int sizeOther = bu->getArmor()->getSize();
 			int totalUnitTiles = 0;
 			int unitTilesNotInViewSector = 0;
+			bool visibilityChecked = false;
+			bool visibilityStatus = false;
+
 			for (int x = 0; x < sizeOther; ++x)
 			{
 				for (int y = 0; y < sizeOther; ++y)
@@ -1423,8 +1426,11 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							//Unit within arc, but not in view sector. If it just walked out we need to remove it.
 							unitTilesNotInViewSector++;
 						}
-						else if (visible(unit, _save->getTile(posToCheck))) // (distance is checked here)
+						else if ( visibilityChecked ? visibilityStatus : visible(unit, _save->getTile(posToCheck))) // (distance is checked here)
 						{
+							visibilityChecked = true;
+							visibilityStatus = true;
+
 							//Unit (or part thereof) visible to one or more eyes of this unit.
 							if (unit->getFaction() == FACTION_PLAYER)
 							{
@@ -1446,7 +1452,11 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
 						}
-						else						{
+						else
+						{
+							visibilityChecked = true;
+							visibilityStatus = false;
+
 							//Within arc, but not visible. Need to check to see if whatever happened at eventPos blocked a previously seen unit.
 							unitTilesNotInViewSector++;
 						}
