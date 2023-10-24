@@ -2090,6 +2090,10 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		sliceTargetsY[ unitRadius + testRadius ] = -relY;
 	}
 
+	int relX = sliceTargetsX[0];
+	int relY = sliceTargetsY[0];
+	int sliceTargetsTopBottom[] = { relY, -relX, -relY, relX }; // front/back scan points
+
 	std::vector<std::string> scanArray;
 	scanArray.reserve(24);
 	const char symbols[] = {'.','_','/','\\','o','u','x'};
@@ -2169,6 +2173,44 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 		for ( const auto &line : scanArray )
 			Log(LOG_INFO) << line;
 		Log(LOG_INFO) << " ";
+	}
+
+	if (exposure < 0.1) // Check near/far parts of target cylinder
+	{
+		bool aimFromAbove = originVoxel->z > targetMaxHeight;
+		bool aimFromBelow = originVoxel->z < targetMinHeight + 1;
+		if (!aimFromAbove && !aimFromBelow) return exposure; // Aiming horizontally, cannot see any additional voxels
+
+		// sliceTargetsTopBottom[] points order: front, back
+		// If aiming from above: check "top back" and "bottom front" points
+		int heights[] = { targetMinHeight+1, targetMaxHeight };
+
+		// If aiming from below: check "bottom back" and "top front" points
+		if (aimFromBelow) std::swap( heights[0], heights[1] );
+
+		for ( int i = 0; i < 2; ++i)
+		{
+			scanVoxel.z = heights[ i ];
+			scanVoxel.x = targetVoxel.x + sliceTargetsTopBottom[ i * 2 ];
+			scanVoxel.y = targetVoxel.y + sliceTargetsTopBottom[ i * 2 + 1];
+
+			_trajectory.clear();
+			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
+			if (test == V_UNIT)
+			{
+				int impactX = _trajectory.at(0).x;
+				int impactY = _trajectory.at(0).y;
+				int impactZ = _trajectory.at(0).z;
+
+				if (impactX >= unitMin_X && impactX <= unitMax_X &&
+					impactY >= unitMin_Y && impactY <= unitMax_Y &&
+					impactZ >= targetMinHeight+1 && impactZ <= targetMaxHeight)
+				{
+					exposure += 0.05;
+					if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
+				}
+			}
+		}
 	}
 
 	return exposure;
