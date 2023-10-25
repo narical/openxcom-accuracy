@@ -2262,6 +2262,9 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 	if (targetUnit == excludeUnit) return false; //skip self
 
+	Position tempScanVoxel;
+	if (scanVoxel == nullptr) scanVoxel = &tempScanVoxel; // stub in case we don't plan to return found point
+
 	bool isPlayer = true;
 	bool isUnderAIcontrol = false;
 
