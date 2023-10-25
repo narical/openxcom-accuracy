@@ -38,7 +38,7 @@
 
 namespace OpenXcom
 {
-
+double EPSILON = 0.00001;
 
 /**
  * Sets up a BattleAIState.
@@ -3287,8 +3287,7 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			originAction.target = unitToWalkTo->getPosition();
 			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
-			Position ref;
-			iHaveLof = _save->getTileEngine()->checkVoxelExposure(&origin, unitToWalkTo->getTile(), _unit) > 0;
+			iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
 		}
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
@@ -3489,7 +3488,7 @@ void AIModule::brutalThink(BattleAction* action)
 							{
 								originAction.target = unit->getPosition();
 								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-								lineOfFire = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit) > 0;
+								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
 							}
 							if (!_unit->isCheatOnMovement() && !lineOfFire)
 								lineOfFire = clearSight(pos, unitPosition);
@@ -3524,7 +3523,7 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						originAction.target = unitToWalkTo->getPosition();
 						Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-						lineOfFire = _save->getTileEngine()->checkVoxelExposure(&origin, unitToWalkTo->getTile(), _unit) > 0;
+						lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
 					}
 					if (!_unit->isCheatOnMovement() && !lineOfFire)
 						lineOfFire = clearSight(pos, targetPosition);
@@ -3953,7 +3952,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				originAction.target = target->getPosition();
 				Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
-				haveLof = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit) > 0;
+				haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), nullptr, _unit, false);
 			}
 		}
 		if (!haveLof)
@@ -4927,7 +4926,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			else
 			{
 				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
-				if (targetQuality == 0)
+				if (targetQuality < EPSILON)
 					return 0;
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
