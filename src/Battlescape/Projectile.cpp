@@ -556,7 +556,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			_save->getBattleState()->debug(ss.str());
 		}
 
-		if (hit_successful)
+		if (hit_successful && !exposedVoxels.empty())
 		{
 			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 		}
