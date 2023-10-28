@@ -6149,6 +6149,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
 	bu.add<&makeVisibleScript>("makeVisible");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles of another unit at dark");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles of another unit at day");
 
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");

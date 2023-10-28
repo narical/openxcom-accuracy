@@ -1218,6 +1218,11 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 
 	ar.add<&Armor::getVisibilityAtDark>("getVisibilityAtDark");
 	ar.add<&Armor::getVisibilityAtDay>("getVisibilityAtDay");
+	ar.add<&Armor::getCamouflageAtDark>("getCamouflageAtDark");
+	ar.add<&Armor::getCamouflageAtDay>("getCamouflageAtDay");
+	ar.add<&Armor::getAntiCamouflageAtDark>("getAntiCamouflageAtDark");
+	ar.add<&Armor::getAntiCamouflageAtDay>("getAntiCamouflageAtDay");
+	ar.add<&Armor::getHeatVision>("getHeatVision");
 	ar.add<&Armor::getPersonalLight>("getPersonalLight");
 	ar.add<&Armor::getSize>("getSize");
 
