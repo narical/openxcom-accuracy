@@ -94,10 +94,6 @@ void UnitTurnBState::init()
 			{
 				_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::SLIDING_DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // ufo door
 			}
-			if (door == 0 || door == 1)
-			{
-				_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()));
-			}
 			if (door == 4)
 			{
 				_action.result = "STR_NOT_ENOUGH_TIME_UNITS";
