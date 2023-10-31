@@ -3412,6 +3412,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
 			justNeedToTurnToPeek = true;
+		bool couldSeePeekPosition = hasTileSight(myPos, peakPosition);
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
 		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
@@ -3608,7 +3609,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if (hasTileSight(pos, peakPosition) || pos == peakPosition)
+					if ((hasTileSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
 						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
@@ -3958,14 +3959,13 @@ void AIModule::brutalThink(BattleAction* action)
 	action->type = BA_WALK;
 	action->run = wantToRun();
 	action->finalFacing = -1;
-	if (unitToFaceTo != NULL)
+	if (unitToFaceTo != NULL && shouldHaveLofAfterMove)
 	{
 		Position targetPosition = unitToFaceTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, targetPosition);
-		if (shouldHaveLofAfterMove)
-			usePeakDirection = false;
+		usePeakDirection = false;
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing << " should have Lof after move: " << shouldHaveLofAfterMove << " winnerWasSpecialDoorCase: " << winnerWasSpecialDoorCase;
