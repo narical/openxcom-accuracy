@@ -1133,12 +1133,16 @@ void Tile::setLastExplored(UnitFaction faction)
 
 int Tile::getLastExplored(UnitFaction faction)
 {
+	int lastExplored = 0;
 	if (faction == FACTION_PLAYER)
-		return _lastExploredByPlayer;
+		lastExplored = _lastExploredByPlayer;
 	else if (faction == FACTION_NEUTRAL)
-		return _lastExploredByNeutral;
+		lastExplored = _lastExploredByNeutral;
 	else
-		return _lastExploredByHostile;
+		lastExplored = _lastExploredByHostile;
+	if (lastExplored > _save->getTurn())
+		lastExplored = 0;
+	return lastExplored;
 }
 
 ////////////////////////////////////////////////////////////
