@@ -213,6 +213,7 @@ static inline RetEnum bit_popcount_h(int& reg)
 	IMPL(bit_count,		MACRO_QUOTE({ return bit_popcount_h(Reg0);											 }),	(int& Reg0),				"Count number of set bits of arg1") \
 	\
 	IMPL(pow,			MACRO_QUOTE({ Reg0 = std::pow(Reg0, std::max(0, Data1));		return RetContinue; }),		(int& Reg0, int Data1),		"Power of arg1 to arg2") \
+	IMPL(sqrt,			MACRO_QUOTE({ Reg0 = Reg0 > 0 ? std::sqrt(Reg0) : 0;			return RetContinue; }),		(int& Reg0),				"Square root of arg1") \
 	\
 	IMPL(abs,			MACRO_QUOTE({ Reg0 = std::abs(Reg0);							return RetContinue; }),		(int& Reg0),						"Absolute value of arg1") \
 	IMPL(limit,			MACRO_QUOTE({ Reg0 = std::max(std::min(Reg0, Data2), Data1);	return RetContinue; }),		(int& Reg0, int Data1, int Data2),	"Correct value in arg1 that is always between arg2 and arg3") \
