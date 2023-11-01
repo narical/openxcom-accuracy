@@ -133,20 +133,6 @@ private:
 	void addLight(MapSubset gs, Position center, int power, LightLayers layer);
 	/// Calculate blockage amount.
 	int blockage(Tile *tile, const TilePart part, ItemDamageType type, int direction = -1, bool checkingFromOrigin = false);
-	/// Get max distance that fire light can reach.
-	int getMaxStaticLightDistance() const { return _maxStaticLightDistance; }
-	/// Get max distance that light can reach.
-	int getMaxDynamicLightDistance() const { return _maxDynamicLightDistance; }
-	/// Get flags for enhanced lighting.
-	int getEnhancedLighting() const { return _enhancedLighting; }
-	/// Get max view distance.
-	int getMaxViewDistance() const { return _maxViewDistance; }
-	/// Get square of max view distance.
-	int getMaxViewDistanceSq() const { return _maxViewDistanceSq; }
-	/// Get max view distance in voxel space.
-	int getMaxVoxelViewDistance() const { return _maxVoxelViewDistance; }
-	/// Get threshold of darkness for LoS calculation.
-	int getMaxDarknessToSeeUnits() const { return _maxDarknessToSeeUnits; }
 
 	bool setupEventVisibilitySector(const Position &observerPos, const Position &eventPos, const int &eventRadius);
 	inline bool inEventVisibilitySector(const Position &toCheck) const;
@@ -173,6 +159,22 @@ public:
 	TileEngine(SavedBattleGame *save, Mod *mod);
 	/// Cleans up the TileEngine.
 	~TileEngine();
+
+	/// Get max distance that fire light can reach.
+	int getMaxStaticLightDistance() const { return _maxStaticLightDistance; }
+	/// Get max distance that light can reach.
+	int getMaxDynamicLightDistance() const { return _maxDynamicLightDistance; }
+	/// Get flags for enhanced lighting.
+	int getEnhancedLighting() const { return _enhancedLighting; }
+	/// Get max view distance.
+	int getMaxViewDistance() const { return _maxViewDistance; }
+	/// Get square of max view distance.
+	int getMaxViewDistanceSq() const { return _maxViewDistanceSq; }
+	/// Get max view distance in voxel space.
+	int getMaxVoxelViewDistance() const { return _maxVoxelViewDistance; }
+	/// Get threshold of darkness for LoS calculation.
+	int getMaxDarknessToSeeUnits() const { return _maxDarknessToSeeUnits; }
+
 	/// Calculates visible tiles within the field of view. Supply an eventPosition to do an update limited to a small slice of the view sector.
 	void calculateTilesInFOV(BattleUnit *unit, const Position eventPos = invalid, const int eventRadius = 0);
 	/// Calculates visible units within the field of view. Supply an eventPosition to do an update limited to a small slice of the view sector.
