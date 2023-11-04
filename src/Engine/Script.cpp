@@ -753,7 +753,7 @@ public:
 
 	constexpr operator ScriptRange<ScriptRef>() const
 	{
-		return { parts.begin(), parts.end() };
+		return { parts.data(), parts.data() + parts.size() };
 	}
 
 
