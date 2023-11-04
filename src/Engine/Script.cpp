@@ -4135,7 +4135,7 @@ static auto dummyTestScriptOverload = ([]
 		{
 			arr[i++] = { {}, p };
 		}
-		return overloadCustomProc(a, std::begin(arr), std::begin(arr) + ref.size());
+		return overloadCustomProc(a, arr.data(), arr.data() + ref.size());
 	};
 
 	assert(3 == data_a.overloadArg.size());
