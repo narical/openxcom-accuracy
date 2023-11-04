@@ -1499,7 +1499,7 @@ bool parseCustomProc(const ScriptProcData& spd, ParserWriter& ph, const ScriptRe
 
 
 constexpr size_t ConditionSize = 6;
-const ScriptRef ConditionNames[ConditionSize] =
+constexpr ScriptRef ConditionNames[ConditionSize] =
 {
 	ScriptRef{ "eq" }, ScriptRef{ "neq" },
 	ScriptRef{ "le" }, ScriptRef{ "gt" },
@@ -1507,7 +1507,7 @@ const ScriptRef ConditionNames[ConditionSize] =
 };
 
 constexpr size_t ConditionSpecialSize = 2;
-const ScriptRef ConditionSpecNames[ConditionSpecialSize] =
+constexpr ScriptRef ConditionSpecNames[ConditionSpecialSize] =
 {
 	ScriptRef{ "or" },
 	ScriptRef{ "and" },
