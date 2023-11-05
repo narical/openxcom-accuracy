@@ -4530,11 +4530,11 @@ int BattleUnit::getMaxViewDistance(int baseVisibility, int nerf, int buff) const
 	return result;
 }
 
-int BattleUnit::getMaxViewDistanceAtDark(const Armor *otherUnitArmor) const
+int BattleUnit::getMaxViewDistanceAtDark(const BattleUnit* otherUnit) const
 {
-	if (otherUnitArmor)
+	if (otherUnit)
 	{
-		return getMaxViewDistance(_maxViewDistanceAtDark, otherUnitArmor->getCamouflageAtDark(), _armor->getAntiCamouflageAtDark());
+		return getMaxViewDistance(_maxViewDistanceAtDark, otherUnit->getArmor()->getCamouflageAtDark(), _armor->getAntiCamouflageAtDark());
 	}
 	else
 	{
@@ -4547,11 +4547,11 @@ int BattleUnit::getMaxViewDistanceAtDarkSquared() const
 	return _maxViewDistanceAtDarkSquared;
 }
 
-int BattleUnit::getMaxViewDistanceAtDay(const Armor *otherUnitArmor) const
+int BattleUnit::getMaxViewDistanceAtDay(const BattleUnit* otherUnit) const
 {
-	if (otherUnitArmor)
+	if (otherUnit)
 	{
-		return getMaxViewDistance(_maxViewDistanceAtDay, otherUnitArmor->getCamouflageAtDay(), _armor->getAntiCamouflageAtDay());
+		return getMaxViewDistance(_maxViewDistanceAtDay, otherUnit->getArmor()->getCamouflageAtDay(), _armor->getAntiCamouflageAtDay());
 	}
 	else
 	{
@@ -6650,6 +6650,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
 	bu.add<&makeVisibleScript>("makeVisible");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles of another unit at dark");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles of another unit at day");
 
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");
