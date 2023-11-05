@@ -1198,9 +1198,9 @@ std::string displayArgs(const ScriptParserBase* spb, const ScriptRange<T>& range
 	std::string result = "";
 	for (auto& p : range)
 	{
-		if (p)
+		auto type = getType(p);
+		if (type != ArgInvalid)
 		{
-			auto type = getType(p);
 			result += "[";
 			result += spb->getTypePrefix(type);
 			result += spb->getTypeName(type).toString();
@@ -1219,7 +1219,7 @@ std::string displayArgs(const ScriptParserBase* spb, const ScriptRange<T>& range
  */
 std::string displayOverloadProc(const ScriptParserBase* spb, const ScriptRange<ScriptRange<ArgEnum>>& overload)
 {
-	return displayArgs(spb, overload, [](const ScriptRange<ArgEnum>& o) { return *o.begin(); });
+	return displayArgs(spb, overload, [](const ScriptRange<ArgEnum>& o) { return o ? *o.begin() : ArgInvalid; });
 }
 
 /**
@@ -1254,7 +1254,7 @@ int overloadCustomProc(const ScriptProcData& spd, const ScriptRefData* begin, co
 		const auto size = currOver.size();
 		if (size)
 		{
-			if (*curr)
+			if (ArgBase(curr->type) != ArgInvalid)
 			{
 				int oneArgTempScore = 0;
 				for (auto& o : currOver)
@@ -2884,7 +2884,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
-	addSortHelper(_refList, { phName, ArgInvalid });
+	addSortHelper(_refList, { phName, (ArgEnum)(ArgInvalid + ArgSpecReg) });
 	addSortHelper(_refList, { seperatorName, ArgSep });
 	addSortHelper(_refList, { varName, ArgInvalid });
 
