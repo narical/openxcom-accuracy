@@ -6465,9 +6465,9 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 										if (!onlyNew || tile->getLastExplored(unit->getFaction()) < _save->getTurn())
 										{
 											BattleUnit* unitOnTile = tile->getUnit();
-											int viewDistance = unit->getMaxViewDistanceAtDay(unitOnTile ? unitOnTile->getArmor() : NULL);
+											int viewDistance = unit->getMaxViewDistanceAtDay(unitOnTile);
 											if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
-												viewDistance = unit->getMaxViewDistanceAtDark(unitOnTile ? unitOnTile->getArmor() : NULL);
+												viewDistance = unit->getMaxViewDistanceAtDark(unitOnTile);
 											if (Position::distance(unit->getPosition(), tile->getPosition()) <= viewDistance)
 												visibleFrom.insert(tile);
 										}
