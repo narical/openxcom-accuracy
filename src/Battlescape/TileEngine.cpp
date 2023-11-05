@@ -1707,37 +1707,41 @@ namespace
  * @param tile Target tile that is look at
  * @param currentUnit Unit that look on tile or unit
  * @param targetUnit Unit that is look at
- * @return Tuple of get<0>: effective visible distance that consider camouflage and shade, get<1>: max unit visibility distance in tiles
+ * @return Tuple of get<0>: effective visible distance that consider camouflage and shade, get<1>: max unit visibility distance in tiles independent of target darkness
  */
 std::tuple<int, int> getVisibleDistanceMaxHelper(TileEngine* te, const Tile* tile, const BattleUnit* currentUnit, const BattleUnit *targetUnit)
 {
-	// global max distance, independent of unit
-	const int visibleDistanceGlobalMaxVoxel = te->getMaxVoxelViewDistance();
-	// max distance, affected by target unit too
-	int visibleDistanceMaxVoxel = visibleDistanceGlobalMaxVoxel;
-
-	// unit max distance, only affected by current unit
-	int visibleDistanceUnitMaxTile = std::min(
-		te->getMaxViewDistance(),
-		std::max(
-			currentUnit->getMaxViewDistanceAtDark(nullptr),
-			currentUnit->getMaxViewDistanceAtDay(nullptr)
-		)
-	);
-
+	bool targetIsDark = tile->getShade() > te->getMaxDarknessToSeeUnits();
 	bool targetOnFire = (targetUnit && targetUnit->getFire() > 0);
 	if (targetOnFire)
 	{
 		// Note: fire cancels enemy's camouflage
 		targetUnit = nullptr;
+		targetIsDark = false;
 	}
 
+	const int viewDistanceAtDarkTiles = currentUnit->getMaxViewDistanceAtDark(targetUnit);
+	const int viewDistanceAtDayTiles = currentUnit->getMaxViewDistanceAtDay(targetUnit);
+
+	// global max distance, independent of unit
+	const int visibleDistanceGlobalMaxVoxel = te->getMaxVoxelViewDistance();
+	// max distance, affected by target unit too
+	int visibleDistanceMaxVoxel = visibleDistanceGlobalMaxVoxel;
+	// unit max distance, mix of dark and day range
+	int visibleDistanceUnitMaxTile = std::min(
+		te->getMaxViewDistance(),
+		std::max(
+			viewDistanceAtDarkTiles,
+			viewDistanceAtDayTiles
+		)
+	);
+
 	// during dark aliens can see 20 tiles, xcom can see 9 by default... unless overridden by armor
-	if (tile->getShade() > te->getMaxDarknessToSeeUnits() && !targetOnFire)
+	if (targetIsDark)
 	{
 		visibleDistanceMaxVoxel = std::min(
 			visibleDistanceGlobalMaxVoxel,
-			currentUnit->getMaxViewDistanceAtDark(targetUnit) * 16
+			viewDistanceAtDarkTiles * Position::TileXY
 		);
 	}
 	// during day (or if enough other light) both see 20 tiles ... unless overridden by armor
@@ -1745,9 +1749,12 @@ std::tuple<int, int> getVisibleDistanceMaxHelper(TileEngine* te, const Tile* til
 	{
 		visibleDistanceMaxVoxel = std::min(
 			visibleDistanceGlobalMaxVoxel,
-			currentUnit->getMaxViewDistanceAtDay(targetUnit) * 16
+			viewDistanceAtDayTiles * Position::TileXY
 		);
 	}
+
+	// small buffer that allow for very short visibility distance still work in smoke or some diagonal directions still be visible
+	visibleDistanceMaxVoxel += Position::TileXY / 4;
 
 	return std::make_tuple(visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile);
 }
