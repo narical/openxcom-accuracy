@@ -729,16 +729,27 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	else // Default accuracy implementation
 	{
-		int xdiff = origin.x - target->x;
-		int ydiff = origin.y - target->y;
-		int zdiff = origin.z - target->z;
-
-		distanceVoxels = (int)sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff)+(double)(zdiff*zdiff));
-		distanceTiles = distanceVoxels / 16;
-
 		int xDist = abs(origin.x - target->x);
 		int yDist = abs(origin.y - target->y);
 		int zDist = abs(origin.z - target->z);
+
+		distanceVoxels = (int)sqrt((double)(xDist*xDist)+(double)(yDist*yDist)+(double)(zDist*zDist));
+		distanceTiles = distanceVoxels / 16 + 1;
+
+		if (_action.type != BA_THROW && _action.type != BA_HIT)
+		{
+			double modifier = 0.0;
+			if (distanceTiles < lowerLimit)
+			{
+				modifier = (weapon->getDropoff() * (lowerLimit - distanceTiles)) / 100.0;
+			}
+			else if (upperLimit < distanceTiles)
+			{
+				modifier = (weapon->getDropoff() * (distanceTiles - upperLimit)) / 100.0;
+			}
+			accuracy = std::max(0.0, accuracy - modifier);
+		}
+
 		int xyShift, zShift;
 
 		if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
@@ -750,6 +761,12 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			zShift = xyShift / 2 + zDist;
 		else
 			zShift = xyShift + zDist / 2;
+
+		// Apply No-LOS penalty if presented
+		if (noLOSAccuracyPenalty != -1 && !hasLOS)
+		{
+			accuracy *= noLOSAccuracyPenalty / 100.0;
+		}
 
 		int deviation = RNG::generate(0, 100) - (accuracy * 100);
 
