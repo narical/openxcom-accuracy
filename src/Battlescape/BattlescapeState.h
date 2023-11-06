@@ -226,7 +226,7 @@ public:
 	/// Gets map.
 	Map *getMap() const;
 	/// Show debug message.
-	void debug(const std::string &message);
+	void debug(const std::string &message, bool override = false);
 	/// Show bug hunt message.
 	void bugHuntMessage();
 	/// Show warning message.

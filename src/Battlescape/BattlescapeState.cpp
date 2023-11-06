@@ -2465,9 +2465,9 @@ Map *BattlescapeState::getMap() const
  * Shows a debug message in the topleft corner.
  * @param message Debug message.
  */
-void BattlescapeState::debug(const std::string &message)
+void BattlescapeState::debug(const std::string &message, bool override)
 {
-	if (_save->getDebugMode())
+	if (_save->getDebugMode() || override)
 	{
 		_txtDebug->setText(message);
 	}
