@@ -3281,14 +3281,9 @@ void AIModule::brutalThink(BattleAction* action)
 		Tile* tileOfTarget = _save->getTile(targetPosition);
 		if (tileOfTarget->getSmoke() > 0)
 			targetIsInSmoke = true;
-		if (Options::aiPerformanceOptimization)
-			iHaveLof = quickLineOfFire(myPos, unitToWalkTo, false, !_unit->isCheatOnMovement());
-		else
-		{
-			originAction.target = unitToWalkTo->getPosition();
-			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
-			iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
-		}
+		originAction.target = unitToWalkTo->getPosition();
+		Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
+		iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
 		if (encircleTile)
@@ -3493,14 +3488,9 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						if (!lineOfFire)
 						{
-							if (Options::aiPerformanceOptimization)
-								lineOfFire = quickLineOfFire(pos, unit, false, !_unit->isCheatOnMovement());
-							else
-							{
-								originAction.target = unit->getPosition();
-								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
-							}
+							originAction.target = unit->getPosition();
+							Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
+							lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
 							if (!_unit->isCheatOnMovement() && !lineOfFire)
 								lineOfFire = clearSight(pos, unitPosition);
 							if (lineOfFire)
@@ -3936,14 +3926,9 @@ void AIModule::brutalThink(BattleAction* action)
 			haveLof = haveLof || clearSight(action->target, targetPosition);
 		if (!haveLof)
 		{
-			if (Options::aiPerformanceOptimization)
-				quickLineOfFire(action->target, target, false, !_unit->isCheatOnMovement());
-			else
-			{
-				originAction.target = target->getPosition();
-				Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
-				haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), nullptr, _unit, false);
-			}
+			originAction.target = target->getPosition();
+			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
+			haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), nullptr, _unit, false);
 		}
 		if (!haveLof)
 			continue;
