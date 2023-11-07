@@ -3407,7 +3407,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
 			justNeedToTurnToPeek = true;
-		bool couldSeePeekPosition = hasTileSight(myPos, peakPosition);
+		bool couldSeePeekPosition = clearSight(myPos, peakPosition);
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
 		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
@@ -3599,7 +3599,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if ((hasTileSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
+					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
 						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
