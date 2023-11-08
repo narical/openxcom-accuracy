@@ -360,6 +360,7 @@ en-US:
   STR_TOGGLE_NIGHT_VISION: "Toggle Night Vision"
   STR_HOLD_NIGHT_VISION: "Short Night Vision"
   STR_SELECT_MUSIC_TRACK: "Select Music Track"
+  STR_keyAIList: "Soldiers AI Autocombat"
 #===================
   STR_TOGGLE_TOUCH_BUTTONS: "Toggle Touch Buttons"
   STR_TOGGLE_BRIGHTNESS: "Toggle Brightness (visual only)"
