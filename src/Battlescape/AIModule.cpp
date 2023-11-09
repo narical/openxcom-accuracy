@@ -4869,14 +4869,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
 	damage = std::max(damage, 1.0f);
 	float damageTypeMod = 0;
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getStunFinalDamage(damage) / (2 * damage);
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
-	damageTypeMod += action->weapon->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
+	BattleItem* damageTypeCheckItem = action->weapon;
+	if (damageTypeCheckItem->getAmmoForAction(action->type) != nullptr)
+		damageTypeCheckItem = damageTypeCheckItem->getAmmoForAction(action->type);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getStunFinalDamage(damage) / (2 * damage);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
+	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
 
@@ -4937,17 +4940,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 		}
 	}
-	//if (_traceAI)
-	//{
-	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
-	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
-	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
-	//				  << " from: " << originPosition << " to: "<<action->target
-	//				  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
-	//				  << " targetQuality: " << targetQuality
-	//				  << " damageTypeMod: " << damageTypeMod
-	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
-	//}
+	/*if (_traceAI)
+	{
+		Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
+					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
+					  << " from: " << originPosition << " to: "<<action->target
+					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
+					  << " targetQuality: " << targetQuality
+					  << " damageTypeMod: " << damageTypeMod
+					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
+	}*/
 	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality * damageTypeMod;
 }
 
