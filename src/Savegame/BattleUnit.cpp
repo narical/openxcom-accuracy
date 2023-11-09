@@ -2466,15 +2466,7 @@ bool BattleUnit::addToVisibleTiles(Tile *tile)
 	{
 		if (getFaction() == FACTION_PLAYER)
 			tile->setVisible(1);
-		BattleUnit* unitOnTile = tile->getUnit();
-		if (!unitOnTile || hasVisibleUnit(unitOnTile))
-		{
-			int viewDistance = getMaxViewDistanceAtDay(unitOnTile);
-			if (getAIModule() && getAIModule()->getSave() && tile->getShade() > getAIModule()->getSave()->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
-				viewDistance = getMaxViewDistanceAtDark(unitOnTile);
-			if (Position::distance(getPosition(), tile->getPosition()) <= viewDistance)
-				tile->setLastExplored(getFaction());
-		}
+		tile->setLastExplored(getFaction());
 		_visibleTiles.push_back(tile);
 		return true;
 	}
