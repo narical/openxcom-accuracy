@@ -6396,8 +6396,17 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 	int y1, y2;
 	Position posTest;
 
+	if ((unit->getHeight() + unit->getFloatHeight() + -_save->getTile(pos)->getTerrainLevel()) >= 24 + 4)
+	{
+		Tile* tileAbove = _save->getTile(pos + Position(0, 0, 1));
+		if (tileAbove && tileAbove->hasNoFloor(0))
+		{
+			++pos.z;
+		}
+	}
+
 	// Test all tiles within view cone for visibility.
-	int maxDist = _save->getMapSizeX();
+	int maxDist = _save->getMod()->getMaxViewDistance();
 	if (Options::aiPerformanceOptimization)
 	{
 		int myUnits = 0;
@@ -6407,25 +6416,21 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 				++myUnits;
 		}
 		float scaleFactor = (float)60 * 60 * 4 * 30 / (_save->getMapSizeXYZ() * myUnits);
-		maxDist = std::max(60, _save->getMod()->getMaxViewDistance());
+		maxDist = std::min(60, _save->getMod()->getMaxViewDistance());
 		if (scaleFactor < 1)
 			maxDist *= scaleFactor;
 	}
-	setupEventVisibilitySector(pos, Position(-1,-1,-1), 0);
 	for (int x = 0; x <= maxDist; ++x) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
 		if (direction & 1)
 		{
 			y1 = 0;
-			y2 = _save->getMapSizeY();
 		}
 		else
 		{
 			y1 = -x;
-			y2 = x;
 		}
-		int mayDist = maxDist;
-		for (int y = y1; y <= mayDist; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+		for (int y = y1; y <= maxDist; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
 			const int distanceSqr = x * x + y * y;
 			if (distanceSqr >= 0)
