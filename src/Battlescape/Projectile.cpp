@@ -638,11 +638,19 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				break;
 			}
 
+			int distanceDivider = AccuracyMod.distanceDivider;
+
+			if (Options::battleRealisticShotDispersion == 0)
+			{
+				++accuracyDivider;
+				distanceDivider = 5;
+			}
+
 			if (weapon->isTwoHanded()) accuracyDivider += AccuracyMod.twoHandsBonus; // Less dispersion with two-handers
 
 			//  Highly accurate shots will land close to the target even if they miss
 			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider;
-			int distance_deviation = distanceTiles / AccuracyMod.distanceDivider; // 1 voxel of deviation per X tiles of distance
+			int distance_deviation = distanceTiles / distanceDivider; // 1 voxel of deviation per X tiles of distance
 			int hor_size_deviation = unitRadius;
 			int ver_size_deviation = unitRadius;
 

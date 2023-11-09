@@ -291,6 +291,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 3;
 		}
+		else if (i == &Options::battleRealisticShotDispersion)
+		{
+			min = 0;
+			max = 1;
+		}
 		else if (i == &Options::battleTerrainSquishyness)
 		{
 			min = 0;
