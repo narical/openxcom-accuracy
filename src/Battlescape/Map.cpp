@@ -1589,8 +1589,18 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = AccuracyMod.MaxCap;
 									}
 
-									// If target is a unit without a LoF - show that!
-									if (unit && maxVoxels == 0)
+									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
+									bool outOfRange = weapon->isOutOfRange(distanceSq);
+
+									// If target is out of range - show 0% accuracy with brown cursor
+									if (outOfRange)
+									{
+										accuracy = 0;
+										_txtAccuracy->setColor( TXT_BROWN );
+									}
+
+									// If target is a unit without a LoF - show just a brown cursor
+									else if (unit && maxVoxels == 0)
 									{
 										_txtAccuracy->setColor( TXT_BROWN );
 									}
