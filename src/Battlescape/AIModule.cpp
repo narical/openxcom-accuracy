@@ -5704,50 +5704,17 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 {
 	Tile *TileToCheckNext = NULL;
 	int LowestTuCost = INT_MAX;
-	int LowestLastExplored = INT_MAX;
-	float maxDistFromLastSeen = unit->getTurnsSinceSeen(_unit->getFaction()) * getMaxTU(unit) / 4;
-	bool exploreMode = false;
-	if (maxDistFromLastSeen > _save->getMapSizeX() + _save->getMapSizeY())
-		exploreMode = true;
-	Position lastSpottedPositon = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	bool dummy;
 	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), dummy, true, NULL, &previousPosition);
 	for (auto pn : reachable)
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
-		if (unit->getTileLastSpotted(_unit->getFaction()) != -1 && Position::distance(pn->getPosition(), lastSpottedPositon) > maxDistFromLastSeen)
-			continue;
 		int lastExplored = tile->getLastExplored(_unit->getFaction());
-		//if (_traceAI)
-		//{
-		//	tile->setMarkerColor(lastExplored);
-		//	tile->setPreview(10);
-		//	tile->setTUMarker(lastExplored);
-		//}
-		if (lastExplored < _save->getTurn())
+		int TUCost = pn->getTUCost(false).time + lastExplored * getMaxTU(unit);
+		if (TUCost < LowestTuCost)
 		{
-			int TUCost = pn->getTUCost(false).time;
-			if (exploreMode)
-			{
-				if (lastExplored <= LowestLastExplored)
-				{
-					LowestLastExplored = lastExplored;
-					if (TUCost < LowestTuCost)
-					{
-						LowestTuCost = TUCost;
-						TileToCheckNext = tile;
-					}
-				}
-				else
-				{
-					LowestTuCost = INT_MAX;
-				}
-			}
-			else if (TUCost < LowestTuCost)
-			{
-				LowestTuCost = TUCost;
-				TileToCheckNext = tile;
-			}
+			LowestTuCost = TUCost;
+			TileToCheckNext = tile;
 		}
 	}
 	if (TileToCheckNext)
