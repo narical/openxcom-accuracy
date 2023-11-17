@@ -4635,7 +4635,8 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 					if (x != 0 || y != 0)
 					{
 						Position attPos = _attackAction.target + Position(x, y, 0);
-						if (std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
+						Tile* attTile = _save->getTile(attPos);
+						if (attTile && std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
 							attackPositions.push_back(attPos);
 					}
 				}
