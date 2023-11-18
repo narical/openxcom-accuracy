@@ -222,13 +222,14 @@ void create()
 	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_AI"));
 	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
+	_info.push_back(OptionInfo("brutalBrutes", &brutalBrutes, true, "STR_BRUTALBRUTES", "STR_AI"));
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
 	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
+	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 1, "STR_AGGRESSIONMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
-	_info.push_back(OptionInfo("inheritAggression", &inheritAggression, false, "STR_INHERITAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
