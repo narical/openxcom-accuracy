@@ -482,12 +482,12 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		if (targetTile)
 		{
 			// Improve accuracy for close-range aimed shots
+			int snapDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
+
 			if (distanceVoxels <= AccuracyMod.aimDistanceVoxels && lowerLimit == 0
 				&& _action.type == BA_AIMEDSHOT)
 			{
-				double distanceRatio = 0;
-				if (distanceVoxels > Position::TileXY)
-					distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
+				double distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
 
 				// Multiplier up to x2 for 10 tiles, nearest to a target
 				// in case current accuracy is enough to get 100% by doubling
@@ -503,13 +503,11 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 
 			// Improve accuracy for close-range snap/auto shots
-			else if (distanceVoxels <= AccuracyMod.snapDistanceVoxels && lowerLimit == 0
+			else if (distanceVoxels <= snapDistanceVoxels && lowerLimit == 0
 				 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
 			{
-				// Multiplier up to x2 for 5 nearest tiles
-				double distanceRatio = 0;
-				if (distanceVoxels > Position::TileXY)
-					distanceRatio = (AccuracyMod.snapDistanceVoxels - distanceVoxels) / (double)AccuracyMod.snapDistanceVoxels;
+				// Multiplier up to x2 for 5 or 10 nearest tiles
+				double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
 
 				if (real_accuracy*2 >= 100)
 					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
