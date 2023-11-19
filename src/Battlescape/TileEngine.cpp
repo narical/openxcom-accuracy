@@ -1804,7 +1804,7 @@ std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBat
 		}
 		else
 		{
-			densityOfFire += step * t->getFire();
+			densityOfFire += step * t->getSmoke(); // this boost fire blocking visibility for thermo vision as usually smoke value is bigger
 		}
 		visibleDistanceVoxels += step;
 	}
