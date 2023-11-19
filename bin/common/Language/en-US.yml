@@ -122,6 +122,8 @@ en-US:
   STR_BATTLEREALISTICIMPSNAP_DESC: "Make additional snap/auto accuracy bonus similar to aimed (for 10 tiles of distance instead of 5)"
   STR_BATTLEREALISTICSHOTDISPERSION: "Realistic accuracy shot dispersion"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic 1> Normal"
+  STR_BATTLEREALISTICDISPLAYROLLS: "Realistic accuracy display RNG rolls"
+  STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
   STR_INSTANTPRIME: "One-click grenade priming"
   STR_INSTANTPRIME_DESC: "You can no longer select the amount of turns after which grenades shall explode. The timer will just be set to 0 without having to pick a value."
   STR_CANTRANSFERCRAFTSWHILEAIRBORNE: "Airborne transfers"

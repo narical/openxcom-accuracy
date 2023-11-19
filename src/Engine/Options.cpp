@@ -198,6 +198,7 @@ void create()
 	_info.push_back(OptionInfo("battleRealisticAccuracy", &battleRealisticAccuracy, false, "STR_BATTLEREALISTICACCURACY", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleRealisticImprovedSnap", &battleRealisticImprovedSnap, false, "STR_BATTLEREALISTICIMPSNAP", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleRealisticShotDispersion", &battleRealisticShotDispersion, 1, "STR_BATTLEREALISTICSHOTDISPERSION", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("battleRealisticDisplayRolls", &battleRealisticDisplayRolls, false, "STR_BATTLEREALISTICDISPLAYROLLS", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("showMoreStatsInInventoryView", &showMoreStatsInInventoryView, false, "STR_SHOWMORESTATSININVENTORYVIEW", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleHairBleach", &battleHairBleach, true, "STR_BATTLEHAIRBLEACH", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("battleInstantGrenade", &battleInstantGrenade, false, "STR_BATTLEINSTANTGRENADE", "STR_BATTLESCAPE"));

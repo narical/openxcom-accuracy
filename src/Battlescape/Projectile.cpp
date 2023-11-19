@@ -545,13 +545,13 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		int accuracy_check = RNG::generate(1, 100);
 		bool hit_successful = ( accuracy_check <= real_accuracy );
 
-		if (_save->getDebugMode() && isPlayer)
+		if (Options::battleRealisticDisplayRolls)
 		{
 			std::ostringstream ss;
-			ss << "Acc:" << accuracy*100 << " Exposure " << exposure*100 << "%";
-			ss << " Dist:" << distanceTiles << " Total:" << real_accuracy << "%";
-			ss << " Check:" << accuracy_check << " HIT? " << hit_successful;
-			_save->getBattleState()->debug(ss.str());
+			ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
+			ss << " Total " << real_accuracy << "%";
+			ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
+			_save->getBattleState()->debug(ss.str(), true);
 		}
 
 		if (hit_successful && !exposedVoxels.empty())
