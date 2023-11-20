@@ -1551,13 +1551,8 @@ void Map::drawTerrain(Surface *surface)
 									else if (distanceVoxels <= snapDistanceVoxels && weapon->getMinRange() == 0
 										&& (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
 									{
-										// Multiplier up to x2 for 5 or 10 nearest tiles
 										double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
-
-										if (accuracy*2 >= 100)
-											accuracy = (int)ceil( accuracy * (1 + distanceRatio));
-										else
-											accuracy += (int)ceil((100 - accuracy) * distanceRatio);
+										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
 									}
 
 									// Apply the exposure

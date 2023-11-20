@@ -506,13 +506,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			else if (distanceVoxels <= snapDistanceVoxels && lowerLimit == 0
 				 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
 			{
-				// Multiplier up to x2 for 5 or 10 nearest tiles
 				double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
-
-				if (real_accuracy*2 >= 100)
-					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
-				else
-					real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
+				real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
 			}
 
 			// Apply the exposure
