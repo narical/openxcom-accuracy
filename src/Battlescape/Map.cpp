@@ -1531,22 +1531,15 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * sizeMultiplier);
 									}
 
-									int maxDistanceVoxels = 0;
-
-									switch (action->type)
-									{
-									case BA_AIMEDSHOT:
-										maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
-										break;
-
-									case BA_SNAPSHOT:
-									case BA_AUTOSHOT:
-										maxDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
-										break;
-									}
-
+									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
 									int upperLimitVoxels = upperLimit * Position::TileXY;
-									if (maxDistanceVoxels > upperLimitVoxels) maxDistanceVoxels = upperLimitVoxels;
+									if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
+										upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
+
+									int maxDistanceVoxels = 0;
+									maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
+									if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
+
 									double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 									bool noMinRange = weapon->getMinRange() == 0;
 
@@ -1570,7 +1563,6 @@ void Map::drawTerrain(Surface *surface)
 									else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
 										(action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
 									{
-										double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
 									}
 

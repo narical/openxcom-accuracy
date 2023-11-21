@@ -484,22 +484,15 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
-			int maxDistanceVoxels = 0;
-
-			switch (_action.type)
-			{
-			case BA_AIMEDSHOT:
-				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
-				break;
-
-			case BA_SNAPSHOT:
-			case BA_AUTOSHOT:
-				maxDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
-				break;
-			}
-
+			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
 			int upperLimitVoxels = upperLimit * Position::TileXY;
-			if (maxDistanceVoxels > upperLimitVoxels) maxDistanceVoxels = upperLimitVoxels;
+			if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
+				upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
+
+			int maxDistanceVoxels = 0;
+			maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
+			if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
+
 			double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 			bool noMinRange = lowerLimit == 0;
 
