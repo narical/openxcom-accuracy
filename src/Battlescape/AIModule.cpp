@@ -3013,14 +3013,20 @@ void AIModule::brutalThink(BattleAction* action)
 	// Check if I'm a turret. In this case I can skip everything about walking
 	if (!_unit->getArmor()->allowsMoving() || _unit->getEnergy() == 0)
 		immobile = true;
-	bool sweepMode = _unit->getAggressiveness() > 3 || _unit->isLeeroyJenkins() || immobile;
 	float targetDistanceTofurthestReach = FLT_MAX;
 	std::map<Position, int, PositionComparator> enemyReachable;
 	bool immobileEnemies = false;
+	int myAggressiveness = _unit->getAggressiveness();
+	int highestAggressivenessInTeam = myAggressiveness;
 	for (BattleUnit* target : *(_save->getUnits()))
 	{
 		if (target->isOut())
 			continue;
+		if (isAlly(target))
+		{
+			if (target->getAggressiveness() > highestAggressivenessInTeam)
+				highestAggressivenessInTeam = target->getAggressiveness();
+		}
 		if (!_unit->isCheatOnMovement())
 		{
 			if (target->getTileLastSpotted(_unit->getFaction()) == -1)
@@ -3064,6 +3070,8 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
+			if (tileChecked && targetTile->getUnit() && targetTile->getUnit()->getFaction() == _targetFaction && !visibleToAnyFriend(targetTile->getUnit()))
+				tileChecked = false;
 			// if (_traceAI)
 			//	Log(LOG_INFO) << "Assuming unit at " << target->getPosition() << " to be at " << targetPosition << " checked: " << tileChecked << " target-tile last explored: " << targetTile->getLastExplored(_unit->getFaction()) << " current turn: " << _save->getTurn() << " smoke: " << targetTile->getSmoke() << " turns since seen: " << target->getTurnsSinceSeen(_unit->getFaction());
 			if (tileChecked)
@@ -3127,6 +3135,11 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
+	if (Options::aggressionMode && highestAggressivenessInTeam < 3)
+	{
+		myAggressiveness = 3;
+	}
+	bool sweepMode = (myAggressiveness > 3 && !contact) || _unit->isLeeroyJenkins() || immobile;
 
 	// Phase 1: Check if you can attack anything from where you currently are
 	_attackAction.type = BA_RETHINK;
@@ -3137,7 +3150,7 @@ void AIModule::brutalThink(BattleAction* action)
 		_positionAtStartOfTurn = myPos;
 		_reposition = false;
 	}
-	if (_tuWhenChecking == _unit->getTimeUnits() || sweepMode || _reposition)
+	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 3 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr)
 	{
 		checkedAttack = true;
 		if (brutalPsiAction())
@@ -3580,7 +3593,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 			float walkToDist = myMaxTU + tuDistFromTarget;
-			if (!sweepMode && _unit->getAggressiveness() > 0)
+			if (!sweepMode && myAggressiveness > 0)
 			{
 				if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
@@ -3607,7 +3620,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (!lineOfFireBeforeFriendCheck)
 			{
 				bool validCover = true;
-				if (_unit->getAggressiveness() > 2 && walkToDist >= myWalkToDist && !contact)
+				if (myAggressiveness > 2 && walkToDist >= myWalkToDist && !contact)
 					validCover = false;
 				bool isNode = false;
 				if (Options::aiPerformanceOptimization && validCover)
@@ -3649,13 +3662,13 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 					discoverThreat = std::max(0.0f, discoverThreat);
-					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (_unit->getAggressiveness() < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
+					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
 						greatCoverScore = 100 / walkToDist;
 					if (!_save->getTileEngine()->isNextToDoor(tile))
 						goodCoverScore = 100 / (discoverThreat + walkToDist);
 					else
 						okayCoverScore = 100 / (discoverThreat + walkToDist);
-					if (_unit->getAggressiveness() > 2)
+					if (myAggressiveness > 2)
 					{
 						if (walkToDist >= myWalkToDist && !contact)
 						{
@@ -3665,7 +3678,7 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 				}
-				if ((_unit->getAggressiveness() < 3 || discoverThreat == 0 || immobileEnemies)
+				if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies)
 					&& !tile->getDangerous()
 					&& !tile->getFire()
 					&& !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide)
@@ -3730,7 +3743,7 @@ void AIModule::brutalThink(BattleAction* action)
 				indirectPeakScore /= 10;
 				fallbackScore /= 10;
 			}
-			if (_unit->getAggressiveness() == 0 && inDoors)
+			if (myAggressiveness == 0 && inDoors)
 			{
 				greatCoverScore *= 10;
 				goodCoverScore *= 10;
