@@ -119,7 +119,7 @@ en-US:
   STR_BATTLEREALISTICACCURACY: "Realistic accuracy and cover system"
   STR_BATTLEREALISTICACCURACY_DESC: "Chance to hit depends on how much cover target has. Accuracy number represents precise chance to hit. Kneel and take cover!"
   STR_BATTLEREALISTICIMPSNAP: "Realistic accuracy improved snap/auto"
-  STR_BATTLEREALISTICIMPSNAP_DESC: "Snap/auto shots' accuracy gradually increases to 95% for nearest 10 tiles instead of 5, just as aimed"
+  STR_BATTLEREALISTICIMPSNAP_DESC: "Increase aiming distance for snap/auto for a variety of weapons (6-9 to 10 tiles)"
   STR_BATTLEREALISTICSHOTDISPERSION: "Realistic accuracy shot dispersion"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic 1> Normal"
   STR_BATTLEREALISTICDISPLAYROLLS: "Realistic accuracy display RNG rolls"

@@ -115,7 +115,7 @@ ru:
   STR_BATTLEREALISTICACCURACY: "Реалистичная меткость и укрытия"
   STR_BATTLEREALISTICACCURACY_DESC: "Разброс выстрелов меньше и более предсказуем. Шанс попадания зависит от степени укрытия цели за другими объектами. Указанный шанс попадания точно соответствует реальному."
   STR_BATTLEREALISTICIMPSNAP: "Реал. меткость - улучш. авто/навскидку"
-  STR_BATTLEREALISTICIMPSNAP_DESC: "Меткость выстрелов авто/навскидку плавно повышается до 95% в пределах ближайших 10 тайлов (вместо 5), по аналогии с прицельными"
+  STR_BATTLEREALISTICIMPSNAP_DESC: "Увеличить прицельную дальность стрельбы навскидку/авто для ряда видов оружия (с 6-9 до 10 клеток)"
   STR_BATTLEREALISTICSHOTDISPERSION: "Реал. меткость - разброс выстрелов"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Реалистичный 1> Стандартный"
   STR_BATTLEREALISTICDISPLAYROLLS: "Реал. меткость - броски на попадание"
