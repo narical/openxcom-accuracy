@@ -481,33 +481,46 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
-			// Improve accuracy for close-range aimed shots
-			int snapDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
+			int maxDistanceVoxels = 0;
 
-			if (distanceVoxels <= AccuracyMod.aimDistanceVoxels && lowerLimit == 0
-				&& _action.type == BA_AIMEDSHOT)
+			switch (_action.type)
 			{
-				double distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
+			case BA_AIMEDSHOT:
+				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+				break;
 
+			case BA_SNAPSHOT:
+			case BA_AUTOSHOT:
+				maxDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
+				break;
+			}
+
+			int upperLimitVoxels = upperLimit * Position::TileXY;
+			if (maxDistanceVoxels > upperLimitVoxels) maxDistanceVoxels = upperLimitVoxels;
+			double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+			bool noMinRange = lowerLimit == 0;
+
+			// Improve accuracy for close-range aimed shots
+			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange)
+			{
 				// Multiplier up to x2 for 10 tiles, nearest to a target
-				// in case current accuracy is enough to get 100% by doubling
+				// in case current accuracy is enough to get 100% by doubling it
 				// With good enough accuracy this makes it possible to get
-				// ~100% even for medium-ranged shots. Aiming should pay off!
+				// ~100% even for medium-ranged shots. Good aiming should pay off!
 				if (real_accuracy*2 >= 100)
 					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
 
 				// We still want to get our 100% on a tile, adjanced to target
 				// so increase accuracy in reverse proportion to the distance left
 				else
-					real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
+					real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
 			}
 
 			// Improve accuracy for close-range snap/auto shots
-			else if (distanceVoxels <= snapDistanceVoxels && lowerLimit == 0
-				 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
+			else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
+				(_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
 			{
-				double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
-				real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
+				real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
 			}
 
 			// Apply the exposure

@@ -1527,13 +1527,28 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * sizeMultiplier);
 									}
 
-									// Improve accuracy for close-range aimed shots
-									int snapDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
-									if (distanceVoxels <= AccuracyMod.aimDistanceVoxels && weapon->getMinRange() == 0
-										&& action->type == BA_AIMEDSHOT)
-									{
-										double distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
+									int maxDistanceVoxels = 0;
 
+									switch (action->type)
+									{
+									case BA_AIMEDSHOT:
+										maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+										break;
+
+									case BA_SNAPSHOT:
+									case BA_AUTOSHOT:
+										maxDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
+										break;
+									}
+
+									int upperLimitVoxels = upperLimit * Position::TileXY;
+									if (maxDistanceVoxels > upperLimitVoxels) maxDistanceVoxels = upperLimitVoxels;
+									double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+									bool noMinRange = weapon->getMinRange() == 0;
+
+									// Improve accuracy for close-range aimed shots
+									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange)
+									{
 										// Multiplier up to x2 for 10 tiles, nearest to a target
 										// in case current accuracy is enough to get 100% by doubling it
 										// With good enough accuracy this makes it possible to get
@@ -1548,10 +1563,10 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									// Improve accuracy for close-range snap/auto shots
-									else if (distanceVoxels <= snapDistanceVoxels && weapon->getMinRange() == 0
-										&& (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
+									else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
+										(action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
 									{
-										double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
+										double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
 									}
 
