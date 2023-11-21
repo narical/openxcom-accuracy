@@ -1362,6 +1362,7 @@ void Map::drawTerrain(Surface *surface)
 								int distanceSq = 0;
 								int distanceTiles = 0;
 								int distanceVoxels = 0;
+								int maxRange = weapon->getMaxRange();
 								int upperLimit = weapon->getAimRange();
 								int lowerLimit = weapon->getMinRange();
 
@@ -1417,8 +1418,11 @@ void Map::drawTerrain(Surface *surface)
 									else if (action->type == BA_SNAPSHOT)
 									{
 										upperLimit = weapon->getSnapRange();
+
 									}
 								}
+
+								if (upperLimit > maxRange) upperLimit = maxRange;
 
 								// at this point, let's assume the shot is adjusted and set the text amber.
 								_txtAccuracy->setColor( TXT_YELLOW );
@@ -1527,13 +1531,21 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * sizeMultiplier);
 									}
 
-									// Improve accuracy for close-range aimed shots
-									int snapDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
-									if (distanceVoxels <= AccuracyMod.aimDistanceVoxels && weapon->getMinRange() == 0
-										&& action->type == BA_AIMEDSHOT)
-									{
-										double distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
+									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
+									int upperLimitVoxels = upperLimit * Position::TileXY;
+									if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
+										upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
 
+									int maxDistanceVoxels = 0;
+									maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
+									if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
+
+									double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+									bool noMinRange = weapon->getMinRange() == 0;
+
+									// Improve accuracy for close-range aimed shots
+									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange)
+									{
 										// Multiplier up to x2 for 10 tiles, nearest to a target
 										// in case current accuracy is enough to get 100% by doubling it
 										// With good enough accuracy this makes it possible to get
@@ -1548,16 +1560,10 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									// Improve accuracy for close-range snap/auto shots
-									else if (distanceVoxels <= snapDistanceVoxels && weapon->getMinRange() == 0
-										&& (action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
+									else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
+										(action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
 									{
-										// Multiplier up to x2 for 5 or 10 nearest tiles
-										double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
-
-										if (accuracy*2 >= 100)
-											accuracy = (int)ceil( accuracy * (1 + distanceRatio));
-										else
-											accuracy += (int)ceil((100 - accuracy) * distanceRatio);
+										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
 									}
 
 									// Apply the exposure

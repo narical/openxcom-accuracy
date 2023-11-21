@@ -358,6 +358,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	}
 
 	const RuleItem *weapon = _action.weapon->getRules();
+	int maxRange = weapon->getMaxRange();
 	int upperLimit = weapon->getAimRange();
 	int lowerLimit = weapon->getMinRange();
 
@@ -372,6 +373,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			upperLimit = weapon->getSnapRange();
 		}
 	}
+
+	if (upperLimit > maxRange) upperLimit = maxRange;
 
 	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
 	{
@@ -481,38 +484,39 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
+			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
+			int upperLimitVoxels = upperLimit * Position::TileXY;
+			if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
+				upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
+
+			int maxDistanceVoxels = 0;
+			maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
+			if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
+
+			double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+			bool noMinRange = lowerLimit == 0;
+
 			// Improve accuracy for close-range aimed shots
-			int snapDistanceVoxels = ( Options::battleRealisticImprovedSnap ? AccuracyMod.aimDistanceVoxels : AccuracyMod.snapDistanceVoxels );
-
-			if (distanceVoxels <= AccuracyMod.aimDistanceVoxels && lowerLimit == 0
-				&& _action.type == BA_AIMEDSHOT)
+			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange)
 			{
-				double distanceRatio = (AccuracyMod.aimDistanceVoxels - distanceVoxels) / (double)AccuracyMod.aimDistanceVoxels;
-
 				// Multiplier up to x2 for 10 tiles, nearest to a target
-				// in case current accuracy is enough to get 100% by doubling
+				// in case current accuracy is enough to get 100% by doubling it
 				// With good enough accuracy this makes it possible to get
-				// ~100% even for medium-ranged shots. Aiming should pay off!
+				// ~100% even for medium-ranged shots. Good aiming should pay off!
 				if (real_accuracy*2 >= 100)
 					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
 
 				// We still want to get our 100% on a tile, adjanced to target
 				// so increase accuracy in reverse proportion to the distance left
 				else
-					real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
+					real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
 			}
 
 			// Improve accuracy for close-range snap/auto shots
-			else if (distanceVoxels <= snapDistanceVoxels && lowerLimit == 0
-				 && (_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
+			else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
+				(_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
 			{
-				// Multiplier up to x2 for 5 or 10 nearest tiles
-				double distanceRatio = (snapDistanceVoxels - distanceVoxels) / (double)snapDistanceVoxels;
-
-				if (real_accuracy*2 >= 100)
-					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
-				else
-					real_accuracy += (int)ceil( (100 - real_accuracy) * distanceRatio);
+				real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
 			}
 
 			// Apply the exposure
@@ -792,8 +796,8 @@ target_calculated:
 
 	if (extendLine)
 	{
-		double maxRange = keepRange ? distanceVoxels : 16*1000; // 1000 tiles
-		maxRange = _action.type == BA_HIT ? 46 : maxRange; // up to 2 tiles diagonally (as in the case of reaper v reaper)
+		double maxRangeVoxels = keepRange ? distanceVoxels : 16*1000; // 1000 tiles
+		maxRangeVoxels = _action.type == BA_HIT ? 46 : maxRangeVoxels; // up to 2 tiles diagonally (as in the case of reaper v reaper)
 		double rotation, tilt;
 		rotation = atan2(double(target->y - origin.y), double(target->x - origin.x)) * 180 / M_PI;
 		tilt = atan2(double(target->z - origin.z),
@@ -804,9 +808,9 @@ target_calculated:
 		double sin_fi = sin(Deg2Rad(tilt));
 		double cos_te = cos(Deg2Rad(rotation));
 		double sin_te = sin(Deg2Rad(rotation));
-		target->x = (int)(origin.x + maxRange * cos_te * cos_fi);
-		target->y = (int)(origin.y + maxRange * sin_te * cos_fi);
-		target->z = (int)(origin.z + maxRange * sin_fi);
+		target->x = (int)(origin.x + maxRangeVoxels * cos_te * cos_fi);
+		target->y = (int)(origin.y + maxRangeVoxels * sin_te * cos_fi);
+		target->z = (int)(origin.z + maxRangeVoxels * sin_fi);
 	}
 }
 
