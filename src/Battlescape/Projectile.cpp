@@ -803,8 +803,8 @@ target_calculated:
 
 	if (extendLine)
 	{
-		double maxRange = keepRange ? distanceVoxels : 16*1000; // 1000 tiles
-		maxRange = _action.type == BA_HIT ? 46 : maxRange; // up to 2 tiles diagonally (as in the case of reaper v reaper)
+		double maxRangeVoxels = keepRange ? distanceVoxels : 16*1000; // 1000 tiles
+		maxRangeVoxels = _action.type == BA_HIT ? 46 : maxRangeVoxels; // up to 2 tiles diagonally (as in the case of reaper v reaper)
 		double rotation, tilt;
 		rotation = atan2(double(target->y - origin.y), double(target->x - origin.x)) * 180 / M_PI;
 		tilt = atan2(double(target->z - origin.z),
@@ -815,9 +815,9 @@ target_calculated:
 		double sin_fi = sin(Deg2Rad(tilt));
 		double cos_te = cos(Deg2Rad(rotation));
 		double sin_te = sin(Deg2Rad(rotation));
-		target->x = (int)(origin.x + maxRange * cos_te * cos_fi);
-		target->y = (int)(origin.y + maxRange * sin_te * cos_fi);
-		target->z = (int)(origin.z + maxRange * sin_fi);
+		target->x = (int)(origin.x + maxRangeVoxels * cos_te * cos_fi);
+		target->y = (int)(origin.y + maxRangeVoxels * sin_te * cos_fi);
+		target->z = (int)(origin.z + maxRangeVoxels * sin_fi);
 	}
 }
 
