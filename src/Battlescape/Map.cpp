@@ -1362,6 +1362,7 @@ void Map::drawTerrain(Surface *surface)
 								int distanceSq = 0;
 								int distanceTiles = 0;
 								int distanceVoxels = 0;
+								int maxRange = weapon->getMaxRange();
 								int upperLimit = weapon->getAimRange();
 								int lowerLimit = weapon->getMinRange();
 
@@ -1417,8 +1418,11 @@ void Map::drawTerrain(Surface *surface)
 									else if (action->type == BA_SNAPSHOT)
 									{
 										upperLimit = weapon->getSnapRange();
+
 									}
 								}
+
+								if (upperLimit > maxRange) upperLimit = maxRange;
 
 								// at this point, let's assume the shot is adjusted and set the text amber.
 								_txtAccuracy->setColor( TXT_YELLOW );

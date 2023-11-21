@@ -358,6 +358,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	}
 
 	const RuleItem *weapon = _action.weapon->getRules();
+	int maxRange = weapon->getMaxRange();
 	int upperLimit = weapon->getAimRange();
 	int lowerLimit = weapon->getMinRange();
 
@@ -372,6 +373,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			upperLimit = weapon->getSnapRange();
 		}
 	}
+
+	if (upperLimit > maxRange) upperLimit = maxRange;
 
 	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
 	{
