@@ -147,7 +147,7 @@ en-GB:
   STR_AITARGETMODE: "Targeting behaviour for Brutal AI"
   STR_AITARGETMODE_DESC: "1> Units can only target what they see. 2> Units can also target what others on their team see. 3> Units can also target locations they or their comrades were attacked from. 4> No limitations."
   STR_AGGRESSIONMODE: "Aggressiveness-mode"
-  STR_AGGRESSIONMODE_DESC: "0> Static aggessiveness. 1> Dynamic aggressiveness. 2> Inherit aggressiveness from unit-aggression."
+  STR_AGGRESSIONMODE_DESC: "0> Static aggessiveness. 1> Dynamic aggressiveness. 2> Inherit aggressiveness from unit-aggression. 3> Inherit aggressiveness but forbid camping."
   STR_AIAGGRESSION: "Enemy aggressiveness"
   STR_AIAGGRESSION_DESC: "0> Actively avoid the enemy. 1> Very cover-oriented behaviour. 2> Balanced approach between attacking and cover. 3> Careful advancement. 4> Don't bother taking cover."
   STR_BRUTALCIVILIANS: "Brutal AI for neutral forces"

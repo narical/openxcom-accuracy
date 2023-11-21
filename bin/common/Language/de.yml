@@ -147,7 +147,7 @@ de:
   STR_AITARGETMODE: "Zielverhalten für Brutale KI"
   STR_AITARGETMODE_DESC: "1> Nur was Einheiten selbst sehen. 2> Auch was andere Einheiten im selben Team sehen. 3> Auch Orte von denen sie oder ihre Kameraden angegriffen worden. 4> Keine Einschränkungen."
   STR_AGGRESSIONMODE: "Aggressionsmodus"
-  STR_AGGRESSIONMODE_DESC: "0> Statische Aggressivität. 1> Dynamische Aggressivität. 2> Übernahme der Aggressivität von der Einheitenaggression."
+  STR_AGGRESSIONMODE_DESC: "0> Statische Aggressivität. 1> Dynamische Aggressivität. 2> Übernahme der Aggressivität von der Einheitenaggression. 3> Übernahme der Aggressivität aber campen ist verboten."
   STR_AIAGGRESSION: "Feindesaggressivität"
   STR_AIAGGRESSION_DESC: "0> Gegner aktiv meiden. 1> Sehr deckungsorientiertes Verhalten. 2> Ausgewogener Ansatz zwischen Angriff und Deckung. 3> Vorsichtiges Vorrücken. 4> Keine Mühe, sich zu decken."
   STR_BRUTALCIVILIANS: "Brutale KI für neutrale Truppen"
