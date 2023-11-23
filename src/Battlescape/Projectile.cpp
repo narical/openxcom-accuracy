@@ -484,25 +484,25 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
-			int upperLimitVoxels = upperLimit * Position::TileXY;
-			int maxRangeVoxels = maxRange * Position::TileXY;
 			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
-			bool belowBonusThreshold = upperLimit < 6;
-			bool inBonusZone = upperLimit >= 6 && upperLimitVoxels < AccuracyMod.aimDistanceVoxels;
-			bool aboveBonusThreshold = upperLimitVoxels >= AccuracyMod.aimDistanceVoxels;
-			bool maxRangeAllowsBonus = maxRangeVoxels >= AccuracyMod.aimDistanceVoxels;
+			bool belowBonusThreshold = upperLimit < AccuracyMod.bonusDistanceMin;
+			bool inBonusZone = upperLimit >= AccuracyMod.bonusDistanceMin && upperLimit <= AccuracyMod.bonusDistanceMax;
+			bool aboveBonusThreshold = upperLimit > AccuracyMod.bonusDistanceMax;
+			bool maxRangeAllowsBonus = maxRange > AccuracyMod.bonusDistanceMax;
 			bool noMinRange = weapon->getMinRange() == 0;
+
 			int maxDistanceVoxels = 0;
 			double distanceRatio = 0;
+			int upperLimitVoxels = upperLimit * Position::TileXY;
 
 			if (belowBonusThreshold)
 				maxDistanceVoxels = upperLimitVoxels;
 
 			else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
-				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+				maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
 
 			else if (aboveBonusThreshold)
-				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+				maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
 
 			else
 				maxDistanceVoxels = upperLimitVoxels;

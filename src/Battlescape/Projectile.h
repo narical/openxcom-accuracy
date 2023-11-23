@@ -44,9 +44,9 @@ struct	// Real Accuracy mod configuration
 
 	double SizeMultiplier = 1.35; // Accuracy multiplier when targeting big units
 
-	int suicideProtectionDistance = 50;			   // Missing shot shouldn't land too close to a shooter
-	int aimDistanceVoxels = Position::TileXY * 10; // Improved accuracy range for aimed shots
-	int snapDistanceVoxels = Position::TileXY * 5; // Improved accuracy range for snap/auto
+	int suicideProtectionDistance = 50;	// Missing shot shouldn't land too close to a shooter
+	int bonusDistanceMax = 10; // Improved accuracy distance - top threshold
+	int bonusDistanceMin = 6; // Improved accuracy distance - bottom threshold
 } AccuracyMod;
 
 /**
