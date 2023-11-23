@@ -484,21 +484,34 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
-			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
 			int upperLimitVoxels = upperLimit * Position::TileXY;
-			if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
-				upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
-
+			int maxRangeVoxels = maxRange * Position::TileXY;
+			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
+			bool belowBonusThreshold = upperLimit < 6;
+			bool inBonusZone = upperLimit >= 6 && upperLimitVoxels < AccuracyMod.aimDistanceVoxels;
+			bool aboveBonusThreshold = upperLimitVoxels >= AccuracyMod.aimDistanceVoxels;
+			bool maxRangeAllowsBonus = maxRangeVoxels >= AccuracyMod.aimDistanceVoxels;
+			bool noMinRange = weapon->getMinRange() == 0;
 			int maxDistanceVoxels = 0;
-			maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
-			if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
+			double distanceRatio = 0;
 
-			double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
-			bool noMinRange = lowerLimit == 0;
+			if (belowBonusThreshold)
+				maxDistanceVoxels = upperLimitVoxels;
+
+			else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
+				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+
+			else if (aboveBonusThreshold)
+				maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+
+			else
+				maxDistanceVoxels = upperLimitVoxels;
 
 			// Improve accuracy for close-range aimed shots
 			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange)
 			{
+				distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+
 				// Multiplier up to x2 for 10 tiles, nearest to a target
 				// in case current accuracy is enough to get 100% by doubling it
 				// With good enough accuracy this makes it possible to get
@@ -516,6 +529,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
 				(_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
 			{
+				distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 				real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
 			}
 

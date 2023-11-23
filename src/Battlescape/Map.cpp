@@ -1531,21 +1531,34 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * sizeMultiplier);
 									}
 
-									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
 									int upperLimitVoxels = upperLimit * Position::TileXY;
-									if (upperLimitVoxels > AccuracyMod.aimDistanceVoxels)
-										upperLimitVoxels = AccuracyMod.aimDistanceVoxels;
-
-									int maxDistanceVoxels = 0;
-									maxDistanceVoxels = ( improvedSnapEnabled ? AccuracyMod.aimDistanceVoxels : upperLimitVoxels );
-									if (upperLimit < 6) maxDistanceVoxels = upperLimitVoxels;
-
-									double distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+									int maxRangeVoxels = maxRange * Position::TileXY;
+									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
+									bool belowBonusThreshold = upperLimit < 6;
+									bool inBonusZone = upperLimit >= 6 && upperLimitVoxels < AccuracyMod.aimDistanceVoxels;
+									bool aboveBonusThreshold = upperLimitVoxels >= AccuracyMod.aimDistanceVoxels;
+									bool maxRangeAllowsBonus = maxRangeVoxels >= AccuracyMod.aimDistanceVoxels;
 									bool noMinRange = weapon->getMinRange() == 0;
+									int maxDistanceVoxels = 0;
+									double distanceRatio = 0;
+
+									if (belowBonusThreshold)
+										maxDistanceVoxels = upperLimitVoxels;
+
+									else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
+										maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+
+									else if (aboveBonusThreshold)
+										maxDistanceVoxels = AccuracyMod.aimDistanceVoxels;
+
+									else
+										maxDistanceVoxels = upperLimitVoxels;
 
 									// Improve accuracy for close-range aimed shots
 									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange)
 									{
+										distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
+
 										// Multiplier up to x2 for 10 tiles, nearest to a target
 										// in case current accuracy is enough to get 100% by doubling it
 										// With good enough accuracy this makes it possible to get
@@ -1563,6 +1576,7 @@ void Map::drawTerrain(Surface *surface)
 									else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
 										(action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
 									{
+										distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
 									}
 
