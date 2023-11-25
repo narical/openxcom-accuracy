@@ -3141,6 +3141,23 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	bool sweepMode = (myAggressiveness > 3 && !contact) || _unit->isLeeroyJenkins() || immobile;
 
+	bool randomMove = false;
+	int intelligence = _unit->getBrutalIntelligence();
+	if (Options::intelligenceMode == 2)
+		intelligence = _save->getGeoscapeSave()->getDifficulty() + 1;
+	if (_unit->getFaction() != FACTION_PLAYER)
+	{
+		int randomChance = RNG::generate(0, 5);
+		if (_traceAI)
+			Log(LOG_INFO) << "If " << randomChance << " > " << intelligence << " I make a random move instead of a smart one.";
+		if (randomChance > intelligence)
+		{
+			if (_traceAI)
+				Log(LOG_INFO) << "I will make a random move.";
+			randomMove = true;
+		}
+	}
+
 	// Phase 1: Check if you can attack anything from where you currently are
 	_attackAction.type = BA_RETHINK;
 	_psiAction.type = BA_NONE;
@@ -3150,7 +3167,7 @@ void AIModule::brutalThink(BattleAction* action)
 		_positionAtStartOfTurn = myPos;
 		_reposition = false;
 	}
-	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 3 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr)
+	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 3 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || randomMove)
 	{
 		checkedAttack = true;
 		if (brutalPsiAction())
@@ -3359,8 +3376,6 @@ void AIModule::brutalThink(BattleAction* action)
 			break;
 		}
 	}
-	if (_blaster)
-		sweepMode = false;
 	if (!_unit->isCheatOnMovement() && !shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
 		peakMode = true;
 	if (_traceAI)
@@ -3401,499 +3416,503 @@ void AIModule::brutalThink(BattleAction* action)
 	int myMaxTU = getMaxTU(_unit);
 	int lastStepCost = 0;
 	Position peakPosition = getPeakPosition();
-	if (unitToWalkTo != NULL || encircleTile)
+	Position travelTarget = myPos;
+	if (randomMove)
 	{
-		Position targetPosition = encircleTile->getPosition();
-		bool justNeedToTurn = false;
-		bool justNeedToTurnToPeek = false;
-		if (unitToWalkTo)
+		RNG::shuffle(_reachable);
+		if (_unit->getTimeUnits() == getMaxTU(_unit) || _save->getTileEngine()->isNextToDoor(myTile))
+			travelTarget = _save->getTileCoords(_reachable[0]);
+	}
+	else
+	{
+		if (unitToWalkTo != NULL || encircleTile)
 		{
-			targetPosition = unitToWalkTo->getPosition();
-			if (!_unit->isCheatOnMovement())
-				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
-			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
-				justNeedToTurn = true;
-			Position towardsPeekPos = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
-			Tile* towardsPeekTile = _save->getTile(towardsPeekPos);
-			if (towardsPeekTile->getLastExplored(_myFaction) < _save->getTurn())
-				peakPosition = towardsPeekPos;
-		}
-		if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
-			justNeedToTurnToPeek = true;
-		bool couldSeePeekPosition = clearSight(myPos, peakPosition);
-		BattleActionCost reserved = BattleActionCost(_unit);
-		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
-		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
-		if (_traceAI)
-		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek <<" tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
-		}
-		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
-		float myWalkToDist = myMaxTU + myTuDistFromTarget;
-		for (auto pu : _allPathFindingNodes)
-		{
-			Position pos = pu->getPosition();
-			Tile* tile = _save->getTile(pos);
-			if (tile == NULL)
-				continue;
-			if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
-				continue;
-			if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
-				continue;
-			bool saveForProxies = true;
-			bool badPath = false;
-			if (!isPathToPositionSave(pos, saveForProxies))
-				badPath = true;
-			if (!sweepMode && !saveForProxies)
-				continue;
-			float closestEnemyDist = FLT_MAX;
-			float targetDist = Position::distance(pos, targetPosition);
-			float cuddleAvoidModifier = 1;
-			bool avoidMeleeRange = false;
-			bool lineOfFire = false;
-			bool lineOfFireBeforeFriendCheck = false;
-			float closestAnyOneDist = FLT_MAX;
-			int currLastStepCost = 0;
-			Position ref;
-			float viewDistance = _save->getMod()->getMaxViewDistance();
-			int higherSmoke = myTile->getSmoke();
+			Position targetPosition = encircleTile->getPosition();
+			bool justNeedToTurn = false;
+			bool justNeedToTurnToPeek = false;
 			if (unitToWalkTo)
 			{
-				viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo);
-				if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
-					viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo);
-				higherSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), higherSmoke);
+				targetPosition = unitToWalkTo->getPosition();
+				if (!_unit->isCheatOnMovement())
+					targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
+				if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
+					justNeedToTurn = true;
+				Position towardsPeekPos = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
+				Tile* towardsPeekTile = _save->getTile(towardsPeekPos);
+				if (towardsPeekTile->getLastExplored(_myFaction) < _save->getTurn())
+					peakPosition = towardsPeekPos;
 			}
-			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + higherSmoke / 3.0)));
-			for (BattleUnit* unit : *(_save->getUnits()))
+			if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
+				justNeedToTurnToPeek = true;
+			bool couldSeePeekPosition = clearSight(myPos, peakPosition);
+			BattleActionCost reserved = BattleActionCost(_unit);
+			Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
+			std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
+			if (_traceAI)
 			{
-				Position unitPosition = unit->getPosition();
-				if (unit->isOut())
+				Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
+			}
+			float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
+			float myWalkToDist = myMaxTU + myTuDistFromTarget;
+			for (auto pu : _allPathFindingNodes)
+			{
+				Position pos = pu->getPosition();
+				Tile* tile = _save->getTile(pos);
+				if (tile == NULL)
 					continue;
-				if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
-					unitPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
-				float unitDist = Position::distance(pos, unitPosition);
-				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
+				if (tile->hasNoFloor() && _unit->getMovementType() != MT_FLY)
+					continue;
+				if (pu->getTUCost(false).time > _unit->getTimeUnits() || pu->getTUCost(false).energy > _unit->getEnergy())
+					continue;
+				bool saveForProxies = true;
+				bool badPath = false;
+				if (!isPathToPositionSave(pos, saveForProxies))
+					badPath = true;
+				if (!sweepMode && !saveForProxies)
+					continue;
+				float closestEnemyDist = FLT_MAX;
+				float targetDist = Position::distance(pos, targetPosition);
+				float cuddleAvoidModifier = 1;
+				bool avoidMeleeRange = false;
+				bool lineOfFire = false;
+				bool lineOfFireBeforeFriendCheck = false;
+				float closestAnyOneDist = FLT_MAX;
+				int currLastStepCost = 0;
+				Position ref;
+				float viewDistance = _save->getMod()->getMaxViewDistance();
+				int higherSmoke = myTile->getSmoke();
+				if (unitToWalkTo)
 				{
-					if (unitDist < 5)
-					{
-						if (quickLineOfFire(pos, unit))
-							cuddleAvoidModifier += 1 - unitDist * 0.2;
-					}
+					viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo);
+					if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
+						viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo);
+					higherSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), higherSmoke);
 				}
-				if (unitDist < closestAnyOneDist && unit != _unit)
-					closestAnyOneDist = unitDist;
-				if (isAlly(unit))
-					continue;
-				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
-					continue;
-				if (_unit->aiTargetMode() < 2 && Position::distance(unitPosition, pos) > viewDistance)
-					continue;
-				if (shouldAvoidMeleeRange(unit) && unitDist < 2)
+				viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + higherSmoke / 3.0)));
+				for (BattleUnit* unit : *(_save->getUnits()))
 				{
-					avoidMeleeRange = true;
-				}
-				if (unitDist < closestEnemyDist)
-					closestEnemyDist = unitDist;
-				if (brutalValidTarget(unit, true))
-				{
-					if (!IAmPureMelee)
+					Position unitPosition = unit->getPosition();
+					if (unit->isOut())
+						continue;
+					if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
+						unitPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
+					float unitDist = Position::distance(pos, unitPosition);
+					if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 					{
-						if (!lineOfFire)
+						if (unitDist < 5)
 						{
-							originAction.target = unit->getPosition();
-							Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-							lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
-							if (!_unit->isCheatOnMovement() && !lineOfFire)
-								lineOfFire = clearSight(pos, unitPosition);
-							if (lineOfFire)
-							{
-								lineOfFireBeforeFriendCheck = true;
-								if (projectileMayHarmFriends(pos, unitPosition))
-									lineOfFire = false;
-							}
+							if (quickLineOfFire(pos, unit))
+								cuddleAvoidModifier += 1 - unitDist * 0.2;
 						}
 					}
-					if(hasTileSight(pos, unit->getPosition()))
-						lineOfFireBeforeFriendCheck = true;
-				}
-			}
-			bool haveTUToAttack = false;
-			if (targetDist < closestEnemyDist)
-				closestEnemyDist = targetDist;
-			bool outOfRangeForShortRangeWeapon = false;
-			if (weaponRange < closestEnemyDist)
-				outOfRangeForShortRangeWeapon = true;
-			int attackTU = snapCost.Time;
-			if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
-				attackTU = hitCost.Time;
-			if (!lineOfFire && (pos != myPos || justNeedToTurn))
-			{
-				if (IAmPureMelee || _unit->isCheatOnMovement())
-				{
-					if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && (_melee || quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement()))))
+					if (unitDist < closestAnyOneDist && unit != _unit)
+						closestAnyOneDist = unitDist;
+					if (isAlly(unit))
+						continue;
+					if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
+						continue;
+					if (_unit->aiTargetMode() < 2 && Position::distance(unitPosition, pos) > viewDistance)
+						continue;
+					if (shouldAvoidMeleeRange(unit) && unitDist < 2)
 					{
-						lineOfFire = true;
+						avoidMeleeRange = true;
 					}
-				}
-			}
-			bool shouldHaveBeenAbleToAttack = pos == myPos && _tuWhenChecking == _unit->getTimeUnits();
-
-			bool realLineOfFire = lineOfFire;
-			bool specialDoorCase = false;
-			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > myMaxTU * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
-			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
-			if (!lineOfFire && enoughTUToPeak)
-			{
-				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
-				{
-					for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+					if (unitDist < closestEnemyDist)
+						closestEnemyDist = unitDist;
+					if (brutalValidTarget(unit, true))
 					{
-						Position checkPos = pos;
-						checkPos += Position(x, y, 0);
-						Tile* targetTile = _save->getTile(checkPos);
-						if (_save->getTileEngine()->isNextToDoor(targetTile) && targetDist < 1 + _unit->getArmor()->getSize() && targetPosition.z == checkPos.z)
+						if (!IAmPureMelee)
 						{
-							Tile* targetTile = _save->getTile(targetPosition);
-							if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+							if (!lineOfFire)
 							{
-								shouldHaveBeenAbleToAttack = false;
-								lineOfFire = true;
-								realLineOfFire = false;
-								attackTU += 4;
-								specialDoorCase = true;
-							}
-						}
-					}
-				}
-			}
-			if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
-				haveTUToAttack = true;
-			float attackScore = 0;
-			float greatCoverScore = 0;
-			float goodCoverScore = 0;
-			float okayCoverScore = 0;
-			float directPeakScore = 0;
-			float indirectPeakScore = 0;
-			float fallbackScore = 0;
-			if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
-			{
-				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
-				{
-					attackScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-					if (pu->getPrevNode())
-						currLastStepCost = pu->getTUCost(false).time - pu->getPrevNode()->getTUCost(false).time;
-				}
-			}
-			Tile* tileAbove = _save->getAboveTile(tile);
-			bool inDoors = false;
-			if (tileAbove && !tileAbove->hasNoFloor())
-			{
-				inDoors = true;
-			}
-			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
-			float walkToDist = myMaxTU + tuDistFromTarget;
-			if (!sweepMode && myAggressiveness > 0)
-			{
-				if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
-				{
-					if (Position::distance(pos, targetPosition) <= viewDistance)
-					{
-						Tile* targetTile = _save->getTile(targetPosition);
-						if (targetTile)
-						{
-							BattleUnit* unitOnTile = targetTile->getUnit();
-							if (unitOnTile)
-							{
-								if (quickLineOfFire(pos, unitOnTile))
-									directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-							}
-							else if (clearSight(pos, targetPosition))
-								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-						}
-					}
-					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
-						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
-				}
-			}
-			float discoverThreat = 0;
-			if (!lineOfFireBeforeFriendCheck)
-			{
-				bool validCover = true;
-				if (myAggressiveness > 2 && walkToDist >= myWalkToDist && !contact)
-					validCover = false;
-				bool isNode = false;
-				if (Options::aiPerformanceOptimization && validCover)
-				{
-					if (tile->hasNoFloor())
-					{
-						Tile* tileBelow = _save->getBelowTile(tile);
-						if (tileBelow && tileBelow->hasNoFloor())
-							validCover = false;
-					}
-					for (const auto* node : *_save->getNodes())
-					{
-						if (node->getPosition() == pos)
-						{
-							isNode = true;
-							break;
-						}
-					}
-					if (!isNode && getCoverValue(tile, _unit, 3) == 0)
-						validCover = false;
-				}
-				if (!sweepMode && validCover)
-				{
-					for (auto& reachable : enemyReachable)
-					{
-						if (reachable.second > discoverThreat)
-						{
-							for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
-							{
-								for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+								originAction.target = unit->getPosition();
+								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
+								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
+								if (!_unit->isCheatOnMovement() && !lineOfFire)
+									lineOfFire = clearSight(pos, unitPosition);
+								if (lineOfFire)
 								{
-									Position compPos = pos;
-									compPos.x += x;
-									compPos.y += y;
-									if (hasTileSight(compPos, reachable.first))
-										discoverThreat = reachable.second;
+									lineOfFireBeforeFriendCheck = true;
+									if (projectileMayHarmFriends(pos, unitPosition))
+										lineOfFire = false;
+								}
+							}
+						}
+						if (hasTileSight(pos, unit->getPosition()))
+							lineOfFireBeforeFriendCheck = true;
+					}
+				}
+				bool haveTUToAttack = false;
+				if (targetDist < closestEnemyDist)
+					closestEnemyDist = targetDist;
+				bool outOfRangeForShortRangeWeapon = false;
+				if (weaponRange < closestEnemyDist)
+					outOfRangeForShortRangeWeapon = true;
+				int attackTU = snapCost.Time;
+				if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
+					attackTU = hitCost.Time;
+				if (!lineOfFire && (pos != myPos || justNeedToTurn))
+				{
+					if (IAmPureMelee || _unit->isCheatOnMovement())
+					{
+						if ((brutalValidTarget(unitToWalkTo, true) || _unit->isCheatOnMovement()) && (_save->getTileEngine()->validMeleeRange(pos, _save->getTileEngine()->getDirectionTo(pos, targetPosition), _unit, unitToWalkTo, NULL) && (_melee || quickLineOfFire(pos, unitToWalkTo, false, !_unit->isCheatOnMovement()))))
+						{
+							lineOfFire = true;
+						}
+					}
+				}
+				bool shouldHaveBeenAbleToAttack = pos == myPos && _tuWhenChecking == _unit->getTimeUnits();
+
+				bool realLineOfFire = lineOfFire;
+				bool specialDoorCase = false;
+				bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > myMaxTU * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
+				//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
+				if (!lineOfFire && enoughTUToPeak)
+				{
+					for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+					{
+						for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+						{
+							Position checkPos = pos;
+							checkPos += Position(x, y, 0);
+							Tile* targetTile = _save->getTile(checkPos);
+							if (_save->getTileEngine()->isNextToDoor(targetTile) && targetDist < 1 + _unit->getArmor()->getSize() && targetPosition.z == checkPos.z)
+							{
+								Tile* targetTile = _save->getTile(targetPosition);
+								if (_save->getTileEngine()->isNextToDoor(targetTile) || IAmPureMelee)
+								{
+									shouldHaveBeenAbleToAttack = false;
+									lineOfFire = true;
+									realLineOfFire = false;
+									attackTU += 4;
+									specialDoorCase = true;
 								}
 							}
 						}
 					}
-					discoverThreat = std::max(0.0f, discoverThreat);
-					if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
-						greatCoverScore = 100 / walkToDist;
-					if (!_save->getTileEngine()->isNextToDoor(tile))
-						goodCoverScore = 100 / (discoverThreat + walkToDist);
-					else
-						okayCoverScore = 100 / (discoverThreat + walkToDist);
-					if (myAggressiveness > 2)
+				}
+				if (pu->getTUCost(false).time <= _unit->getTimeUnits() - attackTU)
+					haveTUToAttack = true;
+				float attackScore = 0;
+				float greatCoverScore = 0;
+				float goodCoverScore = 0;
+				float okayCoverScore = 0;
+				float directPeakScore = 0;
+				float indirectPeakScore = 0;
+				float fallbackScore = 0;
+				if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
+				{
+					if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 					{
-						if (walkToDist >= myWalkToDist && !contact)
+						attackScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+						if (pu->getPrevNode())
+							currLastStepCost = pu->getTUCost(false).time - pu->getPrevNode()->getTUCost(false).time;
+					}
+				}
+				Tile* tileAbove = _save->getAboveTile(tile);
+				bool inDoors = false;
+				if (tileAbove && !tileAbove->hasNoFloor())
+				{
+					inDoors = true;
+				}
+				float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
+				float walkToDist = myMaxTU + tuDistFromTarget;
+				if (!sweepMode && myAggressiveness > 0)
+				{
+					if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
+					{
+						if (Position::distance(pos, targetPosition) <= viewDistance)
+						{
+							Tile* targetTile = _save->getTile(targetPosition);
+							if (targetTile)
+							{
+								BattleUnit* unitOnTile = targetTile->getUnit();
+								if (unitOnTile)
+								{
+									if (quickLineOfFire(pos, unitOnTile))
+										directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+								}
+								else if (clearSight(pos, targetPosition))
+									directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+							}
+						}
+						if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
+							indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+					}
+				}
+				float discoverThreat = 0;
+				if (!lineOfFireBeforeFriendCheck)
+				{
+					bool validCover = true;
+					if (myAggressiveness > 2 && walkToDist >= myWalkToDist && !contact)
+						validCover = false;
+					bool isNode = false;
+					if (Options::aiPerformanceOptimization && validCover)
+					{
+						if (tile->hasNoFloor())
+						{
+							Tile* tileBelow = _save->getBelowTile(tile);
+							if (tileBelow && tileBelow->hasNoFloor())
+								validCover = false;
+						}
+						for (const auto* node : *_save->getNodes())
+						{
+							if (node->getPosition() == pos)
+							{
+								isNode = true;
+								break;
+							}
+						}
+						if (!isNode && getCoverValue(tile, _unit, 3) == 0)
+							validCover = false;
+					}
+					if (!sweepMode && validCover)
+					{
+						for (auto& reachable : enemyReachable)
+						{
+							if (reachable.second > discoverThreat)
+							{
+								for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+								{
+									for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+									{
+										Position compPos = pos;
+										compPos.x += x;
+										compPos.y += y;
+										if (hasTileSight(compPos, reachable.first))
+											discoverThreat = reachable.second;
+									}
+								}
+							}
+						}
+						discoverThreat = std::max(0.0f, discoverThreat);
+						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
+							greatCoverScore = 100 / walkToDist;
+						if (!_save->getTileEngine()->isNextToDoor(tile))
+							goodCoverScore = 100 / (discoverThreat + walkToDist);
+						else
+							okayCoverScore = 100 / (discoverThreat + walkToDist);
+						if (myAggressiveness > 2)
+						{
+							if (walkToDist >= myWalkToDist && !contact)
+							{
+								greatCoverScore = 0;
+								goodCoverScore = 0;
+								okayCoverScore = 0;
+							}
+						}
+					}
+					if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
+					{
+						_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
+						_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
+						_tuWhenChecking = _unit->getTimeUnits();
+					}
+				}
+				fallbackScore = 100 / walkToDist;
+				greatCoverScore /= cuddleAvoidModifier;
+				goodCoverScore /= cuddleAvoidModifier;
+				okayCoverScore /= cuddleAvoidModifier;
+				directPeakScore /= cuddleAvoidModifier;
+				indirectPeakScore /= cuddleAvoidModifier;
+				fallbackScore /= cuddleAvoidModifier;
+				if (tile->getDangerous() || (tile->getFire() && _unit->avoidsFire()))
+				{
+					if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
+					{
+						attackScore *= 2;
+						greatCoverScore *= 10;
+						goodCoverScore *= 10;
+						okayCoverScore *= 10;
+						directPeakScore *= 10;
+						indirectPeakScore *= 10;
+						fallbackScore *= 10;
+					}
+					else
+					{
+						attackScore /= 2;
+						if (_unit->getTile()->getDangerous() || (_unit->getTile()->getFire() && _unit->avoidsFire()))
+						{
+							greatCoverScore /= 10;
+							goodCoverScore /= 10;
+							okayCoverScore /= 10;
+							directPeakScore /= 10;
+							indirectPeakScore /= 10;
+							fallbackScore /= 10;
+						}
+						else
 						{
 							greatCoverScore = 0;
 							goodCoverScore = 0;
 							okayCoverScore = 0;
+							directPeakScore = 0;
+							indirectPeakScore = 0;
+							fallbackScore = 0;
 						}
 					}
 				}
-				if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies)
-					&& !tile->getDangerous()
-					&& !tile->getFire()
-					&& !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide)
-					&& !_save->getTileEngine()->isNextToDoor(tile)
-					&& (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
+				// Avoid tiles from which the player can take me with them when retreating
+				if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
 				{
-					_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
-					_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
-					_tuWhenChecking = _unit->getTimeUnits();
+					attackScore /= 2;
+					greatCoverScore /= 10;
+					goodCoverScore /= 10;
+					okayCoverScore /= 10;
+					directPeakScore /= 10;
+					indirectPeakScore /= 10;
+					fallbackScore /= 10;
 				}
-			}
-			fallbackScore = 100 / walkToDist;
-			greatCoverScore /= cuddleAvoidModifier;
-			goodCoverScore /= cuddleAvoidModifier;
-			okayCoverScore /= cuddleAvoidModifier;
-			directPeakScore /= cuddleAvoidModifier;
-			indirectPeakScore /= cuddleAvoidModifier;
-			fallbackScore /= cuddleAvoidModifier;
-			if (tile->getDangerous() || (tile->getFire() && _unit->avoidsFire()))
-			{
-				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
+				if (myAggressiveness == 0 && inDoors)
 				{
-					attackScore *= 2;
 					greatCoverScore *= 10;
 					goodCoverScore *= 10;
 					okayCoverScore *= 10;
-					directPeakScore *= 10;
-					indirectPeakScore *= 10;
-					fallbackScore *= 10;
 				}
-				else
+				if (avoidMeleeRange || (badPath && !sweepMode))
 				{
-					attackScore /= 2;
-					if (_unit->getTile()->getDangerous() || (_unit->getTile()->getFire() && _unit->avoidsFire()))
+					attackScore /= 10;
+					directPeakScore /= 10;
+					indirectPeakScore /= 10;
+				}
+				if (attackScore > bestAttackScore)
+				{
+					bestAttackScore = attackScore;
+					bestAttackPosition = pos;
+					shouldHaveLofAfterMove = realLineOfFire;
+					winnerWasSpecialDoorCase = specialDoorCase;
+					lastStepCost = currLastStepCost;
+				}
+				if (greatCoverScore > bestGreatCoverScore)
+				{
+					bestGreatCoverScore = greatCoverScore;
+					bestGreatCoverPosition = pos;
+				}
+				if (goodCoverScore > bestGoodCoverScore)
+				{
+					bestGoodCoverScore = goodCoverScore;
+					bestGoodCoverPosition = pos;
+				}
+				if (okayCoverScore > bestOkayCoverScore)
+				{
+					bestOkayCoverScore = okayCoverScore;
+					bestOkayCoverPosition = pos;
+				}
+				if (directPeakScore > bestDirectPeakScore)
+				{
+					bestDirectPeakScore = directPeakScore;
+					bestDirectPeakPosition = pos;
+					if (!sweepMode)
 					{
-						greatCoverScore /= 10;
-						goodCoverScore /= 10;
-						okayCoverScore /= 10;
-						directPeakScore /= 10;
-						indirectPeakScore /= 10;
-						fallbackScore /= 10;
+						peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
+						usePeakDirection = true;
+					}
+				}
+				if (bestDirectPeakScore == 0 && indirectPeakScore > bestIndirectPeakScore)
+				{
+					bestIndirectPeakScore = indirectPeakScore;
+					bestIndirectPeakPosition = pos;
+					if (bestIndirectPeakPosition == peakPosition)
+					{
+						peakPosition = targetPosition;
+						peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
 					}
 					else
-					{
-						greatCoverScore = 0;
-						goodCoverScore = 0;
-						okayCoverScore = 0;
-						directPeakScore = 0;
-						indirectPeakScore = 0;
-						fallbackScore = 0;
-					}
-				}
-			}
-			// Avoid tiles from which the player can take me with them when retreating
-			if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
-			{
-				attackScore /= 2;
-				greatCoverScore /= 10;
-				goodCoverScore /= 10;
-				okayCoverScore /= 10;
-				directPeakScore /= 10;
-				indirectPeakScore /= 10;
-				fallbackScore /= 10;
-			}
-			if (myAggressiveness == 0 && inDoors)
-			{
-				greatCoverScore *= 10;
-				goodCoverScore *= 10;
-				okayCoverScore *= 10;
-			}
-			if (avoidMeleeRange || (badPath && !sweepMode))
-			{
-				attackScore /= 10;
-				directPeakScore /= 10;
-				indirectPeakScore /= 10;
-			}
-			if (attackScore > bestAttackScore)
-			{
-				bestAttackScore = attackScore;
-				bestAttackPosition = pos;
-				shouldHaveLofAfterMove = realLineOfFire;
-				winnerWasSpecialDoorCase = specialDoorCase;
-				lastStepCost = currLastStepCost;
-			}
-			if (greatCoverScore > bestGreatCoverScore)
-			{
-				bestGreatCoverScore = greatCoverScore;
-				bestGreatCoverPosition = pos;
-			}
-			if (goodCoverScore > bestGoodCoverScore)
-			{
-				bestGoodCoverScore = goodCoverScore;
-				bestGoodCoverPosition = pos;
-			}
-			if (okayCoverScore > bestOkayCoverScore)
-			{
-				bestOkayCoverScore = okayCoverScore;
-				bestOkayCoverPosition = pos;
-			}
-			if (directPeakScore > bestDirectPeakScore)
-			{
-				bestDirectPeakScore = directPeakScore;
-				bestDirectPeakPosition = pos;
-				if (!sweepMode)
-				{
-					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
+						peakDirection = _save->getTileEngine()->getDirectionTo(pos, peakPosition);
 					usePeakDirection = true;
 				}
-			}
-			if (bestDirectPeakScore == 0 && indirectPeakScore > bestIndirectPeakScore)
-			{
-				bestIndirectPeakScore = indirectPeakScore;
-				bestIndirectPeakPosition = pos;
-				if (bestIndirectPeakPosition == peakPosition)
+				if (fallbackScore > bestFallbackScore)
 				{
-					peakPosition = targetPosition;
-					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
+					bestFallbackScore = fallbackScore;
+					bestFallbackPosition = pos;
 				}
-				else
-					peakDirection = _save->getTileEngine()->getDirectionTo(pos, peakPosition);
-				usePeakDirection = true;
+				// if (_traceAI)
+				//{
+				//	tile->setMarkerColor(_unit->getId()%100);
+				//	tile->setPreview(10);
+				//	tile->setTUMarker(validCover);
+				// }
 			}
-			if (fallbackScore > bestFallbackScore)
+			if (_traceAI)
 			{
-				bestFallbackScore = fallbackScore;
-				bestFallbackPosition = pos;
+				if (bestAttackScore > 0)
+				{
+					Log(LOG_INFO) << "bestAttackPosition: " << bestAttackPosition << " score: " << bestAttackScore;
+				}
+				if (bestDirectPeakScore > 0)
+				{
+					Log(LOG_INFO) << "bestDirectPeakPosition: " << bestDirectPeakPosition << " score: " << bestDirectPeakScore;
+				}
+				if (bestIndirectPeakScore > 0)
+				{
+					Log(LOG_INFO) << "bestIndirectPeakPosition: " << bestIndirectPeakPosition << " score: " << bestIndirectPeakScore;
+				}
+				if (bestGreatCoverScore > 0)
+				{
+					Log(LOG_INFO) << "bestGreatCoverPosition: " << bestGreatCoverPosition << " score: " << bestGreatCoverScore;
+				}
+				if (bestGoodCoverScore > 0)
+				{
+					Log(LOG_INFO) << "bestGoodCoverPosition: " << bestGoodCoverPosition << " score: " << bestGoodCoverScore;
+				}
+				if (bestOkayCoverScore > 0)
+				{
+					Log(LOG_INFO) << "bestOkayCoverPosition: " << bestOkayCoverPosition << " score: " << bestOkayCoverScore;
+				}
+				if (bestFallbackScore > 0)
+				{
+					Log(LOG_INFO) << "bestFallbackPosition: " << bestFallbackPosition << " score: " << bestFallbackScore;
+				}
 			}
-			//if (_traceAI)
-			//{
-			//	tile->setMarkerColor(_unit->getId()%100);
-			//	tile->setPreview(10);
-			//	tile->setTUMarker(validCover);
-			//}
 		}
-		if (_traceAI)
+		bool haveTUToAttack = false;
+		int attackTU = snapCost.Time;
+		if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
+			attackTU = hitCost.Time;
+		int moveTU = tuCostToReachPosition(bestAttackPosition, _allPathFindingNodes);
+		if (lastStepCost != 0)
+			_tuCostToReachClosestPositionToBreakLos = lastStepCost;
+		if (_tuCostToReachClosestPositionToBreakLos != -1)
 		{
-			if (bestAttackScore > 0)
-			{
-				Log(LOG_INFO) << "bestAttackPosition: " << bestAttackPosition << " score: " << bestAttackScore;
-			}
-			if (bestDirectPeakScore > 0)
-			{
-				Log(LOG_INFO) << "bestDirectPeakPosition: " << bestDirectPeakPosition << " score: " << bestDirectPeakScore;
-			}
-			if (bestIndirectPeakScore > 0)
-			{
-				Log(LOG_INFO) << "bestIndirectPeakPosition: " << bestIndirectPeakPosition << " score: " << bestIndirectPeakScore;
-			}
-			if (bestGreatCoverScore > 0)
-			{
-				Log(LOG_INFO) << "bestGreatCoverPosition: " << bestGreatCoverPosition << " score: " << bestGreatCoverScore;
-			}
-			if (bestGoodCoverScore > 0)
-			{
-				Log(LOG_INFO) << "bestGoodCoverPosition: " << bestGoodCoverPosition << " score: " << bestGoodCoverScore;
-			}
-			if (bestOkayCoverScore > 0)
-			{
-				Log(LOG_INFO) << "bestOkayCoverPosition: " << bestOkayCoverPosition << " score: " << bestOkayCoverScore;
-			}
-			if (bestFallbackScore > 0)
-			{
-				Log(LOG_INFO) << "bestFallbackPosition: " << bestFallbackPosition << " score: " << bestFallbackScore;
-			}
+			attackTU += _tuCostToReachClosestPositionToBreakLos;
 		}
-	}
-	Position travelTarget = myPos;
-	bool haveTUToAttack = false;
-	int attackTU = snapCost.Time;
-	if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
-		attackTU = hitCost.Time;
-	int moveTU = tuCostToReachPosition(bestAttackPosition, _allPathFindingNodes);
-	if (lastStepCost != 0)
-		_tuCostToReachClosestPositionToBreakLos = lastStepCost;
-	if (_tuCostToReachClosestPositionToBreakLos != -1)
-	{
-		attackTU += _tuCostToReachClosestPositionToBreakLos;
-	}
-	if (moveTU <= _unit->getTimeUnits() - attackTU)
-		haveTUToAttack = true;
-	if (bestAttackScore > 0 && !haveTUToAttack)
-	{
-		shouldHaveLofAfterMove = iHaveLof;
-		if (_traceAI)
-			Log(LOG_INFO) << "Attack dismissed due to lack of TU to go back to hiding-spot afterwards. Attack + Hide: " << attackTU << " move: " << moveTU << " current: " << _unit->getTimeUnits();
-	}
-	if (bestAttackScore > 0 && haveTUToAttack)
-	{
-		travelTarget = bestAttackPosition;
-		if (IAmPureMelee)
-			_reposition = true;
-	}
-	else if (bestDirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, peakDirection, true).size() > 0)
-	{
-		travelTarget = bestDirectPeakPosition;
-	}
-	else if (bestIndirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, peakDirection, true).size() > 0)
-	{
-		travelTarget = bestIndirectPeakPosition;
-	}
-	else if (bestGreatCoverScore > 0)
-	{
-		travelTarget = bestGreatCoverPosition;
-	}
-	else if (bestGoodCoverScore > 0)
-	{
-		travelTarget = bestGoodCoverPosition;
-	}
-	else if (bestOkayCoverScore > 0)
-	{
-		travelTarget = bestOkayCoverPosition;
-	}
-	else if (bestFallbackScore > 0)
-	{
-		travelTarget = bestFallbackPosition;
+		if (moveTU <= _unit->getTimeUnits() - attackTU)
+			haveTUToAttack = true;
+		if (bestAttackScore > 0 && !haveTUToAttack)
+		{
+			shouldHaveLofAfterMove = iHaveLof;
+			if (_traceAI)
+				Log(LOG_INFO) << "Attack dismissed due to lack of TU to go back to hiding-spot afterwards. Attack + Hide: " << attackTU << " move: " << moveTU << " current: " << _unit->getTimeUnits();
+		}
+		if (bestAttackScore > 0 && haveTUToAttack)
+		{
+			travelTarget = bestAttackPosition;
+			if (IAmPureMelee)
+				_reposition = true;
+		}
+		else if (bestDirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, peakDirection, true).size() > 0)
+		{
+			travelTarget = bestDirectPeakPosition;
+		}
+		else if (bestIndirectPeakScore > 0 && _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, peakDirection, true).size() > 0)
+		{
+			travelTarget = bestIndirectPeakPosition;
+		}
+		else if (bestGreatCoverScore > 0)
+		{
+			travelTarget = bestGreatCoverPosition;
+		}
+		else if (bestGoodCoverScore > 0)
+		{
+			travelTarget = bestGoodCoverPosition;
+		}
+		else if (bestOkayCoverScore > 0)
+		{
+			travelTarget = bestOkayCoverPosition;
+		}
+		else if (bestFallbackScore > 0)
+		{
+			travelTarget = bestFallbackPosition;
+		}
 	}
 	if (_traceAI)
 	{

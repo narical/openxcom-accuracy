@@ -5890,6 +5890,15 @@ int BattleUnit::getAggressiveness() const
 		return Options::aiAggression;
 }
 
+int BattleUnit::getBrutalIntelligence() const
+{
+	if (Options::intelligenceMode == 0)
+		return Options::intelligence;
+	if (Options::intelligenceMode == 1)
+		return getIntelligence();
+	return 5;
+}
+
 ////////////////////////////////////////////////////////////
 //					Script binding
 ////////////////////////////////////////////////////////////

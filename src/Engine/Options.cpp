@@ -232,6 +232,8 @@ void create()
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 0, "STR_AGGRESSIONMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo("intelligenceMode", &intelligenceMode, 0, "STR_INTELLIGENCEMODE", "STR_AI"));
+	_info.push_back(OptionInfo("intelligence", &intelligence, 5, "STR_INTELLIGENCE", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
