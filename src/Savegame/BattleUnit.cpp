@@ -3295,6 +3295,8 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 					for (const auto& s : mod->getInvsList())
 					{
 						RuleInventory* slot = mod->getInventory(s);
+						if (slot->getType() == INV_GROUND)
+							continue;
 						if (fitItemToInventory(slot, item, true))
 						{
 							int currCost = std::min(slot->getCost(mod->getInventoryRightHand()), slot->getCost(mod->getInventoryRightHand()));

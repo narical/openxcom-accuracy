@@ -755,6 +755,8 @@ void Inventory::mouseClick(Action *action, State *state)
 								RuleInventory* cheapestInventoryToMoveToHand = nullptr;
 								for (auto ri : *_game->getMod()->getInventories())
 								{
+									if (ri.second->getType() == INV_GROUND)
+										continue;
 									if (fitItem(ri.second, item, warning, true))
 									{
 										int currCost = std::min(ri.second->getCost(_inventorySlotRightHand), ri.second->getCost(_inventorySlotLeftHand));
