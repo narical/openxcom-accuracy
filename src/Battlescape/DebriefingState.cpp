@@ -1132,6 +1132,10 @@ void DebriefingState::prepareDebriefing()
 				craft->returnToBase();
 				craft->setMissionComplete(true);
 				craft->setInBattlescape(false);
+				for (auto* follower : craft->getCraftFollowers())
+				{
+					follower->returnToBase();
+				}
 			}
 			else if (xcraft->getDestination() != 0)
 			{
