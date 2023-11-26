@@ -3197,7 +3197,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
 				action->weapon->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
-				_unit->spendTimeUnits(4);
+				_unit->spendTimeUnits(action->weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand()));
 			}
 			action->updateTU();
 			if (action->type == BA_WALK)
@@ -3389,12 +3389,13 @@ void AIModule::brutalThink(BattleAction* action)
 	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt()->getRules()->isExplodingInHands())
 	{
 		BattleItem* grenade = _unit->getGrenadeFromBelt();
-		primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + 4;
+		
+		primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand());
 		if (saveDistance)
 		{
 			if (primeCost <= _unit->getTimeUnits())
 			{
-				_unit->spendTimeUnits(4);
+				_unit->spendTimeUnits(grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand()));
 				_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
 				grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
 				if (_traceAI)
@@ -4114,7 +4115,7 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	costThrow.updateTU();
 	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
-		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
+		costThrow.Time += costThrow.weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand()); // Vanilla TUs for AI picking up grenade from belt
 		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
 	}
 
@@ -4848,7 +4849,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			return 0;
 		if (!_unit->getGrenadeFromBelt()->isFuseEnabled())
 		{
-			tuCost += 4;
+			tuCost += action->weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand());
 			tuCost += _unit->getActionTUs(BA_PRIME, _unit->getGrenadeFromBelt()).Time;
 		}
 		// We don't have several shots but we can hit several targets at once
@@ -5495,7 +5496,7 @@ void AIModule::blindFire()
 	costThrow.updateTU();
 	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
-		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
+		costThrow.Time += costThrow.weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand()); // Vanilla TUs for AI picking up grenade from belt
 		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
 	}
 
