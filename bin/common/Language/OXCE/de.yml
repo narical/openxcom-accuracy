@@ -362,3 +362,5 @@ de:
   STR_RACE_BONUS: "Rassenbonus"
   STR_FOR_DIFFICULTY: "Für Schwierigkeit: {0}"
   STR_NOT_AWARDED_YET: "Noch nicht erhalten"
+  STR_SMARTCONTROLEQUIP: "Intelligente Strg+Klick- und Autoausrüstung"
+  STR_SMARTCONTROLEQUIP_DESC: "Strg+Klicken auf Gegenstände in der Ausrüstungsphase bevorzugt Slots, die schneller erreichbar sind. Die Zweithand wird herabgestuft, wenn die Haupthand einen beidhändigen Gegenstand hält. Die automatische Ausrüstung verwendet dieselbe Logik."

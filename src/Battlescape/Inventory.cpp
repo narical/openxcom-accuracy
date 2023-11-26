@@ -749,27 +749,57 @@ void Inventory::mouseClick(Action *action, State *state)
 
 						if (slot->getType() == INV_GROUND)
 						{
-							switch (item->getRules()->getBattleType())
+							if (Options::oxceSmartCtrlEquip)
 							{
-							case BT_FIREARM:
-								newSlot = _inventorySlotRightHand;
-								break;
-							case BT_MINDPROBE:
-							case BT_PSIAMP:
-							case BT_MELEE:
-							case BT_CORPSE:
-								newSlot = _inventorySlotLeftHand;
-								break;
-							default:
-								if (item->getRules()->getInventoryHeight() > 2)
+								int cheapestCostToMoveToHand = INT_MAX;
+								RuleInventory* cheapestInventoryToMoveToHand = nullptr;
+								for (auto ri : *_game->getMod()->getInventories())
 								{
-									newSlot = _inventorySlotBackPack;
+									if (fitItem(ri.second, item, warning, true))
+									{
+										int currCost = std::min(ri.second->getCost(_inventorySlotRightHand), ri.second->getCost(_inventorySlotLeftHand));
+										if ((ri.second->isLeftHand() && _selUnit->getRightHandWeapon() && _selUnit->getRightHandWeapon()->getRules()->isBlockingBothHands()) || (ri.second->isRightHand() && _selUnit->getLeftHandWeapon() && _selUnit->getLeftHandWeapon()->getRules()->isBlockingBothHands()))
+										{
+											continue;
+										}
+										else if ((ri.second->isLeftHand() && _selUnit->getRightHandWeapon() && _selUnit->getRightHandWeapon()->getRules()->isTwoHanded()) || (ri.second->isRightHand() && _selUnit->getLeftHandWeapon() && _selUnit->getLeftHandWeapon()->getRules()->isTwoHanded()))
+										{
+											currCost += 10;
+										}
+										if (currCost <= cheapestCostToMoveToHand)
+										{
+											cheapestCostToMoveToHand = currCost;
+											cheapestInventoryToMoveToHand = ri.second;
+										}
+									}
 								}
-								else
+								if (cheapestInventoryToMoveToHand != nullptr)
+									newSlot = cheapestInventoryToMoveToHand;
+							}
+							else
+							{
+								switch (item->getRules()->getBattleType())
 								{
-									newSlot = _inventorySlotBelt;
+								case BT_FIREARM:
+									newSlot = _inventorySlotRightHand;
+									break;
+								case BT_MINDPROBE:
+								case BT_PSIAMP:
+								case BT_MELEE:
+								case BT_CORPSE:
+									newSlot = _inventorySlotLeftHand;
+									break;
+								default:
+									if (item->getRules()->getInventoryHeight() > 2)
+									{
+										newSlot = _inventorySlotBackPack;
+									}
+									else
+									{
+										newSlot = _inventorySlotBelt;
+									}
+									break;
 								}
-								break;
 							}
 						}
 
@@ -1584,7 +1614,7 @@ void Inventory::arrangeGround(int alterOffset)
  * @param warning Warning message if item could not be placed.
  * @return True, if the item was successfully placed in the inventory.
  */
-bool Inventory::fitItem(RuleInventory *newSlot, BattleItem *item, std::string &warning)
+bool Inventory::fitItem(RuleInventory* newSlot, BattleItem* item, std::string& warning, bool testMode)
 {
 	// Check if this inventory section supports the item
 	if (!item->getRules()->canBePlacedIntoInventorySection(newSlot))
@@ -1610,9 +1640,12 @@ bool Inventory::fitItem(RuleInventory *newSlot, BattleItem *item, std::string &w
 				if (!_tu || _selUnit->spendTimeUnits(item->getMoveToCost(newSlot)))
 				{
 					placed = true;
-					moveItem(item, newSlot, x2, y2);
-					_game->getMod()->getSoundByDepth(_depth, Mod::ITEM_DROP)->play();
-					drawItems();
+					if (!testMode)
+					{
+						moveItem(item, newSlot, x2, y2);
+						_game->getMod()->getSoundByDepth(_depth, Mod::ITEM_DROP)->play();
+						drawItems();
+					}
 				}
 				else
 				{

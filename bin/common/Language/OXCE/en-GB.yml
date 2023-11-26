@@ -333,6 +333,8 @@ en-GB:
   STR_MANUALPROMOTIONS_DESC: "If enabled, soldiers can be manually promoted (or demoted) by clicking on the rank icon."
   STR_AUTOMATICPROMOTIONS: "Automatic promotions"
   STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
+  STR_SMARTCONTROLEQUIP: "Smart ctrl-click and auto-equip"
+  STR_SMARTCONTROLEQUIP_DESC: "Ctrl-clicking items in the loadout-phase will prefer slots that are faster to reach. The off-hand will be deprioritized if the main-hand holds a two-handed item. Auto-equip uses the same logic."
 #===================
   STR_GRAPHS_ZOOM_IN: "Zoom In (Graphs)"
   STR_GRAPHS_ZOOM_OUT: "Zoom Out (Graphs)"

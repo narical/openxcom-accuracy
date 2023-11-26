@@ -3073,7 +3073,7 @@ std::vector<BattleItem*> *BattleUnit::getInventory()
  * @param item Item to fit.
  * @return True if succeeded, false otherwise.
  */
-bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
+bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item, bool testMode)
 {
 	auto rule = item->getRules();
 	if (rule->canBePlacedIntoInventorySection(slot) == false)
@@ -3084,8 +3084,11 @@ bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
 	{
 		if (!Inventory::overlapItems(this, item, slot))
 		{
-			item->moveToOwner(this);
-			item->setSlot(slot);
+			if (!testMode)
+			{
+				item->moveToOwner(this);
+				item->setSlot(slot);
+			}
 			return true;
 		}
 	}
@@ -3095,10 +3098,13 @@ bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
 		{
 			if (!Inventory::overlapItems(this, item, slot, rs.x, rs.y) && slot->fitItemInSlot(rule, rs.x, rs.y))
 			{
-				item->moveToOwner(this);
-				item->setSlot(slot);
-				item->setSlotX(rs.x);
-				item->setSlotY(rs.y);
+				if (!testMode)
+				{
+					item->moveToOwner(this);
+					item->setSlot(slot);
+					item->setSlotX(rs.x);
+					item->setSlotY(rs.y);
+				}
 				return true;
 			}
 		}
@@ -3282,16 +3288,52 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
-				// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
-				for (const auto& s : mod->getInvsList())
+				if (Options::oxceSmartCtrlEquip)
 				{
-					RuleInventory *slot = mod->getInventory(s);
-					if (slot->getType() == INV_SLOT)
+					int cheapestCostToMoveToHand = INT_MAX;
+					RuleInventory* cheapestInventoryToMoveToHand = nullptr;
+					for (const auto& s : mod->getInvsList())
 					{
-						placed = fitItemToInventory(slot, item);
-						if (placed)
+						RuleInventory* slot = mod->getInventory(s);
+						if (fitItemToInventory(slot, item, true))
 						{
-							break;
+							int currCost = std::min(slot->getCost(mod->getInventoryRightHand()), slot->getCost(mod->getInventoryRightHand()));
+							if ((slot->isLeftHand() && getRightHandWeapon() && getRightHandWeapon()->getRules()->isBlockingBothHands()) || (slot->isRightHand() && getLeftHandWeapon() && getLeftHandWeapon()->getRules()->isBlockingBothHands()))
+							{
+								continue;
+							}
+							else if ((slot->isLeftHand() && getRightHandWeapon() && getRightHandWeapon()->getRules()->isTwoHanded()) || (slot->isRightHand() && getLeftHandWeapon() && getLeftHandWeapon()->getRules()->isTwoHanded()))
+							{
+								currCost += 10;
+							}
+							if (currCost <= cheapestCostToMoveToHand)
+							{
+								cheapestCostToMoveToHand = currCost;
+								cheapestInventoryToMoveToHand = slot;
+							}
+						}
+					}
+					if (cheapestInventoryToMoveToHand != nullptr)
+					{
+						if (cheapestInventoryToMoveToHand->getType() == INV_SLOT)
+						{
+							placed = fitItemToInventory(cheapestInventoryToMoveToHand, item);
+						}
+					}
+				}
+				else
+				{
+					// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
+					for (const auto& s : mod->getInvsList())
+					{
+						RuleInventory* slot = mod->getInventory(s);
+						if (slot->getType() == INV_SLOT)
+						{
+							placed = fitItemToInventory(slot, item);
+							if (placed)
+							{
+								break;
+							}
 						}
 					}
 				}

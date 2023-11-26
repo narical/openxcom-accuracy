@@ -118,7 +118,7 @@ public:
 	/// Arranges items on the ground.
 	void arrangeGround(int alterOffset = 0);
 	/// Attempts to place an item in an inventory slot.
-	bool fitItem(RuleInventory *newSlot, BattleItem *item, std::string &warning);
+	bool fitItem(RuleInventory *newSlot, BattleItem *item, std::string &warning, bool testMode = false);
 	/// Checks if two items can be stacked on one another.
 	bool canBeStacked(BattleItem *itemA, BattleItem *itemB);
 	/// Checks for item overlap.

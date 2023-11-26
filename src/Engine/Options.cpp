@@ -260,6 +260,7 @@ void create()
 	_info.push_back(OptionInfo("oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceManualPromotions", &oxceManualPromotions, false, "STR_MANUALPROMOTIONS", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceAutomaticPromotions", &oxceAutomaticPromotions, true, "STR_AUTOMATICPROMOTIONS", "STR_OXCE"));
+	_info.push_back(OptionInfo("oxceSmartCtrlEquip", &oxceSmartCtrlEquip, true, "STR_SMARTCONTROLEQUIP", "STR_OXCE"));
 
 	// OXCE hidden
 #ifdef __MOBILE__
