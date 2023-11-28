@@ -3618,7 +3618,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 				float walkToDist = myMaxTU + tuDistFromTarget;
-				if (!sweepMode && myAggressiveness > 0)
+				if (!sweepMode)
 				{
 					if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 					{
@@ -3687,9 +3687,14 @@ void AIModule::brutalThink(BattleAction* action)
 							}
 						}
 						discoverThreat = std::max(0.0f, discoverThreat);
-						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
-							greatCoverScore = 100 / walkToDist;
-						if (myAggressiveness < 2 && discoverThreat > 0)
+						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (contact || myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
+						{
+							if (myAggressiveness == 0)
+								greatCoverScore = closestEnemyDist;
+							else
+								greatCoverScore = 100 / walkToDist;
+						}
+						if ((myAggressiveness < 2 || contact) && discoverThreat > 0)
 						{
 							if (!_save->getTileEngine()->isNextToDoor(tile))
 								goodCoverScore = 100 / discoverThreat;
@@ -3773,9 +3778,10 @@ void AIModule::brutalThink(BattleAction* action)
 					indirectPeakScore /= 10;
 					fallbackScore /= 10;
 				}
-				if (myAggressiveness == 0 && inDoors)
+				if (myAggressiveness < 2 && inDoors)
 				{
-					greatCoverScore *= 10;
+					if (myAggressiveness == 0)
+						greatCoverScore *= 10;
 					goodCoverScore *= 10;
 					okayCoverScore *= 10;
 				}
@@ -4005,10 +4011,10 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "Overruling peakDirection since it's the same direction we are already looking at and we don't want to do nothing.";
 		usePeakDirection = true;
 		peakPosition = getPeakPosition(true);
-		peakDirection = _save->getTileEngine()->getDirectionTo(myPos, peakPosition);
 	}
 	if (usePeakDirection && !winnerWasSpecialDoorCase && bestAttackScore == 0)
 	{
+		peakDirection = _save->getTileEngine()->getDirectionTo(myPos, peakPosition);
 		if (_traceAI)
 			Log(LOG_INFO) << "Should look at peak-direction: " << peakDirection << " peakPosition: " << peakPosition;
 		action->finalFacing = peakDirection;
