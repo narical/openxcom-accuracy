@@ -3689,10 +3689,20 @@ void AIModule::brutalThink(BattleAction* action)
 						discoverThreat = std::max(0.0f, discoverThreat);
 						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
 							greatCoverScore = 100 / walkToDist;
-						if (!_save->getTileEngine()->isNextToDoor(tile))
-							goodCoverScore = 100 / (discoverThreat + walkToDist);
+						if (myAggressiveness < 2 && discoverThreat > 0)
+						{
+							if (!_save->getTileEngine()->isNextToDoor(tile))
+								goodCoverScore = 100 / discoverThreat;
+							else
+								okayCoverScore = 100 / discoverThreat;
+						}
 						else
-							okayCoverScore = 100 / (discoverThreat + walkToDist);
+						{
+							if (!_save->getTileEngine()->isNextToDoor(tile))
+								goodCoverScore = 100 / (discoverThreat + walkToDist);
+							else
+								okayCoverScore = 100 / (discoverThreat + walkToDist);
+						}
 						if (myAggressiveness > 2)
 						{
 							if (walkToDist >= myWalkToDist && !contact)
