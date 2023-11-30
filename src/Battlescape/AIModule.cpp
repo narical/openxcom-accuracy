@@ -3314,6 +3314,11 @@ void AIModule::brutalThink(BattleAction* action)
 		originAction.target = unitToWalkTo->getPosition();
 		Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 		iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
+		if (iHaveLof && Options::battleRealisticAccuracy)
+		{
+			if (_save->getTileEngine()->checkVoxelExposure(&origin, unitToWalkTo->getTile(), _unit) < EPSILON)
+				iHaveLof = false;
+		}
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
 		iHaveLofIncludingEncircle = iHaveLof;
 		if (encircleTile)
@@ -3412,6 +3417,7 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	bool winnerWasSpecialDoorCase = false;
 	bool shouldHaveLofAfterMove = false;
+	bool shouldEndTurnAfterMove = false;
 	int peakDirection = _unit->getDirection();
 	bool usePeakDirection = false;
 	int myMaxTU = getMaxTU(_unit);
@@ -3498,7 +3504,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
 						unitPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 					float unitDist = Position::distance(pos, unitPosition);
-					if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
+					if (Options::avoidCuddle && isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 					{
 						if (unitDist < 5)
 						{
@@ -3529,6 +3535,11 @@ void AIModule::brutalThink(BattleAction* action)
 								originAction.target = unit->getPosition();
 								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
 								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
+								if (lineOfFire && Options::battleRealisticAccuracy)
+								{
+									if (_save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit) < EPSILON)
+										lineOfFire = false;
+								}
 								if (!_unit->isCheatOnMovement() && !lineOfFire)
 									lineOfFire = clearSight(pos, unitPosition);
 								if (lineOfFire)
@@ -3726,12 +3737,15 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 				fallbackScore = 100 / walkToDist;
-				greatCoverScore /= cuddleAvoidModifier;
-				goodCoverScore /= cuddleAvoidModifier;
-				okayCoverScore /= cuddleAvoidModifier;
-				directPeakScore /= cuddleAvoidModifier;
-				indirectPeakScore /= cuddleAvoidModifier;
-				fallbackScore /= cuddleAvoidModifier;
+				if (Options::avoidCuddle)
+				{
+					greatCoverScore /= cuddleAvoidModifier;
+					goodCoverScore /= cuddleAvoidModifier;
+					okayCoverScore /= cuddleAvoidModifier;
+					directPeakScore /= cuddleAvoidModifier;
+					indirectPeakScore /= cuddleAvoidModifier;
+					fallbackScore /= cuddleAvoidModifier;
+				}
 				if (tile->getDangerous() || (tile->getFire() && _unit->avoidsFire()))
 				{
 					if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
@@ -3777,6 +3791,28 @@ void AIModule::brutalThink(BattleAction* action)
 					directPeakScore /= 10;
 					indirectPeakScore /= 10;
 					fallbackScore /= 10;
+				}
+				if (!tile->getInventory()->empty() && _myFaction == _unit->getOriginalFaction())
+				{
+					for (BattleItem* bi : *tile->getInventory())
+					{
+						if (bi->getUnit() && bi->getUnit()->getFaction() == _myFaction)
+						{
+							greatCoverScore /= 2;
+							goodCoverScore /= 2;
+							okayCoverScore /= 2;
+							fallbackScore /= 2;
+						}
+					}
+				}
+				if (_myFaction != FACTION_PLAYER && Options::randomFactor)
+				{
+					greatCoverScore *= RNG::generate(0.0, 1.0);
+					goodCoverScore *= RNG::generate(0.0, 1.0);
+					okayCoverScore *= RNG::generate(0.0, 1.0);
+					directPeakScore *= RNG::generate(0.0, 1.0);
+					indirectPeakScore *= RNG::generate(0.0, 1.0);
+					fallbackScore *= RNG::generate(0.0, 1.0);
 				}
 				if (myAggressiveness < 2 && inDoors)
 				{
@@ -3842,12 +3878,12 @@ void AIModule::brutalThink(BattleAction* action)
 					bestFallbackScore = fallbackScore;
 					bestFallbackPosition = pos;
 				}
-				// if (_traceAI)
+				//if (_traceAI)
 				//{
 				//	tile->setMarkerColor(_unit->getId()%100);
 				//	tile->setPreview(10);
-				//	tile->setTUMarker(validCover);
-				// }
+				//	tile->setTUMarker(goodCoverScore*100);
+				//}
 			}
 			if (_traceAI)
 			{
@@ -3917,18 +3953,26 @@ void AIModule::brutalThink(BattleAction* action)
 		else if (bestGreatCoverScore > 0)
 		{
 			travelTarget = bestGreatCoverPosition;
+			if (Options::randomFactor)
+				shouldEndTurnAfterMove = true;
 		}
 		else if (bestGoodCoverScore > 0)
 		{
 			travelTarget = bestGoodCoverPosition;
+			if (Options::randomFactor)
+				shouldEndTurnAfterMove = true;
 		}
 		else if (bestOkayCoverScore > 0)
 		{
 			travelTarget = bestOkayCoverPosition;
+			if (Options::randomFactor)
+				shouldEndTurnAfterMove = true;
 		}
 		else if (bestFallbackScore > 0)
 		{
 			travelTarget = bestFallbackPosition;
+			if (Options::randomFactor)
+				shouldEndTurnAfterMove = true;
 		}
 	}
 	if (_traceAI)
@@ -3978,6 +4022,11 @@ void AIModule::brutalThink(BattleAction* action)
 			originAction.target = target->getPosition();
 			Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 			haveLof = _save->getTileEngine()->canTargetUnit(&origin, target->getTile(), nullptr, _unit, false);
+			if (haveLof && Options::battleRealisticAccuracy)
+			{
+				if (_save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit) < EPSILON)
+					haveLof = false;
+			}
 		}
 		if (!haveLof)
 			continue;
@@ -4046,6 +4095,8 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "My facing now is " << _unit->getDirection() << " and will be " << action->finalFacing;
 	}
 	action->updateTU();
+	if (shouldEndTurnAfterMove && Options::randomFactor)
+		_unit->setWantToEndTurn(true);
 	if (action->target == myPos)
 	{
 		if (!checkedAttack)
@@ -4965,9 +5016,12 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			{
 				if (!_save->getTileEngine()->canTargetUnit(&origin, target->getTile(), nullptr, _unit, false))
 					return 0;
-				targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
-				if (targetQuality < EPSILON)
-					return 0;
+				if (Options::battleRealisticAccuracy)
+				{
+					targetQuality = _save->getTileEngine()->checkVoxelExposure(&origin, target->getTile(), _unit);
+					if (targetQuality < EPSILON)
+						return 0;
+				}
 				if (projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
@@ -4992,17 +5046,17 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			}
 		}
 	}
-	/*if (_traceAI)
-	{
-		Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
-					  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
-					  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
-					  << " from: " << originPosition << " to: "<<action->target
-					  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
-					  << " targetQuality: " << targetQuality
-					  << " damageTypeMod: " << damageTypeMod
-					  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
-	}*/
+	//if (_traceAI)
+	//{
+	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
+	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
+	//				  << " from: " << originPosition << " to: "<<action->target
+	//				  << " distance: " << distance << " dangerMod: " << dangerMod << " explosionMod: " << explosionMod << " grenade ridding urgency: " << grenadeRiddingUrgency()
+	//				  << " targetQuality: " << targetQuality
+	//				  << " damageTypeMod: " << damageTypeMod
+	//				  << " score: " << damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality;
+	//}
 	return damage * accuracy * numberOfShots * dangerMod * explosionMod * targetQuality * damageTypeMod;
 }
 

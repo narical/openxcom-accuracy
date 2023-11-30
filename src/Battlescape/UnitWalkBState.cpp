@@ -367,6 +367,7 @@ void UnitWalkBState::think()
 						{
 							Log(LOG_INFO) << "I opened a self-closing door. Let's reconsider the situation.";
 						}
+						_unit->setWantToEndTurn(false);
 						_pf->abortPath();
 						_parent->popState();
 					}
