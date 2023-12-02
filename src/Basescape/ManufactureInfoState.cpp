@@ -575,13 +575,17 @@ void ManufactureInfoState::lessUnitClick(Action *action)
 		{
 			if (wasInfinite)
 			{
-				// when infinite amount is decreased by 1, set the amount to maximum possible considering current funds and store supplies
-				int productionPossible = INT_MAX;
+				// when infinite amount is decreased by 1, set the amount to maximum possible (capped at 999) considering current funds and store supplies
+				int productionPossible = 999;
 				auto* manufRule = _production->getRules();
 				if (manufRule->getManufactureCost() > 0)
 				{
-					int byFunds = _game->getSavedGame()->getFunds() / manufRule->getManufactureCost();
-					productionPossible = std::min(productionPossible, byFunds);
+					int64_t byFunds = _game->getSavedGame()->getFunds() / manufRule->getManufactureCost();
+					if (byFunds < 1000LL)
+					{
+						int byFundsInt = (int)byFunds;
+						productionPossible = std::min(productionPossible, byFundsInt);
+					}
 				}
 				for (auto& item : manufRule->getRequiredItems())
 				{
