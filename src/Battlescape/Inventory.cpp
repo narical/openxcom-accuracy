@@ -1639,11 +1639,12 @@ bool Inventory::fitItem(RuleInventory* newSlot, BattleItem* item, std::string& w
 		{
 			if (!overlapItems(_selUnit, item, newSlot, x2, y2) && newSlot->fitItemInSlot(item->getRules(), x2, y2))
 			{
-				if (!_tu || _selUnit->spendTimeUnits(item->getMoveToCost(newSlot)))
+				if (!_tu || item->getMoveToCost(newSlot) <= _selUnit->getTimeUnits())
 				{
 					placed = true;
 					if (!testMode)
 					{
+						_selUnit->spendTimeUnits(item->getMoveToCost(newSlot));
 						moveItem(item, newSlot, x2, y2);
 						_game->getMod()->getSoundByDepth(_depth, Mod::ITEM_DROP)->play();
 						drawItems();
