@@ -1123,6 +1123,11 @@ void GeoscapeState::time5Seconds()
 						break;
 					}
 				}
+				//if (_ufoIsAttacking)
+				{
+					// Note: this was moved from DogfightState.cpp, as it was not 100% reliable there
+					xcraft->evacuateCrew(_game->getMod());
+				}
 				// if a transport craft has been shot down, kill all the soldiers on board.
 				if (xcraft->getRules()->getMaxUnits() > 0)
 				{
