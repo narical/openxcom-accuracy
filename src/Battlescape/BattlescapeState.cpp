@@ -1393,6 +1393,9 @@ void BattlescapeState::btnEndTurnClick(Action *)
 		// Temporarily deactivate the touch buttons at the end of the player's turn
 		toggleTouchButtons(true, false);
 
+		// PEBCAK
+		_map->getCamera()->stopKeyScrolling();
+
 		_txtTooltip->setText("");
 		_battleGame->requestEndTurn(false);
 	}
