@@ -2687,6 +2687,7 @@ void GeoscapeState::time1Day()
 					if (RNG::percent(chanceToDetect))
 					{
 						alienBase->setDiscovered(true);
+						popup(new AlienBaseState(alienBase, this));
 					}
 				}
 			}
