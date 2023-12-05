@@ -1067,14 +1067,11 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 		}
 
 		int currLight = 0;
-
 		// add lighting of soldiers
-		int personalLight = useIntNullable(unit->getArmor()->getPersonalLight(), (unit->getFaction() == FACTION_PLAYER) ? 15 : 0);
-		if (personalLight && (_personalLighting || unit->getFaction() != FACTION_PLAYER))
+		if (_personalLighting && unit->getFaction() == FACTION_PLAYER)
 		{
-			currLight = std::max(currLight, personalLight);
+			currLight = std::max(currLight, unit->getArmor()->getPersonalLight());
 		}
-
 		const BattleItem *handWeapons[] = { unit->getLeftHandWeapon(), unit->getRightHandWeapon() };
 		for (const BattleItem *w : handWeapons)
 		{
