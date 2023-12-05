@@ -53,7 +53,8 @@ public:
 	void lstOptionsMouseOver(Action *action);
 	/// Handler for moving the mouse outside the settings.
 	void lstOptionsMouseOut(Action *action);
-
+	/// Changes the setting of a specific option
+	void changeOption(OptionInfo oi, int value);
 };
 
 }

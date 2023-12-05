@@ -3091,25 +3091,6 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 			}
 		}
-		else if (!visibleToAnyFriend(target))
-		{
-			Position blindFirePosition = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction(), true));
-			Tile* targetTile = _save->getTile(blindFirePosition);
-			if (targetTile)
-			{
-				bool tileChecked = false;
-				if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && !visibleToAnyFriend(target))
-					tileChecked = true;
-				else if (targetTile->getUnit() && targetTile->getUnit()->getFaction() == _unit->getFaction())
-					tileChecked = true;
-				if (_traceAI)
-					Log(LOG_INFO) << "Clearing blind-fire-target for " << target->getPosition() << " previously assumed to be at " << blindFirePosition << " checked: " << tileChecked << " target-tile last explored: " << targetTile->getLastExplored(_unit->getFaction()) << " current turn: " << _save->getTurn() << " smoke: " << targetTile->getSmoke() << " turns since seen: " << target->getTurnsSinceSeen(_unit->getFaction());
-				if (tileChecked)
-				{
-					target->setTileLastSpotted(-1, _unit->getFaction(), true);
-				}
-			}
-		}
 		if (!target->hasPanickedLastTurn())
 		{
 			for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
@@ -3484,6 +3465,7 @@ void AIModule::brutalThink(BattleAction* action)
 				bool lineOfFire = false;
 				bool lineOfFireBeforeFriendCheck = false;
 				float closestAnyOneDist = FLT_MAX;
+				float exposureMod = 1.0;
 				int currLastStepCost = 0;
 				Position ref;
 				float viewDistance = _save->getMod()->getMaxViewDistance();
@@ -3537,7 +3519,8 @@ void AIModule::brutalThink(BattleAction* action)
 								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
 								if (lineOfFire && Options::battleRealisticAccuracy)
 								{
-									if (_save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit) < EPSILON)
+									exposureMod = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit);
+									if (exposureMod < EPSILON)
 										lineOfFire = false;
 								}
 								if (!_unit->isCheatOnMovement() && !lineOfFire)
@@ -3617,6 +3600,8 @@ void AIModule::brutalThink(BattleAction* action)
 					if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
 					{
 						attackScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
+						if (Options::battleRealisticAccuracy)
+							attackScore *= exposureMod;
 						if (pu->getPrevNode())
 							currLastStepCost = pu->getTUCost(false).time - pu->getPrevNode()->getTUCost(false).time;
 					}
@@ -3629,7 +3614,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 				float walkToDist = myMaxTU + tuDistFromTarget;
-				if (!sweepMode)
+				if (!sweepMode && !_unit->isCheatOnMovement())
 				{
 					if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 					{
@@ -5743,7 +5728,7 @@ bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode, bool psiMode) 
 	}
 	else if (_unit->aiTargetMode() < 4 || moveMode)
 	{
-		if (visibleToAnyFriend(unit))
+		if (visibleToAnyFriend(unit) || _unit->aiTargetMode() >= 4)
 			return isEnemy(unit, iAmMindControlled);
 		else
 			return false;
