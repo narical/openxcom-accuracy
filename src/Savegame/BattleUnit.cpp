@@ -6499,7 +6499,15 @@ ModScript::ReactionUnitParser::ReactionUnitParser(ScriptGlobal* shared, const st
 /**
  * Constructor of visibility script parser.
  */
-ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name, "current_visibility", "default_visibility", "visibility_mode", "observer_unit", "target_unit", "distance", "distance_max", "smoke_density", "fire_density", }
+ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"current_visibility",
+	"default_visibility",
+	"visibility_mode",
+
+	"observer_unit", "target_unit",
+	"distance", "distance_max",
+	"smoke_density", "fire_density",
+	"smoke_density_near_observer", "fire_density_near_observer" }
 {
 	BindBase b { this };
 

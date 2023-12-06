@@ -1774,7 +1774,7 @@ std::tuple<int, int> getVisibleDistanceMaxHelper(TileEngine* te, const Tile* til
  * @param scanVoxel End trajectory voxel
  * @return Tuple of get<0>: visibleDistanceVoxels, get<1>: densityOfSmoke, get<2>: densityOfFire
  */
-std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBattleGame* save, const BattleUnit* currentUnit, Position originVoxel, Position scanVoxel)
+std::tuple<int, int, int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBattleGame* save, const BattleUnit* currentUnit, Position originVoxel, Position scanVoxel)
 {
 	std::vector<Position> _trajectory;
 
@@ -1791,6 +1791,8 @@ std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBat
 	const int trajectorySize = _trajectory.size();
 	float densityOfSmoke = 0;
 	float densityOfFire = 0;
+	float densityOfSmokeNearUnit = 0;
+	float densityOfFireeNearUnit = 0;
 	float visibleDistanceVoxels = 0;
 	Position trackTile(-1, -1, -1);
 	const Tile *t = 0;
@@ -1804,6 +1806,7 @@ std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBat
 			trackTile = posTile;
 			t = save->getTile(trackTile);
 		}
+		visibleDistanceVoxels += step;
 		if (t->getFire() == 0)
 		{
 			densityOfSmoke += step * t->getSmoke();
@@ -1812,10 +1815,20 @@ std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBat
 		{
 			densityOfFire += step * t->getSmoke(); // this boost fire blocking visibility for thermo vision as usually smoke value is bigger
 		}
-		visibleDistanceVoxels += step;
+		if (visibleDistanceVoxels < Position::TileXY*2)
+		{
+			if (t->getFire() == 0)
+			{
+				densityOfSmokeNearUnit += step * t->getSmoke();
+			}
+			else
+			{
+				densityOfFireeNearUnit += step * t->getSmoke(); // this boost fire blocking visibility for thermo vision as usually smoke value is bigger
+			}
+		}
 	}
 
-	return std::make_tuple((int)visibleDistanceVoxels, (int)densityOfSmoke, (int)densityOfFire);
+	return std::make_tuple((int)visibleDistanceVoxels, (int)densityOfSmoke, (int)densityOfFire, (int)densityOfSmokeNearUnit, (int)densityOfFireeNearUnit);
 }
 
 }
@@ -1879,15 +1892,15 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 
 	if (unitSeen)
 	{
-		const auto [visibleDistanceVoxels, densityOfSmoke, densityOfFire] = getTrajectoryDataHelper(this, _save, currentUnit, originVoxel, scanVoxel);
+		const auto [visibleDistanceVoxels, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit] = getTrajectoryDataHelper(this, _save, currentUnit, originVoxel, scanVoxel);
 
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// 100 - % for smokeDensityFactor.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - (densityOfSmoke * smokeDensityFactor + densityOfFire * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
-		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke, densityOfFire };
+		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
 		unitSeen = 0 < arg.getFirst();
 	}
@@ -2051,12 +2064,12 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 	originVoxel = getSightOriginVoxel(currentUnit);
 	if (seen)
 	{
-		const auto [visibleDistanceVoxels, densityOfSmoke, densityOfFire] = getTrajectoryDataHelper(this, _save, currentUnit, originVoxel, scanVoxel);
+		const auto [visibleDistanceVoxels, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit] = getTrajectoryDataHelper(this, _save, currentUnit, originVoxel, scanVoxel);
 
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - densityOfSmoke * visibleDistanceUnitMaxTile/(3 * 20);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - (densityOfSmoke - densityOfSmokeNearUnit / 2) * visibleDistanceUnitMaxTile/(3 * 20);
 		seen = 0 < visibilityQuality;
 	}
 	return seen;
