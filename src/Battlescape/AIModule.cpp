@@ -3116,11 +3116,11 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
-	if (Options::aggressionMode && highestAggressivenessInTeam < 3)
+	if (Options::aggressionMode == 3 && highestAggressivenessInTeam < 3)
 	{
 		myAggressiveness = 3;
 	}
-	bool sweepMode = (myAggressiveness > 3 && !contact) || _unit->isLeeroyJenkins() || immobile;
+	bool sweepMode = myAggressiveness > 3 || _unit->isLeeroyJenkins() || immobile;
 
 	bool randomMove = false;
 	int intelligence = _unit->getBrutalIntelligence();
@@ -3148,7 +3148,7 @@ void AIModule::brutalThink(BattleAction* action)
 		_positionAtStartOfTurn = myPos;
 		_reposition = false;
 	}
-	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 3 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || randomMove)
+	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 2 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || randomMove)
 	{
 		checkedAttack = true;
 		if (brutalPsiAction())
@@ -3641,8 +3641,6 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!lineOfFireBeforeFriendCheck)
 				{
 					bool validCover = true;
-					if (myAggressiveness > 2 && walkToDist >= myWalkToDist && !contact)
-						validCover = false;
 					bool isNode = false;
 					if (Options::aiPerformanceOptimization && validCover)
 					{
@@ -3665,24 +3663,27 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					if (!sweepMode && validCover)
 					{
-						for (auto& reachable : enemyReachable)
+						if (myAggressiveness < 3)
 						{
-							if (reachable.second > discoverThreat)
+							for (auto& reachable : enemyReachable)
 							{
-								for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+								if (reachable.second > discoverThreat)
 								{
-									for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+									for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 									{
-										Position compPos = pos;
-										compPos.x += x;
-										compPos.y += y;
-										if (hasTileSight(compPos, reachable.first))
-											discoverThreat = reachable.second;
+										for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+										{
+											Position compPos = pos;
+											compPos.x += x;
+											compPos.y += y;
+											if (hasTileSight(compPos, reachable.first))
+												discoverThreat = reachable.second;
+										}
 									}
 								}
 							}
+							discoverThreat = std::max(0.0f, discoverThreat);
 						}
-						discoverThreat = std::max(0.0f, discoverThreat);
 						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (contact || myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
 						{
 							if (myAggressiveness == 0)
@@ -3703,15 +3704,6 @@ void AIModule::brutalThink(BattleAction* action)
 								goodCoverScore = 100 / (discoverThreat + walkToDist);
 							else
 								okayCoverScore = 100 / (discoverThreat + walkToDist);
-						}
-						if (myAggressiveness > 2)
-						{
-							if (walkToDist >= myWalkToDist && !contact)
-							{
-								greatCoverScore = 0;
-								goodCoverScore = 0;
-								okayCoverScore = 0;
-							}
 						}
 					}
 					if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
@@ -3867,7 +3859,7 @@ void AIModule::brutalThink(BattleAction* action)
 				//{
 				//	tile->setMarkerColor(_unit->getId()%100);
 				//	tile->setPreview(10);
-				//	tile->setTUMarker(goodCoverScore*100);
+				//	tile->setTUMarker(indirectPeakScore);
 				//}
 			}
 			if (_traceAI)

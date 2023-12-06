@@ -5913,21 +5913,19 @@ bool BattleUnit::isLeeroyJenkins() const
 
 int BattleUnit::getAggressiveness() const
 {
+	if (getFaction() == FACTION_PLAYER)
+		return Options::autoAggression;
 	if (Options::aggressionMode == 1)
 	{
 		if (getMorale() >= 100)
-			return 4;
-		else if (getMorale() >= 83)
 			return 3;
-		else if (getMorale() >= 67)
+		else if (getMorale() >= 75)
 			return 2;
 		else if (getMorale() >= 50)
 			return 1;
 		else
 			return 0;
 	}
-	else if (getFaction() == FACTION_PLAYER)
-		return Options::autoAggression;
 	else if (Options::aggressionMode == 2)
 		return std::min(3, getAggression());
 	else
