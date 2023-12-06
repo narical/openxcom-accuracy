@@ -1039,12 +1039,18 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 		}
 
 		int currLight = 0;
-
-		// add lighting of soldiers
-		int personalLight = useIntNullable(unit->getArmor()->getPersonalLight(), (unit->getFaction() == FACTION_PLAYER) ? 15 : 0);
-		if (personalLight && (_personalLighting || unit->getFaction() != FACTION_PLAYER))
+		// add lighting of unit
+		if (unit->getFaction() == FACTION_PLAYER)
 		{
-			currLight = std::max(currLight, personalLight);
+			currLight = std::max(currLight, _personalLighting ? unit->getArmor()->getPersonalLightFriend() : 0);
+		}
+		else if (unit->getFaction() == FACTION_HOSTILE)
+		{
+			currLight = std::max(currLight, unit->getArmor()->getPersonalLightHostile());
+		}
+		else if (unit->getFaction() == FACTION_NEUTRAL)
+		{
+			currLight = std::max(currLight, unit->getArmor()->getPersonalLightNeutral());
 		}
 
 		const BattleItem *handWeapons[] = { unit->getLeftHandWeapon(), unit->getRightHandWeapon() };
@@ -1816,7 +1822,7 @@ std::tuple<int, int, int> getTrajectoryDataHelper(TileEngine* te, const SavedBat
 		}
 		else
 		{
-			densityOfFire += step * t->getFire();
+			densityOfFire += step * t->getSmoke(); // this boost fire blocking visibility for thermo vision as usually smoke value is bigger
 		}
 		visibleDistanceVoxels += step;
 	}

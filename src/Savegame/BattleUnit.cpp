@@ -6296,6 +6296,24 @@ void isFlyingScript(const BattleUnit *bu, int &ret)
 	}
 	ret = 0;
 }
+void isStunnedScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getStatus() == STATUS_UNCONSCIOUS;
+		return;
+	}
+	ret = 0;
+}
+void isKilledScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getStatus() == STATUS_DEAD;
+		return;
+	}
+	ret = 0;
+}
 void isCollapsingScript(const BattleUnit *bu, int &ret)
 {
 	if (bu)
@@ -6696,6 +6714,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getRecolorScript>("getRecolor");
 	bu.add<&BattleUnit::isFloating>("isFloating");
 	bu.add<&BattleUnit::isKneeled>("isKneeled");
+	bu.add<&isStunnedScript>("isStunned");
+	bu.add<&isKilledScript>("isKilled");
 	bu.add<&isStandingScript>("isStanding");
 	bu.add<&isWalkingScript>("isWalking");
 	bu.add<&isFlyingScript>("isFlying");

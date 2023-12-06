@@ -711,6 +711,59 @@ public:
 	}
 
 
+	constexpr bool tryPopBack()
+	{
+		ScriptRef* prev = nullptr;
+		interateMutate(
+			[&](ScriptRef& r)
+			{
+				if (r)
+				{
+					prev = &r;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		);
+		if (prev) *prev = {};
+		return prev;
+	}
+
+	constexpr bool tryPushBack(ScriptRef n)
+	{
+		ScriptRef* prev = nullptr;
+		interateMutate(
+			[&](ScriptRef& r)
+			{
+				if (r)
+				{
+					return true;
+				}
+				else
+				{
+					prev = &r;
+					return false;
+				}
+			}
+		);
+		if (prev) *prev = n;
+		return prev;
+	}
+
+	constexpr void clear()
+	{
+		interateMutate(
+			[&](ScriptRef& r)
+			{
+				r = {};
+			}
+		);
+	}
+
+
 	constexpr bool haveParts() const
 	{
 		return !!parts[1];
@@ -817,6 +870,76 @@ public:
 	bool haveArg() const
 	{
 		return !!argName;
+	}
+};
+
+class ScriptArgList
+{
+	size_t argsLength = 0;
+	ScriptRefData args[ScriptMaxArg] = { };
+
+public:
+	/// Default constructor.
+	ScriptArgList() = default;
+
+
+	/// Add one arg to list.
+	constexpr bool tryPushBack(const ScriptRefData& d)
+	{
+		if (argsLength < std::size(args))
+		{
+			args[argsLength++] = d;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/// Add arg range to list.
+	constexpr bool tryPushBack(ScriptRange<ScriptRefData> l)
+	{
+		if (l.size() + argsLength <= std::size(args))
+		{
+			for (const auto& d : l)
+			{
+				args[argsLength++] = d;
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/// Add arg range to list.
+	constexpr bool tryPushBack(const ScriptRefData* b, const ScriptRefData* e)
+	{
+		return tryPushBack(ScriptRange<ScriptRefData>{b, e});
+	}
+
+
+
+	constexpr size_t size() const
+	{
+		return argsLength;
+	}
+
+	constexpr const ScriptRefData* begin() const
+	{
+		return std::begin(args);
+	}
+
+	constexpr const ScriptRefData* end() const
+	{
+		return std::begin(args) + argsLength;
+	}
+
+	constexpr operator ScriptRange<ScriptRefData>() const
+	{
+		return { begin(), end() };
 	}
 };
 
@@ -1145,9 +1268,9 @@ std::string displayArgs(const ScriptParserBase* spb, const ScriptRange<T>& range
 	std::string result = "";
 	for (auto& p : range)
 	{
-		if (p)
+		auto type = getType(p);
+		if (type != ArgInvalid)
 		{
-			auto type = getType(p);
 			result += "[";
 			result += spb->getTypePrefix(type);
 			result += spb->getTypeName(type).toString();
@@ -1166,7 +1289,7 @@ std::string displayArgs(const ScriptParserBase* spb, const ScriptRange<T>& range
  */
 std::string displayOverloadProc(const ScriptParserBase* spb, const ScriptRange<ScriptRange<ArgEnum>>& overload)
 {
-	return displayArgs(spb, overload, [](const ScriptRange<ArgEnum>& o) { return *o.begin(); });
+	return displayArgs(spb, overload, [](const ScriptRange<ArgEnum>& o) { return o ? *o.begin() : ArgInvalid; });
 }
 
 /**
@@ -1201,7 +1324,7 @@ int overloadCustomProc(const ScriptProcData& spd, const ScriptRefData* begin, co
 		const auto size = currOver.size();
 		if (size)
 		{
-			if (*curr)
+			if (ArgBase(curr->type) != ArgInvalid)
 			{
 				int oneArgTempScore = 0;
 				for (auto& o : currOver)
@@ -2820,6 +2943,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 
 	addType<ScriptInt>("int");
 	addType<ScriptText>("text");
+	addType<ScriptArgSeparator>("__");
 
 	auto labelName = addNameRef("label");
 	auto nullName = addNameRef("null");
@@ -2830,8 +2954,8 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
-	addSortHelper(_refList, { phName, ArgInvalid });
-	addSortHelper(_refList, { seperatorName, ArgInvalid });
+	addSortHelper(_refList, { phName, (ArgEnum)(ArgInvalid + ArgSpecReg) });
+	addSortHelper(_refList, { seperatorName, ArgSep });
 	addSortHelper(_refList, { varName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
@@ -3229,12 +3353,6 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 					++line_end;
 			}
 
-			if (args[ScriptMaxArg - 1].getType() != TokenNone)
-			{
-				Log(LOG_ERROR) << err << "too many arguments in line: '" << std::string(line_begin, line_end) << "'";
-				return false;
-			}
-
 			for (size_t i = 0; i < ScriptMaxArg; ++i)
 			{
 				if (args[i].getType() == TokenInvalid)
@@ -3249,7 +3367,6 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		}
 
 		ScriptRef line = ScriptRef{ line_begin, range.begin() };
-		ScriptRefData argData[ScriptMaxArg] = { };
 
 		// test validity of operation positions
 		auto isReturn = (op == ScriptRef{ "return" });
@@ -3279,11 +3396,19 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 
 		// matching args from operation definition with args available in string
-		size_t i = 0;
-		while (i < ScriptMaxArg && args[i].getType() != TokenNone)
+		ScriptArgList argData = { };
+		for (const SelectedToken& t : args)
 		{
-			argData[i] = args[i].parse(help);
-			++i;
+			if (t.getType() == TokenNone)
+			{
+				break;
+			}
+
+			if (!argData.tryPushBack(t.parse(help)))
+			{
+				Log(LOG_ERROR) << err << "too many arguments in line: '" << line.toString() << "'";
+				return false;
+			}
 		}
 
 		if (label && !help.setLabel(label.parse(help), help.getCurrPos()))
@@ -3293,7 +3418,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		}
 
 		// create normal proc call
-		if (parseOverloadProc(help, op_curr.procList, argData, argData+i) == false)
+		if (parseOverloadProc(help, op_curr.procList, std::begin(argData), std::end(argData)) == false)
 		{
 			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
 			return false;
@@ -4346,6 +4471,109 @@ static auto dummyTestScriptFunctionParser = ([]
 })();
 
 
+void dummyFunctionSeperator0(int& i, int& j, int& k)
+{
+	i = 0;
+}
+void dummyFunctionSeperator1(int& i, ScriptArgSeparator, int& j, int& k)
+{
+	i = 1;
+}
+void dummyFunctionSeperator2(int& i, int& j, ScriptArgSeparator, int& k)
+{
+	i = 2;
+}
+void dummyFunctionSeperator3(int& i, int& j, int& k, ScriptArgSeparator)
+{
+	i = 3;
+}
+
+[[maybe_unused]]
+static auto dummyTestScriptOverloadSeperator = ([]
+{
+	ScriptGlobal g;
+	ScriptParserTest f(&g);
+
+	Bind<DummyClass> bind{ &f };
+	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionSeperator0)>>("funcSep");
+	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionSeperator1)>>("funcSep");
+	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionSeperator2)>>("funcSep");
+	bind.addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(&dummyFunctionSeperator3)>>("funcSep");
+
+
+	ScriptContainerBase tempScript;
+	ParserWriter help(
+		0,
+		tempScript,
+		f
+	);
+	auto arg_x = help.addReg<int&>(ScriptRef{"x"});
+	auto arg_y = help.addReg<int&>(ScriptRef{"y"});
+	auto arg_z = help.addReg<int&>(ScriptRef{"z"});
+	auto arg_sep = help.getReferece(ScriptRef{"__"});
+
+	assert(arg_x);
+	assert(arg_y);
+	assert(arg_z);
+	assert(arg_sep);
+
+	auto callFunc = [&](std::tuple<int, const ScriptProcData*> t, const ScriptRefData* begin, const ScriptRefData* end)
+	{
+		auto p = std::get<const ScriptProcData*>(t);
+		if (p == nullptr)
+		{
+			return -1;
+		}
+		for (auto arg : p->overloadArg)
+		{
+			assert(arg.size() == 1);
+		}
+		auto func = p->parserGet(0);
+
+		Uint8 dummy[64] = { };
+		ScriptWorkerBase wb;
+		ProgPos pos;
+
+		wb.ref<int>(arg_x.getValue<RegEnum>()) = -1;
+		func(wb, dummy, pos);
+		return wb.ref<int>(arg_x.getValue<RegEnum>());
+	};
+
+	auto r = findOperationAndArg(help, ScriptRef{"funcSep"});
+	assert(!!r && "func 'funcSep'");
+
+	{
+		ScriptRefData args[] = { arg_x, arg_y, arg_z };
+		auto o = findBestOverloadProc(r.procList, std::begin(args), std::end(args));
+		assert(std::get<int>(o) && "args 'funcSep x y z'");
+		assert(callFunc(o, std::begin(args), std::end(args)) == 0);
+	}
+
+	{
+		ScriptRefData args[] = { arg_x, arg_sep, arg_y, arg_z };
+		auto o = findBestOverloadProc(r.procList, std::begin(args), std::end(args));
+		assert(std::get<int>(o) && "args 'funcSep x __ y z'");
+		assert(callFunc(o, std::begin(args), std::end(args)) == 1);
+	}
+
+	{
+		ScriptRefData args[] = { arg_x, arg_y, arg_sep, arg_z };
+		auto o = findBestOverloadProc(r.procList, std::begin(args), std::end(args));
+		assert(std::get<int>(o) && "args 'funcSep x y __ z'");
+		assert(callFunc(o, std::begin(args), std::end(args)) == 2);
+	}
+
+	{
+		ScriptRefData args[] = { arg_x, arg_y, arg_z, arg_sep };
+		auto o = findBestOverloadProc(r.procList, std::begin(args), std::end(args));
+		assert(std::get<int>(o) && "args 'funcSep x y z __'");
+		assert(callFunc(o, std::begin(args), std::end(args)) == 3);
+	}
+
+	return 0;
+})();
+
+
 [[maybe_unused]]
 static auto dummyTestScriptStringRef = ([]
 {
@@ -4397,6 +4625,65 @@ static auto dummyTestScriptStringRef = ([]
 	return 0;
 })();
 
+
+[[maybe_unused]]
+static auto dummyTestScriptRefCompound = ([]
+{
+	ScriptRefCompound t;
+	assert(t.toString() == "");
+	assert(t.tryPushBack(ScriptRef{"f1"}));
+	assert(t.toString() == "f1");
+	assert(t.tryPushBack(ScriptRef{"f2"}));
+	assert(t.toString() == "f1f2");
+	assert(t.tryPushBack(ScriptRef{"f3"}));
+	assert(t.toString() == "f1f2f3");
+	assert(t.tryPushBack(ScriptRef{"f4"}));
+	assert(t.toString() == "f1f2f3f4");
+	assert(!t.tryPushBack(ScriptRef{"f5"}));
+	assert(t.toString() == "f1f2f3f4");
+	assert(t.tryPopBack());
+	assert(t.toString() == "f1f2f3");
+	assert(t.tryPopBack());
+	assert(t.toString() == "f1f2");
+	assert(t.tryPopBack());
+	assert(t.toString() == "f1");
+	assert(t.tryPopBack());
+	assert(t.toString() == "");
+	assert(!t.tryPopBack());
+	assert(t.toString() == "");
+	assert(t.tryPushBack(ScriptRef{"f6"}));
+	assert(t.toString() == "f6");
+	return 0;
+})();
+
+
+[[maybe_unused]]
+static auto dummyTestScriptArgList = ([]
+{
+	ScriptArgList list1;
+	ScriptArgList list2;
+	ScriptArgList list3;
+	ScriptRefData arg_a = { ScriptRef{ "a" }, ArgInvalid };
+	ScriptRefData arg_b = { ScriptRef{ "b" }, ArgInvalid };
+
+	assert(list1.tryPushBack(arg_a));
+	assert(list1.tryPushBack(arg_b));
+	assert(list1.size() == 2);
+	assert(list2.tryPushBack(list1));
+	assert(list2.tryPushBack(list1));
+	assert(list2.size() == 4);
+	assert(list3.tryPushBack(list2));
+	assert(list3.tryPushBack(list2));
+	assert(list3.size() == 8);
+	assert(list3.tryPushBack(list3));
+	assert(list3.size() == 16);
+	assert(!list3.tryPushBack(list3));
+	assert(list3.size() == 16);
+	assert(!list3.tryPushBack(arg_a));
+	assert(list3.size() == 16);
+
+	return 0;
+})();
 
 
 [[maybe_unused]]
