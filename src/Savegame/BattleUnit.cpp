@@ -4918,7 +4918,7 @@ void BattleUnit::setTileLastSpotted(int index, UnitFaction faction, bool forBlin
 	}
 }
 
-void BattleUnit::updateEnemyKnowledge(int index)
+void BattleUnit::updateEnemyKnowledge(int index, bool door)
 {
 	setTileLastSpotted(index, FACTION_HOSTILE);
 	setTileLastSpotted(index, FACTION_HOSTILE, true);
@@ -4926,9 +4926,12 @@ void BattleUnit::updateEnemyKnowledge(int index)
 	setTileLastSpotted(index, FACTION_PLAYER, true);
 	setTileLastSpotted(index, FACTION_NEUTRAL);
 	setTileLastSpotted(index, FACTION_NEUTRAL, true);
-	setTurnsSinceSeen(0, FACTION_HOSTILE);
-	setTurnsSinceSeen(0, FACTION_PLAYER);
-	setTurnsSinceSeen(0, FACTION_NEUTRAL);
+	if (!door)
+	{
+		setTurnsSinceSeen(0, FACTION_HOSTILE);
+		setTurnsSinceSeen(0, FACTION_PLAYER);
+		setTurnsSinceSeen(0, FACTION_NEUTRAL);
+	}
 }
 
 /**

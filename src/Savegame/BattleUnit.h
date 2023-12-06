@@ -695,7 +695,7 @@ public:
 	/// Set where the unit has last been spotted
 	void setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot = false);
 	/// Updates when an enemy gains knowledge about a units whereabout
-	void updateEnemyKnowledge(int index);
+	void updateEnemyKnowledge(int index, bool door = false);
 	/// Get the tile where the unit was last spotted
 	int getTileLastSpotted(UnitFaction faction, bool forBlindShot = false) const;
 	/// Reset how many turns passed since stunned last time.
