@@ -1042,6 +1042,7 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
 		}
+		victim->updateEnemyKnowledge(_parent->getSave()->getTileIndex(victim->getPosition()));
 		for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
 		{
 			if (unit->isOut())
