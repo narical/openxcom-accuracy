@@ -1822,6 +1822,101 @@ static auto dummy = ([]
 
 	return 0;
 })();
+
+static auto dummyRawFile = ([]
+{
+	{
+		char text[] = "test";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){}});
+
+		assert(raw.get() == 't');
+		assert(raw.get() == 'e');
+		assert(raw.get() == 's');
+		assert(raw.get() == 't');
+		assert(raw.get() == std::char_traits<char>::eof());
+	}
+
+	{
+		char text[] = "test123";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){}});
+
+		char dummy1[10] = { };
+		assert(raw.read(dummy1, 4) && std::strcmp(dummy1, "test") == 0);
+
+		char dummy2[10] = { };
+		assert(raw.read(dummy2, 3) && std::strcmp(dummy2, "123") == 0);
+
+	}
+
+	{
+		char text[] = "test123";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){}});
+
+		char dummy1[10] = { };
+		assert(!raw.read(dummy1, 10) && std::strcmp(dummy1, "test123") == 0);
+	}
+
+	{
+		char text[] = "test123";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){}});
+
+		raw.seekg(0, std::ios::end);
+		std::streamoff end = raw.tellg();
+		raw.seekg(0, std::ios::beg);
+		std::streamoff begin = raw.tellg();
+
+		assert(end-begin == (int)std::strlen(text));
+	}
+
+	{
+		static int calledDelete = 0;
+		char text[] = "test123";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){ ++calledDelete; }});
+
+		assert(raw.get() == 't');
+
+		raw.extractRawData();
+
+		assert(raw.get() == std::char_traits<char>::eof());
+		assert(calledDelete == 1);
+	}
+
+	{
+		static int calledDelete = 0;
+		char text[] = "0123";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){ ++calledDelete; }});
+
+
+		assert(raw.get() == '0');
+
+		StreamData raw2 = std::move(raw);
+
+		assert(raw.get() ==  std::char_traits<char>::eof());
+		assert(!!raw2);
+		assert(raw2.get() == '1');
+
+		raw = std::move(raw2);
+
+		assert(raw.get() == '2');
+		assert(raw2.get() == std::char_traits<char>::eof());
+
+		assert(raw.get() == '3');
+		assert(!!raw);
+		assert(raw.get() == std::char_traits<char>::eof());
+		assert(!raw);
+
+		{
+			StreamData raw3 = std::move(raw);
+			assert(!raw3);
+
+			assert(calledDelete == 0);
+		}
+
+		assert(calledDelete == 1);
+	}
+
+	return 0;
+})();
 #endif
 
 
