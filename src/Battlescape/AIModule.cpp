@@ -3129,8 +3129,6 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getFaction() != FACTION_PLAYER)
 	{
 		int randomChance = RNG::generate(0, 5);
-		if (_traceAI)
-			Log(LOG_INFO) << "If " << randomChance << " > " << intelligence << " I make a random move instead of a smart one.";
 		if (randomChance > intelligence)
 		{
 			if (_traceAI)
@@ -3148,7 +3146,7 @@ void AIModule::brutalThink(BattleAction* action)
 		_positionAtStartOfTurn = myPos;
 		_reposition = false;
 	}
-	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 2 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || randomMove)
+	if (_tuWhenChecking == _unit->getTimeUnits() || myAggressiveness > 2 || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || randomMove || IAmPureMelee)
 	{
 		checkedAttack = true;
 		if (brutalPsiAction())
@@ -3458,7 +3456,8 @@ void AIModule::brutalThink(BattleAction* action)
 					badPath = true;
 				if (!sweepMode && !saveForProxies)
 					continue;
-				float closestEnemyDist = FLT_MAX;
+				float closestEnemyDistValid = FLT_MAX;
+				float closestEnemyDistAssumed = FLT_MAX;
 				float targetDist = Position::distance(pos, targetPosition);
 				float cuddleAvoidModifier = 1;
 				bool avoidMeleeRange = false;
@@ -3500,23 +3499,28 @@ void AIModule::brutalThink(BattleAction* action)
 						continue;
 					if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
 						continue;
-					if (_unit->aiTargetMode() < 2 && Position::distance(unitPosition, pos) > viewDistance)
+					if ((_unit->aiTargetMode() < 2 || _save->getMod()->getNoLOSAccuracyPenaltyGlobal() > 0) && unitDist > viewDistance)
 						continue;
 					if (shouldAvoidMeleeRange(unit) && unitDist < 2)
 					{
 						avoidMeleeRange = true;
 					}
-					if (unitDist < closestEnemyDist)
-						closestEnemyDist = unitDist;
+					if (unitDist < closestEnemyDistAssumed)
+						closestEnemyDistAssumed = unitDist;
 					if (brutalValidTarget(unit, true))
 					{
+						if (unitDist < closestEnemyDistValid)
+							closestEnemyDistValid = unitDist;
 						if (!IAmPureMelee)
 						{
 							if (!lineOfFire)
 							{
 								originAction.target = unit->getPosition();
 								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
+								if (originAction.weapon->getArcingShot(BA_SNAPSHOT))
+									lineOfFire = validateArcingShot(&originAction, tile);
+								else
+									lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
 								if (lineOfFire && Options::battleRealisticAccuracy)
 								{
 									exposureMod = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit);
@@ -3538,10 +3542,8 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 				bool haveTUToAttack = false;
-				if (targetDist < closestEnemyDist)
-					closestEnemyDist = targetDist;
 				bool outOfRangeForShortRangeWeapon = false;
-				if (weaponRange < closestEnemyDist)
+				if (weaponRange < closestEnemyDistAssumed)
 					outOfRangeForShortRangeWeapon = true;
 				int attackTU = snapCost.Time;
 				if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
@@ -3597,7 +3599,7 @@ void AIModule::brutalThink(BattleAction* action)
 				float fallbackScore = 0;
 				if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
 				{
-					if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= targetDist || IAmPureMelee)
+					if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || IAmPureMelee)
 					{
 						attackScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						if (Options::battleRealisticAccuracy)
@@ -3687,7 +3689,7 @@ void AIModule::brutalThink(BattleAction* action)
 						if (discoverThreat == 0 && !_save->getTileEngine()->isNextToDoor(tile) && (contact || myAggressiveness < 2 || wantToPrime && primeCost <= _unit->getTimeUnits() - pu->getTUCost(false).time))
 						{
 							if (myAggressiveness == 0)
-								greatCoverScore = closestEnemyDist;
+								greatCoverScore = closestEnemyDistAssumed;
 							else
 								greatCoverScore = 100 / walkToDist;
 						}
@@ -3706,7 +3708,7 @@ void AIModule::brutalThink(BattleAction* action)
 								okayCoverScore = 100 / (discoverThreat + walkToDist);
 						}
 					}
-					if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies) && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
+					if ((myAggressiveness < 3 || discoverThreat == 0 || immobileEnemies) && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
 					{
 						_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
 						_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
@@ -3857,9 +3859,9 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				//if (_traceAI)
 				//{
-				//	tile->setMarkerColor(_unit->getId()%100);
+				//	tile->setMarkerColor(closestEnemyDistValid);
 				//	tile->setPreview(10);
-				//	tile->setTUMarker(indirectPeakScore);
+				//	tile->setTUMarker(closestEnemyDistValid);
 				//}
 			}
 			if (_traceAI)
@@ -3957,6 +3959,7 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "Brutal-AI wants to go from "
 					  << myPos
 					  << " to travel-target: " << travelTarget << " Remaining TUs: " << _unit->getTimeUnits() << " TU-cost: " << tuCostToReachPosition(travelTarget, _allPathFindingNodes);
+		Log(LOG_INFO) << "My range is: "<<maxExtenderRangeWith(_unit, _unit->getTimeUnits()) <<" IAmPureMelee: " << IAmPureMelee;
 		if (_tuCostToReachClosestPositionToBreakLos != -1)
 			Log(LOG_INFO) << "I need to preserve " << _tuCostToReachClosestPositionToBreakLos << " to hide.";
 	}
@@ -4819,7 +4822,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			accuracy -= (lowerLimit - distance) * action->weapon->getRules()->getDropoff();
 		}
 	}
-	if (_save->getMod()->getNoLOSAccuracyPenaltyGlobal() > 0)
+	if (action->weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) > 0)
 	{
 		Tile* targetTile = target->getTile();
 		bool shouldHaveLos = true;
@@ -4836,7 +4839,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 		else
 			shouldHaveLos = false;
 		if (!shouldHaveLos)
-			accuracy -= _save->getMod()->getNoLOSAccuracyPenaltyGlobal();
+			accuracy *= action->weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) / 100.0;
 	}
 
 	if (action->type != BA_THROW && action->weapon->getRules()->isOutOfRange(distanceSq))
@@ -5026,6 +5029,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	//if (_traceAI)
 	//{
 	//	Log(LOG_INFO) << action->weapon->getRules()->getName() << " attack-type: " << (int)action->type
+	//				  << " No LOS-Penalty: "<< action->weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod())
 	//				  << " damage: " << damage << " armor: " << relevantArmor << " damage-mod: " << target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType)
 	//				  << " accuracy : " << accuracy << " numberOfShots : " << numberOfShots << " tuCost : " << tuCost << " tuTotal: " << tuTotal
 	//				  << " from: " << originPosition << " to: "<<action->target
@@ -5793,6 +5797,8 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 	{
 		Tile *tile = _save->getTile(pn->getPosition());
 		int lastExplored = tile->getLastExplored(_unit->getFaction());
+		if (lastExplored == _save->getTurn() && tile->getUnit() != unit)
+			continue;
 		int TUCost = pn->getTUCost(false).time + lastExplored * getMaxTU(unit);
 		if (TUCost < LowestTuCost)
 		{
