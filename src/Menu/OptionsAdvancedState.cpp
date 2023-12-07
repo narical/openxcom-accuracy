@@ -425,19 +425,6 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			}
 			else if(*setting->asInt() == 3)
 			{
-				Options::aggressionMode = 1;
-				Options::aiTargetMode = 3;
-				Options::intelligenceMode = 0;
-				Options::intelligence = 5;
-				Options::cheatOnMovement = false;
-				Options::allowPreprime = true;
-				Options::ignoreDelay = true;
-				Options::avoidMines = true;
-				Options::avoidCuddle = true;
-				Options::randomFactor = true;
-			}
-			else if(*setting->asInt() == 4)
-			{
 				Options::aggressionMode = 0;
 				Options::aiAggression = 2;
 				Options::aiTargetMode = 3;
@@ -449,6 +436,19 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 				Options::avoidMines = true;
 				Options::avoidCuddle = true;
 				Options::randomFactor = false;
+			}
+			else if (*setting->asInt() == 4)
+			{
+				Options::aggressionMode = 1;
+				Options::aiTargetMode = 3;
+				Options::intelligenceMode = 0;
+				Options::intelligence = 5;
+				Options::cheatOnMovement = false;
+				Options::allowPreprime = true;
+				Options::ignoreDelay = true;
+				Options::avoidMines = true;
+				Options::avoidCuddle = true;
+				Options::randomFactor = true;
 			}
 			else if(*setting->asInt() == 5)
 			{

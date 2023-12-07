@@ -134,6 +134,8 @@ en-GB:
   STR_SNEAKYAI_DESC: "AI avoids exposing themselves to the player whenever possible."
   STR_BRUTALAI: "Brutal AI"
   STR_BRUTALAI_DESC: "AI units play as a team instead of simulating individuals."
+  STR_AIPRESET: "Brutal AI option-preset"
+  STR_AIPRESET_DESC: "1> Advanced tactics disabled, Aggression and intelligence inherited 2> Aggression and intelligence inherited 3> Static aggression and predictable 4> Dynamic Aggression and unpredictable 5> Cheating"
   STR_BRUTALBRUTES: "Brutal Brutes"
   STR_BRUTALBRUTES_DESC: "Less intelligent creatures without an inventory, such as Reapers, Zombies and Crysalids also are controlled by Brutal AI."
   STR_CHEATONMOVEMENT: "Bug Hunt mode for Brutal AI"
