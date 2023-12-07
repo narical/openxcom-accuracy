@@ -1379,7 +1379,7 @@ int RuleItem::getAccuracyCloseQuarters(Mod *mod) const
  * Gets the item's accuracy penalty for out-of-LOS targets
  * @return The no-LOS accuracy penalty.
  */
-int RuleItem::getNoLOSAccuracyPenalty(Mod *mod) const
+int RuleItem::getNoLOSAccuracyPenalty(const Mod *mod) const
 {
 	return _noLOSAccuracyPenalty != -1 ? _noLOSAccuracyPenalty : mod->getNoLOSAccuracyPenaltyGlobal();
 }

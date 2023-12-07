@@ -631,7 +631,7 @@ public:
 	/// Gets the item's close quarters combat accuracy.
 	int getAccuracyCloseQuarters(Mod *mod) const;
 	/// Get penalty for firing this weapon on out-of-LOS targets
-	int getNoLOSAccuracyPenalty(Mod *mod) const;
+	int getNoLOSAccuracyPenalty(const Mod *mod) const;
 
 	/// Gets the item's aimed shot cost.
 	RuleItemUseCost getCostAimed() const;
