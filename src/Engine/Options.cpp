@@ -230,7 +230,7 @@ void create()
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
 	_info.push_back(OptionInfo("avoidCuddle", &avoidCuddle, true, "STR_AVOIDCUDDLE", "STR_AI"));
-	_info.push_back(OptionInfo("randomFactor", &randomFactor, false, "STR_RANDOMFACTOR", "STR_AI"));
+	_info.push_back(OptionInfo("randomFactor", &randomFactor, true, "STR_RANDOMFACTOR", "STR_AI"));
 	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 1, "STR_AGGRESSIONMODE", "STR_AI"));
