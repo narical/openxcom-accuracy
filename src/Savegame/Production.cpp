@@ -71,6 +71,12 @@ void Production::setTimeSpent (int done)
 	_timeSpent = done;
 }
 
+bool Production::isQueuedOnly() const
+{
+	// no progress made yet and nobody assigned
+	return (getTimeSpent() == 0 && getAssignedEngineers() == 0);
+}
+
 int Production::getAssignedEngineers() const
 {
 	return _engineers;
