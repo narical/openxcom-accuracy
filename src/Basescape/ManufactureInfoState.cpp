@@ -354,12 +354,27 @@ void ManufactureInfoState::moreEngineer(int change)
 	if (change <= 0) return;
 	int availableEngineer = _base->getAvailableEngineers();
 	int availableWorkSpace = _base->getFreeWorkshops();
+	if (_production->isQueuedOnly())
+	{
+		// start counting the workshop space now
+		availableWorkSpace -= _production->getRules()->getRequiredSpace();
+	}
 	if (availableEngineer > 0 && availableWorkSpace > 0)
 	{
 		change = std::min(std::min(availableEngineer, availableWorkSpace), change);
 		_production->setAssignedEngineers(_production->getAssignedEngineers()+change);
 		_base->setEngineers(_base->getEngineers()-change);
 		setAssignedEngineer();
+	}
+	else if (availableWorkSpace <= 0 && availableEngineer > 0 && _production->isQueuedOnly() && _production->getRules()->getRequiredSpace() > 0)
+	{
+		_game->pushState(new ErrorMessageState(
+			tr("STR_NOT_ENOUGH_WORK_SPACE"),
+			_palette,
+			_game->getMod()->getInterface("basescape")->getElement("errorMessage")->color,
+			"BACK17.SCR",
+			_game->getMod()->getInterface("basescape")->getElement("errorPalette")->color)
+		);
 	}
 }
 
