@@ -5902,11 +5902,11 @@ Position BattleUnit::getPositionOfUpdate()
 	return _positionWhenReachableWasUpdated;
 }
 
-bool BattleUnit::isLeeroyJenkins() const
+bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 {
-	if (!isBrutal())
+	if (!isBrutal() || ignoreBrutal)
 		return _isLeeroyJenkins;
-	else if (Options::aggressionMode == 2)
+	else if (Options::aggressionMode >= 2)
 		return _isLeeroyJenkins;
 	else
 		return false;

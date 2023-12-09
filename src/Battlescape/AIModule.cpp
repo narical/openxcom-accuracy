@@ -3121,6 +3121,7 @@ void AIModule::brutalThink(BattleAction* action)
 		myAggressiveness = 3;
 	}
 	bool sweepMode = myAggressiveness > 3 || _unit->isLeeroyJenkins() || immobile;
+	_unit->setCharging(nullptr);
 
 	bool randomMove = false;
 	int intelligence = _unit->getBrutalIntelligence();
@@ -3183,6 +3184,8 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				action->run = _attackAction.run;
 				_reposition = true;
+				if (_unit->isLeeroyJenkins(true))
+					_unit->setCharging(unitToWalkTo);
 				if (_traceAI)
 					Log(LOG_INFO) << "Should reposition to " << action->target
 									  << " in order to then attack with " << action->weapon->getRules()->getName();

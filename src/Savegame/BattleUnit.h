@@ -813,7 +813,7 @@ public:
 	/// Get the unit mind controller's id.
 	int getMindControllerId() const;
 	/// Get the unit leeroyJenkins flag
-	bool isLeeroyJenkins() const;
+	bool isLeeroyJenkins(bool ignoreBrutal = false) const;
 	/// Get the unit's aggression-flag
 	int getAggressiveness() const;
 	/// Get the unit's intelligence
