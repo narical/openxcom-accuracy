@@ -5793,9 +5793,7 @@ bool BattleUnit::isBrutal() const
 		brutal = isAIControlled();
 	if (!hasInventory())
 	{
-		if(Options::brutalBrutes)
-			brutal = true;
-		else
+		if(!Options::brutalBrutes)
 			brutal = false;
 	}
 	if (_unitRules && _unitRules->isBrutal())

@@ -363,7 +363,7 @@ void UnitWalkBState::think()
 				{
 					_parent->getMod()->getSoundByDepth(_parent->getDepth(), Mod::SLIDING_DOOR_OPEN)->play(-1, _parent->getMap()->getSoundAngle(_unit->getPosition())); // ufo door
 					_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()), true);
-					if (_unit->isBrutal())
+					if (_unit->isBrutal() && _unit->isAIControlled())
 					{
 						if (Options::traceAI)
 						{
