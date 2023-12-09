@@ -391,18 +391,18 @@ void BattleUnit::prepareBannedFlag(const RuleStartingCondition* sc)
 BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, const RuleEnviroEffects* enviro, Armor *armor, StatAdjustment *adjustment, int depth, const RuleStartingCondition* sc) :
 	_faction(faction), _originalFaction(faction), _killedBy(faction), _id(id),
 	_tile(0), _lastPos(Position()), _direction(0), _toDirection(0), _directionTurret(0),
-	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _hasPanickedLastTurn(false), _isSurrendering(false), _walkPhase(0),
+	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _hasPanickedLastTurn(false), _walkPhase(0),
 	_fallPhase(0), _kneeled(false), _floating(false), _dontReselect(false), _fire(0), _currentAIState(0),
-	_visible(false), _exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
-	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
-	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
-	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
-	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT),
-	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
-	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
-	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
-	_vip(false), _bannedInNextStage(false), _allowAutoCombat(true)
+	_allowAutoCombat(true), _visible(false), _exp{ },
+	_expTmp{ }, _motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0),
+	_smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255),
+	_turnsLeftSpottedForSnipers(0), _turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255),
+	_turnsSinceSeenByPlayer(255), _tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1),
+	_tileLastSpottedForBlindShotByPlayer(-1), _statistics(), _murdererId(0), _mindControllerID(0),
+	_fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(armor),  _geoscapeSoldier(0),
+	_unitRules(unit), _rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false),
+	_alreadyRespawned(false), _isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false),
+	_disableIndicators(false), _vip(false), _bannedInNextStage(false)
 {
 	if (enviro)
 	{
