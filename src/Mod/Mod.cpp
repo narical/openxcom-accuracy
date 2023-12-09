@@ -498,11 +498,13 @@ Mod::Mod() :
 	_statAdjustment.resize(MaxDifficultyLevels);
 	_statAdjustment[0].aimMultiplier = 0.5;
 	_statAdjustment[0].armorMultiplier = 0.5;
+	_statAdjustment[0].armorMultiplierAbs = 0;
 	_statAdjustment[0].growthMultiplier = 0;
 	for (size_t i = 1; i != MaxDifficultyLevels; ++i)
 	{
 		_statAdjustment[i].aimMultiplier = 1.0;
 		_statAdjustment[i].armorMultiplier = 1.0;
+		_statAdjustment[i].armorMultiplierAbs = 0;
 		_statAdjustment[i].growthMultiplier = (int)i;
 	}
 
@@ -3417,6 +3419,18 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	for (YAML::const_iterator i = doc["armorMultipliers"].begin(); i != doc["armorMultipliers"].end() && count < MaxDifficultyLevels; ++i)
 	{
 		_statAdjustment[count].armorMultiplier = (*i).as<double>(_statAdjustment[count].armorMultiplier);
+		++count;
+	}
+	count = 0;
+	for (YAML::const_iterator i = doc["armorMultipliersAbs"].begin(); i != doc["armorMultipliersAbs"].end() && count < MaxDifficultyLevels; ++i)
+	{
+		_statAdjustment[count].armorMultiplierAbs = (*i).as<double>(_statAdjustment[count].armorMultiplierAbs);
+		++count;
+	}
+	count = 0;
+	for (YAML::const_iterator i = doc["statGrowthMultipliersAbs"].begin(); i != doc["statGrowthMultipliersAbs"].end() && count < MaxDifficultyLevels; ++i)
+	{
+		_statAdjustment[count].statGrowthAbs = (*i).as<UnitStats>(_statAdjustment[count].statGrowthAbs);
 		++count;
 	}
 	if (doc["statGrowthMultipliers"])
