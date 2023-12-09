@@ -113,7 +113,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_statistics = new BattleUnitStatistics();
 
 	deriveRank();
-	
+
 	_allowAutoCombat = soldier->getAllowAutoCombat();
 
 	updateArmorFromSoldier(mod, soldier, soldier->getArmor(), depth, false, sc);
@@ -5868,15 +5868,15 @@ void BattleUnit::checkForReactivation()
 		BattleActionCost costHit(BA_HIT, this, weapon);
 		BattleActionCost costThrow(BA_THROW, this, weapon);
 		if (costSnap.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costHit.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costAimed.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costAuto.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costThrow.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 	}
 	if (haveTUtoAttack || (getAIModule() && getAIModule()->isAnyMovementPossible()))
 	{
