@@ -20,6 +20,7 @@
 #include "BattleItem.h"
 #include <sstream>
 #include <algorithm>
+#include <climits>
 #include "../Engine/Collections.h"
 #include "../Engine/Surface.h"
 #include "../Engine/Script.h"
@@ -113,7 +114,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_statistics = new BattleUnitStatistics();
 
 	deriveRank();
-	
+
 	_allowAutoCombat = soldier->getAllowAutoCombat();
 
 	updateArmorFromSoldier(mod, soldier, soldier->getArmor(), depth, false, sc);

@@ -19,6 +19,7 @@
 #include "Inventory.h"
 #include <algorithm>
 #include <cmath>
+#include <climits>
 #include "../Mod/Mod.h"
 #include "../Mod/RuleInventory.h"
 #include "../Mod/RuleInterface.h"
