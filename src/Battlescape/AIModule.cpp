@@ -3520,7 +3520,7 @@ void AIModule::brutalThink(BattleAction* action)
 							{
 								originAction.target = unit->getPosition();
 								Position origin = _save->getTileEngine()->getOriginVoxel(originAction, tile);
-								if (originAction.weapon->getArcingShot(BA_SNAPSHOT))
+								if (originAction.weapon && originAction.weapon->getArcingShot(BA_SNAPSHOT))
 									lineOfFire = validateArcingShot(&originAction, tile);
 								else
 									lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
