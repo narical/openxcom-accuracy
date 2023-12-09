@@ -2709,20 +2709,23 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 	// (are we still talking about items?)
 	for (auto* bi : droppedItems)
 	{
-		if (bi->getTile()->getDangerous())
+		Tile* itemTile = bi->getTile();
+		if (itemTile->getUnit() != nullptr && itemTile->getUnit() != action->actor)
+			continue;
+		if (itemTile->getDangerous())
 		{
 			continue;
 		}
-		int tuCost = action->actor->getAIModule()->tuCostToReachPosition(bi->getTile()->getPosition(), targetNodes);
+		int tuCost = action->actor->getAIModule()->tuCostToReachPosition(itemTile->getPosition(), targetNodes);
 		float currentWorth = 0;
 		if (tuCost < 10000)
 			currentWorth = action->actor->getAIModule()->getItemPickUpScore(bi) / (tuCost + 1);
 		if (currentWorth > maxWorth)
 		{
-			if (bi->getTile()->getTUCost(O_OBJECT, action->actor->getMovementType()) == 255)
+			if (itemTile->getTUCost(O_OBJECT, action->actor->getMovementType()) == 255)
 			{
 				// Note: full pathfinding check will be done later, this is just a small optimisation
-				bi->getTile()->setDangerous(true);
+				itemTile->setDangerous(true);
 				continue;
 			}
 			maxWorth = currentWorth;
