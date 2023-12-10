@@ -89,7 +89,7 @@ class StreamData : public std::istream, private std::streambuf
 public:
 
 	/// Default constructor.
-	StreamData()
+	StreamData() : std::istream(nullptr)
 	{
 		this->rdbuf(this);
 	}
