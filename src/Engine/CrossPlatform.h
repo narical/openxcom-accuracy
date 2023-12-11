@@ -23,6 +23,7 @@
 #include <vector>
 #include <array>
 #include <memory>
+#include <utility>
 
 namespace OpenXcom
 {
