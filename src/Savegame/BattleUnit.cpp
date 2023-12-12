@@ -5869,15 +5869,15 @@ void BattleUnit::checkForReactivation()
 		BattleActionCost costHit(BA_HIT, this, weapon);
 		BattleActionCost costThrow(BA_THROW, this, weapon);
 		if (costSnap.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costHit.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costAimed.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costAuto.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 		else if (costThrow.haveTU())
-			bool haveTUtoAttack = true;
+			haveTUtoAttack = true;
 	}
 	if (haveTUtoAttack || (getAIModule() && getAIModule()->isAnyMovementPossible()))
 	{
