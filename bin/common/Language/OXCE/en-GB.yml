@@ -361,6 +361,7 @@ en-GB:
   STR_HOLD_NIGHT_VISION: "Short Night Vision"
   STR_SELECT_MUSIC_TRACK: "Select Music Track"
   STR_keyAIList: "Soldiers AI Autocombat"
+  STR_TOGGLE_AUTO_PLAY: "Toggle Autoplay Ctrl + "
 #===================
   STR_TOGGLE_TOUCH_BUTTONS: "Toggle Touch Buttons"
   STR_TOGGLE_BRIGHTNESS: "Toggle Brightness (visual only)"

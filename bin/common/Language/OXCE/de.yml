@@ -209,6 +209,7 @@ de:
   STR_HOLD_NIGHT_VISION: "Nachtsicht prüfen"
   STR_SELECT_MUSIC_TRACK: "Musikstück wählen"
   STR_keyAIList: "Soldaten KI Autokampf"
+  STR_TOGGLE_AUTO_PLAY: "Autokampf umschalten Strg + "
   STR_PHYSICAL_TRAINING: "Kampfausbildung"
   STR_REMAINING_TRAINING_FACILITY_CAPACITY: "VERFÜGBARER TRAININGSRAUM> {ALT}{0}"
   STR_NO_WOUNDED: "-"

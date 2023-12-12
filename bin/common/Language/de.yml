@@ -163,7 +163,7 @@ de:
   STR_BRUTALCIVILIANS: "Brutale KI für neutrale Truppen"
   STR_BRUTALCIVILIANS_DESC: "Neutrale Truppen werden von der brutalen KI kontrolliert."
   STR_AUTOCOMBAT: "Automatischer Kampf"
-  STR_AUTOCOMBAT_DESC: "Die Kontrolle über Spieler-Einheiten wird an die KI übergeben. Umschalten mit Strg+a während des Zuges deiner Einheiten."
+  STR_AUTOCOMBAT_DESC: "Die Kontrolle über Spieler-Einheiten wird an die KI übergeben. Der Umschaltbefehl kann unter Steuerung => Erweitert festgelegt werden. Die Standardeinstellung ist Strg + a."
   STR_AUTOCOMBAT_EACH_COMBAT: "Autokampf beibehalten @ neuem Kampf"
   STR_AUTOCOMBAT_EACH_COMBAT_DESC: "Autokampf aktiviert lassen, wenn ein neuer Kampf beginnt."
   STR_AUTOCOMBAT_EACH_TURN: "Autokampf beibehalten @ neuem Zug"

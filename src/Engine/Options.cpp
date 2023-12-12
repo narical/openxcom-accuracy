@@ -448,6 +448,7 @@ void create()
 	_info.push_back(OptionInfo("keySelectMusicTrack", &keySelectMusicTrack, SDLK_END, "STR_SELECT_MUSIC_TRACK", "STR_OXCE"));
 	
 	_info.push_back(OptionInfo("keyAIList", &keyAIList, SDLK_c, "STR_keyAIList", "STR_OXCE"));
+	_info.push_back(OptionInfo("keyToggleAutoPlay", &keyToggleAutoPlay, SDLK_a, "STR_TOGGLE_AUTO_PLAY", "STR_OXCE"));
 
 #ifdef __MORPHOS__
 	_info.push_back(OptionInfo("FPS", &FPS, 15, "STR_FPS_LIMIT", "STR_GENERAL"));

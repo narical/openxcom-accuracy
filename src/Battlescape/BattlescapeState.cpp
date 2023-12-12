@@ -2758,7 +2758,7 @@ inline void BattlescapeState::handle(Action *action)
 						}
 					}
 				}
-				if (key == SDLK_a && ctrlPressed)
+				if (key == Options::keyToggleAutoPlay && ctrlPressed)
 				{
 					if (Options::autoCombat)
 						Options::autoCombat = false;

@@ -298,6 +298,7 @@ ru:
   STR_HOLD_NIGHT_VISION: "Ночное видение при удержании"
   STR_SELECT_MUSIC_TRACK: "Выбрать музыкальный трек"
   STR_keyAIList: "ИИ: Авто-бой"
+  STR_TOGGLE_AUTO_PLAY: "Переключить автовоспроизведение Ctrl + "
   STR_TOGGLE_TOUCH_BUTTONS: "Включить сенс. интерфейс"
   STR_TOGGLE_BRIGHTNESS: "Повысить яркость (виз. эффект)"
   STR_BRIEFING: "Инструктаж"

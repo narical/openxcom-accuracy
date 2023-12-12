@@ -163,7 +163,7 @@ en-GB:
   STR_BRUTALCIVILIANS: "Brutal AI for neutral forces"
   STR_BRUTALCIVILIANS_DESC: "Neutral forces will be controlled by Brutal AI."
   STR_AUTOCOMBAT: "Automated combat"
-  STR_AUTOCOMBAT_DESC: "Control of player-units is handed to the AI. Toggle with Ctrl+a during your units turn." 
+  STR_AUTOCOMBAT_DESC: "Control of player-units is handed to the AI. Toggle-shortcut can be set under Controls=>Extended. The default is Ctrl+a"
   STR_AUTOCOMBAT_EACH_COMBAT: "Autocombat keep @ new Combat"
   STR_AUTOCOMBAT_EACH_COMBAT_DESC: "Keep autocombat enabled when a new combat starts."
   STR_AUTOCOMBAT_EACH_TURN: "Autocombat keep @ new Turn"
