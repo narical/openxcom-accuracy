@@ -4849,7 +4849,14 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 		accuracy = 0;
 	if (action->type == BA_HIT)
 	{
-		accuracy -= target->getArmor()->getMeleeDodge(target);
+		Position attackVexel = originPosition.toVoxel();
+		attackVexel += Position(8, 8, 0) * _unit->getArmor()->getSize();
+		int arc = _save->getTileEngine()->getArcDirection(_save->getTileEngine()->getDirectionTo(target->getPositionVexels(), attackVexel), target->getDirection());
+		float penalty = 1.0f - arc * target->getArmor()->getMeleeDodgeBackPenalty() / 4.0f;
+		if (target->getArmor()->getMeleeDodge(target) * penalty < accuracy)
+			accuracy -= target->getArmor()->getMeleeDodge(target) * penalty;
+		else
+			accuracy = 0.01;
 		// We can definitely assume we'll be facing the target
 		int directionToLook = _save->getTileEngine()->getDirectionTo(originPosition, target->getPosition());
 		if (checkLOF)
