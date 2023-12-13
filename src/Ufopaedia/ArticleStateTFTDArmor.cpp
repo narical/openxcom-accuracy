@@ -35,6 +35,10 @@ namespace OpenXcom
 
 	ArticleStateTFTDArmor::ArticleStateTFTDArmor(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state) : ArticleStateTFTD(defs, std::move(state)), _row(0)
 	{
+		const std::string HEADER_ARMOR_THICKNESS	= "- armor thickness --";
+		const std::string HEADER_DAMAGE_MODIFIERS	= "- damage modifiers -";
+		const std::string HEADER_UNIT_STATS			= "- stats modifiers --";
+
 		// default text and list layout when text is present
 
 		const int DEFAULT_TEXT_HEIGHT = 72;
@@ -46,6 +50,7 @@ namespace OpenXcom
 		int textHeight;
 		int listHeight;
 		int listY;
+		bool showHeaders;
 
 		// set text and list layout depending on whether text is present
 
@@ -54,12 +59,14 @@ namespace OpenXcom
 			textHeight = 0;
 			listHeight = DEFAULT_TEXT_HEIGHT + DEFAULT_LIST_HEIGHT;
 			listY = DEFAULT_LIST_Y - DEFAULT_TEXT_HEIGHT;
+			showHeaders = true;
 		}
 		else
 		{
 			textHeight = DEFAULT_TEXT_HEIGHT;
 			listHeight = DEFAULT_LIST_HEIGHT;
 			listY = DEFAULT_LIST_Y;
+			showHeaders = false;
 		}
 
 		_txtInfo->setHeight(textHeight);
@@ -79,10 +86,21 @@ namespace OpenXcom
 		_lstInfo->setColumns(3, 100, 20, 10);
 		_lstInfo->setAlign(ALIGN_RIGHT, 1);
 		_lstInfo->setAlign(ALIGN_RIGHT, 2);
-		_lstInfo->setDot(0);
+		_lstInfo->setDot(false);
+		_lstInfo->setColumnDot(0, true);
 
 		// armor values
 		// all values are always displayed
+
+		if (showHeaders)
+		{
+			_lstInfo->setColumnDot(0, false);
+			_lstInfo->addRow(1, HEADER_ARMOR_THICKNESS.c_str());
+			++_row;
+			_lstInfo->addRow(0);
+			++_row;
+			_lstInfo->setColumnDot(0, true);
+		}
 
 		addStat("STR_FRONT_ARMOR", armor->getFrontArmor());
 		addStat("STR_LEFT_ARMOR", armor->getLeftSideArmor());
@@ -94,6 +112,16 @@ namespace OpenXcom
 		++_row;
 
 		// damage modifiers
+
+		if (showHeaders)
+		{
+			_lstInfo->setColumnDot(0, false);
+			_lstInfo->addRow(1, HEADER_DAMAGE_MODIFIERS.c_str());
+			++_row;
+			_lstInfo->addRow(0);
+			++_row;
+			_lstInfo->setColumnDot(0, true);
+		}
 
 		for (int i = 1; i < 10; ++i)
 		{
@@ -129,12 +157,35 @@ namespace OpenXcom
 		armorStats.push_back({"STR_PSIONIC_STRENGTH", armor->getStats()->psiStrength});
 		armorStats.push_back({"STR_PSIONIC_SKILL", armor->getStats()->psiSkill});
 
+		int displayableArmorStatCount = 0;
 		for (std::pair<std::string, int> armorStat : armorStats)
 		{
 			if (armorStat.second != 0)
 			{
-				addStat(armorStat.first, armorStat.second, "", true);
+				displayableArmorStatCount++;
 			}
+		}
+
+		if (displayableArmorStatCount > 0)
+		{
+			if (showHeaders)
+			{
+				_lstInfo->setColumnDot(0, false);
+				_lstInfo->addRow(1, HEADER_UNIT_STATS.c_str());
+				++_row;
+				_lstInfo->addRow(0);
+				++_row;
+				_lstInfo->setColumnDot(0, true);
+			}
+
+			for (std::pair<std::string, int> armorStat : armorStats)
+			{
+				if (armorStat.second != 0)
+				{
+					addStat(armorStat.first, armorStat.second, "", true);
+				}
+			}
+
 		}
 
 		centerAllSurfaces();
