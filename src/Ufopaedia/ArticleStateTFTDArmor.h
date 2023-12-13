@@ -27,14 +27,17 @@ namespace OpenXcom
 	class ArticleStateTFTDArmor : public ArticleStateTFTD
 	{
 	public:
+
 		ArticleStateTFTDArmor(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state);
 		virtual ~ArticleStateTFTDArmor();
 
 	protected:
-		void addStat(const std::string &label, int stat, bool plus = false);
-		void addStat(const std::string &label, const std::string &stat);
 
 		int _row;
 		TextList *_lstInfo;
+
+		void addStat(const std::string& label, int stat, const std::string& unit = "", bool plus = false, bool dim = false);
+
 	};
+
 }

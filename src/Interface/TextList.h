@@ -18,6 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <vector>
+#include <set>
 #include <map>
 #include "../Engine/InteractiveSurface.h"
 #include "Text.h"
@@ -47,7 +48,8 @@ private:
 	size_t _scroll, _visibleRows, _selRow;
 	Uint8 _color, _color2;
 	std::map<int, TextHAlign> _align;
-	bool _dot, _selectable, _condensed, _contrast, _wrap, _flooding, _ignoreSeparators;
+	std::set<int> _dots;
+	bool _selectable, _condensed, _contrast, _wrap, _flooding, _ignoreSeparators;
 	Surface *_bg, *_selector;
 	ArrowButton *_up, *_down;
 	ScrollBar *_scrollbar;
@@ -130,8 +132,8 @@ public:
 	void setHighContrast(bool contrast) override;
 	/// Sets the text horizontal alignment of the text list.
 	void setAlign(TextHAlign align, int col = -1);
-	/// Sets whether to separate columns with dots.
-	void setDot(bool dot);
+	/// Sets whether to pad this column with dots to the right.
+	void setDot(int columnIndex);
 	/// Sets whether the list is selectable.
 	void setSelectable(bool selectable);
 	/// Sets the text size to big.
