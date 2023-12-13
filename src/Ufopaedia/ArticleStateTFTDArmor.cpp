@@ -35,9 +35,9 @@ namespace OpenXcom
 
 	ArticleStateTFTDArmor::ArticleStateTFTDArmor(ArticleDefinitionTFTD *defs, std::shared_ptr<ArticleCommonState> state) : ArticleStateTFTD(defs, std::move(state)), _row(0)
 	{
-		const std::string HEADER_ARMOR_THICKNESS	= "- armor thickness --";
-		const std::string HEADER_DAMAGE_MODIFIERS	= "- damage modifiers -";
-		const std::string HEADER_UNIT_STATS			= "- stats modifiers --";
+		const std::string HEADER_ARMOR_THICKNESS  = "- armor thickness --";
+		const std::string HEADER_DAMAGE_MODIFIERS = "- damage modifiers -";
+		const std::string HEADER_UNIT_STATS       = "- stats modifiers --";
 
 		// default text and list layout when text is present
 
