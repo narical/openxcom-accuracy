@@ -343,51 +343,25 @@ void TextList::addRow(int cols, ...)
 		}
 		rowHeight = std::max(rowHeight, txt->getTextHeight() + vmargin);
 
-		// pad text with dots
-		// only when text is present
-
-		if (!txt->getText().empty() && (_dot && i < (ncols - 1) || _dots.find(i) != _dots.end()))
+		// Places dots between text
+		if (_dot && i < cols - 1)
 		{
-			// get text width
-
+			std::string buf = txt->getText();
 			unsigned int w = txt->getTextWidth();
-
-			// get width of available space to the right of the text
-
-			int spaceWidth = _columns[i] - w;
-			int padWidthLeft;
-			int padWidthRight;
-
-			switch (_align[i])
+			while (w < _columns[i])
 			{
-			case ALIGN_LEFT:
-				padWidthLeft = 0;
-				padWidthRight = spaceWidth;
-				break;
-			case ALIGN_CENTER:
-				padWidthLeft = spaceWidth / 2;
-				padWidthRight = spaceWidth / 2;
-				break;
-			case ALIGN_RIGHT:
-				padWidthLeft = spaceWidth;
-				padWidthRight = 0;
-				break;
+				if (_align[i] != ALIGN_RIGHT)
+				{
+					w += _font->getChar('.').getCrop()->w + _font->getSpacing();
+					buf += '.';
+				}
+				if (_align[i] != ALIGN_LEFT)
+				{
+					w += _font->getChar('.').getCrop()->w + _font->getSpacing();
+					buf.insert(0, 1, '.');
+				}
 			}
-
-			// get number of dots needed to be added
-
-			int dotWidth = _font->getChar('.').getCrop()->w + _font->getSpacing();
-			int dotCountLeft = padWidthLeft / dotWidth;
-			int dotCountRight = padWidthRight / dotWidth;
-
-			// pad the text
-
-			std::string paddedText = std::string(dotCountLeft, '.') + txt->getText() + std::string(dotCountRight, '.');
-
-			// set text
-
-			txt->setText(paddedText);
-
+			txt->setText(buf);
 		}
 
 		temp.push_back(txt);
@@ -672,29 +646,13 @@ void TextList::setAlign(TextHAlign align, int col)
 }
 
 /**
- * If enabled, the text in columns will be padded by dots.
+ * If enabled, the text in different columns will be separated by dots.
+ * Otherwise, it will only be separated by blank space.
  * @param dot True for dots, False for spaces.
  */
 void TextList::setDot(bool dot)
 {
 	_dot = dot;
-}
-
-/**
- * If enabled, the text in this column will be padded by dots.
- * @param dot True for dots, False for spaces.
- */
-void TextList::setColumnDot(int columnIndex, bool flag)
-{
-	if (flag)
-	{
-		_dots.insert(columnIndex);
-	}
-	else
-	{
-		_dots.erase(columnIndex);
-	}
-
 }
 
 /**
