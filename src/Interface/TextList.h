@@ -47,7 +47,7 @@ private:
 	size_t _scroll, _visibleRows, _selRow;
 	Uint8 _color, _color2;
 	std::map<int, TextHAlign> _align;
-	bool _dot, _selectable, _condensed, _contrast, _wrap, _flooding, _ignoreSeparators;
+	bool _dot, _dotFirstColumn, _selectable, _condensed, _contrast, _wrap, _flooding, _ignoreSeparators;
 	Surface *_bg, *_selector;
 	ArrowButton *_up, *_down;
 	ScrollBar *_scrollbar;
@@ -132,6 +132,8 @@ public:
 	void setAlign(TextHAlign align, int col = -1);
 	/// Sets whether to separate columns with dots.
 	void setDot(bool dot);
+	/// Sets whether to separate only first column with dots.
+	void setDotFirstColumn(bool dotFirstColumn);
 	/// Sets whether the list is selectable.
 	void setSelectable(bool selectable);
 	/// Sets the text size to big.

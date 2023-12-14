@@ -32,11 +32,13 @@ namespace OpenXcom
 		virtual ~ArticleStateTFTDArmor();
 
 	protected:
+		void addStat(const std::string &label, int stat, bool plus = false);
+		void addStat(const std::string &label, const std::string &stat);
 
 		int _row;
 		TextList *_lstInfo;
 
-		void addStat(const std::string& label, int stat, const std::string& unit = "", bool plus = false, bool dim = false);
+		void addStat1(const std::string& label, int stat, const std::string& unit, bool plus = false);
 
 	};
 
