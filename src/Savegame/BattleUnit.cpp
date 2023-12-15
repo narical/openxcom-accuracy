@@ -7074,7 +7074,7 @@ ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, cons
 	"default_visibility",
 	"visibility_mode",
 
-	"observer_unit", "target_unit",
+	"observer_unit", "target_unit", "target_tile",
 	"distance", "distance_max", "distance_target_max",
 	"smoke_density", "fire_density",
 	"smoke_density_near_observer", "fire_density_near_observer" }
