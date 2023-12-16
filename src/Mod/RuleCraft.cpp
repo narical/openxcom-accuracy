@@ -34,7 +34,7 @@ const std::string RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW = "STR_CRAFT_DEPLO
  * @param type String defining the type.
  */
 RuleCraft::RuleCraft(const std::string &type, int listOrder) :
-	_type(type), _sprite(-1), _marker(-1), _hangarType(-1), _weapons(0), _soldiers(0), _pilots(0), _vehicles(0),
+	_type(type), _sprite(-1), _marker(-1), _hangarType(-1), _weapons(0), _pilots(0),
 	_maxSmallSoldiers(-1), _maxLargeSoldiers(-1), _maxSmallVehicles(-1), _maxLargeVehicles(-1),
 	_maxSmallUnits(-1), _maxLargeUnits(-1), _maxSoldiers(-1), _maxVehicles(-1), _maxUnitsLimit(-1),
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
