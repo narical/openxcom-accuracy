@@ -222,7 +222,7 @@ void create()
 
 	// AI
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
-	_info.push_back(OptionInfo("aiPreset", &aiPreset, 4, "STR_AIPRESET", "STR_AI"));
+	_info.push_back(OptionInfo("aiPreset", &aiPreset, 3, "STR_AIPRESET", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("brutalBrutes", &brutalBrutes, true, "STR_BRUTALBRUTES", "STR_AI"));
 	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
@@ -230,10 +230,10 @@ void create()
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
 	_info.push_back(OptionInfo("avoidCuddle", &avoidCuddle, true, "STR_AVOIDCUDDLE", "STR_AI"));
-	_info.push_back(OptionInfo("randomFactor", &randomFactor, true, "STR_RANDOMFACTOR", "STR_AI"));
+	_info.push_back(OptionInfo("randomFactor", &randomFactor, false, "STR_RANDOMFACTOR", "STR_AI"));
 	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
-	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 1, "STR_AGGRESSIONMODE", "STR_AI"));
+	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 0, "STR_AGGRESSIONMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
 	_info.push_back(OptionInfo("intelligenceMode", &intelligenceMode, 0, "STR_INTELLIGENCEMODE", "STR_AI"));
 	_info.push_back(OptionInfo("intelligence", &intelligence, 5, "STR_INTELLIGENCE", "STR_AI"));
