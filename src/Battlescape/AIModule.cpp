@@ -5994,12 +5994,12 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 		return item->getRules()->getAttraction();
 	if (!_save->canUseWeapon(item, _unit, false, BA_SNAPSHOT))
 		return 0;
+	float score = 0;
+	bool valid = false;
 	if (item->haveAnyAmmo())
 	{
-		if(item->getRules()->getBattleType() == BT_FIREARM)
-			return 10;
-		if (item->getRules()->getBattleType() == BT_GRENADE || item->getRules()->getBattleType() == BT_MELEE)
-			return 5;
+		if (item->getRules()->getBattleType() == BT_FIREARM || item->getRules()->getBattleType() == BT_GRENADE || item->getRules()->getBattleType() == BT_MELEE)
+			valid = true;
 	} 
 	if (item->getRules()->getBattleType() == BT_AMMO)
 	{
@@ -6008,13 +6008,17 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 			if (bi->getRules()->getBattleType() == BT_FIREARM)
 			{
 				if (bi->getRules()->getSlotForAmmo(item->getRules()) != -1)
-				{
-					return 10;
-				}
+					valid = true;
 			}
 		}
 	}
-	return 0;
+	if (!valid)
+		return 0;
+	score = item->getRules()->getSellCost();
+	float encumbrance = (float)_unit->getBaseStats()->strength / (float)(_unit->getCarriedWeight() + item->getRules()->getWeight());
+	if (encumbrance < 1)
+		score *= encumbrance;
+	return score;
 }
 
 bool AIModule::IsEnemyExposedEnough()
