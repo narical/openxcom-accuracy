@@ -164,7 +164,11 @@ void SellState::delayedInit()
 	_txtValue->setText(tr("STR_VALUE"));
 
 	_lstItems->setArrowColumn(182, ARROW_VERTICAL);
-	_lstItems->setColumns(4, 156, 54, 24, 53);
+//	_lstItems->setColumns(4, 156, 54, 24, 53);
+	_lstItems->setColumns(4, 147, 25, 60, 50, 5);
+	_lstItems->setAlign(ALIGN_RIGHT, 1);
+	_lstItems->setAlign(ALIGN_RIGHT, 2);
+	_lstItems->setAlign(ALIGN_RIGHT, 3);
 	_lstItems->setSelectable(true);
 	_lstItems->setBackground(_window);
 	_lstItems->setMargin(2);

@@ -53,10 +53,10 @@ MonthlyCostsState::MonthlyCostsState(Base *base) : _base(base)
 	_txtSalaries = new Text(150, 9, 10, 80);
 	_txtIncome = new Text(150, 9, 10, 146);
 	_txtMaintenance = new Text(150, 9, 10, 154);
-	_lstCrafts = new TextList(288, 32, 10, 48);
-	_lstSalaries = new TextList(288, 40, 10, 88);
+	_lstCrafts = new TextList(300, 32, 10, 48);
+	_lstSalaries = new TextList(300, 40, 10, 88);
 	_lstMaintenance = new TextList(300, 9, 10, 128);
-	_lstTotal = new TextList(100, 9, 205, 150);
+	_lstTotal = new TextList(105, 9, 205, 150);
 
 	// Set palette
 	setInterface("costsInfo");
@@ -108,7 +108,11 @@ MonthlyCostsState::MonthlyCostsState(Base *base) : _base(base)
 	ss2 << tr("STR_MAINTENANCE") << "=" << Unicode::formatFunding(_game->getSavedGame()->getBaseMaintenance());
 	_txtMaintenance->setText(ss2.str());
 
-	_lstCrafts->setColumns(4, 125, 70, 44, 50);
+//	_lstCrafts->setColumns(4, 125, 70, 44, 50);
+	_lstCrafts->setColumns(4, 115, 50, 50, 85);
+	_lstCrafts->setAlign(ALIGN_RIGHT, 1);
+	_lstCrafts->setAlign(ALIGN_RIGHT, 2);
+	_lstCrafts->setAlign(ALIGN_RIGHT, 3);
 	_lstCrafts->setDot(true);
 
 	for (auto& craftType : _game->getMod()->getCraftsList())
@@ -126,7 +130,11 @@ MonthlyCostsState::MonthlyCostsState(Base *base) : _base(base)
 		}
 	}
 
-	_lstSalaries->setColumns(4, 125, 70, 44, 50);
+//	_lstSalaries->setColumns(4, 125, 70, 44, 50);
+	_lstSalaries->setColumns(4, 115, 50, 50, 85);
+	_lstSalaries->setAlign(ALIGN_RIGHT, 1);
+	_lstSalaries->setAlign(ALIGN_RIGHT, 2);
+	_lstSalaries->setAlign(ALIGN_RIGHT, 3);
 	_lstSalaries->setDot(true);
 
 	auto& soldierTypes = _game->getMod()->getSoldiersList();
@@ -192,13 +200,17 @@ MonthlyCostsState::MonthlyCostsState(Base *base) : _base(base)
 	ss6b << staffCount << "/" << inventoryCount;
 	_lstSalaries->addRow(4, tr("STR_OTHER_EMPLOYEES").c_str(), "", ss6b.str().c_str(), Unicode::formatFunding(totalOtherCost).c_str());
 
-	_lstMaintenance->setColumns(2, 239, 60);
+//	_lstMaintenance->setColumns(2, 239, 60);
+	_lstMaintenance->setColumns(2, 250, 50);
+	_lstMaintenance->setAlign(ALIGN_RIGHT, 1);
 	_lstMaintenance->setDot(true);
 	std::ostringstream ss7;
 	ss7 << Unicode::TOK_COLOR_FLIP << Unicode::formatFunding(_base->getFacilityMaintenance());
 	_lstMaintenance->addRow(2, tr("STR_BASE_MAINTENANCE").c_str(), ss7.str().c_str());
 
-	_lstTotal->setColumns(2, 44, 55);
+//	_lstTotal->setColumns(2, 44, 55);
+	_lstTotal->setColumns(2, 55, 50);
+	_lstTotal->setAlign(ALIGN_RIGHT, 1);
 	_lstTotal->setDot(true);
 	_lstTotal->addRow(2, tr("STR_TOTAL").c_str(), Unicode::formatFunding(_base->getMonthlyMaintenace()).c_str());
 }

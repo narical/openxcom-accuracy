@@ -46,10 +46,10 @@ FundingState::FundingState()
 	_window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
 	_btnOk = new TextButton(50, 12, 135, 180);
 	_txtTitle = new Text(320, 17, 0, 8);
-	_txtCountry = new Text(100, 9, 32, 30);
-	_txtFunding = new Text(100, 9, 140, 30);
-	_txtChange = new Text(72, 9, 240, 30);
-	_lstCountries = new TextList(260, 136, 32, 40);
+	_txtCountry = new Text(100, 9, 30, 30);
+	_txtFunding = new Text(60, 9, 130, 30);
+	_txtChange = new Text(100, 9, 190, 30);
+	_lstCountries = new TextList(260, 136, 30, 40);
 
 	// Set palette
 	setInterface("fundingWindow");
@@ -80,10 +80,15 @@ FundingState::FundingState()
 	_txtCountry->setText(tr("STR_COUNTRY"));
 
 	_txtFunding->setText(tr("STR_FUNDING"));
+	_txtFunding->setAlign(ALIGN_RIGHT);
 
 	_txtChange->setText(tr("STR_CHANGE"));
+	_txtChange->setAlign(ALIGN_RIGHT);
 
-	_lstCountries->setColumns(3, 108, 100, 52);
+	//	_lstCountries->setColumns(3, 108, 100, 52);
+	_lstCountries->setColumns(3, 100, 60, 100);
+	_lstCountries->setAlign(ALIGN_RIGHT, 1);
+	_lstCountries->setAlign(ALIGN_RIGHT, 2);
 	_lstCountries->setDot(true);
 	for (auto* country : *_game->getSavedGame()->getCountries())
 	{

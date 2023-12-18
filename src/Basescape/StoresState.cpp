@@ -176,7 +176,11 @@ StoresState::StoresState(Base *base) : _base(base)
 	_txtSize->setText(tr("STR_SIZE_UC"));
 	_txtSpaceUsed->setText(tr("STR_SPACE_USED_UC"));
 
-	_lstStores->setColumns(4, 162, 40, 50, 34);
+//	_lstStores->setColumns(4, 162, 40, 50, 34);
+	_lstStores->setColumns(4, 162, 20, 40, 64);
+	_lstStores->setAlign(ALIGN_RIGHT, 1);
+	_lstStores->setAlign(ALIGN_RIGHT, 2);
+	_lstStores->setAlign(ALIGN_RIGHT, 3);
 	_lstStores->setSelectable(true);
 	_lstStores->setBackground(_window);
 	_lstStores->setMargin(2);
@@ -463,8 +467,8 @@ void StoresState::updateList()
 	{
 		std::ostringstream ss, ss2, ss3;
 		ss << item.quantity;
-		ss2 << item.size;
-		ss3 << item.spaceUsed;
+		ss2 << ((int)floor(item.size)) << "." << ((int)floor((item.size - floor(item.size)) * 10)) << ((int)floor((item.size * 10 - floor(item.size * 10)) * 10));
+		ss3 << ((int)floor(item.spaceUsed)) << "." << ((int)floor((item.spaceUsed - floor(item.spaceUsed)) * 10)) << ((int)floor((item.spaceUsed * 10 - floor(item.spaceUsed * 10)) * 10));
 		_lstStores->addRow(4, item.name.c_str(), ss.str().c_str(), ss2.str().c_str(), ss3.str().c_str());
 	}
 }

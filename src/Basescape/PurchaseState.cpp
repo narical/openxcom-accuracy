@@ -156,7 +156,11 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	_txtQuantity->setText(tr("STR_QUANTITY_UC"));
 
 	_lstItems->setArrowColumn(227, ARROW_VERTICAL);
-	_lstItems->setColumns(4, 150, 55, 50, 32);
+//	_lstItems->setColumns(4, 150, 55, 50, 32);
+	_lstItems->setColumns(4, 140, 40, 40, 50, 17);
+	_lstItems->setAlign(ALIGN_RIGHT, 1);
+	_lstItems->setAlign(ALIGN_RIGHT, 2);
+	_lstItems->setAlign(ALIGN_RIGHT, 3);
 	_lstItems->setSelectable(true);
 	_lstItems->setBackground(_window);
 	_lstItems->setMargin(2);
