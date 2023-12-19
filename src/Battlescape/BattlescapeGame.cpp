@@ -2689,7 +2689,7 @@ BattleItem *BattlescapeGame::surveyItems(BattleAction *action, bool pickUpWeapon
 			continue;
 		}
 
-		if (action->actor->getAIModule()->getItemPickUpScore(bi))
+		if (action->actor->getAIModule()->getItemPickUpScore(bi) > 0)
 		{
 			if (bi->getTurnFlag() || pickUpWeaponsMoreActively)
 			{
