@@ -5809,6 +5809,8 @@ int AIModule::getNewTileIDToLookForEnemy(Position previousPosition, BattleUnit* 
 		int lastExplored = tile->getLastExplored(_unit->getFaction());
 		if (lastExplored == _save->getTurn() && tile->getUnit() != unit)
 			continue;
+		if (pn->getTUCost(false).time > unit->getTurnsSinceSeen(_myFaction) * getMaxTU(unit))
+			continue;
 		int TUCost = pn->getTUCost(false).time + lastExplored * getMaxTU(unit);
 		if (TUCost < LowestTuCost)
 		{
