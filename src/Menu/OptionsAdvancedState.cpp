@@ -412,8 +412,8 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			if (*setting->asInt() == 1)
 			{
 				Options::aggressionMode = 2;
-				Options::aiAggression = 5;
-				Options::aiCarefulness = 5;
+				Options::aiAggression = 2;
+				Options::aiCarefulness = 2;
 				Options::aiTargetMode = 1;
 				Options::intelligenceMode = 1;
 				Options::cheatOnMovement = false;
@@ -425,8 +425,8 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			else if (*setting->asInt() == 2)
 			{
 				Options::aggressionMode = 2;
-				Options::aiAggression = 5;
-				Options::aiCarefulness = 5;
+				Options::aiAggression = 2;
+				Options::aiCarefulness = 2;
 				Options::aiTargetMode = 3;
 				Options::intelligenceMode = 1;
 				Options::cheatOnMovement = false;
@@ -438,8 +438,8 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			else if(*setting->asInt() == 3)
 			{
 				Options::aggressionMode = 0;
-				Options::aiAggression = 5;
-				Options::aiCarefulness = 5;
+				Options::aiAggression = 2;
+				Options::aiCarefulness = 2;
 				Options::aiTargetMode = 3;
 				Options::intelligenceMode = 0;
 				Options::intelligence = 5;
@@ -452,8 +452,8 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			else if(*setting->asInt() == 4)
 			{
 				Options::aggressionMode = 0;
-				Options::aiAggression = 5;
-				Options::aiCarefulness = 5;
+				Options::aiAggression = 2;
+				Options::aiCarefulness = 2;
 				Options::aiTargetMode = 4;
 				Options::intelligenceMode = 0;
 				Options::intelligence = 5;
