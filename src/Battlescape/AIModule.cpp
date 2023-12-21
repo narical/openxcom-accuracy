@@ -3668,14 +3668,14 @@ void AIModule::brutalThink(BattleAction* action)
 						else
 							goodCoverScore = 100 / walkToDist;
 					}
-					if (contact && discoverThreat > 0)
+					if ((contact || myAggressiveness == 0) && discoverThreat > 0)
 					{
 						if (!_save->getTileEngine()->isNextToDoor(tile))
 							goodCoverScore = 100 / discoverThreat;
 						else
 							okayCoverScore = 100 / discoverThreat;
 					}
-					else
+					else if (myAggressiveness > 0)
 					{
 						if (!_save->getTileEngine()->isNextToDoor(tile))
 							goodCoverScore = 100 / (discoverThreat + walkToDist * myAggressiveness);
@@ -3773,9 +3773,17 @@ void AIModule::brutalThink(BattleAction* action)
 			if (myAggressiveness < 1 && inDoors)
 			{
 				if (myAggressiveness == 0)
+				{
 					greatCoverScore *= 10;
-				goodCoverScore /= myAggressiveness;
-				okayCoverScore /= myAggressiveness;
+					goodCoverScore *= 10;
+					okayCoverScore *= 10;
+				}
+				else
+				{
+					greatCoverScore /= myAggressiveness;
+					goodCoverScore /= myAggressiveness;
+					okayCoverScore /= myAggressiveness;
+				}
 			}
 			if (avoidMeleeRange || (badPath && !sweepMode))
 			{
