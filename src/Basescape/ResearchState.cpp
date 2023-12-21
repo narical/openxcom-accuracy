@@ -100,7 +100,9 @@ ResearchState::ResearchState(Base *base) : _base(base)
 
 	_txtProgress->setText(tr("STR_PROGRESS"));
 
-	_lstResearch->setColumns(3, 158, 58, 70);
+//	_lstResearch->setColumns(3, 158, 58, 70);
+	_lstResearch->setColumns(4, 148, 20, 40, 98);
+	_lstResearch->setAlign(ALIGN_RIGHT, 1);
 	_lstResearch->setSelectable(true);
 	_lstResearch->setBackground(_window);
 	_lstResearch->setMargin(2);
@@ -238,7 +240,7 @@ void ResearchState::fillProjectList(size_t scrl)
 		const RuleResearch *r = proj->getRules();
 
 		std::string wstr = tr(r->getName());
-		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
+		_lstResearch->addRow(4, wstr.c_str(), sstr.str().c_str(), "", tr(proj->getResearchProgress()).c_str());
 	}
 	_txtAvailable->setText(tr("STR_SCIENTISTS_AVAILABLE").arg(_base->getAvailableScientists()));
 	_txtAllocated->setText(tr("STR_SCIENTISTS_ALLOCATED").arg(_base->getAllocatedScientists()));
