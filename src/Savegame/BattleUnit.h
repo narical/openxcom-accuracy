@@ -815,7 +815,7 @@ public:
 	/// Get the unit leeroyJenkins flag
 	bool isLeeroyJenkins(bool ignoreBrutal = false) const;
 	/// Get the unit's aggression-flag
-	int getAggressiveness() const;
+	float getAggressiveness() const;
 	/// Get the unit's intelligence
 	int getBrutalIntelligence() const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.

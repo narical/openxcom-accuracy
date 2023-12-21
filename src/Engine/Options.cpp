@@ -230,18 +230,19 @@ void create()
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo("avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
 	_info.push_back(OptionInfo("avoidCuddle", &avoidCuddle, true, "STR_AVOIDCUDDLE", "STR_AI"));
-	_info.push_back(OptionInfo("randomFactor", &randomFactor, false, "STR_RANDOMFACTOR", "STR_AI"));
 	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 0, "STR_AGGRESSIONMODE", "STR_AI"));
-	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo("aiAggression", &aiAggression, 5, "STR_AIAGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo("aiCarefulness", &aiCarefulness, 5, "STR_AICAREFULNESS", "STR_AI"));
 	_info.push_back(OptionInfo("intelligenceMode", &intelligenceMode, 0, "STR_INTELLIGENCEMODE", "STR_AI"));
 	_info.push_back(OptionInfo("intelligence", &intelligence, 5, "STR_INTELLIGENCE", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   true, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatControlPerUnit", &autoCombatControlPerUnit, true, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
-	_info.push_back(OptionInfo("autoAggression", &autoAggression, 3, "STR_AUTOAGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo("autoAggression", &autoAggression, 5, "STR_AUTOAGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo("autoCarefulness", &autoCarefulness, 5, "STR_AUTOCAREFULNESS", "STR_AI"));
 	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_AI"));
 
 	// OXCE GUI

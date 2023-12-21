@@ -251,6 +251,8 @@ public:
 	SavedBattleGame* getSave() { return _save; };
 	/// Determine a good position for indirect peeking
 	Position getPeakPosition(bool oneStep = false);
+	/// Gives an estimate of a unit's power-level
+	float getUnitPower(BattleUnit* unit);
 };
 
 }

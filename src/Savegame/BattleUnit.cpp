@@ -5916,33 +5916,27 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 		return false;
 }
 
-int BattleUnit::getAggressiveness() const
+float BattleUnit::getAggressiveness() const
 {
 	if (getFaction() == FACTION_PLAYER)
-		return Options::autoAggression;
-	if (Options::aggressionMode == 1)
-	{
-		if (getMorale() >= 100)
-			return 3;
-		else if (getMorale() >= 75)
-			return 2;
-		else if (getMorale() >= 50)
-			return 1;
-		else
-			return 0;
-	}
-	else if (Options::aggressionMode == 2)
-		return std::min(3, getAggression());
-	else
-		return Options::aiAggression;
+		return (float)Options::autoAggression / (float)Options::autoCarefulness;
+	float aggressiveness = (float)Options::aiAggression / (float)Options::aiCarefulness;
+	if (Options::aggressionMode >= 1)
+		aggressiveness *= getAggression();
+	return aggressiveness;
 }
 
 int BattleUnit::getBrutalIntelligence() const
 {
-	if (Options::intelligenceMode == 0)
-		return Options::intelligence;
-	if (Options::intelligenceMode == 1)
-		return getIntelligence();
+	if (getFaction() != FACTION_PLAYER)
+	{
+		if (Options::intelligenceMode == 0)
+			return Options::intelligence;
+		if (Options::intelligenceMode == 1)
+			return getIntelligence();
+		if (Options::intelligenceMode == 2 && getAIModule())
+			return getAIModule()->getSave()->getGeoscapeSave()->getDifficulty() + 1;
+	}
 	return 5;
 }
 
