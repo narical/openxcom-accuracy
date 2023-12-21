@@ -493,3 +493,6 @@ en-US:
   STR_USER_FOLDER_DESC: "The log file ('openxcom.log') is stored here. All custom mods belong here too (in the 'mods' sub-folder)."
   STR_SAVE_FOLDER_DESC: "Your saved games are located here. Also, the mission generator settings ('battle.cfg') can be found here."
   STR_CONFIG_FOLDER_DESC: "This is where OpenXcom settings ('options.cfg') are stored. Normally the same as the User Folder."
+  STR_HIDDEN_ALIEN_ACTIVITY: "HIDDEN ALIEN ACTIVITY"
+  STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY: "Hidden alien activity notification"
+  STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY_DESC: "Shows sectors with 5+ hours of continuous undetected UFO activity."
