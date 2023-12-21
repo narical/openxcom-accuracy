@@ -75,6 +75,7 @@
 #include "MonthlyReportState.h"
 #include "ProductionCompleteState.h"
 #include "UfoDetectedState.h"
+#include "HiddenAlienActivityState.h"
 #include "GeoscapeCraftState.h"
 #include "DogfightState.h"
 #include "UfoLostState.h"
@@ -1932,6 +1933,20 @@ void GeoscapeState::time30Minutes()
 	// can be updated by previous loop
 	auto activeCrafts = updateActiveCrafts();
 
+	// hidden alien activity variables
+
+	OpenXcom::Region *ufoRegion;
+	OpenXcom::Country *ufoCountry;
+	bool ufoDetectedBefore;
+	bool ufoDetectedAfter;
+	bool ufoHidden;
+	bool ufoDiscovered;
+
+	std::set<OpenXcom::Region*> discoveredUfoRegions;
+	std::set<OpenXcom::Country*> discoveredUfoCountries;
+	std::set<OpenXcom::Region*> hiddenUfoRegions;
+	std::set<OpenXcom::Country*> hiddenUfoCountries;
+
 	// Handle UFO detection and give aliens points
 	for (auto ufo : *_game->getSavedGame()->getUfos())
 	{
@@ -1948,11 +1963,16 @@ void GeoscapeState::time30Minutes()
 			points *= 2;
 			FALLTHROUGH;
 		case Ufo::FLYING:
+
+			ufoRegion = nullptr;
+			ufoCountry = nullptr;
+
 			// Get area
 			for (auto region : *_game->getSavedGame()->getRegions())
 			{
 				if (region->getRules()->insideRegion(ufo->getLongitude(), ufo->getLatitude()))
 				{
+					ufoRegion = region;
 					region->addActivityAlien(points);
 					break;
 				}
@@ -1962,18 +1982,125 @@ void GeoscapeState::time30Minutes()
 			{
 				if (country->getRules()->insideCountry(ufo->getLongitude(), ufo->getLatitude()))
 				{
+					ufoCountry = country;
 					country->addActivityAlien(points);
 					break;
 				}
 			}
 
-			// Detection ufo state
+			// detection ufo state
+
+			ufoDetectedBefore = ufo->getDetected();
 			ufoDetection(ufo, activeCrafts);
+			ufoDetectedAfter = ufo->getDetected();
+
+			// set hidden alien activity
+
+			ufoHidden = !ufoDetectedAfter;
+			ufoDiscovered = !ufoDetectedBefore && ufoDetectedAfter;
+
+			if (ufoDiscovered)
+			{
+				if (ufoRegion != nullptr)
+				{
+					discoveredUfoRegions.insert(ufoRegion);
+				}
+				if (ufoCountry != nullptr)
+				{
+					discoveredUfoCountries.insert(ufoCountry);
+				}
+			}
+			else if (ufoHidden)
+			{
+				if (ufoRegion != nullptr)
+				{
+					hiddenUfoRegions.insert(ufoRegion);
+				}
+				if (ufoCountry != nullptr)
+				{
+					hiddenUfoCountries.insert(ufoCountry);
+				}
+			}
+
 			break;
+
 		case Ufo::CRASHED:
 		case Ufo::DESTROYED:
 			break;
 		}
+	}
+
+	// update hidden alien activity
+
+	std::set<OpenXcom::Region*> displayHiddenAlienActivityRegions;
+	std::set<OpenXcom::Country*> displayHiddenAlienActivityCountries;
+	bool displayHiddenAlienActivityPopup = false;
+
+	for (OpenXcom::Region *region : *_game->getSavedGame()->getRegions())
+	{
+		// no UFO is discovered and there are hidden UFOs
+		if (discoveredUfoRegions.find(region) == discoveredUfoRegions.end() && hiddenUfoRegions.find(region) != hiddenUfoRegions.end())
+		{
+			// increment duration if hidden UFO is present
+			_hiddenAlienActivityRegions[region]++;
+
+			// check if we reached notification threshold
+			if (_hiddenAlienActivityRegions[region] >= HIDDEN_ALIEN_ACTIVITY_THRESHOLD)
+			{
+				displayHiddenAlienActivityRegions.insert(region);
+
+				if (_hiddenAlienActivityRegions[region] == HIDDEN_ALIEN_ACTIVITY_THRESHOLD)
+				{
+					displayHiddenAlienActivityPopup = true;
+				}
+
+			}
+
+		}
+		// UFO is discovered or there is not hidden UFOs
+		else if (_hiddenAlienActivityRegions.find(region) != _hiddenAlienActivityRegions.end())
+		{
+			// reset activity if any UFO is discovered
+			_hiddenAlienActivityRegions.erase(region);
+		}
+
+	}
+
+	for (OpenXcom::Country *country : *_game->getSavedGame()->getCountries())
+	{
+		// no UFO is discovered and there are hidden UFOs
+		if (discoveredUfoCountries.find(country) == discoveredUfoCountries.end() && hiddenUfoCountries.find(country) != hiddenUfoCountries.end())
+		{
+			// increment duration if hidden UFO is present
+			_hiddenAlienActivityCountries[country]++;
+
+			// check if we reached notification threshold
+			if (_hiddenAlienActivityCountries[country] >= HIDDEN_ALIEN_ACTIVITY_THRESHOLD)
+			{
+				displayHiddenAlienActivityCountries.insert(country);
+
+				if (_hiddenAlienActivityCountries[country] == HIDDEN_ALIEN_ACTIVITY_THRESHOLD)
+				{
+					displayHiddenAlienActivityPopup = true;
+				}
+
+			}
+
+		}
+		// UFO is discovered or there is not hidden UFOs
+		else if (_hiddenAlienActivityCountries.find(country) != _hiddenAlienActivityCountries.end())
+		{
+			// reset activity if any UFO is discovered
+			_hiddenAlienActivityCountries.erase(country);
+		}
+
+	}
+
+	// display hidden alien activity
+
+	if (Options::displayHiddenAlienActivity && displayHiddenAlienActivityPopup)
+	{
+		popup(new HiddenAlienActivityState(this, displayHiddenAlienActivityRegions, displayHiddenAlienActivityCountries));
 	}
 
 	// Processes MissionSites

@@ -707,6 +707,7 @@
     <ClCompile Include="Ufopaedia\Ufopaedia.cpp" />
     <ClCompile Include="Ufopaedia\UfopaediaSelectState.cpp" />
     <ClCompile Include="Ufopaedia\UfopaediaStartState.cpp" />
+    <ClCompile Include="Geoscape\HiddenAlienActivityState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libs\miniz\miniz.h" />
@@ -1110,6 +1111,7 @@
     <ClInclude Include="Ufopaedia\Ufopaedia.h" />
     <ClInclude Include="Ufopaedia\UfopaediaSelectState.h" />
     <ClInclude Include="Ufopaedia\UfopaediaStartState.h" />
+    <ClInclude Include="Geoscape\HiddenAlienActivityState.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>

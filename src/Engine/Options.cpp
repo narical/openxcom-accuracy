@@ -460,6 +460,9 @@ void create()
 	_info.push_back(OptionInfo("vSyncForOpenGL", &vSyncForOpenGL, true, "STR_VSYNC_FOR_OPENGL", "STR_GENERAL")); // exposed in OXCE
 #endif
 
+	// hidden alien activity
+	_info.push_back(OptionInfo("displayHiddenAlienActivity", &displayHiddenAlienActivity, false, "STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY", "STR_GEOSCAPE"));
+
 }
 
 // we can get fancier with these detection routines, but for now just look for

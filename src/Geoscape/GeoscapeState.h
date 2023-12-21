@@ -18,6 +18,8 @@
  * along with OpenXcom.  If not, see <http:///www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
+#include "../Savegame/Region.h"
+#include "../Savegame/Country.h"
 #include <list>
 
 namespace OpenXcom
@@ -44,6 +46,9 @@ class RuleMissionScript;
 class GeoscapeState : public State
 {
 private:
+	const int HIDDEN_ALIEN_ACTIVITY_THRESHOLD = 10;
+
+private:
 	Surface *_bg, *_sideLine, *_sidebar;
 	Globe *_globe;
 	TextButton *_btnIntercept, *_btnBases, *_btnGraphs, *_btnUfopaedia, *_btnOptions, *_btnFunding;
@@ -62,6 +67,10 @@ private:
 	std::vector<Craft*> _activeCrafts;
 	size_t _minimizedDogfights;
 	int _slowdownCounter;
+
+	// hidden alien activity accumulators
+	std::map<OpenXcom::Region*, int> _hiddenAlienActivityRegions;
+	std::map<OpenXcom::Country*, int> _hiddenAlienActivityCountries;
 
 	/// Update list of active crafts.
 	const std::vector<Craft*>* updateActiveCrafts();
