@@ -1978,9 +1978,23 @@ void Map::drawTerrain(Surface *surface)
 	{
 		for (auto myUnit : *_save->getUnits())
 		{
-			if (myUnit->getScannedTurn() == _save->getTurn() && myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
+			bool show = false;
+			Position temp;
+			if (myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
 			{
-				Position temp = myUnit->getPosition();
+				if (myUnit->getTileLastSpotted(FACTION_PLAYER) && myUnit->getTurnsSinceSeen(FACTION_PLAYER) <= 1)
+				{
+					temp = _save->getTileCoords(myUnit->getTileLastSpotted(FACTION_PLAYER));
+					show = true;
+				}
+				if (myUnit->getScannedTurn() == _save->getTurn())
+				{
+					temp = myUnit->getPosition();
+					show = true;
+				}
+			}
+			if (show)
+			{
 				temp.z = _camera->getViewLevel();
 				_camera->convertMapToScreen(temp, &screenPosition);
 				screenPosition += _camera->getMapOffset();
