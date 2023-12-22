@@ -1978,42 +1978,57 @@ void Map::drawTerrain(Surface *surface)
 	{
 		for (auto myUnit : *_save->getUnits())
 		{
-			bool show = false;
 			Position temp;
 			if (myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
 			{
 				if (myUnit->getTileLastSpotted(FACTION_PLAYER) && myUnit->getTurnsSinceSeen(FACTION_PLAYER) <= 1)
 				{
 					temp = _save->getTileCoords(myUnit->getTileLastSpotted(FACTION_PLAYER));
-					show = true;
+					if (temp.z == _camera->getViewLevel())
+					{
+						_camera->convertMapToScreen(temp, &screenPosition);
+						screenPosition += _camera->getMapOffset();
+						Position offset;
+						// calculateWalkingOffset(myUnit, &offset);
+						if (myUnit->isBigUnit())
+						{
+							offset.y += 4;
+						}
+						offset.y += 24 - myUnit->getHeight();
+						if (myUnit->isKneeled())
+						{
+							offset.y -= 2;
+						}
+						_arrow->blitNShade(
+							surface,
+							screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+							screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+							4);
+					}
 				}
 				if (myUnit->getScannedTurn() == _save->getTurn())
 				{
 					temp = myUnit->getPosition();
-					show = true;
+					temp.z = _camera->getViewLevel();
+					_camera->convertMapToScreen(temp, &screenPosition);
+					screenPosition += _camera->getMapOffset();
+					Position offset;
+					// calculateWalkingOffset(myUnit, &offset);
+					if (myUnit->isBigUnit())
+					{
+						offset.y += 4;
+					}
+					offset.y += 24 - myUnit->getHeight();
+					if (myUnit->isKneeled())
+					{
+						offset.y -= 2;
+					}
+					_arrow->blitNShade(
+						surface,
+						screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+						screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+						0);
 				}
-			}
-			if (show)
-			{
-				temp.z = _camera->getViewLevel();
-				_camera->convertMapToScreen(temp, &screenPosition);
-				screenPosition += _camera->getMapOffset();
-				Position offset;
-				//calculateWalkingOffset(myUnit, &offset);
-				if (myUnit->isBigUnit())
-				{
-					offset.y += 4;
-				}
-				offset.y += 24 - myUnit->getHeight();
-				if (myUnit->isKneeled())
-				{
-					offset.y -= 2;
-				}
-				_arrow->blitNShade(
-					surface,
-					screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
-					screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
-					0);
 			}
 		}
 	}
