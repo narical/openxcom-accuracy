@@ -2981,7 +2981,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			else
 			{
 				if (!(*i)["type_id"].IsDefined()) { // otherwise it throws and I wasted hours
-					Log(LOG_ERROR) << "ufopaedia item misses type_id attribute.";
+					Log(LOG_ERROR) << "ufopaedia item misses type_id attribute. id = " + id;
 					continue;
 				}
 				UfopaediaTypeId type = (UfopaediaTypeId)(*i)["type_id"].as<int>();
