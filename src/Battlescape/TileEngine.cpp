@@ -5396,7 +5396,6 @@ void TileEngine::itemDrop(Tile *t, BattleItem *item, bool updateLight)
 	BattleUnit* dropper = t->getUnit();
 	if (dropper)
 	{
-		dropper->updateEnemyKnowledge(_save->getTileIndex(p));
 		if (item->getRules()->getBattleType() == BT_GRENADE)
 		{
 			if (item->isFuseEnabled() && item->getRules()->getDamageType()->ResistType != DT_NONE)
@@ -5498,7 +5497,6 @@ void TileEngine::itemMoveInventory(Tile *t, BattleUnit *unit, BattleItem *item, 
 			Position p = t->getPosition();
 			if (dropper)
 			{
-				dropper->updateEnemyKnowledge(_save->getTileIndex(p));
 				if (item->getRules()->getBattleType() == BT_GRENADE)
 				{
 					if (item->isFuseEnabled() && item->getRules()->getDamageType()->ResistType != DT_NONE)
