@@ -3464,7 +3464,7 @@ void AIModule::brutalThink(BattleAction* action)
 					if (unitDist < 5)
 					{
 						if (quickLineOfFire(pos, unit))
-							cuddleAvoidModifier += 1 - unitDist * 0.2;
+							cuddleAvoidModifier += (1 - unitDist * 0.2) / myAggressiveness;
 					}
 				}
 				if (unitDist < closestAnyOneDist && unit != _unit)
