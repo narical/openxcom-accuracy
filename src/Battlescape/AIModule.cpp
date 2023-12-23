@@ -3019,6 +3019,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float myAggressiveness = _unit->getAggressiveness() * _unit->getMorale() / 100.0;
 	float totalEnemyPower = 0;
 	float totalAllyPower = 0;
+	float enemyCount = 0;
 
 	for (BattleUnit* target : *(_save->getUnits()))
 	{
@@ -3027,7 +3028,10 @@ void AIModule::brutalThink(BattleAction* action)
 		if (isAlly(target))
 			totalAllyPower += getUnitPower(target);
 		if (isEnemy(target))
+		{
 			totalEnemyPower += getUnitPower(target);
+			enemyCount++;
+		}
 		if (!_unit->isCheatOnMovement())
 		{
 			if (target->getTileLastSpotted(_unit->getFaction()) == -1)
@@ -3117,6 +3121,7 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
+	myAggressiveness *= getUnitPower(_unit) / (totalEnemyPower / enemyCount);
 	myAggressiveness *= totalAllyPower / totalEnemyPower; 
 	bool sweepMode = _unit->isLeeroyJenkins() || immobile;
 	_unit->setCharging(nullptr);
@@ -6402,17 +6407,15 @@ float AIModule::getUnitPower(BattleUnit* unit)
 {
 	float statPower = 0;
 	statPower += unit->getBaseStats()->tu;
-	statPower += unit->getBaseStats()->stamina;
-	statPower += unit->getBaseStats()->health;
-	statPower += unit->getBaseStats()->bravery;
-	statPower += unit->getBaseStats()->reactions;
-	statPower += unit->getBaseStats()->firing;
-	statPower += unit->getBaseStats()->throwing;
-	statPower += unit->getBaseStats()->strength;
-	statPower += unit->getBaseStats()->psiStrength;
-	statPower += unit->getBaseStats()->psiSkill;
-	statPower += unit->getBaseStats()->melee;
-	statPower += unit->getBaseStats()->mana;
+	statPower += unit->getHealth();
+	float avgArmor = 0;
+	std::vector<UnitSide> allSides = {SIDE_FRONT, SIDE_LEFT, SIDE_RIGHT, SIDE_REAR, SIDE_UNDER};
+	for (UnitSide side : allSides)
+	{
+		avgArmor += unit->getArmor(side);
+	}
+	avgArmor /= allSides.size();
+	statPower += avgArmor;
 	return statPower;
 }
 
