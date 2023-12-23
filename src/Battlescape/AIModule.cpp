@@ -3307,8 +3307,6 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "I'm mind-controlled.";
 	}
 
-	bool peakMode = false;
-
 	if (_traceAI)
 	{
 		if (unitToWalkTo)
@@ -3346,10 +3344,8 @@ void AIModule::brutalThink(BattleAction* action)
 			break;
 		}
 	}
-	if (!_unit->isCheatOnMovement() && !shouldSaveEnergy && !iHaveLof && _unit->getTimeUnits() == getMaxTU(_unit))
-		peakMode = true;
 	if (_traceAI)
-		Log(LOG_INFO) << "Peak-Mode: " << peakMode << " iHaveLof: " << iHaveLof << " sweep-mode: " << sweepMode << " could be found: " << amInLoSToFurthestReachable << " energy-recovery: " << getEnergyRecovery(_unit) << " myAggressiveness: " << myAggressiveness << " base-aggressiveness: " << _unit->getAggressiveness();
+		Log(LOG_INFO) << "iHaveLof : " << iHaveLof << " sweep - mode : " << sweepMode << " could be found : " << amInLoSToFurthestReachable << " energy - recovery : " << getEnergyRecovery(_unit) << " myAggressiveness : " << myAggressiveness << " base - aggressiveness : " << _unit->getAggressiveness();
 	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (_traceAI && immobileEnemies)
@@ -3414,7 +3410,7 @@ void AIModule::brutalThink(BattleAction* action)
 		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " peak-mode: " << peakMode << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
 		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
 		float myWalkToDist = myMaxTU + myTuDistFromTarget;
@@ -3594,7 +3590,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 			float walkToDist = myMaxTU + tuDistFromTarget;
-			if (!sweepMode && !_unit->isCheatOnMovement())
+			if (!sweepMode)
 			{
 				if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
@@ -3613,7 +3609,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition)
+					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition && !_unit->isCheatOnMovement())
 						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
