@@ -190,7 +190,7 @@ void CraftWeaponsState::lstWeaponsClick(Action *)
 		int diff = (refCapBonus - currCapBonus);
 		if (diff) // Vehicles capacity changed, verify that change is allowed
 		{
-			if ((_craft->getMaxVehiclesAndLargeSoldiers() - _craft->getNumLargeUnits() + diff) < 0)
+			if ((_craft->getMaxVehiclesAndLargeSoldiers() - _craft->getNumVehiclesAndLargeSoldiers() + diff) < 0)
 				allowChange = false;
 		}
 	}
@@ -224,7 +224,7 @@ void CraftWeaponsState::lstWeaponsClick(Action *)
 
 	if (!allowChange)
 	{
-		std::string errorMessage = "STR_NO_CARGO_SPACE_FOR_REFIT";
+		std::string errorMessage = "STR_NOT_ENOUGH_CARGO_SPACE";
 		RuleInterface* menuInterface = _game->getMod()->getInterface("craftWeapons");
 		_game->pushState(new ErrorMessageState(tr(errorMessage), _palette,
 			menuInterface->getElement("window")->color, "BACK14.SCR",

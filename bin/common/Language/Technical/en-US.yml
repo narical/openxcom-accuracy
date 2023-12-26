@@ -406,6 +406,7 @@ en-US:
   hangarType: "Hangar Type"
   costRent: "Rent cost"
   soldiers: "Cargo space"
+  maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
   vehicles: "HWP capacity"
   maxSmallSoldiers: "Max small soldiers"

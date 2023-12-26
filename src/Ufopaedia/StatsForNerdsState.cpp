@@ -3205,7 +3205,7 @@ void StatsForNerdsState::initCraftList()
 
 	addInteger(ss, craftRule->getHangarType(), "hangarType", 0, true);	
 	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
-	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit");
+	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit", craftRule->getMaxUnits());
 	addInteger(ss, craftRule->getPilots(), "pilots");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 

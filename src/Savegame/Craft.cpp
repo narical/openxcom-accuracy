@@ -1052,7 +1052,7 @@ int Craft::getFuelLimit(Base *base) const
  */
 int Craft::getMaxUnits() const
 {
-	return _stats.soldiers;
+	return std::min(_stats.soldiers, _rules->getMaxUnitsLimit());
 }
 
 /**
@@ -1461,7 +1461,7 @@ bool Craft::isDestroyed() const
  */
 int Craft::getSpaceAvailable() const
 {
-	return std::min(getMaxUnits(), _rules->getMaxUnitsLimit()) - getSpaceUsed();
+	return getMaxUnits() - getSpaceUsed();
 }
 
 /**
