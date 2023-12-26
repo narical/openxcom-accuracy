@@ -3821,7 +3821,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
+					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceAvailable() > 0)
 					{
 						// Remember transporter as fall-back, but search further for interceptors
 						found = craft;
@@ -3839,7 +3839,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
+					if (craft->getRules()->getAllowLanding() && craft->getSpaceAvailable() > 0)
 					{
 						// First available transporter will do
 						found = craft;
