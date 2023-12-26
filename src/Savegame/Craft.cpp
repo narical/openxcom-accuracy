@@ -352,6 +352,21 @@ void Craft::initFixedWeapons(const Mod* mod)
 			_weapons.at(i) = w;
 		}
 	}
+
+	// Remove craft weapons if needed (if they decrease cargo capacity below zero)
+	if (_stats.soldiers < 0 && _rules->getMaxUnitsLimit() > 0) // access raw stats instead of Craft::getMaxUnits()
+	{
+		size_t weaponIndex = 0;
+		for (auto* current : _weapons)
+		{
+			addCraftStats(-current->getRules()->getBonusStats());
+			// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
+			setShield(getShield());
+			delete current;
+			_weapons.at(weaponIndex) = 0;
+			weaponIndex++;
+		}
+	}
 }
 
 /**
