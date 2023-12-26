@@ -210,10 +210,16 @@ public:
 	int getAllocatedEngineers() const;
 	/// Gets the base's defense value.
 	int getDefenseValue() const;
+	/// Computes defense probability percentage.
+	int getDefenseProbabilityPercentage() const;
 	/// Gets the base's short range detection.
 	int getShortRangeDetection() const;
 	/// Gets the base's long range detection.
 	int getLongRangeDetection() const;
+	/// Gets the base's short range detection probability.
+	int getShortRangeDetectionProbabilityPercentage() const;
+	/// Gets the base's long range detection probability.
+	int getLongRangeDetectionProbabilityPercentage() const;
 	/// Gets the base's crafts of a certain type.
 	int getCraftCount(const RuleCraft *craft) const;
 	/// Gets the base's crafts of a certain type.

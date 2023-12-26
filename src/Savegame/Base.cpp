@@ -1125,6 +1125,78 @@ int Base::getDefenseValue() const
 }
 
 /**
+ * Computes defense probability percentage.
+ * @return Defense probability percentage.
+ */
+int Base::getDefenseProbabilityPercentage() const
+{
+	// pick largest UFO damage capacity
+
+	int largestUfoDamageCapacity = 0;
+
+	for (std::string ufoId : _mod->getUfosList())
+	{
+		OpenXcom::RuleUfo* ruleUfo = _mod->getUfo(ufoId);
+
+		largestUfoDamageCapacity = std::max(largestUfoDamageCapacity, ruleUfo->getStats().damageMax);
+
+	}
+
+	// compute base defense probability in percents
+
+	double combinedMean = 0.0;
+	double combinedVariance = 0.0;
+
+	for (const auto* fac : _facilities)
+	{
+		if (fac->getBuildTime() != 0)
+			continue;
+
+		int defenseValue = std::max(0, fac->getRules()->getDefenseValue());
+		int defenseHitRatio = std::max(0, std::min(100, fac->getRules()->getHitRatio()));
+
+		if (defenseValue == 0 || defenseHitRatio == 0)
+			continue;
+
+		double defenseHitProbability = (double)defenseHitRatio / 100.0;
+		double defenseMean = defenseHitProbability * (double)defenseValue;
+		double defenseVariance =
+			+ (1.0 - defenseHitProbability) * defenseMean * defenseMean
+			+ defenseHitProbability * ((double)defenseValue - defenseMean) * ((double)defenseValue - defenseMean)
+			+ defenseHitProbability * (double)defenseValue * (double)defenseValue / 12.0
+		;
+
+		combinedMean += defenseMean;
+		combinedVariance += defenseVariance;
+
+	}
+
+	if (combinedMean == 0)
+		return 0;
+
+	double combinedStd = sqrt(combinedVariance);
+
+	double x = ((double)largestUfoDamageCapacity - combinedMean) / combinedStd;
+	double defenseWinProbability = 1.0 - std::erfc(-x / std::sqrt(2)) / 2;
+
+	int defenseProbabilityPercentage = (int)round(defenseWinProbability * 100);
+
+	// polish rough edges
+
+	if (defenseProbabilityPercentage <= 1)
+	{
+		defenseProbabilityPercentage = 0;
+	}
+	if (defenseProbabilityPercentage >= 99)
+	{
+		defenseProbabilityPercentage = 100;
+	}
+
+	return defenseProbabilityPercentage;
+
+}
+
+/**
  * Returns the total amount of short range
  * detection facilities in the base.
  * @return Defense value.
@@ -1163,6 +1235,68 @@ int Base::getLongRangeDetection() const
 		}
 	}
 	return total;
+}
+
+/**
+ * Computes base short range detection probability.
+ * Short range detection probability includes all radars short and long range.
+ * @return Short range detection probability percentage.
+ */
+int Base::getShortRangeDetectionProbabilityPercentage() const
+{
+	int minRadarRange = _mod->getShortRadarRange();
+
+	if (minRadarRange == 0)
+		return 0;
+
+	double combinedDetectionFailureProbability = 1.0;
+
+	for (const OpenXcom::BaseFacility* facility : _facilities)
+	{
+		if (facility->getBuildTime() == 0 && facility->getRules()->getRadarRange() > 0)
+		{
+			int radarChance = std::min(100, std::max(0, facility->getRules()->getRadarChance()));
+			double radarDetectionProbability = (double)radarChance / 100.0;
+			double radarDetectionFailureProbability = 1.0 - radarDetectionProbability;
+			combinedDetectionFailureProbability *= radarDetectionFailureProbability;
+		}
+	}
+
+	double combinedDetectionProbability = 1.0 - combinedDetectionFailureProbability;
+	int combinedDetectionProbabilityPercentage = (int)round(combinedDetectionProbability * 100);
+
+	return combinedDetectionProbabilityPercentage;
+
+}
+
+/**
+ * Computes base long range detection probability.
+ * @return Long range detection probability percentage.
+ */
+int Base::getLongRangeDetectionProbabilityPercentage() const
+{
+	int minRadarRange = _mod->getShortRadarRange();
+
+	if (minRadarRange == 0)
+		return 0;
+
+	double combinedDetectionFailureProbability = 1.0;
+
+	for (const OpenXcom::BaseFacility* facility : _facilities)
+	{
+		if (facility->getBuildTime() == 0 && facility->getRules()->getRadarRange() > 0 && facility->getRules()->getRadarRange() > minRadarRange)
+		{
+			int radarChance = std::min(100, std::max(0, facility->getRules()->getRadarChance()));
+			double radarDetectionProbability = (double)radarChance / 100.0;
+			double radarDetectionFailureProbability = 1.0 - radarDetectionProbability;
+			combinedDetectionFailureProbability *= radarDetectionFailureProbability;
+		}
+	}
+
+	double combinedDetectionProbability = 1.0 - combinedDetectionFailureProbability;
+	int combinedDetectionProbabilityPercentage = (int)round(combinedDetectionProbability * 100);
+
+	return combinedDetectionProbabilityPercentage;
 }
 
 /**

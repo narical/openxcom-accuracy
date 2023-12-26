@@ -91,13 +91,13 @@ BaseInfoState::BaseInfoState(Base *base, BasescapeState *state) : _base(base), _
 	_barHangars = new Bar(150, 5, 166, Options::storageLimitsEnforced ? 135 : 125);
 
 	_txtDefense = new Text(114, 9, 8, Options::storageLimitsEnforced ? 147 : 138);
-	_numDefense = new Text(40, 9, 126, Options::storageLimitsEnforced ? 147 : 138);
+	_numDefense = new Text(36, 9, 126, Options::storageLimitsEnforced ? 147 : 138);
 	_barDefense = new Bar(150, 5, 166, Options::storageLimitsEnforced ? 149 : 140);
 	_txtShortRange = new Text(114, 9, 8, Options::storageLimitsEnforced ? 157 : 153);
-	_numShortRange = new Text(40, 9, 126, Options::storageLimitsEnforced ? 157 : 153);
+	_numShortRange = new Text(36, 9, 126, Options::storageLimitsEnforced ? 157 : 153);
 	_barShortRange = new Bar(150, 5, 166, Options::storageLimitsEnforced ? 159 : 155);
 	_txtLongRange = new Text(114, 9, 8, Options::storageLimitsEnforced ? 167 : 163);
-	_numLongRange = new Text(40, 9, 126, Options::storageLimitsEnforced ? 167 : 163);
+	_numLongRange = new Text(36, 9, 126, Options::storageLimitsEnforced ? 167 : 163);
 	_barLongRange = new Bar(150, 5, 166, Options::storageLimitsEnforced ? 169 : 165);
 
 	// Set palette
@@ -337,28 +337,85 @@ void BaseInfoState::init()
 	_barHangars->setValue(_base->getUsedHangars());
 
 
-	std::ostringstream ss9;
-	ss9 << _base->getDefenseValue();
-	_numDefense->setText(ss9.str());
+	if (Options::baseDefenseProbability)
+	{
+		// display base defense percentage
 
-	_barDefense->setMax(_base->getDefenseValue());
-	_barDefense->setValue(_base->getDefenseValue());
+		int defenseProbabilityPercentage = _base->getDefenseProbabilityPercentage();
 
-	std::ostringstream ss10;
-	int shortRangeDetection = _base->getShortRangeDetection();
-	ss10 << shortRangeDetection;
-	_numShortRange->setText(ss10.str());
+		std::ostringstream ss9;
+		ss9 << defenseProbabilityPercentage;
+		ss9 << " %";
+		_numDefense->setText(ss9.str());
+		_numDefense->setAlign(ALIGN_RIGHT);
 
-	_barShortRange->setMax(shortRangeDetection);
-	_barShortRange->setValue(shortRangeDetection);
+		_barDefense->setScale(1.0);
+		_barDefense->setMax(100);
+		_barDefense->setValue(defenseProbabilityPercentage);
 
-	std::ostringstream ss11;
-	int longRangeDetection = _base->getLongRangeDetection();
-	ss11 << longRangeDetection;
-	_numLongRange->setText(ss11.str());
+	}
+	else
+	{
+		// display base defense strength (vanilla)
 
-	_barLongRange->setMax(longRangeDetection);
-	_barLongRange->setValue(longRangeDetection);
+		std::ostringstream ss9;
+		ss9 << _base->getDefenseValue();
+		_numDefense->setText(ss9.str());
+
+		_barDefense->setMax(_base->getDefenseValue());
+		_barDefense->setValue(_base->getDefenseValue());
+
+	}
+
+	if (Options::baseDetectionProbability)
+	{
+		// display base detection probability percentage
+
+		std::ostringstream ss10;
+		int shortRangeDetectionProbabilityPercentage = _base->getShortRangeDetectionProbabilityPercentage();
+		ss10 << shortRangeDetectionProbabilityPercentage;
+		ss10 << " %";
+		_numShortRange->setText(ss10.str());
+		_numShortRange->setAlign(ALIGN_RIGHT);
+
+		_barShortRange->setScale(1.0);
+		_barShortRange->setMax(100);
+		_barShortRange->setValue(shortRangeDetectionProbabilityPercentage);
+
+		std::ostringstream ss11;
+		int longRangeDetectionProbabilityPercentage = _base->getLongRangeDetectionProbabilityPercentage();
+		ss11 << longRangeDetectionProbabilityPercentage;
+		ss11 << " %";
+		_numLongRange->setText(ss11.str());
+		_numLongRange->setAlign(ALIGN_RIGHT);
+
+		_barLongRange->setScale(1.0);
+		_barLongRange->setMax(100);
+		_barLongRange->setValue(longRangeDetectionProbabilityPercentage);
+
+	}
+	else
+	{
+		// display base detection count (vanilla)
+
+		std::ostringstream ss10;
+		int shortRangeDetection = _base->getShortRangeDetection();
+		ss10 << shortRangeDetection;
+		_numShortRange->setText(ss10.str());
+
+		_barShortRange->setMax(shortRangeDetection);
+		_barShortRange->setValue(shortRangeDetection);
+
+		std::ostringstream ss11;
+		int longRangeDetection = _base->getLongRangeDetection();
+		ss11 << longRangeDetection;
+		_numLongRange->setText(ss11.str());
+
+		_barLongRange->setMax(longRangeDetection);
+		_barLongRange->setValue(longRangeDetection);
+
+	}
+
 }
 
 /**
