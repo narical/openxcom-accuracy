@@ -2146,7 +2146,7 @@ bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
 			{
 				return false;
 			}
-			if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+			if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
 			{
 				return false;
 			}
@@ -2201,7 +2201,7 @@ bool Craft::validateAddingSoldier(int space, const Soldier* s) const
 	}
 	else // armorSize > 1
 	{
-		if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+		if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
 		{
 			return false;
 		}
@@ -2224,11 +2224,10 @@ bool Craft::validateAddingSoldier(int space, const Soldier* s) const
 int Craft::validateAddingVehicles(int totalSize) const
 {
 	int maximumAllowed = getSpaceAvailable() / totalSize;
-
-	if (getMaxVehiclesAndLargeSoldiers() > -1)
 	{
 		maximumAllowed = std::min(maximumAllowed, getMaxVehiclesAndLargeSoldiers() - getNumVehiclesAndLargeSoldiers());
 	}
+
 	if (_rules->getMaxVehicles() > -1)
 	{
 		maximumAllowed = std::min(maximumAllowed, _rules->getMaxVehicles() - getNumTotalVehicles());
