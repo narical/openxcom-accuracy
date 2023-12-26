@@ -1042,7 +1042,7 @@ int Craft::getFuelLimit(Base *base) const
  */
 int Craft::getMaxUnits() const
 {
-	return std::min(_stats.soldiers, _rules->getMaxUnitsLimit());
+	return std::max(0, std::min(_stats.soldiers, _rules->getMaxUnitsLimit()));
 }
 
 /**
