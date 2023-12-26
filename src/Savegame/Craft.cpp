@@ -1067,7 +1067,7 @@ int Craft::getMaxUnits() const
  */
 int Craft::getMaxVehiclesAndLargeSoldiers() const
 {
-	return _stats.vehicles;
+	return std::max(0, _stats.vehicles);
 }
 
 /**
