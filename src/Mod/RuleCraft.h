@@ -242,8 +242,13 @@ public:
 	/// Gets the craft's weapon capacity.
 	int getWeapons() const;
 
+	/// Checks if this craft is supported in the New Battle mode (and Preview mode).
+	bool isForNewBattle() const;
+
 	/// Gets the craft's maximum unit capacity (soldiers and vehicles, small and large).
 	int getMaxUnits() const;
+	/// Gets the craft's maximum unit capacity (soldiers and vehicles, small and large) *including* any additional weapons module bonuses.
+	int getMaxUnitsLimit() const { return _maxUnitsLimit; }
 	/// Gets the craft's pilot capacity/requirement.
 	int getPilots() const;
 	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers).
@@ -264,8 +269,6 @@ public:
 	int getMaxSoldiers() const { return _maxSoldiers; }
 	/// Gets the craft's maximum supported number of vehicles (small + large).
 	int getMaxVehicles() const { return _maxVehicles; }
-	/// Gets the craft's unit capacity limit (soldiers and vehicles, small and large).
-	int getMaxUnitsLimit() const { return _maxUnitsLimit; }
 
 	/// Gets the craft's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }

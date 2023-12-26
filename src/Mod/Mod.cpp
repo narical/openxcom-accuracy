@@ -92,6 +92,8 @@
 #include "../Savegame/Soldier.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/Craft.h"
+#include "../Savegame/CraftWeapon.h"
+#include "../Savegame/ItemContainer.h"
 #include "../Savegame/Transfer.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Savegame/AlienStrategy.h"
@@ -3744,6 +3746,26 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 	for (auto* craft : *base->getCrafts())
 	{
 		save->getId(craft->getRules()->getType());
+	}
+
+	// Remove craft weapons if needed (if they decrease cargo capacity below zero)
+	for (auto* craft : *base->getCrafts())
+	{
+		if (craft->getCraftStats().soldiers < 0 && craft->getRules()->getMaxUnitsLimit() > 0) // access raw stats instead of Craft::getMaxUnits()
+		{
+			size_t weaponIndex = 0;
+			for (auto* current : *craft->getWeapons())
+			{
+				base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
+				base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded());
+				craft->addCraftStats(-current->getRules()->getBonusStats());
+				// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
+				craft->setShield(craft->getShield());
+				delete current;
+				craft->getWeapons()->at(weaponIndex) = 0;
+				weaponIndex++;
+			}
+		}
 	}
 
 	// Determine starting soldier types

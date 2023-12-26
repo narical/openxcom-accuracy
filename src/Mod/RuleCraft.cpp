@@ -213,6 +213,7 @@ void RuleCraft::afterLoad(const Mod* mod)
 	{
 		_maxUnitsLimit = _stats.soldiers;
 	}
+	mod->checkForSoftError(_maxUnitsLimit < _stats.soldiers, _type, "Maximum unit capacity is smaller than the default unit capacity.", LOG_ERROR);
 }
 
 /**
@@ -319,6 +320,14 @@ int RuleCraft::getAcceleration() const
 int RuleCraft::getWeapons() const
 {
 	return _weapons;
+}
+
+/**
+ * Checks if this craft is supported in the New Battle mode (and Preview mode).
+ */
+bool RuleCraft::isForNewBattle() const
+{
+	return getBattlescapeTerrainData() && getMaxUnitsLimit() > 0 && getAllowLanding();
 }
 
 /**

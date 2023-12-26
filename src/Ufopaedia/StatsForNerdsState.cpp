@@ -316,7 +316,7 @@ void StatsForNerdsState::init()
 				return;
 			}
 			RuleCraft* craftRule = _game->getMod()->getCraft(_topicId);
-			if (craftRule->getMaxUnitsLimit() > 0 && craftRule->getBattlescapeTerrainData())
+			if (craftRule->isForNewBattle())
 			{
 				auto& data = _game->getSavedGame()->getCustomRuleCraftDeployments();
 				auto find = data.find(craftRule->getType());
@@ -430,9 +430,9 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 		for (auto& craftType : mod->getCraftsList())
 		{
 			auto* cRule = mod->getCraft(craftType);
-			if (cRule->getMaxUnits() > biggest)
+			if (cRule->getMaxUnitsLimit() > biggest)
 			{
-				biggest = cRule->getMaxUnits();
+				biggest = cRule->getMaxUnitsLimit();
 			}
 		}
 		for (int i = 0; i < biggest; ++i)
@@ -461,7 +461,7 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 	Craft* c = new Craft(craftRule, base, RuleCraft::DUMMY_CRAFT_ID); // a negative integer
 	base->getCrafts()->push_back(c);
 	c->setName(tr(craftRule->getType()));
-	int max = craftRule->getMaxUnits();
+	int max = craftRule->getMaxUnitsLimit();
 	for (auto* soldier : *base->getSoldiers())
 	{
 		soldier->setCraft(c);

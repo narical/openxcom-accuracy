@@ -352,6 +352,21 @@ void Craft::initFixedWeapons(const Mod* mod)
 			_weapons.at(i) = w;
 		}
 	}
+
+	// Remove craft weapons if needed (if they decrease cargo capacity below zero)
+	if (_stats.soldiers < 0 && _rules->getMaxUnitsLimit() > 0) // access raw stats instead of Craft::getMaxUnits()
+	{
+		size_t weaponIndex = 0;
+		for (auto* current : _weapons)
+		{
+			addCraftStats(-current->getRules()->getBonusStats());
+			// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
+			setShield(getShield());
+			delete current;
+			_weapons.at(weaponIndex) = 0;
+			weaponIndex++;
+		}
+	}
 }
 
 /**
@@ -1052,7 +1067,7 @@ int Craft::getFuelLimit(Base *base) const
  */
 int Craft::getMaxUnits() const
 {
-	return std::min(_stats.soldiers, _rules->getMaxUnitsLimit());
+	return std::max(0, std::min(_stats.soldiers, _rules->getMaxUnitsLimit()));
 }
 
 /**
@@ -1062,7 +1077,7 @@ int Craft::getMaxUnits() const
  */
 int Craft::getMaxVehiclesAndLargeSoldiers() const
 {
-	return _stats.vehicles;
+	return std::max(0, _stats.vehicles);
 }
 
 /**
@@ -2141,7 +2156,7 @@ bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
 			{
 				return false;
 			}
-			if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+			if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
 			{
 				return false;
 			}
@@ -2196,7 +2211,7 @@ bool Craft::validateAddingSoldier(int space, const Soldier* s) const
 	}
 	else // armorSize > 1
 	{
-		if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+		if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
 		{
 			return false;
 		}
@@ -2219,11 +2234,10 @@ bool Craft::validateAddingSoldier(int space, const Soldier* s) const
 int Craft::validateAddingVehicles(int totalSize) const
 {
 	int maximumAllowed = getSpaceAvailable() / totalSize;
-
-	if (getMaxVehiclesAndLargeSoldiers() > -1)
 	{
 		maximumAllowed = std::min(maximumAllowed, getMaxVehiclesAndLargeSoldiers() - getNumVehiclesAndLargeSoldiers());
 	}
+
 	if (_rules->getMaxVehicles() > -1)
 	{
 		maximumAllowed = std::min(maximumAllowed, _rules->getMaxVehicles() - getNumTotalVehicles());
