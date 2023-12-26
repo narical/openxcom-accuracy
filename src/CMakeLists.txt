@@ -197,6 +197,7 @@ set ( geoscape_src
   Geoscape/GeoscapeState.cpp
   Geoscape/Globe.cpp
   Geoscape/GraphsState.cpp
+  Geoscape/HiddenAlienActivityState.cpp
   Geoscape/InterceptState.cpp
   Geoscape/ItemsArrivingState.cpp
   Geoscape/LowFuelState.cpp
