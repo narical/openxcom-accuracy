@@ -1138,7 +1138,9 @@ int Base::getDefenseProbabilityPercentage() const
 	{
 		OpenXcom::RuleUfo* ruleUfo = _mod->getUfo(ufoId);
 
-		largestUfoDamageCapacity = std::max(largestUfoDamageCapacity, ruleUfo->getStats().damageMax);
+		int ufoDamageCapacity = ruleUfo->getStats().damageMax + ruleUfo->getStats().shieldCapacity;
+
+		largestUfoDamageCapacity = std::max(largestUfoDamageCapacity, ufoDamageCapacity);
 
 	}
 
