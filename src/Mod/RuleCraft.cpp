@@ -212,6 +212,7 @@ void RuleCraft::afterLoad(const Mod* mod)
 	{
 		_maxUnitsLimit = _stats.soldiers;
 	}
+	mod->checkForSoftError(_maxUnitsLimit < _stats.soldiers, _type, "Maximum unit capacity is smaller than the default unit capacity.", LOG_ERROR);
 }
 
 /**
