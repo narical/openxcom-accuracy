@@ -311,6 +311,14 @@ int RuleCraft::getWeapons() const
 }
 
 /**
+ * Checks if this craft is supported in the New Battle mode (and Preview mode).
+ */
+bool RuleCraft::isForNewBattle() const
+{
+	return getBattlescapeTerrainData() && getMaxUnitsLimit() > 0 && getAllowLanding();
+}
+
+/**
  * Gets the maximum number of units (soldiers and vehicles, small and large) that
  * the craft can carry.
  * @return The maximum unit capacity.

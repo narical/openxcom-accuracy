@@ -58,7 +58,7 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 {
 	bool hidePreview = _game->getSavedGame()->getMonthsPassed() == -1;
 	Craft *c = _base->getCrafts()->at(_craft);
-	if (c && !c->getRules()->getBattlescapeTerrainData())
+	if (c && !c->getRules()->isForNewBattle())
 	{
 		// no battlescape map available
 		hidePreview = true;
