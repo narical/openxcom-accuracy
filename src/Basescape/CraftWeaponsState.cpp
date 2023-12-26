@@ -190,7 +190,7 @@ void CraftWeaponsState::lstWeaponsClick(Action *)
 		int diff = (refCapBonus - currCapBonus);
 		if (diff) // Vehicles capacity changed, verify that change is allowed
 		{
-			if ((_craft->getMaxVehiclesAndLargeSoldiers() - _craft->getNumLargeUnits() + diff) < 0)
+			if ((_craft->getMaxVehiclesAndLargeSoldiers() - _craft->getNumVehiclesAndLargeSoldiers() + diff) < 0)
 				allowChange = false;
 		}
 	}
