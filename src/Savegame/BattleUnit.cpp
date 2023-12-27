@@ -4927,6 +4927,9 @@ void BattleUnit::updateEnemyKnowledge(int index)
 	setTileLastSpotted(index, FACTION_PLAYER, true);
 	setTileLastSpotted(index, FACTION_NEUTRAL);
 	setTileLastSpotted(index, FACTION_NEUTRAL, true);
+	setTurnsSinceSeen(0, FACTION_HOSTILE);
+	setTurnsSinceSeen(0, FACTION_PLAYER);
+	setTurnsSinceSeen(0, FACTION_NEUTRAL);
 }
 
 /**
