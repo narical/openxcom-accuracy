@@ -585,23 +585,15 @@ void CraftSoldiersState::lstSoldiersMousePress(Action *action)
  */
 void CraftSoldiersState::btnDeassignAllSoldiersClick(Action *action)
 {
-	Uint8 color = _lstSoldiers->getColor();
-
 	int row = 0;
 	for (auto* soldier : *_base->getSoldiers())
 	{
-		color = _lstSoldiers->getColor();
 		if (soldier->getCraft() && soldier->getCraft()->getStatus() != "STR_OUT")
 		{
 			soldier->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
 			_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
+			_lstSoldiers->setRowColor(row, _lstSoldiers->getColor());
 		}
-		else if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
-		{
-			color = _otherCraftColor;
-		}
-		_lstSoldiers->setRowColor(row, color);
-
 		row++;
 	}
 
