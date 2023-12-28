@@ -177,9 +177,9 @@ private:
 	std::string _requiresBuyCountry;
 	int _sprite, _marker, _hangarType;
 	std::vector<int> _skinSprites;
-	int _weapons, _pilots;
+	int _weapons, _maxUnitsLimit, _pilots, _maxVehiclesAndLargeSoldiersLimit;
 	int _maxSmallSoldiers, _maxLargeSoldiers, _maxSmallVehicles, _maxLargeVehicles;
-	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles, _maxUnitsLimit;
+	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles;
 	int _monthlyBuyLimit;
 	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
@@ -253,6 +253,8 @@ public:
 	int getPilots() const;
 	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers).
 	int getMaxVehiclesAndLargeSoldiers() const;
+	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers) *including* any additional weapons module bonuses.
+	int getMaxVehiclesAndLargeSoldiersLimit() const { return _maxVehiclesAndLargeSoldiersLimit; }
 	/// Gets the craft's maximum supported number of small (size=1) soldiers.
 	int getMaxSmallSoldiers() const { return _maxSmallSoldiers; }
 	/// Gets the craft's maximum supported number of large (size=2) soldiers.
@@ -269,7 +271,6 @@ public:
 	int getMaxSoldiers() const { return _maxSoldiers; }
 	/// Gets the craft's maximum supported number of vehicles (small + large).
 	int getMaxVehicles() const { return _maxVehicles; }
-
 	/// Gets the craft's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
 	/// Gets the craft's cost.

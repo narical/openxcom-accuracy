@@ -270,9 +270,9 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 		_btnPatrol->setVisible(false);
 	}
 
-	if (_craft->getMaxUnits() == 0)
+	if (_craft->getRules()->getMaxUnitsLimit() == 0)
 		_txtSoldier->setVisible(false);
-	if (_craft->getMaxVehiclesAndLargeSoldiers() == 0)
+	if (_craft->getRules()->getMaxVehiclesAndLargeSoldiersLimit() == 0)
 		_txtHWP->setVisible(false);
 }
 

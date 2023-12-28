@@ -1795,6 +1795,10 @@ interfaces: #done
         color: 244
       - id: button
         color: 1
+      - id: errorPalette
+        color: 4
+      - id: errorMessage
+        color: 1
   - type: craftSoldiers
     backgroundImage: BACK02.SCR
     elements:

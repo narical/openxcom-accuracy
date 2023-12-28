@@ -3748,10 +3748,10 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 		save->getId(craft->getRules()->getType());
 	}
 
-	// Remove craft weapons if needed (if they decrease cargo capacity below zero)
+	// Remove craft weapons if needed
 	for (auto* craft : *base->getCrafts())
 	{
-		if (craft->getCraftStats().soldiers < 0 && craft->getRules()->getMaxUnitsLimit() > 0) // access raw stats instead of Craft::getMaxUnits()
+		if (craft->getMaxUnitsRaw() < 0 || craft->getMaxVehiclesAndLargeSoldiersRaw() < 0)
 		{
 			size_t weaponIndex = 0;
 			for (auto* current : *craft->getWeapons())
@@ -3759,7 +3759,6 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
 				base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded());
 				craft->addCraftStats(-current->getRules()->getBonusStats());
-				// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
 				craft->setShield(craft->getShield());
 				delete current;
 				craft->getWeapons()->at(weaponIndex) = 0;

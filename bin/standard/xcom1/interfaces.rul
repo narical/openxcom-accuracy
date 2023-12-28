@@ -1777,6 +1777,10 @@ interfaces:
         color: 218   # blue
       - id: button
         color: 246   # purple
+      - id: errorPalette
+        color: 4     # aqua
+      - id: errorMessage
+        color: 246   # purple
   - type: craftSoldiers
     backgroundImage: BACK02.SCR
     palette: PAL_BASESCAPE
