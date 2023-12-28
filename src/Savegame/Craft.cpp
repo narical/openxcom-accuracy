@@ -1909,10 +1909,10 @@ int Craft::getHunterKillerAttraction(int huntMode) const
 			// craft that can land (i.e. transports) are not attractive
 			attraction += 1000000;
 		}
-		if (_rules->getMaxUnitsLimit() > 0)
+		if (getMaxUnitsClamped() > 0)
 		{
 			// craft with more crew capacity (i.e. transports) are less attractive
-			attraction += 500000 + (_rules->getMaxUnitsLimit() * 1000);
+			attraction += 500000 + (getMaxUnitsClamped() * 1000);
 		}
 		// faster craft (i.e. interceptors) are more attractive
 		attraction += 100000 - _stats.speedMax;
@@ -1930,7 +1930,7 @@ int Craft::getHunterKillerAttraction(int huntMode) const
 			attraction += 1000000;
 		}
 		// craft with more crew capacity (i.e. transports) are more attractive
-		attraction += 500000 - (_rules->getMaxUnitsLimit() * 1000);
+		attraction += 500000 - (getMaxUnitsClamped() * 1000);
 		// faster craft (i.e. interceptors) are less attractive
 		attraction += 100000 + _stats.speedMax;
 	}
