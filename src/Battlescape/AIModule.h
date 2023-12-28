@@ -253,6 +253,8 @@ public:
 	Position getPeakPosition(bool oneStep = false);
 	/// Gives an estimate of a unit's power-level
 	float getUnitPower(BattleUnit* unit);
+	/// returns a vector of Tiles next to doors
+	std::vector<Tile*> getDoorTiles(const std::vector<PathfindingNode*> nodeVector);
 };
 
 }
