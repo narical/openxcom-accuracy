@@ -2977,7 +2977,7 @@ void AIModule::brutalThink(BattleAction* action)
 	// Create reachabiliy and turncost-list for the entire map
 	if (Options::traceAI)
 	{
-		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: "<<_save->getTurn();
+		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: " << _save->getTurn() << " Intelligence: "<<_unit->getBrutalIntelligence();
 	}
 
 	if (_tuWhenChecking != _unit->getTimeUnits())

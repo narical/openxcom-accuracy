@@ -222,7 +222,6 @@ void create()
 
 	// AI
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
-	_info.push_back(OptionInfo("aiPreset", &aiPreset, 3, "STR_AIPRESET", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
@@ -232,16 +231,11 @@ void create()
 	_info.push_back(OptionInfo("aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo("aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo("aggressionMode", &aggressionMode, 0, "STR_AGGRESSIONMODE", "STR_AI"));
-	_info.push_back(OptionInfo("aiAggression", &aiAggression, 2, "STR_AIAGGRESSION", "STR_AI"));
-	_info.push_back(OptionInfo("aiCarefulness", &aiCarefulness, 2, "STR_AICAREFULNESS", "STR_AI"));
 	_info.push_back(OptionInfo("intelligenceMode", &intelligenceMode, 0, "STR_INTELLIGENCEMODE", "STR_AI"));
-	_info.push_back(OptionInfo("intelligence", &intelligence, 5, "STR_INTELLIGENCE", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatEachTurn",   &autoCombatEachTurn,   true, "STR_AUTOCOMBAT_EACH_TURN",   "STR_AI"));
 	_info.push_back(OptionInfo("autoCombatControlPerUnit", &autoCombatControlPerUnit, true, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
-	_info.push_back(OptionInfo("autoAggression", &autoAggression, 3, "STR_AUTOAGGRESSION", "STR_AI"));
-	_info.push_back(OptionInfo("autoCarefulness", &autoCarefulness, 1, "STR_AUTOCAREFULNESS", "STR_AI"));
 	_info.push_back(OptionInfo("sneakyAI", &sneakyAI, false, "STR_SNEAKYAI", "STR_AI"));
 
 	// OXCE GUI

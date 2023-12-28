@@ -45,7 +45,7 @@ keyBattleCenterEnemy9, keyBattleCenterEnemy10, keyBattleVoxelView, keyBattleZero
 
 // AI options
 OPT bool sneakyAI, brutalAI, cheatOnMovement, brutalCivilians, ignoreDelay, allowPreprime, autoCombat, aiPerformanceOptimization, avoidMines, avoidCuddle;
-OPT int aiTargetMode, aiAggression, aiCarefulness, autoAggression, autoCarefulness, aggressionMode, intelligenceMode, intelligence, aiPreset;
+OPT int aiTargetMode, aggressionMode, intelligenceMode;
 OPT bool autoCombatEachCombat, autoCombatEachTurn, autoCombatControlPerUnit;
 
 // Extra hotkeys (OXCE)

@@ -276,40 +276,10 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 2;
 		}
-		if (i == &Options::aiPreset)
-		{
-			min = 1;
-			max = 4;
-		}
-		else if (i == &Options::aiAggression)
-		{
-			min = 1;
-			max = 9;
-		}
-		else if (i == &Options::aiCarefulness)
-		{
-			min = 1;
-			max = 9;
-		}
 		else if (i == &Options::intelligenceMode)
 		{
 			min = 0;
 			max = 2;
-		}
-		else if (i == &Options::intelligence)
-		{
-			min = 0;
-			max = 5;
-		}
-		else if (i == &Options::autoAggression)
-		{
-			min = 1;
-			max = 9;
-		}
-		else if (i == &Options::autoCarefulness)
-		{
-			min = 1;
-			max = 9;
 		}
 		else if(i == &Options::aiTargetMode)
 		{
@@ -406,64 +376,6 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		std::ostringstream ss;
 		ss << *i;
 		settingText = ss.str();
-
-		if (setting->asInt() == &Options::aiPreset)
-		{
-			if (*setting->asInt() == 1)
-			{
-				Options::aggressionMode = 2;
-				Options::aiAggression = 2;
-				Options::aiCarefulness = 2;
-				Options::aiTargetMode = 1;
-				Options::intelligenceMode = 1;
-				Options::cheatOnMovement = false;
-				Options::allowPreprime = false;
-				Options::ignoreDelay = false;
-				Options::avoidMines = false;
-				Options::avoidCuddle = false;
-			}
-			else if (*setting->asInt() == 2)
-			{
-				Options::aggressionMode = 2;
-				Options::aiAggression = 2;
-				Options::aiCarefulness = 2;
-				Options::aiTargetMode = 3;
-				Options::intelligenceMode = 1;
-				Options::cheatOnMovement = false;
-				Options::allowPreprime = true;
-				Options::ignoreDelay = true;
-				Options::avoidMines = true;
-				Options::avoidCuddle = true;
-			}
-			else if(*setting->asInt() == 3)
-			{
-				Options::aggressionMode = 0;
-				Options::aiAggression = 2;
-				Options::aiCarefulness = 2;
-				Options::aiTargetMode = 3;
-				Options::intelligenceMode = 0;
-				Options::intelligence = 5;
-				Options::cheatOnMovement = false;
-				Options::allowPreprime = true;
-				Options::ignoreDelay = true;
-				Options::avoidMines = true;
-				Options::avoidCuddle = true;
-			}
-			else if(*setting->asInt() == 4)
-			{
-				Options::aggressionMode = 0;
-				Options::aiAggression = 2;
-				Options::aiCarefulness = 2;
-				Options::aiTargetMode = 4;
-				Options::intelligenceMode = 0;
-				Options::intelligence = 5;
-				Options::cheatOnMovement = true;
-				Options::allowPreprime = true;
-				Options::ignoreDelay = true;
-				Options::avoidMines = true;
-				Options::avoidCuddle = true;
-			}
-		}
 	}
 	_lstOptions->setCellText(sel, 1, settingText);
 }

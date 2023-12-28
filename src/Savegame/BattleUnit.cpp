@@ -5913,8 +5913,8 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 float BattleUnit::getAggressiveness() const
 {
 	if (getFaction() == FACTION_PLAYER)
-		return (float)Options::autoAggression / (float)Options::autoCarefulness;
-	float aggressiveness = (float)Options::aiAggression / (float)Options::aiCarefulness;
+		return 1;
+	float aggressiveness = 1;
 	if (Options::aggressionMode >= 1)
 		aggressiveness *= getAggression();
 	return aggressiveness;
@@ -5925,7 +5925,7 @@ int BattleUnit::getBrutalIntelligence() const
 	if (getFaction() != FACTION_PLAYER)
 	{
 		if (Options::intelligenceMode == 0)
-			return Options::intelligence;
+			return 5;
 		if (Options::intelligenceMode == 1)
 			return getIntelligence();
 		if (Options::intelligenceMode == 2 && getAIModule())
