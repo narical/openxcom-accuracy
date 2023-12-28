@@ -1130,19 +1130,46 @@ int Base::getDefenseValue() const
  */
 int Base::getDefenseProbabilityPercentage() const
 {
-	// pick largest UFO damage capacity
+	// get biggest base assaulting UFO damage capacity
 
-	int largestUfoDamageCapacity = 0;
+	int maxUfoDamageCapacity = 0;
 
-	for (std::string ufoId : _mod->getUfosList())
+	for (std::string alienMissionType : _mod->getAlienMissionList())
 	{
-		OpenXcom::RuleUfo* ruleUfo = _mod->getUfo(ufoId);
+		const RuleAlienMission* ruleAlienMission = _mod->getAlienMission(alienMissionType);
 
-		int ufoDamageCapacity = ruleUfo->getStats().damageMax + ruleUfo->getStats().shieldCapacity;
+		// retaliation
 
-		largestUfoDamageCapacity = std::max(largestUfoDamageCapacity, ufoDamageCapacity);
+		if (!(ruleAlienMission->getObjective() == OBJECTIVE_RETALIATION || ruleAlienMission->getObjective() == OBJECTIVE_INSTANT_RETALIATION))
+			continue;
+
+		// not ignoring base defenses
+
+		if (ruleAlienMission->ignoreBaseDefenses())
+			continue;
+
+		// get spawned UFO
+
+		std::string spawnUfo = ruleAlienMission->getSpawnUfo();
+
+		if (spawnUfo.empty())
+			continue;
+
+		// get UFO damage capacity
+
+		const RuleUfoStats ufoStats = _mod->getUfo(spawnUfo, true)->getStats();
+		int ufoDamageCapacity = ufoStats.damageMax + ufoStats.shieldCapacity;
+
+		// update max damage capacity
+
+		maxUfoDamageCapacity = std::max(maxUfoDamageCapacity, ufoDamageCapacity);
 
 	}
+
+	// no base assaulting UFO => no defense failure
+
+	if (maxUfoDamageCapacity == 0)
+		return 100;
 
 	// compute base defense probability in percents
 
@@ -1178,7 +1205,7 @@ int Base::getDefenseProbabilityPercentage() const
 
 	double combinedStd = sqrt(combinedVariance);
 
-	double x = ((double)largestUfoDamageCapacity - combinedMean) / combinedStd;
+	double x = ((double)maxUfoDamageCapacity - combinedMean) / combinedStd;
 	double defenseWinProbability = 1.0 - std::erfc(-x / std::sqrt(2)) / 2;
 
 	int defenseProbabilityPercentage = (int)round(defenseWinProbability * 100);
