@@ -512,15 +512,15 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 	{
 		Craft *c = _base->getCrafts()->at(_craft);
 		Soldier *s = _base->getSoldiers()->at(_lstSoldiers->getSelectedRow());
-		Uint8 color = _lstSoldiers->getColor();
 		if (s->getCraft() == c)
 		{
 			s->setCraftAndMoveEquipment(0, _base, _game->getSavedGame()->getMonthsPassed() == -1);
 			_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
+			_lstSoldiers->setRowColor(row, _lstSoldiers->getColor());
 		}
 		else if (s->getCraft() && s->getCraft()->getStatus() == "STR_OUT")
 		{
-			color = _otherCraftColor;
+			// nothing
 		}
 		else if (s->hasFullHealth())
 		{
@@ -529,7 +529,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 			{
 				s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
 				_lstSoldiers->setCellText(row, 2, c->getName(_game->getLanguage()));
-				color = _lstSoldiers->getSecondaryColor();
+				_lstSoldiers->setRowColor(row, _lstSoldiers->getSecondaryColor());
 
 				// update the label to indicate absence of a saved craft deployment
 				_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
@@ -539,7 +539,6 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 				_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_CRAFT_SPACE"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 			}
 		}
-		_lstSoldiers->setRowColor(row, color);
 
 		_txtAvailable->setText(tr("STR_SPACE_AVAILABLE").arg(c->getSpaceAvailable()));
 		_txtUsed->setText(tr("STR_SPACE_USED").arg(c->getSpaceUsed()));
