@@ -451,7 +451,7 @@ private:
 	std::vector<std::vector<const RuleItem*> > _builtInWeapons;
 	bool _capturable;
 	bool _canSurrender, _autoSurrender;
-	bool _isLeeroyJenkins, _isBrutal, _isCheatOnMovement, _isAggressive;
+	bool _isLeeroyJenkins, _isBrutal, _isCheatOnMovement, _isAggressive, _isNotBrutal;
 	bool _waitIfOutsideWeaponRange;
 	int _aiTargetMode;
 	int _pickUpWeaponsMoreActively;
@@ -561,6 +561,8 @@ public:
 	bool isAggressive() const { return _isAggressive; };
 	/// Checks if the unit is using brutal-AI
 	bool isBrutal() const { return _isBrutal; };
+	/// Checks if the unit is not using brutal-AI even if brutal-AI is globally enabled
+	bool isNotBrutal() const { return _isNotBrutal; };
 	/// Checks if the unit is allowed to cheat on movement
 	bool isCheatOnMovement() const { return _isCheatOnMovement; };
 	/// Which mode of target-selection does the AI use

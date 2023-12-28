@@ -224,7 +224,6 @@ void create()
 	_info.push_back(OptionInfo("brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
 	_info.push_back(OptionInfo("aiPreset", &aiPreset, 3, "STR_AIPRESET", "STR_AI"));
 	_info.push_back(OptionInfo("brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
-	_info.push_back(OptionInfo("brutalBrutes", &brutalBrutes, true, "STR_BRUTALBRUTES", "STR_AI"));
 	_info.push_back(OptionInfo("ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
 	_info.push_back(OptionInfo("cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo("allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));

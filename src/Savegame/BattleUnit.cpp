@@ -5792,13 +5792,10 @@ bool BattleUnit::isBrutal() const
 		brutal = Options::brutalCivilians;
 	else if (getFaction() == FACTION_PLAYER)
 		brutal = isAIControlled();
-	if (!hasInventory())
-	{
-		if(!Options::brutalBrutes)
-			brutal = false;
-	}
 	if (_unitRules && _unitRules->isBrutal())
 		brutal = true;
+	if (_unitRules && _unitRules->isNotBrutal())
+		brutal = false;
 	return brutal;
 }
 
