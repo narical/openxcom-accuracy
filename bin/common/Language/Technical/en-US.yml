@@ -409,7 +409,6 @@ en-US:
   maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
   vehicles: "HWP capacity"
-  maxHWPUnitsLimit: "Max HWP capacity"
   maxSmallSoldiers: "Max small soldiers"
   maxLargeSoldiers: "Max large soldiers"
   maxSmallVehicles: "Max small vehicles"

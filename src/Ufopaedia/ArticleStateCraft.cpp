@@ -136,30 +136,16 @@ namespace OpenXcom
 		}
 		ss << tr("STR_WEAPON_PODS").arg(craft->getWeapons()) << '\n';
 		ss << tr("STR_DAMAGE_CAPACITY_UC").arg(Unicode::formatNumber(craft->getMaxDamage())) << '\n';
-		if (craft->getMaxUnits() == craft->getMaxUnitsLimit())
+		ss << tr("STR_CARGO_SPACE").arg(craft->getMaxUnits()) << '\n';
+		if(Options::showCraftHangar)
 		{
-			ss << tr("STR_CARGO_SPACE").arg(craft->getMaxUnits()) << '\n';
-		}
-		else
-		{
-			std::ostringstream ss2;
-			ss2 << craft->getMaxUnits() << "/" << craft->getMaxUnitsLimit();
-			ss << tr("STR_CARGO_SPACE").arg(ss2.str()) << '\n';
-		}
+			ss << tr("STR_HANGAR_TYPE").arg(craft->getHangarType()) << '\n';
+		}			
 		if (craft->getPilots() > 0)
 		{
 			ss << tr("STR_COCKPIT_CAPACITY").arg(craft->getPilots()) << '\n';
 		}
-		if (craft->getMaxVehiclesAndLargeSoldiers() == craft->getMaxVehiclesAndLargeSoldiersLimit())
-		{
-			ss << tr("STR_HWP_CAPACITY").arg(craft->getMaxVehiclesAndLargeSoldiers());
-		}
-		else
-		{
-			std::ostringstream ss2;
-			ss2 << craft->getMaxVehiclesAndLargeSoldiers() << "/" << craft->getMaxVehiclesAndLargeSoldiersLimit();
-			ss << tr("STR_HWP_CAPACITY").arg(ss2.str());
-		}
+		ss << tr("STR_HWP_CAPACITY").arg(craft->getMaxVehiclesAndLargeSoldiers());
 		_txtStats->setText(ss.str());
 
 		centerAllSurfaces();

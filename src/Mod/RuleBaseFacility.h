@@ -111,7 +111,6 @@ public:
 	int getSpriteFacility() const;
 	/// Retain sprite over shape behavior for bigger facility?
 	bool getSpriteEnabled() const;
-	bool getSpriteEnabledRaw() const { return _spriteEnabled; }
 	/// Should there be connectors leading to this facility?
 	bool connectorsDisabled() const { return _connectorsDisabled; }
 	/// Gets the facility's size.

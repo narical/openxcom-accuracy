@@ -3139,7 +3139,6 @@ void StatsForNerdsState::initFacilityList()
 		addInteger(ss, facilityRule->getSpriteFacility(), "spriteFacility", -1);
 		addSpriteResourcePath(ss, mod, "BASEBITS.PCK", facilityRule->getSpriteFacility());
 
-		addBoolean(ss, facilityRule->getSpriteEnabledRaw(), "spriteEnabled");
 		addBoolean(ss, facilityRule->connectorsDisabled(), "connectorsDisabled");
 
 		addSection("{Sounds}", "", _white);
@@ -3209,7 +3208,6 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit", craftRule->getMaxUnits());
 	addInteger(ss, craftRule->getPilots(), "pilots");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
-	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiersLimit(), "maxHWPUnitsLimit", craftRule->getMaxVehiclesAndLargeSoldiers());
 
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);
