@@ -191,6 +191,7 @@ private:
 	int _maxSkinIndex;
 	bool _keepCraftAfterFailedMission, _allowLanding, _spacecraft, _notifyWhenRefueled, _autoPatrol, _undetectable;
 	int _listOrder, _maxItems, _maxAltitude;
+	std::string _defaultAltitude;
 	double _maxStorageSpace;
 	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
@@ -330,6 +331,8 @@ public:
 	const RuleCraftStats& getStats() const;
 	/// Gets how high this craft can go.
 	int getMaxAltitude() const;
+	/// Gets the craft's default display altitude.
+	const std::string& getDefaultDisplayAltitude() const;
 	/// Gets if this craft only fights on water.
 	bool isWaterOnly() const;
 	/// Get how many shield points are recharged per hour at base
