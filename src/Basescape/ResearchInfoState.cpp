@@ -130,7 +130,7 @@ void ResearchInfoState::buildUi()
 		_base->addResearch(_project);
 		if (_rule->needItem() && _rule->destroyItem())
 		{
-			_base->getStorageItems()->removeItem(_rule->getName(), 1);
+			_base->getStorageItems()->removeItem(_rule->getNeededItem(), 1);
 		}
 	}
 	setAssignedScientist();

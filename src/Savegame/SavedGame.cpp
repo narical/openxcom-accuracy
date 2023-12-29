@@ -1840,7 +1840,7 @@ void SavedGame::getAvailableResearchProjects(std::vector<RuleResearch *> &projec
 			}
 
 			// Check for needed item in the given base
-			if (research->needItem() && base->getStorageItems()->getItem(research->getName()) == 0)
+			if (research->needItem() && base->getStorageItems()->getItem(research->getNeededItem()) == 0)
 			{
 				continue;
 			}

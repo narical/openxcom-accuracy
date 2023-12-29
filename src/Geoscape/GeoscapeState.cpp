@@ -2382,7 +2382,7 @@ void GeoscapeState::time1Day()
 			// 3b. handle interrogation
 			if (Options::retainCorpses && research->needItem() && research->destroyItem())
 			{
-				auto* ruleUnit = mod->getUnit(research->getName(), false);
+				auto* ruleUnit = mod->getUnit(research->getName(), false); // don't use getNeededItem()
 				if (ruleUnit)
 				{
 					auto* ruleCorpse = ruleUnit->getArmor()->getCorpseGeoscape();

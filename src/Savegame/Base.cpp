@@ -1301,7 +1301,7 @@ void Base::removeResearch(ResearchProject * project)
 	{
 		if (ruleResearch->needItem() && ruleResearch->destroyItem())
 		{
-			getStorageItems()->addItem(ruleResearch->getName(), 1);
+			getStorageItems()->addItem(ruleResearch->getNeededItem(), 1);
 		}
 	}
 
@@ -1455,7 +1455,7 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 		const RuleResearch *projRules = proj->getRules();
 		if (projRules->needItem() && projRules->destroyItem())
 		{
-			rule = _mod->getItem(projRules->getName());
+			rule = _mod->getItem(projRules->getName()); // don't use getNeededItem()
 			if (rule->isAlien() && rule->getPrisonType() == prisonType)
 			{
 				++total;
@@ -2060,12 +2060,12 @@ void Base::cleanupPrisons(int prisonType)
 			const RuleResearch* projRules = project->getRules();
 			if (projRules->needItem() && projRules->destroyItem())
 			{
-				RuleItem* rule = _mod->getItem(projRules->getName());
+				RuleItem* rule = _mod->getItem(projRules->getName()); // don't use getNeededItem()
 				if (rule->isAlien() && rule->getPrisonType() == prisonType)
 				{
 					_scientists += project->getAssigned();
 					project->setAssigned(0);
-					getStorageItems()->addItem(projRules->getName(), 1);
+					getStorageItems()->addItem(projRules->getNeededItem(), 1);
 					return true;
 				}
 			}
