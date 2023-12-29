@@ -273,51 +273,127 @@ void BaseInfoState::init()
 	ss << _base->getAvailableSoldiers() << ":" << _base->getTotalSoldiers();
 	_numSoldiers->setText(ss.str());
 
-	_barSoldiers->setMax(_base->getTotalSoldiers());
-	_barSoldiers->setValue(_base->getAvailableSoldiers());
+	// bar dynamic scale
+
+	if (_base->getTotalSoldiers() * _barSoldiers->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barSoldiers->setMax(_base->getTotalSoldiers());
+		_barSoldiers->setValue(_base->getAvailableSoldiers());
+	}
+	else
+	{
+		_barSoldiers->setMax(BASE_INFO_BAR_WIDTH);
+		_barSoldiers->setValue(_base->getAvailableSoldiers() * BASE_INFO_BAR_WIDTH / _base->getTotalSoldiers());
+		_barSoldiers->setScale(1.0);
+	}
 
 	std::ostringstream ss2;
 	ss2 << _base->getAvailableEngineers() << ":" << _base->getTotalEngineers();
 	_numEngineers->setText(ss2.str());
 
-	_barEngineers->setMax(_base->getTotalEngineers());
-	_barEngineers->setValue(_base->getAvailableEngineers());
+	// bar dynamic scale
+
+	if (_base->getTotalEngineers() * _barEngineers->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barEngineers->setMax(_base->getTotalEngineers());
+		_barEngineers->setValue(_base->getAvailableEngineers());
+	}
+	else
+	{
+		_barEngineers->setMax(BASE_INFO_BAR_WIDTH);
+		_barEngineers->setValue(_base->getAvailableEngineers() * BASE_INFO_BAR_WIDTH / _base->getTotalEngineers());
+		_barEngineers->setScale(1.0);
+	}
 
 	std::ostringstream ss3;
 	ss3 << _base->getAvailableScientists() << ":" << _base->getTotalScientists();
 	_numScientists->setText(ss3.str());
 
-	_barScientists->setMax(_base->getTotalScientists());
-	_barScientists->setValue(_base->getAvailableScientists());
+	// bar dynamic scale
 
+	if (_base->getTotalScientists() * _barScientists->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barScientists->setMax(_base->getTotalScientists());
+		_barScientists->setValue(_base->getAvailableScientists());
+	}
+	else
+	{
+		_barScientists->setMax(BASE_INFO_BAR_WIDTH);
+		_barScientists->setValue(_base->getAvailableScientists() * BASE_INFO_BAR_WIDTH / _base->getTotalScientists());
+		_barScientists->setScale(1.0);
+	}
 
 	std::ostringstream ss4;
 	ss4 << _base->getUsedQuarters() << ":" << _base->getAvailableQuarters();
 	_numQuarters->setText(ss4.str());
 
-	_barQuarters->setMax(_base->getAvailableQuarters());
-	_barQuarters->setValue(_base->getUsedQuarters());
+	// bar dynamic scale
+
+	if (_base->getAvailableQuarters() * _barQuarters->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barQuarters->setMax(_base->getAvailableQuarters());
+		_barQuarters->setValue(_base->getUsedQuarters());
+	}
+	else
+	{
+		_barQuarters->setMax(BASE_INFO_BAR_WIDTH);
+		_barQuarters->setValue(_base->getUsedQuarters() * BASE_INFO_BAR_WIDTH / _base->getAvailableQuarters());
+		_barQuarters->setScale(1.0);
+	}
 
 	std::ostringstream ss5;
 	ss5 << (int)floor(_base->getUsedStores() + 0.05) << ":" << _base->getAvailableStores();
 	_numStores->setText(ss5.str());
 
-	_barStores->setMax(_base->getAvailableStores());
-	_barStores->setValue((int)floor(_base->getUsedStores() + 0.05));
+	// bar dynamic scale
+
+	if (_base->getAvailableStores() * _barStores->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barStores->setMax(_base->getAvailableStores());
+		_barStores->setValue(_base->getUsedStores());
+	}
+	else
+	{
+		_barStores->setMax(BASE_INFO_BAR_WIDTH);
+		_barStores->setValue(_base->getUsedStores() * BASE_INFO_BAR_WIDTH / _base->getAvailableStores());
+		_barStores->setScale(1.0);
+	}
 
 	std::ostringstream ss6;
 	ss6 << _base->getUsedLaboratories() << ":" << _base->getAvailableLaboratories();
 	_numLaboratories->setText(ss6.str());
 
-	_barLaboratories->setMax(_base->getAvailableLaboratories());
-	_barLaboratories->setValue(_base->getUsedLaboratories());
+	// bar dynamic scale
+
+	if (_base->getAvailableLaboratories() * _barLaboratories->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barLaboratories->setMax(_base->getAvailableLaboratories());
+		_barLaboratories->setValue(_base->getUsedLaboratories());
+	}
+	else
+	{
+		_barLaboratories->setMax(BASE_INFO_BAR_WIDTH);
+		_barLaboratories->setValue(_base->getUsedLaboratories() * BASE_INFO_BAR_WIDTH / _base->getAvailableLaboratories());
+		_barLaboratories->setScale(1.0);
+	}
 
 	std::ostringstream ss7;
 	ss7 << _base->getUsedWorkshops() << ":" << _base->getAvailableWorkshops();
 	_numWorkshops->setText(ss7.str());
 
-	_barWorkshops->setMax(_base->getAvailableWorkshops());
-	_barWorkshops->setValue(_base->getUsedWorkshops());
+	// bar dynamic scale
+
+	if (_base->getAvailableWorkshops() * _barWorkshops->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barWorkshops->setMax(_base->getAvailableWorkshops());
+		_barWorkshops->setValue(_base->getUsedWorkshops());
+	}
+	else
+	{
+		_barWorkshops->setMax(BASE_INFO_BAR_WIDTH);
+		_barWorkshops->setValue(_base->getUsedWorkshops() * BASE_INFO_BAR_WIDTH / _base->getAvailableWorkshops());
+		_barWorkshops->setScale(1.0);
+	}
 
 	if (Options::storageLimitsEnforced)
 	{
@@ -333,9 +409,19 @@ void BaseInfoState::init()
 	ss8 << _base->getUsedHangars() << ":" << _base->getAvailableHangars();
 	_numHangars->setText(ss8.str());
 
-	_barHangars->setMax(_base->getAvailableHangars());
-	_barHangars->setValue(_base->getUsedHangars());
+	// bar dynamic scale
 
+	if (_base->getAvailableHangars() * _barHangars->getScale() < BASE_INFO_BAR_WIDTH)
+	{
+		_barHangars->setMax(_base->getAvailableHangars());
+		_barHangars->setValue(_base->getUsedHangars());
+	}
+	else
+	{
+		_barHangars->setMax(BASE_INFO_BAR_WIDTH);
+		_barHangars->setValue(_base->getUsedHangars() * BASE_INFO_BAR_WIDTH / _base->getAvailableHangars());
+		_barHangars->setScale(1.0);
+	}
 
 	if (Options::baseDefenseProbability)
 	{
