@@ -155,7 +155,7 @@ namespace OpenXcom
 
 		// add other elements
 		add(_txtTitle);
-		add(_txtWeight);
+		add(_txtWeight, "weightText", "articleItem", _bg);
 
 		// Set up objects
 		_game->getMod()->getSurface("BACK08.SCR")->blitNShade(_bg, 0, 0);
@@ -175,7 +175,7 @@ namespace OpenXcom
 
 		// IMAGE
 		_image = new Surface(32, 48, 157, 5);
-		add(_image);
+		add(_image, "image", "articleItem", _bg);
 
 		item->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _image);
 
