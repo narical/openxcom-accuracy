@@ -84,6 +84,7 @@ private:
 	RuleUfoStats _stats;
 	std::map<std::string, RuleUfoStats> _statsRaceBonus;
 	std::string _modSprite;
+	std::string _hitImage;
 
 	ModScript::UfoScripts::Container _ufoScripts;
 	ScriptValues<RuleUfo> _scriptValues;
@@ -134,6 +135,8 @@ public:
 	int getHuntAlertSound() const;
 	/// Gets the name of the surface that represents this UFO.
 	const std::string &getModSprite() const;
+	/// Gets the name of the surface to be displayed in the BaseDestroyedState UI.
+	const std::string& getHitImage() const { return _hitImage; }
 	/// Get basic statistic of UFO.
 	const RuleUfoStats& getStats() const;
 	/// Get race bonus of statistic of UFO.

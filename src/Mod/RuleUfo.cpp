@@ -109,6 +109,7 @@ void RuleUfo::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 		_battlescapeTerrainData = rule;
 	}
 	_modSprite = node["modSprite"].as<std::string>(_modSprite);
+	_hitImage = node["hitImage"].as<std::string>(_hitImage);
 	if (const YAML::Node &raceBonus = node["raceBonus"])
 	{
 		for (YAML::const_iterator i = raceBonus.begin(); i != raceBonus.end(); ++i)

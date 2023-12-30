@@ -3404,7 +3404,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 		if (ufo->getRules()->getMissilePower() < 0)
 		{
 			// It's a nuclear warhead... Skynet knows no mercy
-			popup(new BaseDestroyedState(base, true, false));
+			popup(new BaseDestroyedState(base, ufo, true, false));
 		}
 		else
 		{
@@ -3418,7 +3418,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 			base->cleanupDefenses(true);
 
 			// let the player know that some facilities were destroyed, but the base survived
-			popup(new BaseDestroyedState(base, true, true));
+			popup(new BaseDestroyedState(base, ufo, true, true));
 		}
 	}
 	else if (base->getAvailableSoldiers(true, true) > 0 || !base->getVehicles()->empty())
@@ -3441,7 +3441,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 	else
 	{
 		// Please garrison your bases in future
-		popup(new BaseDestroyedState(base, false, false));
+		popup(new BaseDestroyedState(base, ufo, false, false));
 	}
 }
 
