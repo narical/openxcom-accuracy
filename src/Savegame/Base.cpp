@@ -47,6 +47,10 @@
 #include "../Engine/Collections.h"
 #include "WeightedOptions.h"
 #include "AlienMission.h"
+#include "Country.h"
+#include "../Mod/RuleCountry.h"
+#include "Region.h"
+#include "../Mod/RuleRegion.h"
 
 namespace OpenXcom
 {
@@ -275,6 +279,32 @@ void Base::finishLoading(const YAML::Node &node, SavedGame *save)
 		else
 		{
 			Log(LOG_ERROR) << "Failed to load craft " << type;
+		}
+	}
+	calculateServices(save);
+}
+
+/**
+ * Pre-calculates base services provided by region and country.
+ */
+void Base::calculateServices(SavedGame* save)
+{
+	for (const auto* country : *save->getCountries())
+	{
+		if (country->getRules()->insideCountry(_lon, _lat))
+		{
+			_provideBaseFunc |= country->getRules()->getProvidedBaseFunc();
+			_forbiddenBaseFunc |= country->getRules()->getForbiddenBaseFunc();
+			break;
+		}
+	}
+	for (const auto* region : *save->getRegions())
+	{
+		if (region->getRules()->insideRegion(_lon, _lat))
+		{
+			_provideBaseFunc |= region->getRules()->getProvidedBaseFunc();
+			_forbiddenBaseFunc |= region->getRules()->getForbiddenBaseFunc();
+			break;
 		}
 	}
 }
@@ -2349,6 +2379,8 @@ RuleBaseFacilityFunctions Base::getProvidedBaseFunc(BaseAreaSubset skip) const
 		ret |= bf->getRules()->getProvidedBaseFunc();
 	}
 
+	ret |= _provideBaseFunc;
+
 	return ret;
 }
 
@@ -2400,6 +2432,8 @@ RuleBaseFacilityFunctions Base::getForbiddenBaseFunc(BaseAreaSubset skip) const
 		ret |= bf->getRules()->getForbiddenBaseFunc();
 	}
 
+	ret |= _forbiddenBaseFunc;
+
 	return ret;
 }
 
@@ -2419,6 +2453,8 @@ RuleBaseFacilityFunctions Base::getFutureBaseFunc(BaseAreaSubset skip) const
 		}
 		ret |= bf->getRules()->getProvidedBaseFunc();
 	}
+
+	ret |= _provideBaseFunc;
 
 	return ret;
 }

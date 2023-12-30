@@ -2698,7 +2698,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleCountry *rule = loadRule(*i, &_countries, &_countriesIndex);
 		if (rule != 0)
 		{
-			rule->load(*i, parsers);
+			rule->load(*i, parsers, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("extraGlobeLabels", "type"))
@@ -2706,7 +2706,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleCountry *rule = loadRule(*i, &_extraGlobeLabels, &_extraGlobeLabelsIndex);
 		if (rule != 0)
 		{
-			rule->load(*i, parsers);
+			rule->load(*i, parsers, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("regions", "type"))
@@ -2714,7 +2714,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleRegion *rule = loadRule(*i, &_regions, &_regionsIndex);
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("facilities", "type"))
