@@ -80,6 +80,7 @@ private:
 	int _fireSound;
 	int _alertSound;
 	int _huntAlertSound;
+	int _hitSound;
 	RuleTerrain *_battlescapeTerrainData;
 	RuleUfoStats _stats;
 	std::map<std::string, RuleUfoStats> _statsRaceBonus;
@@ -133,6 +134,8 @@ public:
 	int getAlertSound() const;
 	/// Gets the alert sound for this UFO (UFO on intercept course alert).
 	int getHuntAlertSound() const;
+	/// Gets the hit sound for this UFO (to be used in the BaseDestroyedState UI).
+	int getHitSound() const { return _hitSound; }
 	/// Gets the name of the surface that represents this UFO.
 	const std::string &getModSprite() const;
 	/// Gets the name of the surface to be displayed in the BaseDestroyedState UI.
