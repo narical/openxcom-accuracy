@@ -276,6 +276,7 @@ void create()
 	_info.push_back(OptionInfo("oxceGeoscapeDebugLogMaxEntries", &oxceGeoscapeDebugLogMaxEntries, 1000, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceGeoscapeEventsInstantDelivery", &oxceGeoscapeEventsInstantDelivery, true, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceHiddenMovementBackgroundChangeFrequency", &oxceHiddenMovementBackgroundChangeFrequency, 1, "", "HIDDEN"));
+	_info.push_back(OptionInfo("oxcePediaShowClipSize", &oxcePediaShowClipSize, false, "", "HIDDEN"));
 
 	// controls
 	_info.push_back(OptionInfo("keyOk", &keyOk, SDLK_RETURN, "STR_OK", "STR_GENERAL"));
