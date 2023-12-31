@@ -69,6 +69,7 @@ public:
 	static const int RESEARCH_STATUS_NEW = 0;
 	static const int RESEARCH_STATUS_NORMAL = 1;
 	static const int RESEARCH_STATUS_DISABLED = 2;
+	static const int RESEARCH_STATUS_HIDDEN = 3;
 	RuleResearch(const std::string &name, int listOrder);
 
 	/// Loads the research from YAML.

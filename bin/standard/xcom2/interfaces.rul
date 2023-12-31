@@ -1366,6 +1366,9 @@ interfaces: #done
         color: 1   # white
         color2: 239
         border: 1  # blue
+      - id: listExtended
+        color: 156
+        color2: 244
       - id: button
         color: 1   # purple
   - type: allocateResearch
