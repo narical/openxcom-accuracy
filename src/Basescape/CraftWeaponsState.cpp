@@ -18,6 +18,7 @@
  */
 #include "CraftWeaponsState.h"
 #include <sstream>
+#include "../fmath.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
@@ -200,6 +201,69 @@ void CraftWeaponsState::lstWeaponsClick(Action *)
 				_game->popState();
 				_game->pushState(new ErrorMessageState(
 					tr("STR_NOT_ENOUGH_HWP_CAPACITY"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+	{
+		int refCapBonus3 = refWeapon ? refWeapon->getBonusStats().maxItems : 0;
+		int currCapBonus3 = currWeapon ? currWeapon->getBonusStats().maxItems : 0;
+		int diff3 = (refCapBonus3 - currCapBonus3);
+
+		double refCapBonus4 = refWeapon ? refWeapon->getBonusStats().maxStorageSpace : 0.0;
+		double currCapBonus4 = currWeapon ? currWeapon->getBonusStats().maxStorageSpace : 0.0;
+		double diff4 = (refCapBonus4 - currCapBonus4);
+		bool diff4_b = !AreSame(refCapBonus4, currCapBonus4); // floating math
+
+		int totalItems = 0;
+		double totalItemStorageSize = 0.0;
+		if (diff3 || diff4_b)
+		{
+			for (auto& itemType : _game->getMod()->getItemsList())
+			{
+				RuleItem* rule = _game->getMod()->getItem(itemType);
+
+				Unit* isVehicle = rule->getVehicleUnit();
+				int cQty = 0;
+				if (isVehicle)
+				{
+					cQty = _craft->getVehicleCount(itemType);
+				}
+				else
+				{
+					cQty = _craft->getItems()->getItem(itemType);
+					totalItems += cQty;
+					totalItemStorageSize += cQty * rule->getSize();
+				}
+			}
+		}
+		if (diff3)
+		{
+			if ((_craft->getMaxItemsRaw() - totalItems + diff3) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_STORAGE_SPACE_1"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+		if (diff4_b)
+		{
+			if ((_craft->getMaxStorageSpaceRaw() - totalItemStorageSize + diff4) < 0.0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_STORAGE_SPACE_2"),
 					_palette,
 					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
 					"BACK14.SCR",

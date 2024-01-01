@@ -3732,6 +3732,8 @@ void StatsForNerdsState::initCraftWeaponList()
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldBleedThrough, "shieldBleedThrough");
 		addInteger(ss, craftWeaponRule->getBonusStats().soldiers, "soldiers");
 		addInteger(ss, craftWeaponRule->getBonusStats().vehicles, "vehicles");
+		addInteger(ss, craftWeaponRule->getBonusStats().maxItems, "maxItems", 0);
+		addDouble(ss, craftWeaponRule->getBonusStats().maxStorageSpace, "maxStorageSpace", 0.0);
 		endHeading();
 	}
 

@@ -43,6 +43,8 @@ struct RuleCraftStats
 	int hitBonus, avoidBonus, powerBonus, armor;
 	int shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough;
 	int soldiers, vehicles;
+	int maxItems;
+	double maxStorageSpace;
 
 	/// Default constructor.
 	RuleCraftStats() :
@@ -50,7 +52,8 @@ struct RuleCraftStats
 		radarRange(0), radarChance(0), sightRange(0),
 		hitBonus(0), avoidBonus(0), powerBonus(0), armor(0),
 		shieldCapacity(0), shieldRecharge(0), shieldRechargeInGeoscape(0), shieldBleedThrough(0),
-		soldiers(0), vehicles(0)
+		soldiers(0), vehicles(0),
+		maxItems(0), maxStorageSpace(0.0)
 	{
 
 	}
@@ -74,6 +77,8 @@ struct RuleCraftStats
 		shieldBleedThrough += r.shieldBleedThrough;
 		soldiers += r.soldiers;
 		vehicles += r.vehicles;
+		maxItems += r.maxItems;
+		maxStorageSpace += r.maxStorageSpace;
 		return *this;
 	}
 	/// Subtract different stats.
@@ -96,6 +101,8 @@ struct RuleCraftStats
 		shieldBleedThrough -= r.shieldBleedThrough;
 		soldiers -= r.soldiers;
 		vehicles -= r.vehicles;
+		maxItems -= r.maxItems;
+		maxStorageSpace -= r.maxStorageSpace;
 		return *this;
 	}
 	/// Gets negative values of stats.
@@ -125,6 +132,8 @@ struct RuleCraftStats
 		shieldBleedThrough = node["shieldBleedThrough"].as<int>(shieldBleedThrough);
 		soldiers = node["soldiers"].as<int>(soldiers);
 		vehicles = node["vehicles"].as<int>(vehicles);
+		maxItems = node["maxItems"].as<int>(maxItems);
+		maxStorageSpace = node["maxStorageSpace"].as<double>(maxStorageSpace);
 	}
 
 	template<auto Stat, typename TBind>
@@ -147,6 +156,8 @@ struct RuleCraftStats
 		b.template addField<Stat, &RuleCraftStats::shieldBleedThrough>(prefix + "getShieldBleedThrough");
 		b.template addField<Stat, &RuleCraftStats::soldiers>(prefix + "getMaxUnits");
 		b.template addField<Stat, &RuleCraftStats::vehicles>(prefix + "getMaxVehiclesAndLargeSoldiers");
+		b.template addField<Stat, &RuleCraftStats::maxItems>(prefix + "getMaxItems");
+		//b.template addField<Stat, &RuleCraftStats::maxStorageSpace>(prefix + "getMaxStorageSpace");
 	}
 };
 
@@ -194,9 +205,8 @@ private:
 	RuleTerrain *_battlescapeTerrainData;
 	int _maxSkinIndex;
 	bool _keepCraftAfterFailedMission, _allowLanding, _spacecraft, _notifyWhenRefueled, _autoPatrol, _undetectable;
-	int _listOrder, _maxItems, _maxAltitude;
+	int _listOrder, _maxAltitude;
 	std::string _defaultAltitude;
-	double _maxStorageSpace;
 	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
 	RuleCraftStats _stats;
