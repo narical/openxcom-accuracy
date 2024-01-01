@@ -21,21 +21,21 @@
 #include <climits>
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
+#include "../Engine/Unicode.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Interface/ComboBox.h"
-#include "../Interface/TextButton.h"
-#include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
+#include "../Interface/Window.h"
 #include "../Menu/ErrorMessageState.h"
+#include "../Mod/RuleInterface.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/Soldier.h"
-#include "../Mod/RuleInterface.h"
-#include "../Engine/Unicode.h"
 
 namespace OpenXcom
 {
@@ -144,68 +144,57 @@ void SoldiersAIState::btnOkClick(Action *)
 }
 
 /**
- * Shows the soldiers in a list at specified offset/scroll.
+ * Shows the units/soldiers in a list at specified offset/scroll.
  */
 void SoldiersAIState::initList(size_t scrl)
 {
-	int row = 0;
 	_lstSoldiers->clearList();
 
 	_lstSoldiers->setColumns(3, 106, 98, 76);
 
+	std::vector<bool> allows;
 	if (!_soldiers.empty())
 	{
 		for (const auto* soldier : _soldiers)
 		{
-			_lstSoldiers->addRow(3, soldier->getName(true, 30).c_str(), tr(soldier->getRankString()).c_str(), "");
-
-			Uint8 color;
-			if (soldier->getAllowAutoCombat())
-			{
-				color = _lstSoldiers->getSecondaryColor();
-				_lstSoldiers->setCellText(row, 2, tr("True"));
-			}
-			else
-			{
-				color = _lstSoldiers->getColor();
-				_lstSoldiers->setCellText(row, 2, tr("False"));
-			}
-			_lstSoldiers->setRowColor(row, color);
-			row++;
+			_lstSoldiers->addRow(3, soldier->getName(true, 19).c_str(), tr(soldier->getRankString()).c_str(), "");
+			allows.emplace_back(soldier->getAllowAutoCombat());
 		}
 	}
 	else
 	{
 		for (const auto* unit : _units)
 		{
-			const std::string name = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getName(true, 30) : unit->getName(_game->getLanguage());
-			const std::string rank = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getRankString() : std::string("");
+			const std::string name = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getName(true, 19) : unit->getName(_game->getLanguage());	//BattleUnit::getName has no maxLength parameter. Default value might change and Statstring might be way to long.
+			const std::string rank = unit->getRankString();
 			_lstSoldiers->addRow(3, name.c_str(), tr(rank).c_str(), "");
-			//_lstSoldiers->addRow(2, name.c_str(), "");
-
-			Uint8 color;
-			const bool allow = unit->getAllowAutoCombat();
-			if (allow)
-			{
-				color = _lstSoldiers->getSecondaryColor();
-				_lstSoldiers->setCellText(row, 2, tr("True"));
-			}
-			else
-			{
-				color = _lstSoldiers->getColor();
-				_lstSoldiers->setCellText(row, 2, tr("False"));
-			}
-			_lstSoldiers->setRowColor(row, color);
-			row++;
-		}		
+			allows.emplace_back(unit->getAllowAutoCombat());
+		}
 	}
+	
+	for (int row = 0; row < allows.size(); row++)
+	{
+		Uint8 color;
+		if (allows[row])
+		{
+			color = _lstSoldiers->getSecondaryColor();
+			_lstSoldiers->setCellText(row, 2, tr("True"));
+		}
+		else
+		{
+			color = _lstSoldiers->getColor();
+			_lstSoldiers->setCellText(row, 2, tr("False"));
+		}
+		_lstSoldiers->setRowColor(row, color);
+	}
+	
 	if (scrl)
 		_lstSoldiers->scrollTo(scrl);
 	_lstSoldiers->draw();
 }
 
 /**
- * Shows the soldiers in a list.
+ * Shows the units/soldiers in a list.
  */
 void SoldiersAIState::init()
 {
@@ -214,7 +203,7 @@ void SoldiersAIState::init()
 }
 
 /**
- * Shows the selected soldier's info.
+ * Toggle the alllowAutoCombat flag for selected unit/soldier
  * @param action Pointer to an action.
  */
 void SoldiersAIState::lstSoldiersClick(Action *action)
@@ -227,7 +216,7 @@ void SoldiersAIState::lstSoldiersClick(Action *action)
 	int row = _lstSoldiers->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
-		const bool newAI = toggleAI();
+		const bool newAI = _soldiers.empty() ? toggleAIBattleUnit() : toggleAISoldier();
 		Uint8 color = _lstSoldiers->getColor();
 		if (newAI)
 		{
@@ -243,24 +232,16 @@ void SoldiersAIState::lstSoldiersClick(Action *action)
 }
 
 
-bool SoldiersAIState::toggleAI()
-{
-	if (!_soldiers.empty())
-	{
-		Soldier *s = _soldiers.at(_lstSoldiers->getSelectedRow());
-		return s->toggleAllowAutoCombat();
-	}
-	else
-	{
-		auto* bu = _units.at(_lstSoldiers->getSelectedRow());
-		return bu->toggleAllowAutoCombat();
-	}
-}
-
-void SoldiersAIState::setAI(const bool AI)
+bool SoldiersAIState::toggleAISoldier()
 {
 	Soldier *s = _soldiers.at(_lstSoldiers->getSelectedRow());
-	s->setAllowAutoCombat(AI);
+	return s->toggleAllowAutoCombat();
+}
+
+bool SoldiersAIState::toggleAIBattleUnit()
+{
+	auto* bu = _units.at(_lstSoldiers->getSelectedRow());
+	return bu->toggleAllowAutoCombat();
 }
 
 }

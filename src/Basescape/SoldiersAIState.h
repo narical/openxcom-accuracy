@@ -75,9 +75,9 @@ public:
 	void lstSoldiersClick(Action *action);
 
 	/// Toggle AI control @ autocombat of currently selected soldier
-	bool toggleAI();
-	/// Set AI control @ autocombat of currently selected soldier
-	void setAI(const bool AI);
+	bool toggleAISoldier();
+	/// Toggle AI control @ autocombat of currently selected battleunit
+	bool toggleAIBattleUnit();
 };
 
 }
