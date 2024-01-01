@@ -67,10 +67,10 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	add(_window, "window", "selectNewResearch");
 	add(_btnQuickSearch, "button", "selectNewResearch");
 	add(_btnOK, "button", "selectNewResearch");
-	add(_cbxSort, "button", "selectNewResearch");
 	add(_btnShowOnlyNew, "button", "selectNewResearch");
 	add(_txtTitle, "text", "selectNewResearch");
 	add(_lstResearch, "list", "selectNewResearch");
+	add(_cbxSort, "button", "selectNewResearch");
 
 	_colorNormal = _lstResearch->getColor();
 	_colorNew = Options::oxceHighlightNewTopicsHidden ? _lstResearch->getSecondaryColor() : _colorNormal;
