@@ -885,7 +885,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 			}
 			change = c->getRules()->getMaxItems() - _totalItems;
 		}
-		if (c->getRules()->getMaxStorageSpace() > 0.0 && _totalItemStorageSize + (change * item->getSize()) > c->getRules()->getMaxStorageSpace() + 0.05)
+		if (_totalItemStorageSize + (change * item->getSize()) > c->getRules()->getMaxStorageSpace() + 0.05)
 		{
 			if (item->getSize() > 0.0)
 			{

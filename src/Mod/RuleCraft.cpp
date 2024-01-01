@@ -40,7 +40,7 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(24), _score(0), _battlescapeTerrainData(0), _maxSkinIndex(0),
 	_keepCraftAfterFailedMission(false), _allowLanding(true), _spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _undetectable(false),
-	_listOrder(listOrder), _maxItems(999999), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _maxStorageSpace(0.0), _stats(),
+	_listOrder(listOrder), _maxItems(999999), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _maxStorageSpace(99999.0), _stats(),
 	_shieldRechargeAtBase(1000),
 	_mapVisible(true), _forceShowInMonthlyCosts(false), _useAllStartTiles(false)
 {
