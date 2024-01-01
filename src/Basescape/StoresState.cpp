@@ -313,9 +313,10 @@ void StoresState::initList(bool grandTotal)
 				// 4. items/aliens in research
 				for (const auto* research : xbase->getResearch())
 				{
-					if (research->getRules()->needItem() && research->getRules()->getName() == itemType)
+					const auto* rrule = research->getRules();
+					if (rrule->needItem() && rrule->destroyItem())
 					{
-						if (research->getRules()->destroyItem())
+						if (rrule->getNeededItem() && rrule->getNeededItem()->getType() == itemType)
 						{
 							qty += 1;
 							break;

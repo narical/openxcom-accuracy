@@ -179,7 +179,7 @@ void GlobalResearchState::fillProjectList()
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
 		auto& baseProjects = xbase->getResearch();
-		if (!baseProjects.empty())
+		if (!baseProjects.empty() || xbase->getScientists() > 0)
 		{
 			std::string baseName = xbase->getName(_game->getLanguage());
 			_lstResearch->addRow(4, baseName.c_str(), "", "", "");
@@ -200,6 +200,13 @@ void GlobalResearchState::fillProjectList()
 
 			_bases.push_back(xbase);
 			_topics.push_back(r);
+		}
+		if (baseProjects.empty() && xbase->getScientists() > 0)
+		{
+			_lstResearch->addRow(3, tr("STR_NONE").c_str(), "", "");
+
+			_bases.push_back(xbase);
+			_topics.push_back(0);
 		}
 
 		availableScientists += xbase->getAvailableScientists();
