@@ -198,7 +198,7 @@ bool AlienMission::isOver() const
 void AlienMission::think(Game &engine, const Globe &globe)
 {
 	// if interrupted, don't generate any more UFOs or anything else
-	if (_interrupted || _multiUfoRetaliationInProgress)
+	if (_interrupted || (_multiUfoRetaliationInProgress && !_rule.isMultiUfoRetaliationExtra()))
 	{
 		return;
 	}
@@ -443,6 +443,10 @@ Base* AlienMission::selectXcomBase(SavedGame& game, const RuleRegion& regionRule
 				if (xb->getRetaliationTarget())
 				{
 					validxcombases.push_back(xb);
+					if (_rule.skipScoutingPhase() || _rule.isMultiUfoRetaliation())
+					{
+						continue; // non-vanilla: let's consider all, for fun
+					}
 					break; // vanilla: the first is enough
 				}
 			}
@@ -522,11 +526,25 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	if (_rule.getObjective() == OBJECTIVE_RETALIATION || _rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
 	{
 		const RuleRegion &regionRules = *mod.getRegion(_region, true);
+
+		// skip the scouting phase of a retaliation mission
+		if (_rule.isMultiUfoRetaliationExtra() && _rule.skipScoutingPhase() && _rule.getObjective() == OBJECTIVE_RETALIATION)
+		{
+			for (auto* xbase : *game.getBases())
+			{
+				if (regionRules.insideRegion(xbase->getLongitude(), xbase->getLatitude()))
+				{
+					xbase->setRetaliationTarget(true);
+					// break; // mark all xcom bases in the region
+				}
+			}
+		}
+
 		Base* xcombase = selectXcomBase(game, regionRules);
 		if (xcombase)
 		{
 			// Spawn a battleship straight for the XCOM base.
-			const RuleUfo &battleshipRule = *mod.getUfo(_rule.getSpawnUfo(), true);
+			const RuleUfo &battleshipRule = _rule.getSpawnUfo().empty() ? *ufoRule : *mod.getUfo(_rule.getSpawnUfo(), true);
 			const UfoTrajectory &assaultTrajectory = *mod.getUfoTrajectory(UfoTrajectory::RETALIATION_ASSAULT_RUN, true);
 			Ufo *ufo = new Ufo(&battleshipRule, game.getId("STR_UFO_UNIQUE"));
 			ufo->setMissionInfo(this, &assaultTrajectory);
@@ -726,6 +744,20 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 	else
 	{
 		_spawnCountdown = initialCount;
+	}
+
+	// skip the scouting phase of a retaliation mission
+	if (_rule.skipScoutingPhase() && _rule.getObjective() == OBJECTIVE_RETALIATION)
+	{
+		for (auto* xbase : *engine.getSavedGame()->getBases())
+		{
+			RuleRegion* region = engine.getMod()->getRegion(_region, false);
+			if (region && region->insideRegion(xbase->getLongitude(), xbase->getLatitude()))
+			{
+				xbase->setRetaliationTarget(true);
+				// break; // mark all xcom bases in the region
+			}
+		}
 	}
 
 	// Earth-based alien operations
