@@ -3218,8 +3218,8 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxSoldiers(), "maxSoldiers", -1);
 	addInteger(ss, craftRule->getMaxVehicles(), "maxVehicles", -1);
 
-	addInteger(ss, craftRule->getMaxItems(), "maxItems", 999999);
-	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace", 99999.0);
+	addInteger(ss, craftRule->getMaxItems(), "maxItems");
+	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace");
 
 	addInteger(ss, craftRule->getMaxAltitude(), "maxAltitude", -1);
 	addInteger(ss, craftRule->getWeapons(), "weapons");
@@ -3732,8 +3732,6 @@ void StatsForNerdsState::initCraftWeaponList()
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldBleedThrough, "shieldBleedThrough");
 		addInteger(ss, craftWeaponRule->getBonusStats().soldiers, "soldiers");
 		addInteger(ss, craftWeaponRule->getBonusStats().vehicles, "vehicles");
-		addInteger(ss, craftWeaponRule->getBonusStats().maxItems, "maxItems", 0);
-		addDouble(ss, craftWeaponRule->getBonusStats().maxStorageSpace, "maxStorageSpace", 0.0);
 		endHeading();
 	}
 

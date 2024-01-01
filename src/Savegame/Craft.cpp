@@ -556,7 +556,7 @@ std::string Craft::getAltitude() const
 	}
 	else
 	{
-		return _rules->getDefaultDisplayAltitude();
+		return "STR_VERY_LOW";
 	}
 }
 

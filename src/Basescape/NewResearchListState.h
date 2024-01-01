@@ -49,8 +49,7 @@ private:
 	Text *_txtTitle;
 	TextList *_lstResearch;
 	size_t _lstScroll;
-	Uint8 _colorNormal, _colorNew, _colorHidden;
-	bool _isSortingEnabled;
+	Uint8 _colorNormal, _colorNew;
 	void onSelectProject(Action *action);
 	void onToggleProjectStatus(Action *action);
 	void onOpenTechTreeViewer(Action *action);

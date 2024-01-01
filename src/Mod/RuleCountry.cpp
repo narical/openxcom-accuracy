@@ -46,11 +46,11 @@ RuleCountry::~RuleCountry()
  * Loads the country type from a YAML file.
  * @param node YAML node.
  */
-void RuleCountry::load(const YAML::Node &node, const ModScript& parsers, Mod* mod)
+void RuleCountry::load(const YAML::Node &node, const ModScript& parsers)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, parsers, mod);
+		load(parent, parsers);
 	}
 
 	_signedPactEventName = node["signedPactEvent"].as<std::string>(_signedPactEventName);
@@ -75,9 +75,6 @@ void RuleCountry::load(const YAML::Node &node, const ModScript& parsers, Mod* mo
 		if (_latMin.back() > _latMax.back())
 			std::swap(_latMin.back(), _latMax.back());
 	}
-
-	mod->loadBaseFunction(_type, _provideBaseFunc, node["provideBaseFunc"]);
-	mod->loadBaseFunction(_type, _forbiddenBaseFunc, node["forbiddenBaseFunc"]);
 
 	_countryScripts.load(_type, node, parsers.countryScripts);
 	_scriptValues.load(node, parsers.getShared());

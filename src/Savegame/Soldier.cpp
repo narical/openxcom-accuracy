@@ -1819,12 +1819,6 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 			}
 		}
 
-		// reset soldier rank, if needed
-		if (transformationRule->getResetRank())
-		{
-			_rank = RANK_ROOKIE;
-		}
-
 		// change stats
 		_currentStats += calculateStatChanges(mod, transformationRule, sourceSoldier, 0, sourceSoldierType);
 

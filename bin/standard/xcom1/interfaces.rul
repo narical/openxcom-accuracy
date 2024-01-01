@@ -1343,9 +1343,6 @@ interfaces:
         color: 208   # white
         color2: 241  # pink
         border: 218  # blue
-      - id: listExtended
-        color: 246   # purple
-        color2: 213  # gold
       - id: button
         color: 246   # purple
   - type: allocateResearch

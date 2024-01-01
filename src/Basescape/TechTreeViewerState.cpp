@@ -537,23 +537,12 @@ void TechTreeViewerState::initLists()
 			_leftTopics.push_back("-");
 			_leftFlags.push_back(TTV_NONE);
 			++row;
-			if (rule->getNeededItem())
-			{
-				std::string itemName = tr(rule->getNeededItem()->getType());
-				itemName.insert(0, "  ");
-				_lstLeft->addRow(1, itemName.c_str());
-				_lstLeft->setRowColor(row, _white);
-				_leftTopics.push_back(rule->getNeededItem()->getType());
-				_leftFlags.push_back(TTV_ITEMS);
-			}
-			else
-			{
-				std::string itemName = "  -";
-				_lstLeft->addRow(1, itemName.c_str());
-				_lstLeft->setRowColor(row, _white);
-				_leftTopics.push_back("-");
-				_leftFlags.push_back(TTV_NONE);
-			}
+			std::string itemName = tr(_selectedTopic);
+			itemName.insert(0, "  ");
+			_lstLeft->addRow(1, itemName.c_str());
+			_lstLeft->setRowColor(row, getResearchColor(_selectedTopic));
+			_leftTopics.push_back(_selectedTopic);
+			_leftFlags.push_back(TTV_ITEMS);
 			++row;
 		}
 

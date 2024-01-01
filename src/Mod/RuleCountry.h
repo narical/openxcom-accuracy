@@ -21,7 +21,6 @@
 #include <yaml-cpp/yaml.h>
 #include "RuleEvent.h"
 #include "ModScript.h"
-#include "RuleBaseFacilityFunctions.h"
 
 namespace OpenXcom
 {
@@ -45,8 +44,6 @@ private:
 	int _labelColor, _zoomLevel;
 	const RuleEvent* _signedPactEvent = nullptr;
 	const RuleEvent* _rejoinedXcomEvent = nullptr;
-	RuleBaseFacilityFunctions _provideBaseFunc = 0;
-	RuleBaseFacilityFunctions _forbiddenBaseFunc = 0;
 
 	ModScript::CountryScripts::Container _countryScripts;
 	ScriptValues<RuleCountry> _scriptValues;
@@ -61,7 +58,7 @@ public:
 	/// Cleans up the country ruleset.
 	~RuleCountry();
 	/// Loads the country from YAML.
-	void load(const YAML::Node& node, const ModScript& parsers, Mod* mod);
+	void load(const YAML::Node& node, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the country's type.
@@ -88,11 +85,6 @@ public:
 	int getLabelColor() const;
 	/// Gets the minimum zoom level required to display the label (Note: works for extraGlobeLabels only, not for vanilla countries).
 	int getZoomLevel() const;
-	/// Gets the functions provided by the country.
-	RuleBaseFacilityFunctions getProvidedBaseFunc() const { return _provideBaseFunc; }
-	/// Gets the functions forbidden by the coutry.
-	RuleBaseFacilityFunctions getForbiddenBaseFunc() const { return _forbiddenBaseFunc; }
-
 	/// Gets script.
 	template<typename Script>
 	const typename Script::Container& getScript() const { return _countryScripts.get<Script>(); }

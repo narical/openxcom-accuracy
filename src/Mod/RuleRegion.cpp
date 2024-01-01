@@ -18,7 +18,6 @@
  */
 #include <assert.h>
 #include "RuleRegion.h"
-#include "Mod.h"
 #include "City.h"
 #include "../Engine/Logger.h"
 #include "../Engine/RNG.h"
@@ -49,11 +48,11 @@ RuleRegion::~RuleRegion()
  * Loads the region type from a YAML file.
  * @param node YAML node.
  */
-void RuleRegion::load(const YAML::Node &node, Mod* mod)
+void RuleRegion::load(const YAML::Node &node)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod);
+		load(parent);
 	}
 
 	_cost = node["cost"].as<int>(_cost);
@@ -114,9 +113,6 @@ void RuleRegion::load(const YAML::Node &node, Mod* mod)
 	}
 	_regionWeight = node["regionWeight"].as<size_t>(_regionWeight);
 	_missionRegion = node["missionRegion"].as<std::string>(_missionRegion);
-
-	mod->loadBaseFunction(_type, _provideBaseFunc, node["provideBaseFunc"]);
-	mod->loadBaseFunction(_type, _forbiddenBaseFunc, node["forbiddenBaseFunc"]);
 }
 
 /**

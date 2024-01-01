@@ -1858,7 +1858,7 @@ void SavedGame::getAvailableResearchProjects(std::vector<RuleResearch *> &projec
 			}
 
 			// Check for needed item in the given base
-			if (research->needItem() && base->getStorageItems()->getItem(research->getNeededItem()) == 0)
+			if (research->needItem() && base->getStorageItems()->getItem(research->getName()) == 0)
 			{
 				continue;
 			}
@@ -2093,18 +2093,21 @@ int SavedGame::getManufactureRuleStatus(const std::string &manufactureRule)
 }
 
 /**
- * Gets the status of a research rule.
+ * Is the research new?
  * @param researchRule Research rule ID.
- * @return Status (0=new, 1=normal, 2=disabled, 3=hidden).
+ * @return True, if the research rule status is new.
  */
-int SavedGame::getResearchRuleStatus(const std::string &researchRule) const
+bool SavedGame::isResearchRuleStatusNew(const std::string &researchRule) const
 {
 	auto it = _researchRuleStatus.find(researchRule);
 	if (it != _researchRuleStatus.end())
 	{
-		return it->second;
+		if (it->second != RuleResearch::RESEARCH_STATUS_NEW)
+		{
+			return false;
+		}
 	}
-	return RuleResearch::RESEARCH_STATUS_NEW; // no status = new
+	return true; // no status = new
 }
 
 /**

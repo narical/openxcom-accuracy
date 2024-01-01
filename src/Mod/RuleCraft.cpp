@@ -40,7 +40,7 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(24), _score(0), _battlescapeTerrainData(0), _maxSkinIndex(0),
 	_keepCraftAfterFailedMission(false), _allowLanding(true), _spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _undetectable(false),
-	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _stats(),
+	_listOrder(listOrder), _maxItems(0), _maxAltitude(-1), _maxStorageSpace(0.0), _stats(),
 	_shieldRechargeAtBase(1000),
 	_mapVisible(true), _forceShowInMonthlyCosts(false), _useAllStartTiles(false)
 {
@@ -52,8 +52,6 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_stats.radarRange = 672;
 	_stats.radarChance = 100;
 	_stats.sightRange = 1696;
-	_stats.maxItems = 999999;
-	_stats.maxStorageSpace = 99999.0;
 	_weaponStrings[0] = "STR_WEAPON_ONE";
 	_weaponStrings[1] = "STR_WEAPON_TWO";
 }
@@ -151,7 +149,8 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_undetectable = node["undetectable"].as<bool>(_undetectable);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
 	_maxAltitude = node["maxAltitude"].as<int>(_maxAltitude);
-	_defaultAltitude = node["defaultAltitude"].as<std::string>(_defaultAltitude);
+	_maxItems = node["maxItems"].as<int>(_maxItems);
+	_maxStorageSpace = node["maxStorageSpace"].as<double>(_maxStorageSpace);
 
 	if (const YAML::Node &types = node["weaponTypes"])
 	{
@@ -556,7 +555,7 @@ const std::vector<int> &RuleCraft::getCraftInventoryTile() const
  */
 int RuleCraft::getMaxItems() const
 {
-	return _stats.maxItems;
+	return _maxItems;
 }
 
 /**
@@ -565,7 +564,7 @@ int RuleCraft::getMaxItems() const
  */
 double RuleCraft::getMaxStorageSpace() const
 {
-	return _stats.maxStorageSpace;
+	return _maxStorageSpace;
 }
 
 /**
@@ -625,15 +624,6 @@ const RuleCraftStats& RuleCraft::getStats() const
 int RuleCraft::getMaxAltitude() const
 {
 	return _maxAltitude;
-}
-
-/**
- * Gets the craft's default display altitude.
- * @return String ID of an altitude for display purposes.
- */
-const std::string& RuleCraft::getDefaultDisplayAltitude() const
-{
-	return _defaultAltitude;
 }
 
 /**
