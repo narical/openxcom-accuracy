@@ -68,7 +68,7 @@ namespace OpenXcom
 {
 
 RuleAlienMission::RuleAlienMission(const std::string &type) :
-	_type(type), _points(0), _objective(OBJECTIVE_SCORE), _spawnZone(-1),
+	_type(type), _skipScoutingPhase(false), _points(0), _objective(OBJECTIVE_SCORE), _spawnZone(-1),
 	_retaliationOdds(-1), _endlessInfiltration(true), _multiUfoRetaliation(false), _ignoreBaseDefenses(false), _despawnEvenIfTargeted(false), _showAlienBase(false),
 	_operationType(AMOT_SPACE), _operationSpawnZone(-1),
 	_targetBaseOdds(0)
@@ -105,6 +105,7 @@ void RuleAlienMission::load(const YAML::Node &node)
 	_waves = node["waves"].as< std::vector<MissionWave> >(_waves);
 	_objective = (MissionObjective)node["objective"].as<int>(_objective);
 	_spawnUfo = node["spawnUfo"].as<std::string>(_spawnUfo);
+	_skipScoutingPhase = node["skipScoutingPhase"].as<bool>(_skipScoutingPhase);
 	_spawnZone = node["spawnZone"].as<int>(_spawnZone);
 	_weights = node["missionWeights"].as< std::map<size_t, int> >(_weights);
 	_retaliationOdds = node["retaliationOdds"].as<int>(_retaliationOdds);

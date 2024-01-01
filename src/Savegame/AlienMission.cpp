@@ -728,6 +728,20 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 		_spawnCountdown = initialCount;
 	}
 
+	// skip the scouting phase of a retaliation mission
+	if (_rule.skipScoutingPhase() && _rule.getObjective() == OBJECTIVE_RETALIATION)
+	{
+		for (auto* xbase : *engine.getSavedGame()->getBases())
+		{
+			RuleRegion* region = engine.getMod()->getRegion(_region, false);
+			if (region && region->insideRegion(xbase->getLongitude(), xbase->getLatitude()))
+			{
+				xbase->setRetaliationTarget(true);
+				// break; // mark all xcom bases in the region
+			}
+		}
+	}
+
 	// Earth-based alien operations
 	if (_rule.getOperationType() != AMOT_SPACE && !_base)
 	{

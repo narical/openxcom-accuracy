@@ -143,6 +143,8 @@ public:
 	MissionObjective getObjective() const { return _objective; }
 	/// Gets the UFO type for special spawns.
 	const std::string &getSpawnUfo() const { return _spawnUfo; }
+	/// Should the scouting phase of the retaliation mission be skipped?
+	bool skipScoutingPhase() const { return _skipScoutingPhase; }
 	/// Gets the zone for spawning an alien site or base.
 	int getSpawnZone() const { return _spawnZone; }
 	/// Gets the chances of this mission based on the game time.
@@ -180,6 +182,8 @@ private:
 	std::string _type;
 	/// The UFO to use for spawning.
 	std::string _spawnUfo;
+	/// Should the scouting phase of the retaliation mission be skipped?
+	bool _skipScoutingPhase;
 	/// The race distribution over game time.
 	std::vector<std::pair<size_t, WeightedOptions*> > _raceDistribution;
 	/// The mission's weights.
