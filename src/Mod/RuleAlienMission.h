@@ -155,6 +155,8 @@ public:
 	bool isEndlessInfiltration() const;
 	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
 	bool isMultiUfoRetaliation() const { return _multiUfoRetaliation; }
+	/// Should the retaliation mission continue generating UFOs even after the first base defense?
+	bool isMultiUfoRetaliationExtra() const { return _multiUfoRetaliationExtra; }
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool ignoreBaseDefenses() const { return _ignoreBaseDefenses; }
 	/// Should the mission site despawn even if targeted?
@@ -202,6 +204,8 @@ private:
 	bool _endlessInfiltration;
 	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
 	bool _multiUfoRetaliation;
+	/// Should the retaliation mission continue generating UFOs even after the first base defense?
+	bool _multiUfoRetaliationExtra;
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool _ignoreBaseDefenses;
 	/// Should the mission site despawn even if targeted?
