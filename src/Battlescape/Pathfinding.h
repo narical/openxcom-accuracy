@@ -59,6 +59,7 @@ private:
 	bool _strafeMove;
 	bool _ctrlUsed = false;
 	bool _altUsed = false;
+	bool _ignoreFriends = false;
 	PathfindingCost _totalTUCost;
 
 	/// Gets the node at certain position.
@@ -80,6 +81,7 @@ private:
 	bool canFallDown(const Tile *destinationTile, int size) const;
 	std::vector<int> _path;
 public:
+	void setIgnoreFriends(bool ignore) { _ignoreFriends = ignore; }
 	/// Determines whether the unit is going up a stairs.
 	bool isOnStairs(Position startPosition, Position endPosition) const;
 	/// Determines whether or not movement between start tile and end tile is possible in the direction.

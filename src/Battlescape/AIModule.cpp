@@ -2975,7 +2975,7 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 
 	// Create reachabiliy and turncost-list for the entire map
-	if (Options::traceAI)
+	if (_traceAI)
 	{
 		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: " << _save->getTurn() << " Intelligence: "<<_unit->getBrutalIntelligence();
 	}
@@ -3104,10 +3104,12 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (!target->hasPanickedLastTurn())
 		{
+			_save->getPathfinding()->setIgnoreFriends(true);
 			for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
 			{
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
 			}
+			_save->getPathfinding()->setIgnoreFriends(false);
 		}
 		BattleUnit* LoFCheckUnitForPath = NULL;
 		if (_unit->isCheatOnMovement())
@@ -3976,12 +3978,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI)
-			//{
-			//	tile->setMarkerColor(doorDivider * 10);
-			//	tile->setPreview(10);
-			//	tile->setTUMarker(doorDivider * 10);
-			//}
+			if (_traceAI)
+			{
+				tile->setMarkerColor(discoverThreat);
+				tile->setPreview(10);
+				tile->setTUMarker(discoverThreat);
+			}
 		}
 		if (_traceAI)
 		{

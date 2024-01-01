@@ -352,7 +352,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			{
 				if (unit->getFaction() == FACTION_PLAYER && overlaping->getVisible())
 					knowsOfOverlapping = true; // player know all visible units
-				if (unit->getFaction() == overlaping->getFaction())
+				if (unit->getFaction() == overlaping->getFaction() && !_ignoreFriends)
 					knowsOfOverlapping = true;
 				if (unit->getFaction() != FACTION_PLAYER &&
 					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), overlaping) != unit->getUnitsSpottedThisTurn().end())
@@ -864,7 +864,7 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 			{
 				if (unit->getFaction() == FACTION_PLAYER && u->getVisible())
 					return true; // player know all visible units
-				if (unit->getFaction() == u->getFaction())
+				if (unit->getFaction() == u->getFaction() && !_ignoreFriends)
 					return true;
 				if (unit->getFaction() != FACTION_PLAYER &&
 					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), u) != unit->getUnitsSpottedThisTurn().end())
