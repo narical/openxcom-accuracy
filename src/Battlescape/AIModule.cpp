@@ -3978,12 +3978,12 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			if (_traceAI)
-			{
-				tile->setMarkerColor(discoverThreat);
-				tile->setPreview(10);
-				tile->setTUMarker(discoverThreat);
-			}
+			//if (_traceAI)
+			//{
+			//	tile->setMarkerColor(discoverThreat);
+			//	tile->setPreview(10);
+			//	tile->setTUMarker(discoverThreat);
+			//}
 		}
 		if (_traceAI)
 		{
