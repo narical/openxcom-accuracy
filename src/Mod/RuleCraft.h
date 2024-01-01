@@ -38,7 +38,11 @@ class ScriptParserBase;
  */
 struct RuleCraftStats
 {
-	int fuelMax, damageMax, speedMax, accel, radarRange, radarChance, sightRange, hitBonus, avoidBonus, powerBonus, armor, shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough, soldiers, vehicles;
+	int fuelMax, damageMax, speedMax, accel;
+	int radarRange, radarChance, sightRange;
+	int hitBonus, avoidBonus, powerBonus, armor;
+	int shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough;
+	int soldiers, vehicles;
 
 	/// Default constructor.
 	RuleCraftStats() :

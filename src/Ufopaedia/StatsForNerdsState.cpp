@@ -3218,7 +3218,7 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxSoldiers(), "maxSoldiers", -1);
 	addInteger(ss, craftRule->getMaxVehicles(), "maxVehicles", -1);
 
-	addInteger(ss, craftRule->getMaxItems(), "maxItems");
+	addInteger(ss, craftRule->getMaxItems(), "maxItems", 999999);
 	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace");
 
 	addInteger(ss, craftRule->getMaxAltitude(), "maxAltitude", -1);

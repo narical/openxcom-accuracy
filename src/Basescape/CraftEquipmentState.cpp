@@ -874,7 +874,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 	}
 	else
 	{
-		if (c->getRules()->getMaxItems() > 0 && _totalItems + change > c->getRules()->getMaxItems())
+		if (_totalItems + change > c->getRules()->getMaxItems())
 		{
 			if (!suppressErrors)
 			{
