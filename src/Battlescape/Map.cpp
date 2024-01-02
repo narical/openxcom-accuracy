@@ -2003,7 +2003,7 @@ void Map::drawTerrain(Surface *surface)
 							surface,
 							screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
 							screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
-							4);
+							0, false, 3);
 					}
 				}
 				if (myUnit->getScannedTurn() == _save->getTurn())
