@@ -1446,9 +1446,6 @@ void GeoscapeState::time5Seconds()
  */
 class DetectXCOMBase
 {
-	typedef Ufo* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Create a detector for the given base.
 	DetectXCOMBase(const Base &base) : _base(base) { /* Empty by design.  */ }
@@ -1476,19 +1473,6 @@ bool DetectXCOMBase::operator()(const Ufo *ufo) const
 	}
 	return RNG::percent(_base.getDetectionChance());
 }
-
-/**
- * Functor that marks an XCOM base for retaliation.
- * This is required because of the iterator type.
- */
-struct SetRetaliationTarget
-{
-	typedef std::map<const Region*, Base*>::value_type argument_type;
-	typedef void result_type;
-
-	/// Mark as a valid retaliation target.
-	void operator()(const argument_type &iter) const { iter.second->setRetaliationTarget(true); }
-};
 
 /**
  * Takes care of any game logic that has to
@@ -1570,7 +1554,10 @@ void GeoscapeState::time10Minutes()
 			}
 		}
 		// Now mark the bases as discovered.
-		std::for_each(discovered.begin(), discovered.end(), SetRetaliationTarget());
+		for (auto& pair : discovered)
+		{
+			pair.second->setRetaliationTarget(true);
+		}
 	}
 
 	// Handle alien bases detecting xcom craft and generating hunt missions
@@ -2228,9 +2215,6 @@ void GeoscapeState::time1Hour()
  */
 class GenerateSupplyMission
 {
-	typedef const AlienBase* argument_type;
-	typedef void result_type;
-
 public:
 	/// Store rules and game data references for later use.
 	GenerateSupplyMission(Game &engine, const Globe &globe) : _engine(engine), _globe(globe) { /* Empty by design */ }

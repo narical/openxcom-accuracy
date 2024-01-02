@@ -105,9 +105,6 @@ Ufo::~Ufo()
  */
 class matchMissionID
 {
-	typedef const AlienMission* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Store ID for later comparisons.
 	matchMissionID(int id) : _id(id) { /* Empty by design. */ }

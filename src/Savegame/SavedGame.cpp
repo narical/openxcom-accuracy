@@ -80,9 +80,6 @@ namespace
 
 struct findRuleResearch
 {
-	typedef ResearchProject* argument_type;
-	typedef bool result_type;
-
 	RuleResearch * _toFind;
 	findRuleResearch(RuleResearch * toFind);
 	bool operator()(const ResearchProject *r) const;
@@ -99,9 +96,6 @@ bool findRuleResearch::operator()(const ResearchProject *r) const
 
 struct equalProduction
 {
-	typedef Production* argument_type;
-	typedef bool result_type;
-
 	RuleManufacture * _item;
 	equalProduction(RuleManufacture * item);
 	bool operator()(const Production * p) const;
@@ -2599,9 +2593,6 @@ void SavedGame::setWarned(bool warned)
  */
 class ContainsPoint
 {
-	typedef const Region* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Remember the coordinates.
 	ContainsPoint(double lon, double lat) : _lon(lon), _lat(lat) { /* Empty by design. */ }
@@ -2643,9 +2634,6 @@ Region *SavedGame::locateRegion(const Target &target) const
  */
 class CountryContainsPoint
 {
-	typedef const Country* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Remember the coordinates.
 	CountryContainsPoint(double lon, double lat) : _lon(lon), _lat(lat) { /* Empty by design. */ }

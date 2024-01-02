@@ -61,9 +61,6 @@ AlienMission::~AlienMission()
 
 class matchById
 {
-	typedef const AlienBase* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Remember ID.
 	matchById(int id, std::string type) : _id(id), _type(type) { /* Empty by design. */ }
@@ -861,9 +858,6 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
  */
 class MatchBaseCoordinates
 {
-	typedef const Base* argument_type;
-	typedef bool result_type;
-
 public:
 	/// Remember the query coordinates.
 	MatchBaseCoordinates(double lon, double lat) : _lon(lon), _lat(lat) { /* Empty by design. */ }
