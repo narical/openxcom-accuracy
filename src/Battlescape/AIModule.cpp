@@ -3215,7 +3215,7 @@ void AIModule::brutalThink(BattleAction* action)
 								Position compPos = pos;
 								compPos.x += x;
 								compPos.y += y;
-								if (weaponRange >= Position::distance(compPos, pos) && hasTileSight(compPos, reachable.first))
+								if (weaponRange >= Position::distance(compPos, reachable.first) && hasTileSight(compPos, reachable.first))
 									discoverThreat = reachable.second;
 							}
 						}
