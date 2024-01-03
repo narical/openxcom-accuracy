@@ -710,7 +710,7 @@ BattlescapeState::BattlescapeState() :
 
 	_barHealthColor = _barHealth->getColor();
 
-	// prime smoke grenade
+	// ready different items and other useful actions
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyLightGrenade, Options::keyReadyLightGrenade);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyHeavyGrenade, Options::keyReadyHeavyGrenade);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyProximityGrenade, Options::keyReadyProximityGrenade);
