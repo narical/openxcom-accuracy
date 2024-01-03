@@ -265,7 +265,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 		if (Options::oxceShowETAMode > 0 && _craft->getDestination())
 		{
 			MovingTarget* mt = dynamic_cast<MovingTarget*>(_craft->getDestination());
-			if (Options::oxceShowETAMode == 1 && mt)
+			if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
 			{
 				// don't show ETA for moving targets (i.e. UFOs and crafts)
 			}

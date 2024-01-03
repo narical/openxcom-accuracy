@@ -284,7 +284,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 				if (Options::oxceShowETAMode > 0 && xcraft->getDestination() && Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
 				{
 					MovingTarget* mt = dynamic_cast<MovingTarget*>(xcraft->getDestination());
-					if (Options::oxceShowETAMode == 1 && mt)
+					if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
 					{
 						// don't show ETA for moving targets (i.e. UFOs and crafts)
 					}

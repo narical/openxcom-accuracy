@@ -122,7 +122,7 @@ ConfirmDestinationState::ConfirmDestinationState(std::vector<Craft*> crafts, Tar
 	if (Options::oxceShowETAMode > 0 && _target)
 	{
 		MovingTarget* mt = dynamic_cast<MovingTarget*>(_target);
-		if (Options::oxceShowETAMode == 1 && mt)
+		if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
 		{
 			// don't show ETA for moving targets (i.e. UFOs and crafts)
 		}
