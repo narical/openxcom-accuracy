@@ -407,6 +407,7 @@ en-US:
   STR_EXTENDED_LINKS: "Links"
 #GeoscapeCraftState.cpp
   STR_AUTO_PATROL: "AUTO-PATROL"
+  STR_ETA: "ETA>{ALT}{0}"
 #GeoscapeState.cpp
   STR_UFO_STARTED_HUNTING: "{0} is on an intercept course with {1}"
   STR_CRAFT_IS_READY: "{0} at {1} is ready."
