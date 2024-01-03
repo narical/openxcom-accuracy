@@ -5914,9 +5914,9 @@ float BattleUnit::getAggressiveness() const
 {
 	if (getFaction() == FACTION_PLAYER)
 		return 1;
-	float aggressiveness = 1;
+	float aggressiveness = 0;
 	if (Options::aggressionMode >= 1)
-		aggressiveness *= getAggression();
+		aggressiveness = getAggression();
 	return aggressiveness;
 }
 
