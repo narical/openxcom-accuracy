@@ -1818,6 +1818,8 @@ std::tuple<int, int, int, int, int> getTrajectoryDataHelper(TileEngine* te, cons
 			trackTile = posTile;
 			t = save->getTile(trackTile);
 		}
+		if (t == nullptr)
+			continue;
 		visibleDistanceVoxels += step;
 		if (t->getFire() == 0)
 		{
