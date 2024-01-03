@@ -464,6 +464,16 @@ void create()
 	// display base detection probability in base info screen
 	_info.push_back(OptionInfo("baseDetectionProbability", &baseDetectionProbability, false, "STR_DISPLAY_BASE_DETECTION_PROBABILITY", "STR_GEOSCAPE"));
 
+	// prime grenades
+	_info.push_back(OptionInfo("keyReadyLightGrenade", &keyReadyLightGrenade, SDLK_COMMA, "STR_KEY_READY_LIGHT_GRENADE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadyHeavyGrenade", &keyReadyHeavyGrenade, SDLK_PERIOD, "STR_KEY_READY_HEAVY_GRENADE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadyProximityGrenade", &keyReadyProximityGrenade, SDLK_SLASH, "STR_KEY_READY_PROXIMITY_GRENADE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadySmokeGrenade", &keyReadySmokeGrenade, SDLK_SEMICOLON, "STR_KEY_READY_SMOKE_GRENADE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadyFlare", &keyReadyFlare, SDLK_QUOTE, "STR_KEY_READY_FLARE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadyScanner", &keyReadyScanner, SDLK_RIGHTBRACKET, "STR_KEY_READY_SCANNER", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyReadyMedikit", &keyReadyMedikit, SDLK_LEFTBRACKET, "STR_KEY_READY_MEDIKIT", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("keyClearLeftHand", &keyClearLeftHand, SDLK_MINUS, "STR_KEY_CLEAR_LEFT_HAND", "STR_BATTLESCAPE"));
+
 }
 
 // we can get fancier with these detection routines, but for now just look for

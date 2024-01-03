@@ -709,6 +709,17 @@ BattlescapeState::BattlescapeState() :
 	_battleGame = new BattlescapeGame(_save, this);
 
 	_barHealthColor = _barHealth->getColor();
+
+	// ready different items and other useful actions
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyLightGrenade, Options::keyReadyLightGrenade);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyHeavyGrenade, Options::keyReadyHeavyGrenade);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyProximityGrenade, Options::keyReadyProximityGrenade);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readySmokeGrenade, Options::keyReadySmokeGrenade);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyFlare, Options::keyReadyFlare);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyScanner, Options::keyReadyScanner);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyMedikit, Options::keyReadyMedikit);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::clearLeftHand, Options::keyClearLeftHand);
+
 }
 
 
@@ -3834,6 +3845,426 @@ void BattlescapeState::btnAIClick(Action *action)
 		if (bu->getFaction() == FACTION_PLAYER) {units.push_back(bu);}
 	}
 	_game->pushState(new SoldiersAIState(units));
+}
+
+/**
+ * Readies light grenade.
+ */
+void BattlescapeState::readyLightGrenade(Action* action)
+{
+	// select min and max grenade weights
+
+	int minGrenadeWeight = 0;
+	int maxGrenadeWeight = 0;
+
+	for (const std::string itemType : _game->getMod()->getItemsList())
+	{
+		RuleItem* ruleItem = _game->getMod()->getItem(itemType);
+
+		// battle type: grenade
+
+		if (ruleItem->getBattleType() != BT_GRENADE)
+			continue;
+
+		// damage type: explosive
+
+		if (ruleItem->getDamageType()->ResistType != DT_HE)
+			continue;
+
+		// non zero weight
+
+		int weight = ruleItem->getWeight();
+
+		if (weight <= 0)
+			continue;
+
+		// update weights
+
+		if (minGrenadeWeight == 0 || weight < minGrenadeWeight)
+		{
+			minGrenadeWeight = weight;
+		}
+		if (maxGrenadeWeight == 0 || weight > maxGrenadeWeight)
+		{
+			maxGrenadeWeight = weight;
+		}
+
+	}
+
+	// set weight range
+
+	int minSelectWeight;
+	int maxSelectWeight;
+
+	if (maxGrenadeWeight == minGrenadeWeight)
+	{
+		// select all grenades if they are of the same weight
+
+		minSelectWeight = minGrenadeWeight;
+		maxSelectWeight = maxGrenadeWeight;
+
+	}
+	else
+	{
+		// select all but heaviest
+
+		minSelectWeight = minGrenadeWeight;
+		maxSelectWeight = maxGrenadeWeight - 1;
+
+	}
+
+	readyItem(BT_GRENADE, DT_HE, minSelectWeight, maxSelectWeight);
+
+}
+/**
+ * Readies heavy grenade.
+ */
+void BattlescapeState::readyHeavyGrenade(Action* action)
+{
+	// select min and max grenade weights
+
+	int minGrenadeWeight = 0;
+	int maxGrenadeWeight = 0;
+
+	for (const std::string itemType : _game->getMod()->getItemsList())
+	{
+		RuleItem* ruleItem = _game->getMod()->getItem(itemType);
+
+		// battle type: grenade
+
+		if (ruleItem->getBattleType() != BT_GRENADE)
+			continue;
+
+		// damage type: explosive
+
+		if (ruleItem->getDamageType()->ResistType != DT_HE)
+			continue;
+
+		// non zero weight
+
+		int weight = ruleItem->getWeight();
+
+		if (weight <= 0)
+			continue;
+
+		// update weights
+
+		if (minGrenadeWeight == 0 || weight < minGrenadeWeight)
+		{
+			minGrenadeWeight = weight;
+		}
+		if (maxGrenadeWeight == 0 || weight > maxGrenadeWeight)
+		{
+			maxGrenadeWeight = weight;
+		}
+
+	}
+
+	// set weight range
+
+	int minSelectWeight;
+	int maxSelectWeight;
+
+	if (maxGrenadeWeight == minGrenadeWeight)
+	{
+		// select all grenades if they are of the same weight
+
+		minSelectWeight = minGrenadeWeight;
+		maxSelectWeight = maxGrenadeWeight;
+
+	}
+	else
+	{
+		// select only heaviest
+
+		minSelectWeight = maxGrenadeWeight;
+		maxSelectWeight = maxGrenadeWeight;
+
+	}
+
+	readyItem(BT_GRENADE, DT_HE, minSelectWeight, maxSelectWeight);
+
+}
+/**
+ * Readies proximity grenade.
+ */
+void BattlescapeState::readyProximityGrenade(Action* action)
+{
+	readyItem(BT_PROXIMITYGRENADE);
+}
+/**
+ * Readies smoke grenade.
+ */
+void BattlescapeState::readySmokeGrenade(Action* action)
+{
+	readyItem(BT_GRENADE, DT_SMOKE);
+}
+/**
+ * Readies flare.
+ */
+void BattlescapeState::readyFlare(Action* action)
+{
+	readyItem(BT_FLARE);
+}
+void BattlescapeState::readyScanner(Action* action)
+{
+	readyItem(BT_SCANNER);
+}
+void BattlescapeState::readyMedikit(Action* action)
+{
+	readyItem(BT_MEDIKIT);
+}
+void BattlescapeState::clearLeftHand(Action* action)
+{
+	putItem();
+}
+
+/**
+ * Readies item.
+ */
+void BattlescapeState::readyItem(BattleType battleType, ItemDamageType itemDamageType, int minSelectWeight, int maxSelectWeight)
+{
+	// playable unit should be selected
+
+	if (!playableUnitSelected())
+		return;
+
+	// selected unit
+
+	OpenXcom::BattleUnit* unit = _save->getSelectedUnit();
+
+	// search for item
+
+	BattleItem* selectedItem = nullptr;
+	bool picked = false;
+	bool primed = false;
+
+	for (BattleItem* battleItem : *unit->getInventory())
+	{
+		const RuleItem* ruleItem = battleItem->getRules();
+
+		// match battle type
+
+		if (ruleItem->getBattleType() != battleType)
+			continue;
+
+		// match damage type if given
+
+		if (itemDamageType != DT_NONE && ruleItem->getDamageType()->ResistType != itemDamageType)
+			continue;
+
+		// match weight if given
+
+		if (minSelectWeight > 0 && ruleItem->getWeight() < minSelectWeight)
+			continue;
+
+		if (maxSelectWeight > 0 && ruleItem->getWeight() > maxSelectWeight)
+			continue;
+
+		// prioritise item
+
+		if (battleItem->getSlot()->isLeftHand())
+		{
+			// item in left hand has top priority
+			selectedItem = battleItem;
+			picked = true;
+			if (battleItem->getFuseTimer() >= 0)
+			{
+				primed = true;
+			}
+			break;
+		}
+		else if (battleItem->getFuseTimer() >= 0)
+		{
+			// primed item has higher priority
+			if (!primed)
+			{
+				selectedItem = battleItem;
+				primed = true;
+			}
+		}
+		else if (selectedItem == nullptr)
+		{
+			selectedItem = battleItem;
+		}
+
+	}
+
+	if (selectedItem == nullptr)
+	{
+		warning("STR_NO_ITEM");
+		return;
+	}
+
+	// take item if not yet picked
+
+	if (!picked)
+	{
+		takeItem(selectedItem);
+	}
+
+	// prime item if primable and not primed
+
+	primeItem();
+
+}
+
+/**
+ * Takes item from the inventory to left hand.
+ * Clears left hand if it is occupied.
+ * @param itemTypes Item types to pick.
+*/
+void BattlescapeState::takeItem(BattleItem* selectedItem)
+{
+	// playable unit should be selected
+
+	if (!playableUnitSelected())
+		return;
+
+	// selected unit
+
+	OpenXcom::BattleUnit* unit = _save->getSelectedUnit();
+
+	// clear left hand
+
+	putItem();
+
+	// left hand inventory
+
+	OpenXcom::RuleInventory* leftHandInventory = _game->getMod()->getInventory("STR_LEFT_HAND");
+
+	// move item to left hand
+
+	BattleActionCost takeItemCost{unit};
+	takeItemCost.Time += selectedItem->getMoveToCost(leftHandInventory);
+
+	if (takeItemCost.haveTU() && unit->fitItemToInventory(leftHandInventory, selectedItem))
+	{
+		takeItemCost.spendTU();
+	}
+	else
+	{
+		warning("STR_NOT_ENOUGH_TIME_UNITS");
+		return;
+	}
+
+	// update unit info
+
+	updateSoldierInfo(false);
+
+}
+
+/**
+ * Puts item from left hand to inventory or ground.
+*/
+void BattlescapeState::putItem()
+{
+	// playable unit should be selected
+
+	if (!playableUnitSelected())
+		return;
+
+	// selected unit
+
+	OpenXcom::BattleUnit* unit = _save->getSelectedUnit();
+
+	// left hand item
+
+	BattleItem* leftHandItem = unit->getLeftHandWeapon();
+
+	// no item - nothing to put
+
+	if (leftHandItem == nullptr)
+		return;
+
+	// availalbe inventories to put item to
+
+	std::vector<OpenXcom::RuleInventory*> inventories;
+	inventories.push_back(_game->getMod()->getInventory("STR_RIGHT_SHOULDER"));
+	inventories.push_back(_game->getMod()->getInventory("STR_LEFT_SHOULDER"));
+	inventories.push_back(_game->getMod()->getInventory("STR_RIGHT_LEG"));
+	inventories.push_back(_game->getMod()->getInventory("STR_LEFT_LEG"));
+	inventories.push_back(_game->getMod()->getInventory("STR_BELT"));
+	inventories.push_back(_game->getMod()->getInventory("STR_BACK_PACK"));
+	inventories.push_back(_game->getMod()->getInventory("STR_GROUND"));
+
+	// attempt to move item to the inventory
+
+	bool clearedLeftHand = false;
+
+	for (OpenXcom::RuleInventory* inventory : inventories)
+	{
+		BattleActionCost clearLeftHandCost{unit};
+		clearLeftHandCost.Time += leftHandItem->getMoveToCost(inventory);
+		if (clearLeftHandCost.haveTU() && unit->fitItemToInventory(inventory, leftHandItem))
+		{
+			clearLeftHandCost.spendTU();
+			clearedLeftHand = true;
+			break;
+		}
+	}
+
+	if (!clearedLeftHand)
+	{
+		warning("STR_NOT_ENOUGH_TIME_UNITS");
+		return;
+	}
+
+	// update unit info
+
+	updateSoldierInfo(false);
+
+}
+
+/**
+ * Primes item in left hand.
+ */
+void BattlescapeState::primeItem()
+{
+	// playable unit should be selected
+
+	if (!playableUnitSelected())
+		return;
+
+	// selected unit
+
+	OpenXcom::BattleUnit* unit = _save->getSelectedUnit();
+
+	// left hand item
+
+	BattleItem* leftHandItem = unit->getLeftHandWeapon();
+
+	// no item - nothing to prime
+
+	if (leftHandItem == nullptr)
+		return;
+
+	// not primable - do nothing
+
+	if (leftHandItem->getRules()->getFuseTimerType() == BFT_NONE)
+		return;
+
+	// already primed - do nothing
+
+	if (leftHandItem->getFuseTimer() >= 0)
+		return;
+
+	// not enough time units
+
+	if (!unit->spendTimeUnits(unit->getActionTUs(BA_PRIME, leftHandItem).Time))
+	{
+		warning("STR_NOT_ENOUGH_TIME_UNITS");
+		return;
+	}
+
+	// prime
+
+	leftHandItem->setFuseTimer(0);
+
+	// update unit info
+
+	updateSoldierInfo(false);
+
 }
 
 }
