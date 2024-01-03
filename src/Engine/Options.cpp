@@ -456,7 +456,7 @@ void create()
 #endif
 
 	// hidden alien activity
-	_info.push_back(OptionInfo("displayHiddenAlienActivity", &displayHiddenAlienActivity, false, "STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo("displayHiddenAlienActivity", &displayHiddenAlienActivity, 0, "STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY", "STR_GEOSCAPE"));
 
 	// display base defense strength as a chance to win in base info screen
 	_info.push_back(OptionInfo("baseDefenseProbability", &baseDefenseProbability, false, "STR_DISPLAY_BASE_DEFENSE_PROBABILITY", "STR_GEOSCAPE"));

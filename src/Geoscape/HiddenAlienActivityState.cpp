@@ -54,8 +54,8 @@ namespace OpenXcom
 HiddenAlienActivityState::HiddenAlienActivityState
 (
 	GeoscapeState* state,
-	std::set<OpenXcom::Region*> displayHiddenAlienActivityRegions,
-	std::set<OpenXcom::Country*> displayHiddenAlienActivityCountries
+	std::map<OpenXcom::Region*, int> displayHiddenAlienActivityRegions,
+	std::map<OpenXcom::Country*, int> displayHiddenAlienActivityCountries
 )
 	:
 	_state(state),
@@ -69,30 +69,30 @@ HiddenAlienActivityState::HiddenAlienActivityState
 	_window = new Window(this, 224, 180, 16, 10, POPUP_BOTH);
 	_txtInfo = new Text(200, 16, 28, 20);
 	_txtHeaderRegions = new Text(200, 8, 28, 40);
-	_lstHiddenAlienActivityRegions = new TextList(183, 40, 28, 50);
+	_lstHiddenAlienActivityRegions = new TextList(180, 40, 28, 50);
 	_txtHeaderCountries = new Text(200, 8, 28, 98);
-	_lstHiddenAlienActivityCountries = new TextList(183, 40, 28, 108);
+	_lstHiddenAlienActivityCountries = new TextList(180, 40, 28, 108);
 	_btnOk = new TextButton(200, 12, 28, 152);
 	_btnCancel = new TextButton(200, 12, 28, 168);
 
 	// set palette
 
-	setInterface("UFOInfo", true);
+	setInterface("hiddenAlienActivity", false);
 
 	// add elements
 
-	add(_window, "window", "UFOInfo");
-	add(_txtInfo, "text", "UFOInfo");
-	add(_txtHeaderRegions, "text", "UFOInfo");
-	add(_lstHiddenAlienActivityRegions, "text", "UFOInfo");
-	add(_txtHeaderCountries, "text", "UFOInfo");
-	add(_lstHiddenAlienActivityCountries, "text", "UFOInfo");
-	add(_btnOk, "button", "UFOInfo");
-	add(_btnCancel, "button", "UFOInfo");
+	add(_window, "window", "hiddenAlienActivity");
+	add(_txtInfo, "text", "hiddenAlienActivity");
+	add(_txtHeaderRegions, "text", "hiddenAlienActivity");
+	add(_lstHiddenAlienActivityRegions, "list", "hiddenAlienActivity");
+	add(_txtHeaderCountries, "text", "hiddenAlienActivity");
+	add(_lstHiddenAlienActivityCountries, "list", "hiddenAlienActivity");
+	add(_btnOk, "button", "hiddenAlienActivity");
+	add(_btnCancel, "button", "hiddenAlienActivity");
 
 	// set up objects
 
-	setWindowBackground(_window, "UFOInfo");
+	setWindowBackground(_window, "hiddenAlienActivity");
 
 	centerAllSurfaces();
 
@@ -102,15 +102,15 @@ HiddenAlienActivityState::HiddenAlienActivityState
 
 	_txtHeaderRegions->setText(tr("STR_UFO_ACTIVITY_IN_AREAS"));
 
-	_lstHiddenAlienActivityRegions->setColumns(1, 180);
-	_lstHiddenAlienActivityRegions->setHighContrast(true);
-	_lstHiddenAlienActivityRegions->setColor(90);
+	_lstHiddenAlienActivityRegions->setColumns(2, 100, 80);
+	_lstHiddenAlienActivityRegions->setAlign(ALIGN_RIGHT, 1);
+	//_lstHiddenAlienActivityRegions->setHighContrast(true);
 
 	_txtHeaderCountries->setText(tr("STR_UFO_ACTIVITY_IN_COUNTRIES"));
 
-	_lstHiddenAlienActivityCountries->setColumns(1, 180);
-	_lstHiddenAlienActivityCountries->setHighContrast(true);
-	_lstHiddenAlienActivityCountries->setColor(90);
+	_lstHiddenAlienActivityCountries->setColumns(2, 100, 80);
+	_lstHiddenAlienActivityCountries->setAlign(ALIGN_RIGHT, 1);
+	//_lstHiddenAlienActivityCountries->setHighContrast(true);
 
 	_btnOk->setText(tr("STR_OK_5_SECONDS"));
 	_btnOk->onMouseClick((ActionHandler)&HiddenAlienActivityState::btnOkClick);
@@ -119,16 +119,46 @@ HiddenAlienActivityState::HiddenAlienActivityState
 	_btnCancel->onMouseClick((ActionHandler)&HiddenAlienActivityState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&HiddenAlienActivityState::btnCancelClick, Options::keyCancel);
 
-	// populate lists
+	int _row;
 
-	for (OpenXcom::Region* const region : _displayHiddenAlienActivityRegions)
+	// populate alien activity lists
+
+	for (std::pair<Region* const, int> displayHiddenAlienActivityRegionEntry : _displayHiddenAlienActivityRegions)
 	{
-		_lstHiddenAlienActivityRegions->addRow(1, tr(region->getRules()->getType()).c_str());
+		Region* region = displayHiddenAlienActivityRegionEntry.first;
+		int activity = displayHiddenAlienActivityRegionEntry.second;
+
+		std::ostringstream ossName;
+		std::ostringstream ossValue;
+		if (activity == 0)
+		{
+			ossName << Unicode::TOK_COLOR_FLIP;
+			ossValue << Unicode::TOK_COLOR_FLIP;
+		}
+		ossName << tr(region->getRules()->getType());
+		ossValue << std::to_string(activity);
+
+		_lstHiddenAlienActivityRegions->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+
 	}
 
-	for (OpenXcom::Country* const country : _displayHiddenAlienActivityCountries)
+	for (std::pair<Country* const, int> displayHiddenAlienActivitycountryEntry : _displayHiddenAlienActivityCountries)
 	{
-		_lstHiddenAlienActivityCountries->addRow(1, tr(country->getRules()->getType()).c_str());
+		Country* country = displayHiddenAlienActivitycountryEntry.first;
+		int activity = displayHiddenAlienActivitycountryEntry.second;
+
+		std::ostringstream ossName;
+		std::ostringstream ossValue;
+		if (activity == 0)
+		{
+			ossName << Unicode::TOK_COLOR_FLIP;
+			ossValue << Unicode::TOK_COLOR_FLIP;
+		}
+		ossName << tr(country->getRules()->getType());
+		ossValue << std::to_string(activity);
+
+		_lstHiddenAlienActivityCountries->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+
 	}
 
 }

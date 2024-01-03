@@ -2366,3 +2366,20 @@ interfaces:
         color: 218   # blue
       - id: button2
         color: 241   # pink
+  - type: hiddenAlienActivity
+    backgroundImage: BACK15.SCR
+    elements:
+      - id: palette
+        color: 7     # dark blue/purple
+        color2: 2    # red/orange
+      - id: window
+        color: 133   # minty green
+      - id: text
+        color: 133   # minty green
+        color2: 138  # yellow
+      - id: list
+        color: 130   # red
+        color2: 244  # blue
+      - id: button
+        color: 133   # minty green
+

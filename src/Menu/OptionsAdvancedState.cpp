@@ -363,6 +363,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = _isTFTD ? 2 : 1;
 			max = _isTFTD ? 16 : 15;
 		}
+		else if (i == &Options::displayHiddenAlienActivity)
+		{
+			min = 0;
+			max = 2;
+		}
 
 		if (*i < min)
 		{
