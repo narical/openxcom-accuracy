@@ -273,43 +273,46 @@ void BaseInfoState::init()
 	ss << _base->getAvailableSoldiers() << ":" << _base->getTotalSoldiers();
 	_numSoldiers->setText(ss.str());
 
-	// bar dynamic scale
-
-	if (_base->getTotalSoldiers() * _barSoldiers->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getTotalSoldiers() * _barSoldiers->getScale() < MAX_BAR_WIDTH)
 	{
 		_barSoldiers->setMax(_base->getTotalSoldiers());
 		_barSoldiers->setValue(_base->getAvailableSoldiers());
 	}
 	else
 	{
-		_barSoldiers->setMax(BASE_INFO_BAR_WIDTH);
-		_barSoldiers->setValue(_base->getAvailableSoldiers() * BASE_INFO_BAR_WIDTH / _base->getTotalSoldiers());
-		_barSoldiers->setScale(1.0);
+		_barSoldiers->setMax(MAX_BAR_WIDTH);
+		_barSoldiers->setValue(_base->getAvailableSoldiers() * MAX_BAR_WIDTH / _base->getTotalSoldiers());
 	}
 
 	std::ostringstream ss2;
 	ss2 << _base->getAvailableEngineers() << ":" << _base->getTotalEngineers();
 	_numEngineers->setText(ss2.str());
 
-	// bar dynamic scale
-
-	if (_base->getTotalEngineers() * _barEngineers->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getTotalEngineers() * _barEngineers->getScale() < MAX_BAR_WIDTH)
 	{
 		_barEngineers->setMax(_base->getTotalEngineers());
 		_barEngineers->setValue(_base->getAvailableEngineers());
 	}
 	else
 	{
-		_barEngineers->setMax(BASE_INFO_BAR_WIDTH);
-		_barEngineers->setValue(_base->getAvailableEngineers() * BASE_INFO_BAR_WIDTH / _base->getTotalEngineers());
-		_barEngineers->setScale(1.0);
+		_barEngineers->setMax(MAX_BAR_WIDTH);
+		_barEngineers->setValue(_base->getAvailableEngineers() * MAX_BAR_WIDTH / _base->getTotalEngineers());
 	}
 
 	std::ostringstream ss3;
 	ss3 << _base->getAvailableScientists() << ":" << _base->getTotalScientists();
 	_numScientists->setText(ss3.str());
 
-	// bar dynamic scale
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getTotalScientists() * _barScientists->getScale() < MAX_BAR_WIDTH)
+	{
+		_barScientists->setMax(_base->getTotalScientists());
+		_barScientists->setValue(_base->getAvailableScientists());
+	}
+	else
+	{
+		_barScientists->setMax(MAX_BAR_WIDTH);
+		_barScientists->setValue(_base->getAvailableScientists() * MAX_BAR_WIDTH / _base->getTotalScientists());
+	}
 
 	if (_base->getTotalScientists() * _barScientists->getScale() < BASE_INFO_BAR_WIDTH)
 	{
@@ -327,17 +330,15 @@ void BaseInfoState::init()
 	ss4 << _base->getUsedQuarters() << ":" << _base->getAvailableQuarters();
 	_numQuarters->setText(ss4.str());
 
-	// bar dynamic scale
-
-	if (_base->getAvailableQuarters() * _barQuarters->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getAvailableQuarters() * _barQuarters->getScale() < MAX_BAR_WIDTH)
 	{
 		_barQuarters->setMax(_base->getAvailableQuarters());
 		_barQuarters->setValue(_base->getUsedQuarters());
 	}
 	else
 	{
-		_barQuarters->setMax(BASE_INFO_BAR_WIDTH);
-		_barQuarters->setValue(_base->getUsedQuarters() * BASE_INFO_BAR_WIDTH / _base->getAvailableQuarters());
+		_barQuarters->setMax(MAX_BAR_WIDTH);
+		_barQuarters->setValue(_base->getUsedQuarters() * MAX_BAR_WIDTH / _base->getAvailableQuarters());
 		_barQuarters->setScale(1.0);
 	}
 
@@ -345,17 +346,15 @@ void BaseInfoState::init()
 	ss5 << (int)floor(_base->getUsedStores() + 0.05) << ":" << _base->getAvailableStores();
 	_numStores->setText(ss5.str());
 
-	// bar dynamic scale
-
-	if (_base->getAvailableStores() * _barStores->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getAvailableStores() * _barStores->getScale() < MAX_BAR_WIDTH)
 	{
 		_barStores->setMax(_base->getAvailableStores());
-		_barStores->setValue(_base->getUsedStores());
+		_barStores->setValue((int)floor(_base->getUsedStores() + 0.05));
 	}
 	else
 	{
-		_barStores->setMax(BASE_INFO_BAR_WIDTH);
-		_barStores->setValue(_base->getUsedStores() * BASE_INFO_BAR_WIDTH / _base->getAvailableStores());
+		_barStores->setMax(MAX_BAR_WIDTH);
+		_barStores->setValue(((int)floor(_base->getUsedStores() + 0.05)) * MAX_BAR_WIDTH / _base->getAvailableStores());
 		_barStores->setScale(1.0);
 	}
 
@@ -363,17 +362,15 @@ void BaseInfoState::init()
 	ss6 << _base->getUsedLaboratories() << ":" << _base->getAvailableLaboratories();
 	_numLaboratories->setText(ss6.str());
 
-	// bar dynamic scale
-
-	if (_base->getAvailableLaboratories() * _barLaboratories->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getAvailableLaboratories() * _barLaboratories->getScale() < MAX_BAR_WIDTH)
 	{
 		_barLaboratories->setMax(_base->getAvailableLaboratories());
 		_barLaboratories->setValue(_base->getUsedLaboratories());
 	}
 	else
 	{
-		_barLaboratories->setMax(BASE_INFO_BAR_WIDTH);
-		_barLaboratories->setValue(_base->getUsedLaboratories() * BASE_INFO_BAR_WIDTH / _base->getAvailableLaboratories());
+		_barLaboratories->setMax(MAX_BAR_WIDTH);
+		_barLaboratories->setValue(_base->getUsedLaboratories() * MAX_BAR_WIDTH / _base->getAvailableLaboratories());
 		_barLaboratories->setScale(1.0);
 	}
 
@@ -381,17 +378,15 @@ void BaseInfoState::init()
 	ss7 << _base->getUsedWorkshops() << ":" << _base->getAvailableWorkshops();
 	_numWorkshops->setText(ss7.str());
 
-	// bar dynamic scale
-
-	if (_base->getAvailableWorkshops() * _barWorkshops->getScale() < BASE_INFO_BAR_WIDTH)
+	if (!Options::oxceBaseInfoScaleEnabled || _base->getAvailableWorkshops() * _barWorkshops->getScale() < MAX_BAR_WIDTH)
 	{
 		_barWorkshops->setMax(_base->getAvailableWorkshops());
 		_barWorkshops->setValue(_base->getUsedWorkshops());
 	}
 	else
 	{
-		_barWorkshops->setMax(BASE_INFO_BAR_WIDTH);
-		_barWorkshops->setValue(_base->getUsedWorkshops() * BASE_INFO_BAR_WIDTH / _base->getAvailableWorkshops());
+		_barWorkshops->setMax(MAX_BAR_WIDTH);
+		_barWorkshops->setValue(_base->getUsedWorkshops() * MAX_BAR_WIDTH / _base->getAvailableWorkshops());
 		_barWorkshops->setScale(1.0);
 	}
 
@@ -426,8 +421,12 @@ void BaseInfoState::init()
 	if (Options::baseDefenseProbability)
 	{
 		// display base defense percentage
-
-		int defenseProbabilityPercentage = _base->getDefenseProbabilityPercentage();
+		_barDefense->setMax(_base->getDefenseValue());
+		_barDefense->setValue(_base->getDefenseValue());
+		if (Options::oxceBaseInfoDefenseScaleMultiplier != 100)
+		{
+			_barDefense->setScale(0.125 * Options::oxceBaseInfoDefenseScaleMultiplier / 100.0);
+		}
 
 		std::ostringstream ss9;
 		ss9 << defenseProbabilityPercentage;
