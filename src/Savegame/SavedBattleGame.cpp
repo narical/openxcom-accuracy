@@ -91,7 +91,38 @@ SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
  */
 SavedBattleGame::~SavedBattleGame()
 {
-	//this makes the crash go away 8[
+	for (auto* mds : _mapDataSets)
+	{
+		mds->unloadData();
+	}
+	for (auto* node : _nodes)
+	{
+		delete node;
+	}
+	for (auto* bu : _units)
+	{
+		delete bu;
+	}
+	for (auto bi : _items)
+	{
+		delete bi;
+	}
+	for (auto* bi : _recoverGuaranteed)
+	{
+		delete bi;
+	}
+	for (auto* bi : _recoverConditional)
+	{
+		delete bi;
+	}
+	for (auto* bi : _deleted)
+	{
+		delete bi;
+	}
+	delete _pathfinding;
+	delete _tileEngine;
+	delete _baseItems;
+	delete _hitLog;
 }
 
 /**
