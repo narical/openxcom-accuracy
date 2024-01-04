@@ -130,6 +130,8 @@ OPT bool oxceGeoscapeEventsInstantDelivery;
 OPT int oxceHiddenMovementBackgroundChangeFrequency;
 OPT bool oxcePediaShowClipSize;
 OPT int oxceShowETAMode;
+OPT bool oxceBaseInfoScaleEnabled;
+OPT int oxceBaseInfoDefenseScaleMultiplier;
 
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;
