@@ -314,15 +314,15 @@ void BaseInfoState::init()
 		_barScientists->setValue(_base->getAvailableScientists() * MAX_BAR_WIDTH / _base->getTotalScientists());
 	}
 
-	if (_base->getTotalScientists() * _barScientists->getScale() < BASE_INFO_BAR_WIDTH)
+	if (_base->getTotalScientists() * _barScientists->getScale() < MAX_BAR_WIDTH)
 	{
 		_barScientists->setMax(_base->getTotalScientists());
 		_barScientists->setValue(_base->getAvailableScientists());
 	}
 	else
 	{
-		_barScientists->setMax(BASE_INFO_BAR_WIDTH);
-		_barScientists->setValue(_base->getAvailableScientists() * BASE_INFO_BAR_WIDTH / _base->getTotalScientists());
+		_barScientists->setMax(MAX_BAR_WIDTH);
+		_barScientists->setValue(_base->getAvailableScientists() * MAX_BAR_WIDTH / _base->getTotalScientists());
 		_barScientists->setScale(1.0);
 	}
 
@@ -406,21 +406,22 @@ void BaseInfoState::init()
 
 	// bar dynamic scale
 
-	if (_base->getAvailableHangars() * _barHangars->getScale() < BASE_INFO_BAR_WIDTH)
+	if (_base->getAvailableHangars() * _barHangars->getScale() < MAX_BAR_WIDTH)
 	{
 		_barHangars->setMax(_base->getAvailableHangars());
 		_barHangars->setValue(_base->getUsedHangars());
 	}
 	else
 	{
-		_barHangars->setMax(BASE_INFO_BAR_WIDTH);
-		_barHangars->setValue(_base->getUsedHangars() * BASE_INFO_BAR_WIDTH / _base->getAvailableHangars());
+		_barHangars->setMax(MAX_BAR_WIDTH);
+		_barHangars->setValue(_base->getUsedHangars() * MAX_BAR_WIDTH / _base->getAvailableHangars());
 		_barHangars->setScale(1.0);
 	}
 
 	if (Options::baseDefenseProbability)
 	{
 		// display base defense percentage
+		int defenseProbabilityPercentage = _base->getDefenseProbabilityPercentage();
 		_barDefense->setMax(_base->getDefenseValue());
 		_barDefense->setValue(_base->getDefenseValue());
 		if (Options::oxceBaseInfoDefenseScaleMultiplier != 100)
