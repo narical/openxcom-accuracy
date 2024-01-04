@@ -332,23 +332,32 @@ bool Base::isOverlappingOrOverflowing()
 		const RuleBaseFacility *rules = fac->getRules();
 		int facilityX = fac->getX();
 		int facilityY = fac->getY();
-		int facilitySize = rules->getSize();
+		int facilitySizeX = rules->getSizeX();
+		int facilitySizeY = rules->getSizeY();
 
-		if (facilityX < 0 || facilityY < 0 || facilityX + (facilitySize - 1) >= BASE_SIZE || facilityY + (facilitySize - 1) >= BASE_SIZE)
+		if (facilityX < 0 || facilityY < 0 || facilityX + (facilitySizeX - 1) >= BASE_SIZE || facilityY + (facilitySizeY - 1) >= BASE_SIZE)
 		{
-			Log(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize << ") is outside of base boundaries.";
+			Log(LOG_ERROR) << "Facility " << rules->getType()
+				<< " at [" << facilityX << ", " << facilityY
+				<< "] (size [" << facilitySizeX << ", " << facilitySizeY
+				<< "]) is outside of base boundaries.";
 			result = true;
 			continue;
 		}
 
-		for (int x = facilityX; x < facilityX + facilitySize; ++x)
+		for (int x = facilityX; x < facilityX + facilitySizeX; ++x)
 		{
-			for (int y = facilityY; y < facilityY + facilitySize; ++y)
+			for (int y = facilityY; y < facilityY + facilitySizeY; ++y)
 			{
 				if (grid[x][y] != 0)
 				{
-					Log(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize
-						<< ") overlaps with " << grid[x][y]->getRules()->getType() << " at [" << x << ", " << y << "] (size " << grid[x][y]->getRules()->getSize() << ")";
+					Log(LOG_ERROR) << "Facility " << rules->getType()
+						<< " at [" << facilityX << ", " << facilityY
+						<< "] (size [" << facilitySizeX << ", " << facilitySizeY
+						<< "]) overlaps with " << grid[x][y]->getRules()->getType()
+						<< " at [" << x << ", " << y
+						<< "] (size [" << grid[x][y]->getRules()->getSizeX() << ", " << grid[x][y]->getRules()->getSizeY()
+						<< ")";
 					result = true;
 				}
 				grid[x][y] = fac;
@@ -1576,7 +1585,7 @@ size_t Base::getDetectionChance() const
 	{
 		if (fac->getBuildTime() == 0)
 		{
-			completedFacilities += fac->getRules()->getSize() * fac->getRules()->getSize();
+			completedFacilities += fac->getRules()->getSizeX() * fac->getRules()->getSizeY();
 			if (fac->getRules()->isMindShield() && !fac->getDisabled())
 			{
 				mindShields += fac->getRules()->getMindShieldPower();
@@ -1760,9 +1769,9 @@ int Base::damageFacility(BaseFacility *toBeDamaged)
 	}
 	else if (_mod->getDestroyedFacility())
 	{
-		for (int x = 0; x < toBeDamaged->getRules()->getSize(); ++x)
+		for (int x = 0; x < toBeDamaged->getRules()->getSizeX(); ++x)
 		{
-			for (int y = 0; y < toBeDamaged->getRules()->getSize(); ++y)
+			for (int y = 0; y < toBeDamaged->getRules()->getSizeY(); ++y)
 			{
 				BaseFacility *fac = new BaseFacility(_mod->getDestroyedFacility(), this);
 				fac->setX(toBeDamaged->getX() + x);
@@ -1779,7 +1788,7 @@ int Base::damageFacility(BaseFacility *toBeDamaged)
 		if ((*iter) == toBeDamaged)
 		{
 			// bigger facilities spend more missile power
-			result = toBeDamaged->getRules()->getSize() * toBeDamaged->getRules()->getSize();
+			result = toBeDamaged->getRules()->getSizeX() * toBeDamaged->getRules()->getSizeY();
 			destroyFacility(iter);
 			break;
 		}
@@ -1837,9 +1846,9 @@ std::list<BASEFACILITIESITERATOR> Base::getDisconnectedFacilities(BaseFacility *
 		if (fac != remove)
 		{
 			if (fac->getRules()->isLift()) lift = fac;
-			for (int x = 0; x != fac->getRules()->getSize(); ++x)
+			for (int x = 0; x != fac->getRules()->getSizeX(); ++x)
 			{
-				for (int y = 0; y != fac->getRules()->getSize(); ++y)
+				for (int y = 0; y != fac->getRules()->getSizeY(); ++y)
 				{
 					std::pair<BASEFACILITIESITERATOR, bool> *p = new std::pair<BASEFACILITIESITERATOR, bool>(iter,false);
 					facilitiesConnStates.push_back(p);
