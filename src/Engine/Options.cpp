@@ -62,6 +62,8 @@ bool _loadLastSaveExpended = false;
  */
 void create()
 {
+	if (!_info.empty()) { _info.clear(); }
+
 	////////////////////////////////////////////////////////////
 	//					OXC - OpenXcom
 	////////////////////////////////////////////////////////////
@@ -103,7 +105,11 @@ void createOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "keyboardMode", (int*)&keyboardMode, KEYBOARD_ON));
 #endif
 
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXC, "maxFrameSkip", &maxFrameSkip, 0, "STR_FRAMESKIP", "STR_GENERAL"));
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "maxFrameSkip", &maxFrameSkip, 0));
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "traceAI", &traceAI, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "verboseLogging", &verboseLogging, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "StereoSound", &StereoSound, true));
@@ -129,14 +135,23 @@ void createOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "uiVolume", &uiVolume, MIX_MAX_VOLUME/3));
 	_info.push_back(OptionInfo(OPTION_OXC, "language", &language, ""));
 	_info.push_back(OptionInfo(OPTION_OXC, "battleScrollSpeed", &battleScrollSpeed, 8));
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXC, "battleEdgeScroll", (int*)&battleEdgeScroll, SCROLL_NONE));
+	_info.push_back(OptionInfo(OPTION_OXC, "battleDragScrollButton", &battleDragScrollButton, SDL_BUTTON_LEFT));
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "battleEdgeScroll", (int*)&battleEdgeScroll, SCROLL_AUTO));
 	_info.push_back(OptionInfo(OPTION_OXC, "battleDragScrollButton", &battleDragScrollButton, 0)); // different default in OXCE
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "dragScrollTimeTolerance", &dragScrollTimeTolerance, 300)); // miliSecond
 	_info.push_back(OptionInfo(OPTION_OXC, "dragScrollPixelTolerance", &dragScrollPixelTolerance, 10)); // count of pixels
 	_info.push_back(OptionInfo(OPTION_OXC, "battleFireSpeed", &battleFireSpeed, 6));
 	_info.push_back(OptionInfo(OPTION_OXC, "battleXcomSpeed", &battleXcomSpeed, 30));
 	_info.push_back(OptionInfo(OPTION_OXC, "battleAlienSpeed", &battleAlienSpeed, 30));
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXC, "battleNewPreviewPath", (int*)&battleNewPreviewPath, PATH_FULL)); // for android, set full preview by default
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "battleNewPreviewPath", (int*)&battleNewPreviewPath, PATH_NONE)); // requires double-click to confirm moves
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "fpsCounter", &fpsCounter, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "globeDetail", &globeDetail, true));
 	_info.push_back(OptionInfo(OPTION_OXC, "globeRadarLines", &globeRadarLines, true));
@@ -163,13 +178,21 @@ void createOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "geoClockSpeed", &geoClockSpeed, 80));
 	_info.push_back(OptionInfo(OPTION_OXC, "dogfightSpeed", &dogfightSpeed, 30));
 	_info.push_back(OptionInfo(OPTION_OXC, "geoScrollSpeed", &geoScrollSpeed, 20));
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXC, "geoDragScrollButton", &geoDragScrollButton, SDL_BUTTON_LEFT));
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "geoDragScrollButton", &geoDragScrollButton, SDL_BUTTON_MIDDLE));
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "preferredMusic", (int*)&preferredMusic, MUSIC_AUTO));
 	_info.push_back(OptionInfo(OPTION_OXC, "preferredSound", (int*)&preferredSound, SOUND_AUTO));
 	_info.push_back(OptionInfo(OPTION_OXC, "preferredVideo", (int*)&preferredVideo, VIDEO_FMV));
 	_info.push_back(OptionInfo(OPTION_OXC, "wordwrap", (int*)&wordwrap, WRAP_AUTO));
 	_info.push_back(OptionInfo(OPTION_OXC, "musicAlwaysLoop", &musicAlwaysLoop, false));
+#ifdef __MOBILE
+	_info.push_back(OptionInfo(OPTION_OXC, "touchEnabled", &touchEnabled, true));
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "touchEnabled", &touchEnabled, false));
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "rootWindowedMode", &rootWindowedMode, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "backgroundMute", &backgroundMute, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "soldierDiaries", &soldierDiaries, true));
@@ -187,7 +210,7 @@ void createAdvancedOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "changeValueByMouseWheel", &changeValueByMouseWheel, 0, "STR_CHANGEVALUEBYMOUSEWHEEL", "STR_GENERAL"));
 
 // this should probably be any small screen touch-device, i don't know the defines for all of them so i'll cover android and IOS as i imagine they're more common
-#ifdef __ANDROID_API__
+#ifdef __MOBILE__
 	_info.push_back(OptionInfo(OPTION_OXC, "maximizeInfoScreens", &maximizeInfoScreens, true, "STR_MAXIMIZE_INFO_SCREENS", "STR_GENERAL"));
 #elif __APPLE__
 	// todo: ask grussel how badly i messed this up.
@@ -237,7 +260,11 @@ void createAdvancedOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "battleAutoEnd", &battleAutoEnd, false, "STR_BATTLEAUTOEND", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "battleSmoothCamera", &battleSmoothCamera, false, "STR_BATTLESMOOTHCAMERA", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "disableAutoEquip", &disableAutoEquip, false, "STR_DISABLEAUTOEQUIP", "STR_BATTLESCAPE"));
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXC, "battleConfirmFireMode", &battleConfirmFireMode, true, "STR_BATTLECONFIRMFIREMODE", "STR_BATTLESCAPE"));
+#else
 	_info.push_back(OptionInfo(OPTION_OXC, "battleConfirmFireMode", &battleConfirmFireMode, false, "STR_BATTLECONFIRMFIREMODE", "STR_BATTLESCAPE"));
+#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "weaponSelfDestruction", &weaponSelfDestruction, false, "STR_WEAPONSELFDESTRUCTION", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "allowPsionicCapture", &allowPsionicCapture, false, "STR_ALLOWPSIONICCAPTURE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "allowPsiStrengthImprovement", &allowPsiStrengthImprovement, false, "STR_ALLOWPSISTRENGTHIMPROVEMENT", "STR_BATTLESCAPE"));
@@ -729,7 +756,7 @@ bool init()
 #elif __APPLE__
 	Log(LOG_INFO) << "Platform: OSX";
 #elif  __ANDROID_API__
-	Log(LOG_INFO) << "Platform: Android";
+	Log(LOG_INFO) << "Platform: Android " << __ANDROID_API__;
 #elif __linux__
 	Log(LOG_INFO) << "Platform: Linux";
 #else
