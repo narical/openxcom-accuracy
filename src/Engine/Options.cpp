@@ -62,6 +62,33 @@ bool _loadLastSaveExpended = false;
  */
 void create()
 {
+	////////////////////////////////////////////////////////////
+	//					OXC - OpenXcom
+	////////////////////////////////////////////////////////////
+
+	createOptionsOXC();
+	createAdvancedOptionsOXC();
+	createControlsOXC();
+
+	////////////////////////////////////////////////////////////
+	//					OXCE - OpenXcom Extended
+	////////////////////////////////////////////////////////////
+
+	createOptionsOXCE();
+	createAdvancedOptionsOXCE();
+	createControlsOXCE();
+
+	////////////////////////////////////////////////////////////
+	//					OTHER - your fork name here
+	////////////////////////////////////////////////////////////
+
+	createOptionsOTHER();
+	createAdvancedOptionsOTHER();
+	createControlsOTHER();
+}
+
+void createOptionsOXC()
+{
 #ifdef DINGOO
 	_info.push_back(OptionInfo(OPTION_OXC, "displayWidth", &displayWidth, Screen::ORIGINAL_WIDTH));
 	_info.push_back(OptionInfo(OPTION_OXC, "displayHeight", &displayHeight, Screen::ORIGINAL_HEIGHT));
@@ -145,20 +172,19 @@ void create()
 	_info.push_back(OptionInfo(OPTION_OXC, "touchEnabled", &touchEnabled, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "rootWindowedMode", &rootWindowedMode, false));
 	_info.push_back(OptionInfo(OPTION_OXC, "backgroundMute", &backgroundMute, false));
+	_info.push_back(OptionInfo(OPTION_OXC, "soldierDiaries", &soldierDiaries, true));
+}
 
+void createAdvancedOptionsOXC()
+{
 	// advanced options
-#ifdef _WIN32
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceUpdateCheck", &oxceUpdateCheck, false, "STR_UPDATE_CHECK", "STR_GENERAL"));
-#endif
 	_info.push_back(OptionInfo(OPTION_OXC, "playIntro", &playIntro, true, "STR_PLAYINTRO", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXC, "autosave", &autosave, true, "STR_AUTOSAVE", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXC, "autosaveFrequency", &autosaveFrequency, 5, "STR_AUTOSAVE_FREQUENCY", "STR_GENERAL"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "autosaveSlots", &autosaveSlots, 1, "STR_AUTOSAVE_SLOTS", "STR_GENERAL")); // OXCE only
 	_info.push_back(OptionInfo(OPTION_OXC, "newSeedOnLoad", &newSeedOnLoad, false, "STR_NEWSEEDONLOAD", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXC, "lazyLoadResources", &lazyLoadResources, true, "STR_LAZY_LOADING", "STR_GENERAL")); // exposed in OXCE
 	_info.push_back(OptionInfo(OPTION_OXC, "mousewheelSpeed", &mousewheelSpeed, 3, "STR_MOUSEWHEEL_SPEED", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXC, "changeValueByMouseWheel", &changeValueByMouseWheel, 0, "STR_CHANGEVALUEBYMOUSEWHEEL", "STR_GENERAL"));
-	_info.push_back(OptionInfo(OPTION_OXC, "soldierDiaries", &soldierDiaries, true));
 
 // this should probably be any small screen touch-device, i don't know the defines for all of them so i'll cover android and IOS as i imagine they're more common
 #ifdef __ANDROID_API__
@@ -173,6 +199,15 @@ void create()
 	#endif
 #else
 	_info.push_back(OptionInfo(OPTION_OXC, "maximizeInfoScreens", &maximizeInfoScreens, false, "STR_MAXIMIZE_INFO_SCREENS", "STR_GENERAL"));
+#endif
+
+#ifdef __MORPHOS__
+	_info.push_back(OptionInfo(OPTION_OXC, "FPS", &FPS, 15, "STR_FPS_LIMIT", "STR_GENERAL"));
+	_info.push_back(OptionInfo(OPTION_OXC, "FPSInactive", &FPSInactive, 15, "STR_FPS_INACTIVE_LIMIT", "STR_GENERAL"));
+#else
+	_info.push_back(OptionInfo(OPTION_OXC, "FPS", &FPS, 60, "STR_FPS_LIMIT", "STR_GENERAL"));
+	_info.push_back(OptionInfo(OPTION_OXC, "FPSInactive", &FPSInactive, 30, "STR_FPS_INACTIVE_LIMIT", "STR_GENERAL"));
+	_info.push_back(OptionInfo(OPTION_OXC, "vSyncForOpenGL", &vSyncForOpenGL, true, "STR_VSYNC_FOR_OPENGL", "STR_GENERAL")); // exposed in OXCE
 #endif
 
 	_info.push_back(OptionInfo(OPTION_OXC, "geoDragScrollInvert", &geoDragScrollInvert, false, "STR_DRAGSCROLLINVERT", "STR_GEOSCAPE")); // true drags away from the cursor, false drags towards (like a grab)
@@ -211,76 +246,10 @@ void create()
 	_info.push_back(OptionInfo(OPTION_OXC, "skipNextTurnScreen", &skipNextTurnScreen, false, "STR_SKIPNEXTTURNSCREEN", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "noAlienPanicMessages", &noAlienPanicMessages, false, "STR_NOALIENPANICMESSAGES", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "alienBleeding", &alienBleeding, false, "STR_ALIENBLEEDING", "STR_BATTLESCAPE"));
+}
 
-	// OXCE GUI
-#ifdef __MOBILE__
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, true, "STR_OXCE_LINKS", "STR_OXCE"));
-#else
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, false, "STR_OXCE_LINKS", "STR_OXCE"));
-#endif
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAlternateCraftEquipmentManagement", &oxceAlternateCraftEquipmentManagement, false, "STR_ALTERNATE_CRAFT_EQUIPMENT_MANAGEMENT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceUfoLandingAlert", &oxceUfoLandingAlert, false, "STR_UFO_LANDING_ALERT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceWoundedDefendBaseIf", &oxceWoundedDefendBaseIf, 100, "STR_WOUNDED_DEFEND_BASE_IF", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePlayBriefingMusicDuringEquipment", &oxcePlayBriefingMusicDuringEquipment, false, "STR_PLAY_BRIEFING_MUSIC_DURING_EQUIPMENT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceNightVisionColor", &oxceNightVisionColor, 5, "STR_NIGHT_VISION_COLOR", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutoNightVisionThreshold", &oxceAutoNightVisionThreshold, 15, "STR_AUTO_NIGHT_VISION_THRESHOLD", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRememberDisabledCraftWeapons", &oxceRememberDisabledCraftWeapons, false, "STR_REMEMBER_DISABLED_CRAFT_WEAPONS", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManualPromotions", &oxceManualPromotions, false, "STR_MANUALPROMOTIONS", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutomaticPromotions", &oxceAutomaticPromotions, true, "STR_AUTOMATICPROMOTIONS", "STR_OXCE"));
-
-	// OXCE hidden
-#ifdef __MOBILE__
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, true));
-#else
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, false));
-#endif
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceThrottleMouseMoveEvent", &oxceThrottleMouseMoveEvent, 0));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceHighlightNewTopicsHidden", &oxceHighlightNewTopicsHidden, true));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceInterceptGuiMaintenanceTimeHidden", &oxceInterceptGuiMaintenanceTimeHidden, 2));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableUnitResponseSounds", &oxceEnableUnitResponseSounds, true));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableSlackingIndicator", &oxceEnableSlackingIndicator, true));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnablePaletteFlickerFix", &oxceEnablePaletteFlickerFix, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMaxEquipmentLayoutTemplates", &oxceMaxEquipmentLayoutTemplates, 20));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePersonalLayoutIncludingArmor", &oxcePersonalLayoutIncludingArmor, true));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureFilterSuppliesOK", &oxceManufactureFilterSuppliesOK, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceTogglePersonalLightType", &oxceTogglePersonalLightType, 1)); // per battle
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleNightVisionType", &oxceToggleNightVisionType, 1));     // per battle
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleBrightnessType", &oxceToggleBrightnessType, 0));       // not persisted
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_WARNING));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEmbeddedOnly", &oxceEmbeddedOnly, true));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceListVFSContents", &oxceListVFSContents, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRawScreenShots", &oxceRawScreenShots, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFirstPersonViewFisheyeProjection", &oxceFirstPersonViewFisheyeProjection, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceThumbButtons", &oxceThumbButtons, true));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRecommendedOptionsWereSet", &oxceRecommendedOptionsWereSet, false));
-	_info.push_back(OptionInfo(OPTION_OXCE, "password", &password, "secret"));
-
-	// OXCE hidden but moddable
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceStartUpTextMode", &oxceStartUpTextMode, 0, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureScrollSpeed", &oxceManufactureScrollSpeed, 10, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureScrollSpeedWithCtrl", &oxceManufactureScrollSpeedWithCtrl, 1, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceResearchScrollSpeed", &oxceResearchScrollSpeed, 10, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceResearchScrollSpeedWithCtrl", &oxceResearchScrollSpeedWithCtrl, 1, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoSlowdownFactor", &oxceGeoSlowdownFactor, 1, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableTechTreeViewer", &oxceDisableTechTreeViewer, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableStatsForNerds", &oxceDisableStatsForNerds, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableProductionDependencyTree", &oxceDisableProductionDependencyTree, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableHitLog", &oxceDisableHitLog, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableAlienInventory", &oxceDisableAlienInventory, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableInventoryTuCost", &oxceDisableInventoryTuCost, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceShowBaseNameInPopups", &oxceShowBaseNameInPopups, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoscapeDebugLogMaxEntries", &oxceGeoscapeDebugLogMaxEntries, 1000, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoscapeEventsInstantDelivery", &oxceGeoscapeEventsInstantDelivery, true, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceHiddenMovementBackgroundChangeFrequency", &oxceHiddenMovementBackgroundChangeFrequency, 1, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePediaShowClipSize", &oxcePediaShowClipSize, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceShowETAMode", &oxceShowETAMode, 0, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseInfoScaleEnabled", &oxceBaseInfoScaleEnabled, false, "", "HIDDEN"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseInfoDefenseScaleMultiplier", &oxceBaseInfoDefenseScaleMultiplier, 100, "", "HIDDEN"));
-
+void createControlsOXC()
+{
 	// controls
 	_info.push_back(OptionInfo(OPTION_OXC, "keyOk", &keyOk, SDLK_RETURN, "STR_OK", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXC, "keyCancel", &keyCancel, SDLK_ESCAPE, "STR_CANCEL", "STR_GENERAL"));
@@ -358,74 +327,175 @@ void create()
 	_info.push_back(OptionInfo(OPTION_OXC, "keyInvApplyTemplate", &keyInvApplyTemplate, SDLK_v, "STR_APPLY_INVENTORY_TEMPLATE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "keyInvClear", &keyInvClear, SDLK_x, "STR_CLEAR_INVENTORY", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "keyInvAutoEquip", &keyInvAutoEquip, SDLK_z, "STR_AUTO_EQUIP", "STR_BATTLESCAPE"));
+}
 
-	// OXCE
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBuildNewBase", &keyBasescapeBuildNewBase, SDLK_n, "STR_BUILD_NEW_BASE_UC", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBaseInformation", &keyBasescapeBaseInfo, SDLK_i, "STR_BASE_INFORMATION", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeSoldiers", &keyBasescapeSoldiers, SDLK_s, "STR_SOLDIERS_UC", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeEquipCraft", &keyBasescapeCrafts, SDLK_e, "STR_EQUIP_CRAFT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBuildFacilities", &keyBasescapeFacilities, SDLK_f, "STR_BUILD_FACILITIES", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeResearch", &keyBasescapeResearch, SDLK_r, "STR_RESEARCH", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeManufacture", &keyBasescapeManufacture, SDLK_m, "STR_MANUFACTURE", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeTransfer", &keyBasescapeTransfer, SDLK_t, "STR_TRANSFER_UC", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapePurchase", &keyBasescapePurchase, SDLK_p, "STR_PURCHASE_RECRUIT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeSell", &keyBasescapeSell, SDLK_l, "STR_SELL_SACK_UC", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoDailyPilotExperience", &keyGeoDailyPilotExperience, SDLK_e, "STR_DAILY_PILOT_EXPERIENCE", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoUfoTracker", &keyGeoUfoTracker, SDLK_t, "STR_UFO_TRACKER", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoTechTreeViewer", &keyGeoTechTreeViewer, SDLK_q, "STR_TECH_TREE_VIEWER", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalProduction", &keyGeoGlobalProduction, SDLK_p, "STR_PRODUCTION_OVERVIEW", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalResearch", &keyGeoGlobalResearch, SDLK_c, "STR_RESEARCH_OVERVIEW", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalAlienContainment", &keyGeoGlobalAlienContainment, SDLK_j, "STR_PRISONER_OVERVIEW", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGraphsZoomIn", &keyGraphsZoomIn, SDLK_KP_PLUS, "STR_GRAPHS_ZOOM_IN", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyGraphsZoomOut", &keyGraphsZoomOut, SDLK_KP_MINUS, "STR_GRAPHS_ZOOM_OUT", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyToggleQuickSearch", &keyToggleQuickSearch, SDLK_q, "STR_TOGGLE_QUICK_SEARCH", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyCraftLoadoutSave", &keyCraftLoadoutSave, SDLK_F5, "STR_SAVE_CRAFT_LOADOUT_TEMPLATE", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyCraftLoadoutLoad", &keyCraftLoadoutLoad, SDLK_F9, "STR_LOAD_CRAFT_LOADOUT_TEMPLATE", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyMarkAllAsSeen", &keyMarkAllAsSeen, SDLK_x, "STR_MARK_ALL_AS_SEEN", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keySellAll", &keySellAll, SDLK_x, "STR_SELL_ALL", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keySellAllButOne", &keySellAllButOne, SDLK_z, "STR_SELL_ALL_BUT_ONE", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyTransferAll", &keyTransferAll, SDLK_x, "STR_TRANSFER_ALL", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromAllCrafts", &keyRemoveSoldiersFromAllCrafts, SDLK_x, "STR_REMOVE_SOLDIERS_FROM_ALL_CRAFTS", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromCraft", &keyRemoveSoldiersFromCraft, SDLK_z, "STR_REMOVE_SOLDIERS_FROM_CRAFT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveEquipmentFromCraft", &keyRemoveEquipmentFromCraft, SDLK_x, "STR_REMOVE_EQUIPMENT_FROM_CRAFT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveArmorFromAllCrafts", &keyRemoveArmorFromAllCrafts, SDLK_x, "STR_REMOVE_ARMOR_FROM_ALL_CRAFTS", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveArmorFromCraft", &keyRemoveArmorFromCraft, SDLK_z, "STR_REMOVE_ARMOR_FROM_CRAFT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromTraining", &keyRemoveSoldiersFromTraining, SDLK_x, "STR_REMOVE_SOLDIERS_FROM_TRAINING", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyAddSoldiersToTraining", &keyAddSoldiersToTraining, SDLK_z, "STR_ADD_SOLDIERS_TO_TRAINING", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryArmor", &keyInventoryArmor, SDLK_a, "STR_INVENTORY_ARMOR", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryAvatar", &keyInventoryAvatar, SDLK_m, "STR_INVENTORY_AVATAR", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventorySave", &keyInventorySave, SDLK_F5, "STR_SAVE_EQUIPMENT_TEMPLATE", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryLoad", &keyInventoryLoad, SDLK_F9, "STR_LOAD_EQUIPMENT_TEMPLATE", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvSavePersonalEquipment", &keyInvSavePersonalEquipment, SDLK_s, "STR_SAVE_PERSONAL_EQUIPMENT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvLoadPersonalEquipment", &keyInvLoadPersonalEquipment, SDLK_l, "STR_LOAD_PERSONAL_EQUIPMENT", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvShowPersonalEquipment", &keyInvShowPersonalEquipment, SDLK_p, "STR_PERSONAL_EQUIPMENT", "STR_OXCE"));
-
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleShowLayers", &keyBattleShowLayers, SDLK_UNKNOWN, "STR_MULTI_LEVEL_VIEW", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleUseSpecial", &keyBattleUseSpecial, SDLK_w, "STR_USE_SPECIAL_ITEM", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem1", &keyBattleActionItem1, SDLK_1, "STR_ACTION_ITEM_1", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem2", &keyBattleActionItem2, SDLK_2, "STR_ACTION_ITEM_2", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem3", &keyBattleActionItem3, SDLK_3, "STR_ACTION_ITEM_3", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem4", &keyBattleActionItem4, SDLK_4, "STR_ACTION_ITEM_4", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem5", &keyBattleActionItem5, SDLK_5, "STR_ACTION_ITEM_5", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyNightVisionToggle", &keyNightVisionToggle, SDLK_SCROLLOCK, "STR_TOGGLE_NIGHT_VISION", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keyNightVisionHold", &keyNightVisionHold, SDLK_SPACE, "STR_HOLD_NIGHT_VISION", "STR_OXCE"));
-	_info.push_back(OptionInfo(OPTION_OXCE, "keySelectMusicTrack", &keySelectMusicTrack, SDLK_END, "STR_SELECT_MUSIC_TRACK", "STR_OXCE"));
-
-#ifdef __MORPHOS__
-	_info.push_back(OptionInfo(OPTION_OXC, "FPS", &FPS, 15, "STR_FPS_LIMIT", "STR_GENERAL"));
-	_info.push_back(OptionInfo(OPTION_OXC, "FPSInactive", &FPSInactive, 15, "STR_FPS_INACTIVE_LIMIT", "STR_GENERAL"));
+void createOptionsOXCE()
+{
+	// OXCE hidden
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, true));
 #else
-	_info.push_back(OptionInfo(OPTION_OXC, "FPS", &FPS, 60, "STR_FPS_LIMIT", "STR_GENERAL"));
-	_info.push_back(OptionInfo(OPTION_OXC, "FPSInactive", &FPSInactive, 30, "STR_FPS_INACTIVE_LIMIT", "STR_GENERAL"));
-	_info.push_back(OptionInfo(OPTION_OXC, "vSyncForOpenGL", &vSyncForOpenGL, true, "STR_VSYNC_FOR_OPENGL", "STR_GENERAL")); // exposed in OXCE
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, false));
+#endif
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceThrottleMouseMoveEvent", &oxceThrottleMouseMoveEvent, 0));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceHighlightNewTopicsHidden", &oxceHighlightNewTopicsHidden, true));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceInterceptGuiMaintenanceTimeHidden", &oxceInterceptGuiMaintenanceTimeHidden, 2));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableUnitResponseSounds", &oxceEnableUnitResponseSounds, true));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableSlackingIndicator", &oxceEnableSlackingIndicator, true));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnablePaletteFlickerFix", &oxceEnablePaletteFlickerFix, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMaxEquipmentLayoutTemplates", &oxceMaxEquipmentLayoutTemplates, 20));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePersonalLayoutIncludingArmor", &oxcePersonalLayoutIncludingArmor, true));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureFilterSuppliesOK", &oxceManufactureFilterSuppliesOK, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceTogglePersonalLightType", &oxceTogglePersonalLightType, 1)); // per battle
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleNightVisionType", &oxceToggleNightVisionType, 1));     // per battle
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleBrightnessType", &oxceToggleBrightnessType, 0));       // not persisted
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceModValidationLevel", &oxceModValidationLevel, (int)LOG_WARNING));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEmbeddedOnly", &oxceEmbeddedOnly, true));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceListVFSContents", &oxceListVFSContents, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRawScreenShots", &oxceRawScreenShots, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFirstPersonViewFisheyeProjection", &oxceFirstPersonViewFisheyeProjection, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceThumbButtons", &oxceThumbButtons, true));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRecommendedOptionsWereSet", &oxceRecommendedOptionsWereSet, false));
+	_info.push_back(OptionInfo(OPTION_OXCE, "password", &password, "secret"));
+
+	// OXCE hidden but moddable
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceStartUpTextMode", &oxceStartUpTextMode, 0, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureScrollSpeed", &oxceManufactureScrollSpeed, 10, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManufactureScrollSpeedWithCtrl", &oxceManufactureScrollSpeedWithCtrl, 1, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceResearchScrollSpeed", &oxceResearchScrollSpeed, 10, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceResearchScrollSpeedWithCtrl", &oxceResearchScrollSpeedWithCtrl, 1, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoSlowdownFactor", &oxceGeoSlowdownFactor, 1, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableTechTreeViewer", &oxceDisableTechTreeViewer, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableStatsForNerds", &oxceDisableStatsForNerds, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableProductionDependencyTree", &oxceDisableProductionDependencyTree, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableHitLog", &oxceDisableHitLog, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableAlienInventory", &oxceDisableAlienInventory, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableInventoryTuCost", &oxceDisableInventoryTuCost, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceShowBaseNameInPopups", &oxceShowBaseNameInPopups, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoscapeDebugLogMaxEntries", &oxceGeoscapeDebugLogMaxEntries, 1000, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoscapeEventsInstantDelivery", &oxceGeoscapeEventsInstantDelivery, true, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceHiddenMovementBackgroundChangeFrequency", &oxceHiddenMovementBackgroundChangeFrequency, 1, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePediaShowClipSize", &oxcePediaShowClipSize, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceShowETAMode", &oxceShowETAMode, 0, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseInfoScaleEnabled", &oxceBaseInfoScaleEnabled, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseInfoDefenseScaleMultiplier", &oxceBaseInfoDefenseScaleMultiplier, 100, "", "HIDDEN"));
+}
+
+void createAdvancedOptionsOXCE()
+{
+	// OXCE options general
+#ifdef _WIN32
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceUpdateCheck", &oxceUpdateCheck, false, "STR_UPDATE_CHECK", "STR_GENERAL"));
 #endif
 
+	_info.push_back(OptionInfo(OPTION_OXCE, "autosaveSlots", &autosaveSlots, 1, "STR_AUTOSAVE_SLOTS", "STR_GENERAL")); // OXCE only
+
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, true, "STR_OXCE_LINKS", "STR_GENERAL"));
+#else
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, false, "STR_OXCE_LINKS", "STR_GENERAL"));
+#endif
+
+	// OXCE options geoscape
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceUfoLandingAlert", &oxceUfoLandingAlert, false, "STR_UFO_LANDING_ALERT", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceRememberDisabledCraftWeapons", &oxceRememberDisabledCraftWeapons, false, "STR_REMEMBER_DISABLED_CRAFT_WEAPONS", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceManualPromotions", &oxceManualPromotions, false, "STR_MANUALPROMOTIONS", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutomaticPromotions", &oxceAutomaticPromotions, true, "STR_AUTOMATICPROMOTIONS", "STR_GEOSCAPE"));
+
+	// OXCE options basescape
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAlternateCraftEquipmentManagement", &oxceAlternateCraftEquipmentManagement, false, "STR_ALTERNATE_CRAFT_EQUIPMENT_MANAGEMENT", "STR_BASESCAPE"));
+
+	// OXCE options battlescape
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceWoundedDefendBaseIf", &oxceWoundedDefendBaseIf, 100, "STR_WOUNDED_DEFEND_BASE_IF", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxcePlayBriefingMusicDuringEquipment", &oxcePlayBriefingMusicDuringEquipment, false, "STR_PLAY_BRIEFING_MUSIC_DURING_EQUIPMENT", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceNightVisionColor", &oxceNightVisionColor, 5, "STR_NIGHT_VISION_COLOR", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutoNightVisionThreshold", &oxceAutoNightVisionThreshold, 15, "STR_AUTO_NIGHT_VISION_THRESHOLD", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_BATTLESCAPE"));
 }
+
+void createControlsOXCE()
+{
+	// OXCE controls general
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyToggleQuickSearch", &keyToggleQuickSearch, SDLK_q, "STR_TOGGLE_QUICK_SEARCH", "STR_GENERAL"));
+
+	// OXCE controls geoscape
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoUfoTracker", &keyGeoUfoTracker, SDLK_t, "STR_UFO_TRACKER", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoTechTreeViewer", &keyGeoTechTreeViewer, SDLK_q, "STR_TECH_TREE_VIEWER", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalProduction", &keyGeoGlobalProduction, SDLK_p, "STR_PRODUCTION_OVERVIEW", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalResearch", &keyGeoGlobalResearch, SDLK_c, "STR_RESEARCH_OVERVIEW", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoGlobalAlienContainment", &keyGeoGlobalAlienContainment, SDLK_j, "STR_PRISONER_OVERVIEW", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGeoDailyPilotExperience", &keyGeoDailyPilotExperience, SDLK_e, "STR_DAILY_PILOT_EXPERIENCE", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGraphsZoomIn", &keyGraphsZoomIn, SDLK_KP_PLUS, "STR_GRAPHS_ZOOM_IN", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyGraphsZoomOut", &keyGraphsZoomOut, SDLK_KP_MINUS, "STR_GRAPHS_ZOOM_OUT", "STR_GEOSCAPE"));
+
+	// OXCE controls basescape
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBuildNewBase", &keyBasescapeBuildNewBase, SDLK_n, "STR_BUILD_NEW_BASE_UC", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBaseInformation", &keyBasescapeBaseInfo, SDLK_i, "STR_BASE_INFORMATION", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeSoldiers", &keyBasescapeSoldiers, SDLK_s, "STR_SOLDIERS_UC", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeEquipCraft", &keyBasescapeCrafts, SDLK_e, "STR_EQUIP_CRAFT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeBuildFacilities", &keyBasescapeFacilities, SDLK_f, "STR_BUILD_FACILITIES", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeResearch", &keyBasescapeResearch, SDLK_r, "STR_RESEARCH", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeManufacture", &keyBasescapeManufacture, SDLK_m, "STR_MANUFACTURE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeTransfer", &keyBasescapeTransfer, SDLK_t, "STR_TRANSFER_UC", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapePurchase", &keyBasescapePurchase, SDLK_p, "STR_PURCHASE_RECRUIT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBasescapeSell", &keyBasescapeSell, SDLK_l, "STR_SELL_SACK_UC", "STR_BASESCAPE"));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromTraining", &keyRemoveSoldiersFromTraining, SDLK_x, "STR_REMOVE_SOLDIERS_FROM_TRAINING", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyAddSoldiersToTraining", &keyAddSoldiersToTraining, SDLK_z, "STR_ADD_SOLDIERS_TO_TRAINING", "STR_BASESCAPE"));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyCraftLoadoutSave", &keyCraftLoadoutSave, SDLK_F5, "STR_SAVE_CRAFT_LOADOUT_TEMPLATE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyCraftLoadoutLoad", &keyCraftLoadoutLoad, SDLK_F9, "STR_LOAD_CRAFT_LOADOUT_TEMPLATE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromAllCrafts", &keyRemoveSoldiersFromAllCrafts, SDLK_x, "STR_REMOVE_SOLDIERS_FROM_ALL_CRAFTS", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveSoldiersFromCraft", &keyRemoveSoldiersFromCraft, SDLK_z, "STR_REMOVE_SOLDIERS_FROM_CRAFT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveEquipmentFromCraft", &keyRemoveEquipmentFromCraft, SDLK_x, "STR_REMOVE_EQUIPMENT_FROM_CRAFT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveArmorFromAllCrafts", &keyRemoveArmorFromAllCrafts, SDLK_x, "STR_REMOVE_ARMOR_FROM_ALL_CRAFTS", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyRemoveArmorFromCraft", &keyRemoveArmorFromCraft, SDLK_z, "STR_REMOVE_ARMOR_FROM_CRAFT", "STR_BASESCAPE"));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventorySave", &keyInventorySave, SDLK_F5, "STR_SAVE_EQUIPMENT_TEMPLATE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryLoad", &keyInventoryLoad, SDLK_F9, "STR_LOAD_EQUIPMENT_TEMPLATE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvSavePersonalEquipment", &keyInvSavePersonalEquipment, SDLK_s, "STR_SAVE_PERSONAL_EQUIPMENT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvLoadPersonalEquipment", &keyInvLoadPersonalEquipment, SDLK_l, "STR_LOAD_PERSONAL_EQUIPMENT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInvShowPersonalEquipment", &keyInvShowPersonalEquipment, SDLK_p, "STR_PERSONAL_EQUIPMENT", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryArmor", &keyInventoryArmor, SDLK_a, "STR_INVENTORY_ARMOR", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyInventoryAvatar", &keyInventoryAvatar, SDLK_m, "STR_INVENTORY_AVATAR", "STR_BASESCAPE"));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "keySellAll", &keySellAll, SDLK_x, "STR_SELL_ALL", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keySellAllButOne", &keySellAllButOne, SDLK_z, "STR_SELL_ALL_BUT_ONE", "STR_BASESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyTransferAll", &keyTransferAll, SDLK_x, "STR_TRANSFER_ALL", "STR_BASESCAPE"));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyMarkAllAsSeen", &keyMarkAllAsSeen, SDLK_x, "STR_MARK_ALL_AS_SEEN", "STR_BASESCAPE"));
+
+	// OXCE controls battlescape
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleShowLayers", &keyBattleShowLayers, SDLK_UNKNOWN, "STR_MULTI_LEVEL_VIEW", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleUseSpecial", &keyBattleUseSpecial, SDLK_w, "STR_USE_SPECIAL_ITEM", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem1", &keyBattleActionItem1, SDLK_1, "STR_ACTION_ITEM_1", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem2", &keyBattleActionItem2, SDLK_2, "STR_ACTION_ITEM_2", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem3", &keyBattleActionItem3, SDLK_3, "STR_ACTION_ITEM_3", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem4", &keyBattleActionItem4, SDLK_4, "STR_ACTION_ITEM_4", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyBattleActionItem5", &keyBattleActionItem5, SDLK_5, "STR_ACTION_ITEM_5", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyNightVisionToggle", &keyNightVisionToggle, SDLK_SCROLLOCK, "STR_TOGGLE_NIGHT_VISION", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keyNightVisionHold", &keyNightVisionHold, SDLK_SPACE, "STR_HOLD_NIGHT_VISION", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "keySelectMusicTrack", &keySelectMusicTrack, SDLK_END, "STR_SELECT_MUSIC_TRACK", "STR_BATTLESCAPE"));
+}
+
+void createOptionsOTHER()
+{
+	// your fork's hidden options here
+}
+
+void createAdvancedOptionsOTHER()
+{
+	// your fork's advanced options here
+}
+
+void createControlsOTHER()
+{
+	// your fork's controls here
+}
+
 
 // we can get fancier with these detection routines, but for now just look for
 // *something* in the data folders.  case sensitivity can make actually verifying
