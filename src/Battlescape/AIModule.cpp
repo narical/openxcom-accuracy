@@ -3726,7 +3726,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 						}
 					}
-					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition && !_unit->isCheatOnMovement())
+					if ((clearSight(pos, peakPosition) || pos == peakPosition) && !couldSeePeekPosition && !_unit->isCheatOnMovement() && !spotter)
 						indirectPeakScore = _unit->getTimeUnits() - pu->getTUCost(false).time;
 				}
 			}
