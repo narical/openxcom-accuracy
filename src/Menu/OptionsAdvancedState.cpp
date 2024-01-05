@@ -91,7 +91,7 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 	_btnOTHER->setText(tr("STR_ENGINE_OTHER")); // rename in your fork
 	_btnOTHER->setGroup(&_owner);
 	_btnOTHER->onMousePress((ActionHandler)&OptionsAdvancedState::btnGroupPress, SDL_BUTTON_LEFT);
-	_btnOTHER->setVisible(false); // enable in your fork
+	_btnOTHER->setVisible(true); // enable in your fork
 
 	// how much room do we need for YES/NO
 	Text text = Text(100, 9, 0, 0);
@@ -138,10 +138,6 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 			}
 			else if (optionInfo.category() == "STR_AI")
 			{
-				_settingsAI.push_back(optionInfo);
-			}
-			else if (optionInfo.category() == "STR_OXCE")
-			{
 				_settingsAI[optionInfo.owner()].push_back(optionInfo);
 			}
 		}
@@ -185,25 +181,6 @@ void OptionsAdvancedState::updateList()
 	_offsetAIMax = -1;
 
 	_lstOptions->clearList();
-	_lstOptions->addRow(2, tr("STR_GENERAL").c_str(), "");
-	_lstOptions->setCellColor(0, 0, _colorGroup);
-	addSettings(_settingsGeneral);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_GEOSCAPE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2, 0, _colorGroup);
-	addSettings(_settingsGeo);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_BATTLESCAPE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2, 0, _colorGroup);
-	addSettings(_settingsBattle);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_AI").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2, 0, _colorGroup);
-	addSettings(_settingsAI);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_OXCE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2, 0, _colorGroup);
-	addSettings(_settingsOxce);
 
 	int row = -1;
 
@@ -316,15 +293,6 @@ OptionInfo *OptionsAdvancedState::getSetting(size_t sel)
 	{
 		return &_settingsBase[idx][selInt - 1 - _offsetBaseMin];
 	}
-	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 &&
-			 sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size())
-	{
-		return &_settingsAI[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2];
-	}
-	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2 &&
-		sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsAI.size() + 2 + _settingsOxce.size())
-	{
-		return &_settingsOxce[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2 - _settingsAI.size() - 2];
 	else if (selInt > _offsetBattleMin && selInt <= _offsetBattleMax)
 	{
 		return &_settingsBattle[idx][selInt - 1 - _offsetBattleMin];
