@@ -934,6 +934,8 @@ void SavedBattleGame::calculateCraftTiles()
  */
 Position SavedBattleGame::getTileCoords(int index) const
 {
+	if (index == -1)
+		return TileEngine::invalid;
 	Position p;
 	p.z = index / (_mapsize_y * _mapsize_x);
 	p.y = (index % (_mapsize_y * _mapsize_x)) / _mapsize_x;

@@ -6344,19 +6344,18 @@ int AIModule::getEnergyRecovery(BattleUnit* unit)
 
 std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc, bool useMaxTUs)
 {
+	std::map<Position, int, PositionComparator> tuAtPositionMap;
 	Position startPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 	if (_unit->isCheatOnMovement() || unit->getFaction() == _unit->getFaction())
 		startPosition = unit->getPosition();
+	if (startPosition == TileEngine::invalid)
+		return tuAtPositionMap;
 	if (unit->getPositionOfUpdate() == startPosition && !forceRecalc)
 	{
 		ranOutOfTUs = unit->getRanOutOfTUs();
 		return unit->getReachablePositions();
 	}
-	/*if (useMaxTUs)
-		_save->getPathfinding()->setIgnoreUnits(true);*/
 	std::vector<PathfindingNode*> reachable = _save->getPathfinding()->findReachablePathFindingNodes(unit, BattleActionCost(), ranOutOfTUs, false, NULL, &startPosition, false, useMaxTUs);
-	/*_save->getPathfinding()->setIgnoreUnits(false);*/
-	std::map<Position, int, PositionComparator> tuAtPositionMap;
 	int TUs = unit->getTimeUnits();
 	if (useMaxTUs)
 		TUs = getMaxTU(unit);
