@@ -44,7 +44,7 @@ private:
 	TextButton* _btnOk;
 	TextButton* _btnCancel;
 	Window *_window;
-	Text *_txtInfo, *_txtHeaderRegions, *_txtHeaderCountries, *_txtRegionHeader, *_txtCountryHeader;
+	Text *_txtInfo, *_txtHeaderRegions, *_txtSightingsRegions, *_txtHeaderCountries, *_txtSightingsCountries, *_txtRegionHeader, *_txtCountryHeader;
 	TextList *_lstHiddenAlienActivityRegions, *_lstHiddenAlienActivityCountries;
 
 public:

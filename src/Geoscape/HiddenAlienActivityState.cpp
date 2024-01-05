@@ -68,9 +68,11 @@ HiddenAlienActivityState::HiddenAlienActivityState
 
 	_window = new Window(this, 224, 180, 16, 10, POPUP_BOTH);
 	_txtInfo = new Text(200, 16, 28, 20);
-	_txtHeaderRegions = new Text(200, 8, 28, 40);
+	_txtHeaderRegions = new Text(140, 8, 28, 40);
+	_txtSightingsRegions = new Text(40, 8, 28 + 140, 40);
 	_lstHiddenAlienActivityRegions = new TextList(180, 40, 28, 50);
-	_txtHeaderCountries = new Text(200, 8, 28, 98);
+	_txtHeaderCountries = new Text(140, 8, 28, 98);
+	_txtSightingsCountries = new Text(40, 8, 28 + 140, 98);
 	_lstHiddenAlienActivityCountries = new TextList(180, 40, 28, 108);
 	_btnOk = new TextButton(200, 12, 28, 152);
 	_btnCancel = new TextButton(200, 12, 28, 168);
@@ -84,8 +86,10 @@ HiddenAlienActivityState::HiddenAlienActivityState
 	add(_window, "window", "hiddenAlienActivity");
 	add(_txtInfo, "text", "hiddenAlienActivity");
 	add(_txtHeaderRegions, "text", "hiddenAlienActivity");
+	add(_txtSightingsRegions, "text", "hiddenAlienActivity");
 	add(_lstHiddenAlienActivityRegions, "list", "hiddenAlienActivity");
 	add(_txtHeaderCountries, "text", "hiddenAlienActivity");
+	add(_txtSightingsCountries, "text", "hiddenAlienActivity");
 	add(_lstHiddenAlienActivityCountries, "list", "hiddenAlienActivity");
 	add(_btnOk, "button", "hiddenAlienActivity");
 	add(_btnCancel, "button", "hiddenAlienActivity");
@@ -101,16 +105,18 @@ HiddenAlienActivityState::HiddenAlienActivityState
 	_txtInfo->setAlign(ALIGN_CENTER);
 
 	_txtHeaderRegions->setText(tr("STR_UFO_ACTIVITY_IN_AREAS"));
+	_txtSightingsRegions->setText(tr("STR_UFO_SIGHTINGS"));
+	_txtSightingsRegions->setAlign(ALIGN_RIGHT);
 
-	_lstHiddenAlienActivityRegions->setColumns(2, 100, 80);
+	_lstHiddenAlienActivityRegions->setColumns(2, 140, 40);
 	_lstHiddenAlienActivityRegions->setAlign(ALIGN_RIGHT, 1);
-	//_lstHiddenAlienActivityRegions->setHighContrast(true);
 
 	_txtHeaderCountries->setText(tr("STR_UFO_ACTIVITY_IN_COUNTRIES"));
+	_txtSightingsCountries->setText(tr("STR_UFO_SIGHTINGS"));
+	_txtSightingsCountries->setAlign(ALIGN_RIGHT);
 
-	_lstHiddenAlienActivityCountries->setColumns(2, 100, 80);
+	_lstHiddenAlienActivityCountries->setColumns(2, 140, 40);
 	_lstHiddenAlienActivityCountries->setAlign(ALIGN_RIGHT, 1);
-	//_lstHiddenAlienActivityCountries->setHighContrast(true);
 
 	_btnOk->setText(tr("STR_OK_5_SECONDS"));
 	_btnOk->onMouseClick((ActionHandler)&HiddenAlienActivityState::btnOkClick);
@@ -119,7 +125,11 @@ HiddenAlienActivityState::HiddenAlienActivityState
 	_btnCancel->onMouseClick((ActionHandler)&HiddenAlienActivityState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&HiddenAlienActivityState::btnCancelClick, Options::keyCancel);
 
-	int _row;
+	if (Options::displayHiddenAlienActivity == 1)
+	{
+		_txtSightingsRegions->setVisible(false);
+		_txtSightingsCountries->setVisible(false);
+	}
 
 	// populate alien activity lists
 
@@ -138,7 +148,14 @@ HiddenAlienActivityState::HiddenAlienActivityState
 		ossName << tr(region->getRules()->getType());
 		ossValue << std::to_string(activity);
 
-		_lstHiddenAlienActivityRegions->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+		if (Options::displayHiddenAlienActivity == 2)
+		{
+			_lstHiddenAlienActivityRegions->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+		}
+		else
+		{
+			_lstHiddenAlienActivityRegions->addRow(1, ossName.str().c_str());
+		}
 
 	}
 
@@ -157,7 +174,14 @@ HiddenAlienActivityState::HiddenAlienActivityState
 		ossName << tr(country->getRules()->getType());
 		ossValue << std::to_string(activity);
 
-		_lstHiddenAlienActivityCountries->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+		if (Options::displayHiddenAlienActivity == 2)
+		{
+			_lstHiddenAlienActivityCountries->addRow(2, ossName.str().c_str(), ossValue.str().c_str());
+		}
+		else
+		{
+			_lstHiddenAlienActivityCountries->addRow(1, ossName.str().c_str());
+		}
 
 	}
 
