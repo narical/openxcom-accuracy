@@ -352,6 +352,8 @@ en-US:
   rearArmor: "Rear Armor"
   underArmor: "Under Armor"
 #
+  sizeX: "Size X"
+  sizeY: "Size Y"
   buildCost: "Build cost"
   buildCostItems: "Build materials:"
   buildTime: "Build time"

@@ -5120,8 +5120,8 @@ RuleBaseFacility *Mod::getDestroyedFacility() const
 	if (isEmptyRuleName(_destroyedFacility))
 		return 0;
 
-	auto temp = getBaseFacility(_destroyedFacility, true);
-	if (temp->getSize() != 1)
+	auto* temp = getBaseFacility(_destroyedFacility, true);
+	if (!temp->isSmall())
 	{
 		throw Exception("Destroyed base facility definition must have size: 1");
 	}

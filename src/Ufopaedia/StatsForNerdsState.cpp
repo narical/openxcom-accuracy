@@ -3060,7 +3060,15 @@ void StatsForNerdsState::initFacilityList()
 
 	addVectorOfStrings(ss, facilityRule->getRequirements(), "requires");
 
-	addInteger(ss, facilityRule->getSize(), "size", 1);
+	if (facilityRule->getSizeX() == facilityRule->getSizeY())
+	{
+		addInteger(ss, facilityRule->getSizeX(), "size", 1);
+	}
+	else
+	{
+		addInteger(ss, facilityRule->getSizeX(), "sizeX", 0);
+		addInteger(ss, facilityRule->getSizeY(), "sizeY", 0);
+	}
 	addInteger(ss, facilityRule->getBuildCost(), "buildCost", 0, true);
 	addHeading("buildCostItems");
 	{
