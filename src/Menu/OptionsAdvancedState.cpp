@@ -91,7 +91,7 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 	_btnOTHER->setText(tr("STR_ENGINE_OTHER")); // rename in your fork
 	_btnOTHER->setGroup(&_owner);
 	_btnOTHER->onMousePress((ActionHandler)&OptionsAdvancedState::btnGroupPress, SDL_BUTTON_LEFT);
-	//_btnOTHER->setVisible(false); // enable in your fork
+	_btnOTHER->setVisible(false); // enable in your fork
 
 	// how much room do we need for YES/NO
 	Text text = Text(100, 9, 0, 0);
