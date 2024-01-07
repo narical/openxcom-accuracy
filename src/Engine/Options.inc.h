@@ -107,20 +107,9 @@ OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
 OPT bool oxceSmartCtrlEquip;
 
-OPT bool oxceFatFingerLinks;
-OPT int oxceThrottleMouseMoveEvent;
 OPT bool oxceHighlightNewTopicsHidden;
 OPT int oxceInterceptGuiMaintenanceTimeHidden;
-OPT bool oxceEnableUnitResponseSounds;
-OPT bool oxceEnableSlackingIndicator;
-OPT bool oxceEnablePaletteFlickerFix;
-OPT int oxceMaxEquipmentLayoutTemplates;
-OPT bool oxcePersonalLayoutIncludingArmor;
-OPT bool oxceManufactureFilterSuppliesOK;
 // 0 = not persisted; 1 = persisted per battle; 2 = persisted per campaign
-OPT int oxceTogglePersonalLightType;
-OPT int oxceToggleNightVisionType;
-OPT int oxceToggleBrightnessType;
 OPT int maxNumberOfBases;
 
 /**
