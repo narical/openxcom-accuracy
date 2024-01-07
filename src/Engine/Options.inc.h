@@ -73,24 +73,40 @@ OPT SDLKey keyBasescapeBuildNewBase, keyBasescapeBaseInfo, keyBasescapeSoldiers,
 // OXCE, accessible via GUI
 OPT bool oxceUpdateCheck;
 OPT int autosaveSlots;
-OPT bool oxceManualPromotions;
-OPT bool oxceAutomaticPromotions;
-
 OPT bool oxceLinks;
-OPT bool oxceAlternateCraftEquipmentManagement;
+OPT bool oxceFatFingerLinks;
+OPT bool oxcePediaShowClipSize;
+
+OPT bool oxceEnableSlackingIndicator;
+OPT int oxceInterceptGuiMaintenanceTime;
+OPT int oxceShowETAMode;
 OPT bool oxceUfoLandingAlert;
+OPT bool oxceRememberDisabledCraftWeapons;
+OPT bool oxceGeoscapeEventsInstantDelivery;
+OPT bool oxceShowBaseNameInPopups;
+
+OPT bool oxceAlternateCraftEquipmentManagement;
+OPT bool oxceBaseInfoScaleEnabled;
+OPT bool oxceHighlightNewTopics;
+OPT int oxceResearchScrollSpeed;
+OPT int oxceResearchScrollSpeedWithCtrl;
+OPT bool oxceManufactureFilterSuppliesOK;
+OPT int oxceManufactureScrollSpeed;
+OPT int oxceManufactureScrollSpeedWithCtrl;
+OPT bool oxcePersonalLayoutIncludingArmor;
+OPT bool oxceManualPromotions;
+
 OPT int oxceWoundedDefendBaseIf;
 OPT bool oxcePlayBriefingMusicDuringEquipment;
 OPT int oxceNightVisionColor;
+OPT int oxceAutoNightVisionThreshold;
 OPT int oxceFOW;
 OPT int oxceFOWColor;
 OPT bool oxceAutoSell;
-OPT int oxceAutoNightVisionThreshold;
-OPT bool oxceRememberDisabledCraftWeapons;
+OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
 OPT bool oxceSmartCtrlEquip;
 
-// OXCE hidden, accessible only via options.cfg
 OPT bool oxceFatFingerLinks;
 OPT int oxceThrottleMouseMoveEvent;
 OPT bool oxceHighlightNewTopicsHidden;
@@ -106,42 +122,47 @@ OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
 OPT int maxNumberOfBases;
+
 /**
  * Verification level of mod data.
  * Same levels supported as `SeverityLevel`.
  */
 OPT int oxceModValidationLevel;
-
-OPT bool oxceEmbeddedOnly;
-OPT bool oxceListVFSContents;
 OPT bool oxceRawScreenShots;
 OPT bool oxceFirstPersonViewFisheyeProjection;
 OPT bool oxceThumbButtons;
+OPT int oxceThrottleMouseMoveEvent;
 
+OPT bool oxceEmbeddedOnly;
+OPT bool oxceListVFSContents;
+OPT bool oxceEnablePaletteFlickerFix;
 OPT bool oxceRecommendedOptionsWereSet;
 OPT std::string password;
 
 // OXCE hidden, but moddable via fixedUserOptions and/or recommendedUserOptions
 OPT int oxceStartUpTextMode;
-OPT int oxceManufactureScrollSpeed;
-OPT int oxceManufactureScrollSpeedWithCtrl;
-OPT int oxceResearchScrollSpeed;
-OPT int oxceResearchScrollSpeedWithCtrl;
-OPT int oxceGeoSlowdownFactor;
-OPT bool oxceDisableTechTreeViewer;
-OPT bool oxceDisableStatsForNerds;
-OPT bool oxceDisableProductionDependencyTree;
-OPT bool oxceDisableHitLog;
-OPT bool oxceDisableAlienInventory;
-OPT bool oxceDisableInventoryTuCost;
-OPT bool oxceShowBaseNameInPopups;
+
 OPT int oxceGeoscapeDebugLogMaxEntries;
-OPT bool oxceGeoscapeEventsInstantDelivery;
-OPT int oxceHiddenMovementBackgroundChangeFrequency;
-OPT bool oxcePediaShowClipSize;
-OPT int oxceShowETAMode;
-OPT bool oxceBaseInfoScaleEnabled;
+OPT int oxceGeoSlowdownFactor;
+
 OPT int oxceBaseInfoDefenseScaleMultiplier;
+
+OPT bool oxceDisableAlienInventory;
+OPT bool oxceDisableHitLog;
+OPT bool oxceDisableInventoryTuCost;
+OPT bool oxceDisableProductionDependencyTree;
+OPT bool oxceDisableStatsForNerds;
+OPT bool oxceDisableTechTreeViewer;
+
+// 0 = not persisted; 1 = persisted per battle; 2 = persisted per campaign
+OPT int oxceTogglePersonalLightType;
+OPT int oxceToggleNightVisionType;
+OPT int oxceToggleBrightnessType;
+
+OPT bool oxceEnableUnitResponseSounds;
+OPT int oxceHiddenMovementBackgroundChangeFrequency;
+
+OPT int oxceMaxEquipmentLayoutTemplates;
 
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;
