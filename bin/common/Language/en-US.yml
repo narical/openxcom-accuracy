@@ -126,6 +126,8 @@ en-US:
   STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
   STR_INSTANTPRIME: "One-click grenade priming"
   STR_INSTANTPRIME_DESC: "You can no longer select the amount of turns after which grenades shall explode. The timer will just be set to 0 without having to pick a value."
+  STR_UPDATETURNSSINCESEENBYCLUE: "Precise projectile-tracking"
+  STR_UPDATETURNSSINCESEENBYCLUE_DESC: "Allows both the player, when holding the alt-key, and Brutal-AI to tell the exact tile an enemy projectile was fired from without having seen the unit that fired."
   STR_CANTRANSFERCRAFTSWHILEAIRBORNE: "Airborne transfers"
   STR_CANTRANSFERCRAFTSWHILEAIRBORNE_DESC: "Craft currently in-flight can be transferred."
   STR_CRAFTLAUNCHALWAYS: "Force craft launch"

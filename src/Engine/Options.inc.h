@@ -36,7 +36,7 @@ OPT PathPreview battleNewPreviewPath;
 OPT int battleRealisticShotDispersion, battleScrollSpeed, battleDragScrollButton, battleFireSpeed, battleXcomSpeed, battleAlienSpeed, battleExplosionHeight, battlescapeScale, battleTerrainSquishyness;
 OPT bool traceAI, battleInstantGrenade, battleNotifyDeath, battleTooltips, battleHairBleach, battleAutoEnd,
 	strafe, forceFire, showMoreStatsInInventoryView, allowPsionicCapture, skipNextTurnScreen, disableAutoEquip, battleDragScrollInvert,
-	battleUFOExtenderAccuracy, battleRealisticAccuracy, battleRealisticImprovedSnap, battleRealisticDisplayRolls, battleConfirmFireMode, battleSmoothCamera, noAlienPanicMessages, alienBleeding, instantPrime, strictBlockedChecking;
+	battleUFOExtenderAccuracy, battleRealisticAccuracy, battleRealisticImprovedSnap, battleRealisticDisplayRolls, battleConfirmFireMode, battleSmoothCamera, noAlienPanicMessages, alienBleeding, instantPrime, strictBlockedChecking, updateTurnsSinceSeenByClue;
 OPT SDLKey keyBattleLeft, keyBattleRight, keyBattleUp, keyBattleDown, keyBattleLevelUp, keyBattleLevelDown, keyBattleCenterUnit, keyBattlePrevUnit, keyBattleNextUnit, keyBattleDeselectUnit,
 keyBattleUseLeftHand, keyBattleUseRightHand, keyBattleInventory, keyBattleMap, keyBattleOptions, keyBattleEndTurn, keyBattleAbort, keyBattleStats, keyBattleKneel,
 keyBattleReserveKneel, keyBattleReload, keyBattlePersonalLighting, keyBattleReserveNone, keyBattleReserveSnap, keyBattleReserveAimed, keyBattleReserveAuto,

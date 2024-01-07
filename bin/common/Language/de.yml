@@ -114,6 +114,8 @@ de:
   STR_BATTLEINSTANTGRENADE_DESC: "Die Explosion der Granaten, die nach \"0\" Runden detonieren sollen, erfolgt unmittelbar nach dem Wurf anstatt zum Ende der Runde."
   STR_INSTANTPRIME: "Schnellaktivierung für Granaten"
   STR_INSTANTPRIME_DESC: "Die Anzahl von Runden, nach denen eine Granate explodiert kann nicht mehr eingestellt werden. Der Timer wird einfach auf 0 gesetzt ohne einen Wert wählen zu müssen."
+  STR_UPDATETURNSSINCESEENBYCLUE: "Präzises Projektil-Tracking"
+  STR_UPDATETURNSSINCESEENBYCLUE_DESC: "Spieler und brutale KI können mit Alt-Taste den genauen Schussort feindlicher Projektile erkennen, ohne den Absender zu sehen."
   STR_BATTLEUFOEXTENDERACCURACY: "UFO Extender Zielgenauigkeit"
   STR_BATTLEUFOEXTENDERACCURACY_DESC: "Genauigkeit von Schüssen sinkt je nach Feuermodus jenseits einer bestimmten Distanz stark ab. Angepasste Zielgenauigkeit wird am Mauszeiger angezeigt."
   STR_CANTRANSFERCRAFTSWHILEAIRBORNE: "Lufttransfer"

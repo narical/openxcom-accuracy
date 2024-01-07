@@ -417,7 +417,7 @@ void ProjectileFlyBState::init()
 		_parent->getMap()->setCursorType(CT_NONE);
 		_parent->getMap()->getCamera()->stopMouseScrolling();
 		_parent->getMap()->disableObstacles();
-		_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()));
+		_unit->updateEnemyKnowledge(_parent->getSave()->getTileIndex(_unit->getPosition()), true);
 	}
 	else if (isPlayer && (_targetVoxel.z >= 0 || forceEnableObstacles))
 	{
@@ -1042,7 +1042,7 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
 			}
 		}
-		victim->updateEnemyKnowledge(_parent->getSave()->getTileIndex(victim->getPosition()));
+		victim->updateEnemyKnowledge(_parent->getSave()->getTileIndex(victim->getPosition()), true);
 		for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
 		{
 			if (unit->isOut())
