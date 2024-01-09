@@ -4350,7 +4350,7 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	return _aggroTarget != 0;
 }
 
-int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode *> nodeVector, BattleUnit *actor, bool forceExactPosition)
+int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingNode*> nodeVector, BattleUnit* actor, bool forceExactPosition, bool energyInsteadOfTU)
 {
 	float closestDistToTarget = 3;
 	int tuCostToClosestNode = 10000;
@@ -4376,7 +4376,10 @@ int AIModule::tuCostToReachPosition(Position pos, const std::vector<PathfindingN
 			if (hasTileSight(pn->getPosition(), pos))
 			{
 				closestDistToTarget = currDist;
-				tuCostToClosestNode = pn->getTUCost(false).time;
+				if (energyInsteadOfTU)
+					tuCostToClosestNode = pn->getTUCost(false).energy;
+				else
+					tuCostToClosestNode = pn->getTUCost(false).time;
 			}
 		}
 	}
@@ -4889,18 +4892,23 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	float distance = Position::distance(originPosition, target->getPosition());
 
 	int tuTotal = _unit->getTimeUnits();
+	int energyTotal = _unit->getEnergy();
 	float dangerMod = 1;
 	float explosionMod = 1;
 
 	if (simulationTile)
 	{
 		int tuCostToReach = tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true);
+		int energyCostToReach = tuCostToReachPosition(simulationTile->getPosition(), _allPathFindingNodes, _unit, true, true);
 		tuTotal -= tuCostToReach;
+		energyTotal -= energyCostToReach;
 		tuTotal -= 4; //we potentially have to turn up to 4 after moving
 		if (needToHideAfterwards)
 		{
 			tuTotal -= tuCostToReach;
 			tuTotal -= _tuCostToReachClosestPositionToBreakLos;
+			energyTotal -= energyCostToReach;
+			energyTotal -= _energyCostToReachClosestPositionToBreakLos;
 		}
 		bool proxySave = true;
 		if (!isPathToPositionSave(simulationTile->getPosition(), proxySave) || simulationTile->getDangerous() || (simulationTile->getFire() && _unit->avoidsFire()))
@@ -5006,6 +5014,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
+	int energyCost = _unit->getActionTUs(action->type, action->weapon).Energy;
 	// Return a score of zero if this firing mode doesn't exist for this weapon
 	if (!tuCost)
 		return 0;
@@ -5087,7 +5096,10 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
 
-	numberOfShots *= static_cast<float>(tuTotal) / tuCost;
+	float attacks = static_cast<float>(tuTotal) / tuCost;
+	if (energyCost > 0)
+		attacks = std::min(attacks, static_cast<float>(energyTotal) / energyCost);
+	numberOfShots *= attacks;
 	if (numberOfShots < 1)
 		return 0;
 
