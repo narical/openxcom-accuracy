@@ -61,6 +61,7 @@ private:
 	bool _spriteEnabled;
 	int _sightRange, _sightChance;
 	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound, _placeSound;
+	int _ammoMax, _rearmRate;
 	int _ammoNeeded;
 	const RuleItem* _ammoItem;
 	std::string _ammoItemName;
@@ -171,6 +172,10 @@ public:
 	/// Gets the facility's weapon hit ratio.
 	int getHitRatio() const;
 	/// Gets the facility's weapon ammo capacity.
+	int getAmmoMax() const { return _ammoMax; }
+	/// Gets the facility's weapon rearm rate.
+	int getRearmRate() const { return _rearmRate; }
+	/// Gets the facility's weapon ammo spent per shot.
 	int getAmmoNeeded() const { return _ammoNeeded; }
 	/// Gets the facility's weapon ammo item.
 	const RuleItem* getAmmoItem() const { return _ammoItem; }

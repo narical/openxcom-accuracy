@@ -137,6 +137,11 @@ void DismantleFacilityState::btnOkClick(Action *)
 				_base->getStorageItems()->addItem(pair.first, pair.second.second);
 			}
 		}
+		if (_fac->getRules()->getAmmoMax() > 0 && _fac->getRules()->getAmmoItem() && _fac->getAmmo() > 0)
+		{
+			// Full refund of loaded ammo
+			_base->getStorageItems()->addItem(_fac->getRules()->getAmmoItem(), _fac->getAmmo());
+		}
 
 		for (auto facIt = _base->getFacilities()->begin(); facIt != _base->getFacilities()->end(); ++facIt)
 		{

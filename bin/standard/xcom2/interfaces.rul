@@ -1894,6 +1894,11 @@ interfaces: #done
       - id: baseView
         color: 213   # gold   (time remaining)
         color2: 16   # orange (selector color)
+      - id: trafficLights
+        color: 8     # red
+        color2: 163  # yellow
+        border: 81   # green
+        TFTDMode: true
       - id: errorPalette
         color: 6     # oxide
       - id: errorMessage
