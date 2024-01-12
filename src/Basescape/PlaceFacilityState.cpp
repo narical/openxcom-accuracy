@@ -85,6 +85,11 @@ PlaceFacilityState::PlaceFacilityState(Base *base, const RuleBaseFacility *rule,
 	// Set up objects
 	setWindowBackground(_window, "placeFacility");
 
+	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	if (itf)
+	{
+		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);
+	}
 	_view->setTexture(_game->getMod()->getSurfaceSet("BASEBITS.PCK"));
 	_view->setBase(_base);
 	_view->setSelectable(rule->getSizeX(), rule->getSizeY());
