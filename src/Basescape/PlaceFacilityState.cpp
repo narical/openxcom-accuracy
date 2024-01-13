@@ -286,6 +286,12 @@ void PlaceFacilityState::viewClick(Action *)
 						if (checkFacility->getBuildTime() == 0)
 							buildingOver = true;
 					}
+					if (checkFacility->getAmmo() > 0)
+					{
+						// Full refund of loaded ammo
+						_base->getStorageItems()->addItem(checkFacility->getRules()->getAmmoItem(), checkFacility->getAmmo());
+						checkFacility->setAmmo(0);
+					}
 
 					// Remove the facility from the base
 					_base->getFacilities()->erase(_base->getFacilities()->begin() + i);
