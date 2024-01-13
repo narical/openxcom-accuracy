@@ -484,6 +484,8 @@ en-US:
 #ModConfirmExtendedState.cpp
   STR_MASTER_MOD_VERSION_REQUIRED_QUESTION: "This mod requires base game v{0} to run correctly. Enable this mod?"
   STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
+#NewBattleState.cpp
+  STR_GLOBE_TEXTURE: "Globe Texture"
 #NotesState.cpp
   STR_NOTES: "Notes"
   STR_NEW_NOTE: "<NEW NOTE>"
