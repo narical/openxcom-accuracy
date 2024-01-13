@@ -557,6 +557,9 @@ void NewBattleState::btnOkClick(Action *)
 
 	bgen.setTerrain(_game->getMod()->getTerrain(_terrainTypes[_cbxTerrain->getSelected()]));
 
+	auto* globeTexture = _game->getMod()->getGlobe()->getTexture(0);
+	bgen.setWorldTexture(nullptr, globeTexture);
+
 	// base defense
 	if (_missionTypes[_cbxMission->getSelected()] == "STR_BASE_DEFENSE")
 	{
