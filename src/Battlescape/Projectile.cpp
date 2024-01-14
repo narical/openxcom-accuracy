@@ -376,7 +376,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (upperLimit > maxRange) upperLimit = maxRange;
 
-	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
+	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH &&_action.type != BA_THROW)
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
 		int targetSize = 0;
