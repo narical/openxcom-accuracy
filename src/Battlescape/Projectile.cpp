@@ -376,7 +376,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (upperLimit > maxRange) upperLimit = maxRange;
 
-	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH)
+	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH &&_action.type != BA_THROW)
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
 		int targetSize = 0;
@@ -794,10 +794,23 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		int deviation = RNG::generate(0, 100) - (accuracy * 100);
 
-		if (deviation >= 0)
-			deviation += 50;				// add extra spread to "miss" cloud
+		// Shooting has per-voxel precision
+		if (_action.type != BA_THROW)
+		{
+			if (deviation >= 0)
+				deviation += 50;	// add extra spread to "miss" cloud
+			else
+				deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
+		}
+
+		// Throwing has per-tile precision
 		else
-			deviation += 10;				//accuracy of 109 or greater will become 1 (tightest spread)
+		{
+			if (deviation >= 0)
+				deviation += 30;	// Extra spread to "miss" cloud is like 2 additional tiles maximum
+			else
+				deviation = 18;		// Successfull hit means that "grenade" hits target or (sometimes) adjanced tile
+		}
 
 		deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
