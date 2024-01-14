@@ -2635,7 +2635,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 			uint64_t baseSeed = baseLon * baseLat * 1e6;
 			RNG::setSeed(baseSeed);
 
-			_baseTerrain = _game->getMod()->getTerrain(_missionTexture->getRandomBaseTerrain(target), true);
+			_baseTerrain = _game->getMod()->getTerrain(_globeTexture->getRandomBaseTerrain(target), true);
 			generateBaseMap();
 		}
 		else
