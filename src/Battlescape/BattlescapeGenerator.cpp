@@ -2682,6 +2682,28 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 			}
 		}
 
+		// if this command runs conditionally based on deployed craft's groups
+		if (_craftDeployed && _craftRules)
+		{
+			if (!command->getCraftGroups().empty())
+			{
+				bool execute = false;
+				// compare the corresponding entries in the craft rules vector
+				for (int grp : command->getCraftGroups())
+				{
+					if (std::find(_craftRules->getGroups().begin(), _craftRules->getGroups().end(), grp) != _craftRules->getGroups().end())
+					{
+						execute = true;
+						break;
+					}
+				}
+				if (!execute)
+				{
+					continue;
+				}
+			}
+		}
+
 		// if there's a chance a command won't execute by design, take that into account here.
 		if (RNG::percent(command->getChancesOfExecution()))
 		{

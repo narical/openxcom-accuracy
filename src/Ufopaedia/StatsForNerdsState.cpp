@@ -3402,6 +3402,7 @@ void StatsForNerdsState::initCraftList()
 		addBoolean(ss, craftRule->getBattlescapeTerrainData() != 0, "battlescapeTerrainData", false); // just say if there is any or not
 		addBoolean(ss, craftRule->isMapVisible(), "mapVisible", true);
 		addVectorOfIntegers(ss, craftRule->getCraftInventoryTile(), "craftInventoryTile");
+		addVectorOfIntegers(ss, craftRule->getGroups(), "groups");
 		addBoolean(ss, craftRule->useAllStartTiles(), "useAllStartTiles");
 		addSingleString(ss, craftRule->getCustomPreviewTypeRaw(), "customPreview");
 		if (craftRule->getDeployment().empty())
