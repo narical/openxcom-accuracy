@@ -55,8 +55,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
-	_corpseRecovered(false),
-	_allowAutoCombat(true)
+	_corpseRecovered(false)
 {
 	if (id != 0)
 	{
@@ -122,6 +121,8 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 		}
 	}
 	_lookVariant = RNG::seedless(0, RuleSoldier::LookVariantMax - 1);
+
+	_allowAutoCombat = Options::autoCombatDefaultSoldier;
 }
 
 /**

@@ -47,6 +47,7 @@ keyBattleCenterEnemy9, keyBattleCenterEnemy10, keyBattleVoxelView, keyBattleZero
 OPT bool sneakyAI, brutalAI, cheatOnMovement, brutalCivilians, ignoreDelay, allowPreprime, autoCombat, aiPerformanceOptimization, avoidMines, avoidCuddle;
 OPT int aiTargetMode, aggressionMode, intelligenceMode;
 OPT bool autoCombatEachCombat, autoCombatEachTurn, autoCombatControlPerUnit;
+OPT bool autoCombatDefaultSoldier, autoCombatDefaultHWP, autoCombatDefaultMindControl, autoCombatDefaultRemain;
 
 // Extra hotkeys (OXCE)
 OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, keyGeoGlobalResearch, keyGeoGlobalProduction, keyGeoGlobalAlienContainment,
