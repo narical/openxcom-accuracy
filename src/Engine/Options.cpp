@@ -555,7 +555,7 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultSoldier",     &autoCombatDefaultSoldier,     true, "STR_AUTOCOMBAT_DEFAULT_SOLDIER",     "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultHWP",         &autoCombatDefaultHWP,         true, "STR_AUTOCOMBAT_DEFAULT_HWP",         "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultMindControl", &autoCombatDefaultMindControl, true, "STR_AUTOCOMBAT_DEFAULT_MINDCONTROL", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultRemain",      &autoCombatDefaultRemaon,      true, "STR_AUTOCOMBAT_DEFAULT_REMAIN",      "STR_AI"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultRemain",      &autoCombatDefaultRemain,      true, "STR_AUTOCOMBAT_DEFAULT_REMAIN",      "STR_AI"));
 }
 
 void createControlsOTHER()
