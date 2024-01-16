@@ -715,6 +715,8 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_bannedInNextStage = node["bannedInNextStage"].as<bool>(_bannedInNextStage);
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
 
+	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
+
 	_scriptValues.load(node, shared);
 }
 
@@ -874,6 +876,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	{
 		node["meleeAttackedBy"] = _meleeAttackedBy;
 	}
+
+	node["allowAutoCombat"] = _allowAutoCombat;
 
 	_scriptValues.save(node, shared);
 
