@@ -468,6 +468,27 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	{
 		adjustStats(*adjustment);
 	}
+	
+	/*if (getBattleScapeSoldier())
+	{
+		// These are probably Soldiers by reeinforcement
+		_allowAutoCombat = Options::autoCombatDefaultSoldier;
+	}*/
+	if (_originalFaction == FACTION_PLAYER)
+	{
+		// This should catch HWP and  units spawned from ammo/item
+		_allowAutoCombat = Options::autoCombatDefaultHWP;
+	}
+	else if (_originalFaction == FACTION_HOSTILE || _originalFaction == FACTION_NEUTRAL)
+	{
+		// Mind controlled units
+		_allowAutoCombat = Options::autoCombatDefaultMindControl;
+	}
+	else
+	{
+		// Should that be possible?
+		_allowAutoCombat = Options::autoCombatDefaultRemain;
+	}
 }
 
 /**
@@ -694,6 +715,8 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_bannedInNextStage = node["bannedInNextStage"].as<bool>(_bannedInNextStage);
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
 
+	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
+
 	_scriptValues.load(node, shared);
 }
 
@@ -853,6 +876,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	{
 		node["meleeAttackedBy"] = _meleeAttackedBy;
 	}
+
+	node["allowAutoCombat"] = _allowAutoCombat;
 
 	_scriptValues.save(node, shared);
 
