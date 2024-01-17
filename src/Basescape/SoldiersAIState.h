@@ -41,12 +41,12 @@ struct SortFunctor;
 class SoldiersAIState : public State
 {
 private:
-	static constexpr int noCol = 3;	//Name Rank AI-Control
+	static constexpr int noCol = 4;	//Name Rank AI-Control Aggresiveness
 
 	TextButton *_btnOk;
 	Window *_window;
 	Text *_txtTitle, *_txtName, *_txtRank;
-	Text *_txtControlled;
+	Text *_txtControlled, *_txtAgressiveness;
 	TextList *_lstUnits;
 
 	std::vector<Soldier *> _soldiers;
@@ -80,6 +80,15 @@ public:
 	bool toggleAISoldier();
 	/// Toggle AI control @ autocombat of currently selected battleunit
 	bool toggleAIBattleUnit();
+
+	/// Toggle AI aggressiveness @ autocombat of currently selected soldier/battleunit
+	<template typename T>
+	int toggleAgg(T* unit)
+	{
+		const auto newVal = (T->getAggression() + 1) % TODO_MAX_VALUE;
+		T->setAggression(newVal);
+		return newVal;
+	}
 };
 
 }

@@ -87,12 +87,14 @@ void SoldiersAIState::_commonConstruct()
 	// list column headers
 	constexpr int gap = 4; //TODO adjust?
 	int xoff = 16;
-	static constexpr int cWidths[] = {110, 80, 76};
+	static constexpr int cWidths[] = {110, 60, 55, 30};	//TODO adjust?
 	_txtName = new Text(cWidths[0], 9, xoff, 32);
 	xoff += cWidths[0] + gap;
 	_txtRank = new Text(cWidths[1], 9, xoff, 32);
 	xoff += cWidths[1] + gap;
 	_txtControlled = new Text(cWidths[2], 9, xoff, 32);
+	xoff += cWidths[2] + gap;
+	_txtAgressiveness = new Text(cWidths[3], 9, xoff, 32);
 
 	// Set palette
 	setInterface("craftSoldiers");
@@ -103,6 +105,7 @@ void SoldiersAIState::_commonConstruct()
 	add(_txtName, "text", "craftSoldiers");
 	add(_txtRank, "text", "craftSoldiers");
 	add(_txtControlled, "text", "craftSoldiers");
+	add(_txtAgressiveness, "text", "craftSoldiers");
 	add(_lstUnits, "list", "craftSoldiers");
 
 	centerAllSurfaces();
@@ -122,9 +125,10 @@ void SoldiersAIState::_commonConstruct()
 	_txtRank->setText(tr("STR_RANK"));
 
 	_txtControlled->setText(tr("STR_AI_CONTROLLED"));
+	_txtAgressiveness->setText(tr("STR_PER_UNIT_AGGRESSION"));		//TODO different name / text?
 
 	//_lstUnits->setArrowColumn(188, ARROW_VERTICAL);	//Input mostly temporary vector, so reordering not persistent. Disable completly
-	_lstUnits->setColumns(noCol, cWidths[0], cWidths[1], cWidths[2]);	//TODO with or without gap?
+	_lstUnits->setColumns(noCol, cWidths[0], cWidths[1], cWidths[2], cWidths[3]);	//TODO with or without gap?
 	_lstUnits->setAlign(ALIGN_RIGHT, 3);
 	_lstUnits->setSelectable(true);
 	_lstUnits->setBackground(_window);
@@ -161,7 +165,7 @@ void SoldiersAIState::initList(size_t scrl)
 	{
 		for (const auto* s : _soldiers)
 		{
-			_lstUnits->addRow(noCol, s->getName(true, 19).c_str(), tr(s->getRankString()).c_str(), "");
+			_lstUnits->addRow(noCol, s->getName(true, 19).c_str(), tr(s->getRankString()).c_str(), "", std::to_string(s->getAggression()).c_str());
 			allows.emplace_back(s->getAllowAutoCombat());
 		}
 	}
@@ -171,7 +175,7 @@ void SoldiersAIState::initList(size_t scrl)
 		{
 			const std::string name = u->getGeoscapeSoldier() ? u->getGeoscapeSoldier()->getName(true, 19) : u->getName(_game->getLanguage());	//BattleUnit::getName has no maxLength parameter. Default value might change and Statstring might be way to long.
 			const std::string rank = u->getRankString();
-			_lstUnits->addRow(noCol, name.c_str(), tr(rank).c_str(), "");
+			_lstUnits->addRow(noCol, name.c_str(), tr(rank).c_str(), "", std::to_string(u->getAggression()).c_str());
 			allows.emplace_back(u->getAllowAutoCombat());
 		}
 	}
@@ -232,6 +236,16 @@ void SoldiersAIState::lstSoldiersClick(Action *action)
 			_lstUnits->setCellText(row, 2, tr("False"));
 		}
 		_lstUnits->setRowColor(row, color);
+	}
+	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	{
+		//Depending on future plans for the window and the AI better alternatives are
+		//common parent class for soliers and battleunits
+		//templating the window
+		//converting the input battleunit/soldiers on the fly at construction and writing back changes at deconstruction
+		//wrapper class for soldiers and battleunits
+		const auto newAG = _soldiers.empty() ? toggleAgg(_units.at(row)) : toggleAgg(_soldiers.at(row));
+		_lstUnits->setCellText(row, 3, std::to_string(newAG).c_str());		//TODO OXC replacement for to_string?	//TODO tr()?	//TODO look at how vanilla oxce states do that
 	}
 }
 

@@ -55,7 +55,8 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0),
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
-	_corpseRecovered(false)
+	_corpseRecovered(false),
+	_allowAutoCombat(Options::autoCombatDefaultSoldier), _aggression(TODODefaultValue-Or-Option::VALUE)
 {
 	if (id != 0)
 	{
@@ -121,8 +122,6 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 		}
 	}
 	_lookVariant = RNG::seedless(0, RuleSoldier::LookVariantMax - 1);
-
-	_allowAutoCombat = Options::autoCombatDefaultSoldier;
 }
 
 /**
@@ -193,6 +192,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	_healthMissing = node["healthMissing"].as<int>(_healthMissing);
 	_recovery = node["recovery"].as<float>(_recovery);
 	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
+	_aggression = node["aggression"].as<bool>(_aggression);
 	Armor *armor = _armor;
 	if (node["armor"])
 	{
@@ -345,6 +345,7 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 		node["transformationBonuses"] = _transformationBonuses;
 
 	node["allowAutoCombat"] = _allowAutoCombat;
+	node["aggression"] = _aggression;
 
 	_scriptValues.save(node, shared);
 

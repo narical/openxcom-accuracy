@@ -77,6 +77,7 @@ private:
 	float _recovery = 0.0;  // amount of hospital attention soldier needs... used to calculate recovery time
 	bool _recentlyPromoted, _psiTraining, _training, _returnToTrainingWhenHealed;
 	bool _allowAutoCombat;
+	int _aggression;
 	Armor *_armor;
 	Armor *_replacedArmor;
 	Armor *_transformedArmor;
@@ -286,6 +287,10 @@ public:
 	void setAllowAutoCombat(const bool newValue) {_allowAutoCombat = newValue;}
 	/// Returns new value
 	bool toggleAllowAutoCombat() {_allowAutoCombat = !_allowAutoCombat; return _allowAutoCombat;}
+	/// Get the unit's aggression.
+	int getAggression() const {return _aggression;}
+	/// Set the unit's aggression.
+	void setAggression(int aggression) {_aggression = aggression;}	
 	/// Gets the previous transformations performed on this soldier
 	std::map<std::string, int> &getPreviousTransformations();
 	/// Returns whether the unit is eligible for a certain transformation

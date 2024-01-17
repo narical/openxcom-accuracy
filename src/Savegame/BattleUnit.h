@@ -616,6 +616,8 @@ public:
 	int getIntelligence() const;
 	/// Get the unit's aggression.
 	int getAggression() const;
+	/// Set the unit's aggression.
+	void setAggression(int aggression);
 	/// Helper method.
 	int getMaxViewDistance(int baseVisibility, int nerf, int buff) const;
 	/// Get maximum view distance at dark.
