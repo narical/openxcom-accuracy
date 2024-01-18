@@ -867,7 +867,7 @@ public:
 	int getCloseQuartersEnergyCostGlobal() const { return _closeQuartersEnergyCostGlobal; }
 	/// Gets the percentage for successfully avoiding CQC when sneaking up on the enemy (default = 0% = turned off).
 	int getCloseQuartersSneakUpGlobal() const { return _closeQuartersSneakUpGlobal; }
-	/// Gets the default accuracy penalty for having no LOS to the target (default = 0 is no penalty)
+	/// Gets the default accuracy penalty for having no LOS to the target (default = -1 is no penalty)
 	int getNoLOSAccuracyPenaltyGlobal() const { return _noLOSAccuracyPenaltyGlobal; }
 	/// Gets the surrender mode (default = 0).
 	int getSurrenderMode() const { return _surrenderMode; }
