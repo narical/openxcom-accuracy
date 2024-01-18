@@ -3018,6 +3018,8 @@ void AIModule::brutalThink(BattleAction* action)
 	std::map<Position, int, PositionComparator> friendReachable;
 	bool immobileEnemies = false;
 	float myAggressiveness = _unit->getAggressiveness() * _unit->getMorale() / 100.0;
+	if (_unit->getFaction() == FACTION_PLAYER)
+		myAggressiveness = _unit->getAggression();
 	float totalEnemyPower = 0;
 	float totalAllyPower = 0;
 
@@ -3235,7 +3237,7 @@ void AIModule::brutalThink(BattleAction* action)
 		spotter = true;
 	}
 
-	bool sweepMode = _unit->isLeeroyJenkins() || immobile || _unit->getFaction() == FACTION_PLAYER;
+	bool sweepMode = _unit->isLeeroyJenkins() || immobile || _unit->getFaction() == FACTION_PLAYER && myAggressiveness == 3;
 	_unit->setCharging(nullptr);
 
 	// Phase 1: Check if you can attack anything from where you currently are

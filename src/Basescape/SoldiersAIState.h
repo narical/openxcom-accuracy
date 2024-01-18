@@ -82,11 +82,11 @@ public:
 	bool toggleAIBattleUnit();
 
 	/// Toggle AI aggressiveness @ autocombat of currently selected soldier/battleunit
-	<template typename T>
+	template <typename T>
 	int toggleAgg(T* unit)
 	{
-		const auto newVal = (T->getAggression() + 1) % TODO_MAX_VALUE;
-		T->setAggression(newVal);
+		const auto newVal = (unit->getAggression() + 1) % 4;
+		unit->setAggression(newVal);
 		return newVal;
 	}
 };

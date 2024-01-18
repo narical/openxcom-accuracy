@@ -190,6 +190,7 @@ en-US:
   STR_AUTOCOMBAT_DEFAULT_MINDCONTROL_DESC: "Default MindControl Autocombat"
   STR_AUTOCOMBAT_DEFAULT_REMAIN: "Default Remain Autocombat"
   STR_AUTOCOMBAT_DEFAULT_REMAIN_DESC: "Default Remain Autocombat"
+  STR_PER_UNIT_AGGRESSION: "Aggression"
   STR_AUTOAGGRESSION: "Autoplay aggressiveness numerator"
   STR_AUTOAGGRESSION_DESC: "Balance this value with Autoplay aggressiveness denominator to get a ratio between 1/9 and 9."
   STR_AUTOCAREFULNESS: "Autoplay aggressiveness denominator"
