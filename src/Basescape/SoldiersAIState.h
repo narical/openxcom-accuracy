@@ -35,49 +35,60 @@ class Soldier;
 struct SortFunctor;
 
 /**
- * Select Squad screen that lets the player
- * pick the soldiers to be controlled by AI.
+ * Screen that lets the player
+ * control the AI parameters for soldiers/battleunits.
  */
 class SoldiersAIState : public State
 {
 private:
+	static constexpr int noCol = 4;	//Name Rank AI-Control Aggresiveness
+
 	TextButton *_btnOk;
 	Window *_window;
 	Text *_txtTitle, *_txtName, *_txtRank;
-	Text *_txtControlled;
-	TextList *_lstSoldiers;
+	Text *_txtControlled, *_txtAgressiveness;
+	TextList *_lstUnits;
 
 	std::vector<Soldier *> _soldiers;
 	std::vector<BattleUnit *> _units;
-	/// initializes the display list based on the soldiers given in the constructor
+	/// initializes the display list based on the units given in the constructor
 	void initList(size_t scrl);
 	/// Proxy for constructor
 	void _commonConstruct();
 public:
-	/// Creates the Soldiers AI state.
+	/// Creates the Unit AI state.
 	SoldiersAIState(std::vector<Soldier*>& soldiers);
 	SoldiersAIState(const Craft* craft);
-	/// Creates the Soldiers AI state in Battle.
+	/// Creates the Unit AI state in Battle.
 	SoldiersAIState(std::vector<BattleUnit*>& units);
-	/// Cleans up the Soldiers AI state.
+	/// Cleans up the Unit AI state.
 	~SoldiersAIState();
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
 	/// Handler for clicking the Preview button.
 	void btnPreviewClick(Action *action);
-	/// Updates the soldiers list.
+	/// Updates the unit list.
 	void init() override;
-	/// Moves a soldier up.
+	/// Moves a unit up.
 	void moveSoldierUp(Action *action, unsigned int row, bool max = false);
-	/// Moves a soldier down.
+	/// Moves a unit down.
 	void moveSoldierDown(Action *action, unsigned int row, bool max = false);
-	/// Handler for clicking the Soldiers list.
+	/// Handler for clicking the Unit list.
 	void lstSoldiersClick(Action *action);
 
 	/// Toggle AI control @ autocombat of currently selected soldier
 	bool toggleAISoldier();
 	/// Toggle AI control @ autocombat of currently selected battleunit
 	bool toggleAIBattleUnit();
+
+	/// Toggle AI aggressiveness @ autocombat of currently selected soldier/battleunit
+	<template typename T>
+	int toggleAgg(T* unit)
+	{
+		const auto newVal = (T->getAggression() + 1) % TODO_MAX_VALUE;
+		T->setAggression(newVal);
+		return newVal;
+	}
 };
 
 }

@@ -83,10 +83,18 @@ void SoldiersAIState::_commonConstruct()
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnOk = new TextButton(148, 16, 164, 176);
 	_txtTitle = new Text(300, 17, 16, 7);
-	_txtName = new Text(114, 9, 16, 32);
-	_txtRank = new Text(102, 9, 122, 32);
-	_txtControlled = new Text(84, 9, 220, 32);
-	_lstSoldiers = new TextList(288, 128, 8, 40);
+	_lstUnits = new TextList(288, 128, 8, 40);
+	// list column headers
+	constexpr int gap = 4; //TODO adjust?
+	int xoff = 16;
+	static constexpr int cWidths[] = {110, 60, 55, 30};	//TODO adjust?
+	_txtName = new Text(cWidths[0], 9, xoff, 32);
+	xoff += cWidths[0] + gap;
+	_txtRank = new Text(cWidths[1], 9, xoff, 32);
+	xoff += cWidths[1] + gap;
+	_txtControlled = new Text(cWidths[2], 9, xoff, 32);
+	xoff += cWidths[2] + gap;
+	_txtAgressiveness = new Text(cWidths[3], 9, xoff, 32);
 
 	// Set palette
 	setInterface("craftSoldiers");
@@ -97,7 +105,8 @@ void SoldiersAIState::_commonConstruct()
 	add(_txtName, "text", "craftSoldiers");
 	add(_txtRank, "text", "craftSoldiers");
 	add(_txtControlled, "text", "craftSoldiers");
-	add(_lstSoldiers, "list", "craftSoldiers");
+	add(_txtAgressiveness, "text", "craftSoldiers");
+	add(_lstUnits, "list", "craftSoldiers");
 
 	centerAllSurfaces();
 
@@ -116,14 +125,15 @@ void SoldiersAIState::_commonConstruct()
 	_txtRank->setText(tr("STR_RANK"));
 
 	_txtControlled->setText(tr("STR_AI_CONTROLLED"));
+	_txtAgressiveness->setText(tr("STR_PER_UNIT_AGGRESSION"));		//TODO different name / text?
 
-	_lstSoldiers->setArrowColumn(188, ARROW_VERTICAL);
-	_lstSoldiers->setColumns(3, 106, 98, 76);
-	_lstSoldiers->setAlign(ALIGN_RIGHT, 3);
-	_lstSoldiers->setSelectable(true);
-	_lstSoldiers->setBackground(_window);
-	_lstSoldiers->setMargin(8);
-	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersAIState::lstSoldiersClick, 0);
+	//_lstUnits->setArrowColumn(188, ARROW_VERTICAL);	//Input mostly temporary vector, so reordering not persistent. Disable completly
+	_lstUnits->setColumns(noCol, cWidths[0], cWidths[1], cWidths[2], cWidths[3]);	//TODO with or without gap?
+	_lstUnits->setAlign(ALIGN_RIGHT, 3);
+	_lstUnits->setSelectable(true);
+	_lstUnits->setBackground(_window);
+	_lstUnits->setMargin(8);
+	_lstUnits->onMouseClick((ActionHandler)&SoldiersAIState::lstSoldiersClick, 0);
 }
 
 /**
@@ -148,27 +158,25 @@ void SoldiersAIState::btnOkClick(Action *)
  */
 void SoldiersAIState::initList(size_t scrl)
 {
-	_lstSoldiers->clearList();
-
-	_lstSoldiers->setColumns(3, 106, 98, 76);
+	_lstUnits->clearList();
 
 	std::vector<bool> allows;
 	if (!_soldiers.empty())
 	{
-		for (const auto* soldier : _soldiers)
+		for (const auto* s : _soldiers)
 		{
-			_lstSoldiers->addRow(3, soldier->getName(true, 19).c_str(), tr(soldier->getRankString()).c_str(), "");
-			allows.emplace_back(soldier->getAllowAutoCombat());
+			_lstUnits->addRow(noCol, s->getName(true, 19).c_str(), tr(s->getRankString()).c_str(), "", std::to_string(s->getAggression()).c_str());
+			allows.emplace_back(s->getAllowAutoCombat());
 		}
 	}
 	else
 	{
-		for (const auto* unit : _units)
+		for (const auto* u : _units)
 		{
-			const std::string name = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getName(true, 19) : unit->getName(_game->getLanguage());	//BattleUnit::getName has no maxLength parameter. Default value might change and Statstring might be way to long.
-			const std::string rank = unit->getRankString();
-			_lstSoldiers->addRow(3, name.c_str(), tr(rank).c_str(), "");
-			allows.emplace_back(unit->getAllowAutoCombat());
+			const std::string name = u->getGeoscapeSoldier() ? u->getGeoscapeSoldier()->getName(true, 19) : u->getName(_game->getLanguage());	//BattleUnit::getName has no maxLength parameter. Default value might change and Statstring might be way to long.
+			const std::string rank = u->getRankString();
+			_lstUnits->addRow(noCol, name.c_str(), tr(rank).c_str(), "", std::to_string(u->getAggression()).c_str());
+			allows.emplace_back(u->getAllowAutoCombat());
 		}
 	}
 	
@@ -177,20 +185,20 @@ void SoldiersAIState::initList(size_t scrl)
 		Uint8 color;
 		if (allows[row])
 		{
-			color = _lstSoldiers->getSecondaryColor();
-			_lstSoldiers->setCellText(row, 2, tr("True"));
+			color = _lstUnits->getSecondaryColor();
+			_lstUnits->setCellText(row, 2, tr("True"));
 		}
 		else
 		{
-			color = _lstSoldiers->getColor();
-			_lstSoldiers->setCellText(row, 2, tr("False"));
+			color = _lstUnits->getColor();
+			_lstUnits->setCellText(row, 2, tr("False"));
 		}
-		_lstSoldiers->setRowColor(row, color);
+		_lstUnits->setRowColor(row, color);
 	}
 	
 	if (scrl)
-		_lstSoldiers->scrollTo(scrl);
-	_lstSoldiers->draw();
+		_lstUnits->scrollTo(scrl);
+	_lstUnits->draw();
 }
 
 /**
@@ -209,38 +217,48 @@ void SoldiersAIState::init()
 void SoldiersAIState::lstSoldiersClick(Action *action)
 {
 	double mx = action->getAbsoluteXMouse();
-	if (mx >= _lstSoldiers->getArrowsLeftEdge() && mx < _lstSoldiers->getArrowsRightEdge())
+	if (mx >= _lstUnits->getArrowsLeftEdge() && mx < _lstUnits->getArrowsRightEdge())
 	{
 		return;
 	}
-	int row = _lstSoldiers->getSelectedRow();
+	int row = _lstUnits->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
 		const bool newAI = _soldiers.empty() ? toggleAIBattleUnit() : toggleAISoldier();
-		Uint8 color = _lstSoldiers->getColor();
+		Uint8 color = _lstUnits->getColor();
 		if (newAI)
 		{
-			color = _lstSoldiers->getSecondaryColor();
-			_lstSoldiers->setCellText(row, 2, tr("True"));
+			color = _lstUnits->getSecondaryColor();
+			_lstUnits->setCellText(row, 2, tr("True"));
 		}
 		else
 		{
-			_lstSoldiers->setCellText(row, 2, tr("False"));
+			_lstUnits->setCellText(row, 2, tr("False"));
 		}
-		_lstSoldiers->setRowColor(row, color);
+		_lstUnits->setRowColor(row, color);
+	}
+	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	{
+		//Depending on future plans for the window and the AI better alternatives are
+		//common parent class for soliers and battleunits
+		//templating the window
+		//converting the input battleunit/soldiers on the fly at construction and writing back changes at deconstruction
+		//wrapper class for soldiers and battleunits
+		const auto newAG = _soldiers.empty() ? toggleAgg(_units.at(row)) : toggleAgg(_soldiers.at(row));
+		_lstUnits->setCellText(row, 3, std::to_string(newAG).c_str());		//TODO OXC replacement for to_string?	//TODO tr()?	//TODO look at how vanilla oxce states do that
 	}
 }
 
 
 bool SoldiersAIState::toggleAISoldier()
 {
-	Soldier *s = _soldiers.at(_lstSoldiers->getSelectedRow());
+	Soldier *s = _soldiers.at(_lstUnits->getSelectedRow());
 	return s->toggleAllowAutoCombat();
 }
 
 bool SoldiersAIState::toggleAIBattleUnit()
 {
-	auto* bu = _units.at(_lstSoldiers->getSelectedRow());
+	auto* bu = _units.at(_lstUnits->getSelectedRow());
 	return bu->toggleAllowAutoCombat();
 }
 

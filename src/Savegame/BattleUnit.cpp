@@ -82,7 +82,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_rank = soldier->getRankString();
 	_gender = soldier->getGender();
 	_intelligence = 2;
-	_aggression = 1;
+	_aggression = soldier->getAggression();
 	_faceDirection = -1;
 	_floorAbove = false;
 	_breathing = false;
@@ -716,6 +716,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
 
 	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
+	_aggression = node["aggression"].as<bool>(_aggression);
 
 	_scriptValues.load(node, shared);
 }
@@ -878,6 +879,7 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	}
 
 	node["allowAutoCombat"] = _allowAutoCombat;
+	node["aggression"] = _aggression;
 
 	_scriptValues.save(node, shared);
 
@@ -4567,6 +4569,15 @@ int BattleUnit::getIntelligence() const
 int BattleUnit::getAggression() const
 {
 	return _aggression;
+}
+
+/**
+ * Set the unit's aggression.
+ * @param aggression.
+ */
+void BattleUnit::setAggression(int aggression)
+{
+	_aggression = aggression;
 }
 
 int BattleUnit::getMaxViewDistance(int baseVisibility, int nerf, int buff) const
