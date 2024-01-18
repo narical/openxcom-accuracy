@@ -3592,7 +3592,9 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (!_unit->isCheatOnMovement() && unit->getTileLastSpotted(_unit->getFaction()) == -1)
 					continue;
-				if ((_unit->aiTargetMode() < 2 || _save->getMod()->getNoLOSAccuracyPenaltyGlobal() > 0) && unitDist > viewDistance)
+				if (hasTileSight(pos, unitPosition))
+					lineOfFireBeforeFriendCheck = true;
+				if (_unit->aiTargetMode() < 2 && unitDist > viewDistance)
 					continue;
 				if (shouldAvoidMeleeRange(unit) && unitDist < 2)
 				{
@@ -3630,8 +3632,6 @@ void AIModule::brutalThink(BattleAction* action)
 							}
 						}
 					}
-					if (hasTileSight(pos, unit->getPosition()))
-						lineOfFireBeforeFriendCheck = true;
 				}
 			}
 			bool haveTUToAttack = false;
@@ -4948,7 +4948,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			accuracy -= (lowerLimit - distance) * action->weapon->getRules()->getDropoff();
 		}
 	}
-	if (action->weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) > 0)
+	if (action->weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) != -1)
 	{
 		Tile* targetTile = target->getTile();
 		bool shouldHaveLos = true;
