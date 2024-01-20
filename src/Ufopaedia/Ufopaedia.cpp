@@ -56,6 +56,14 @@ namespace OpenXcom
 	 */
 	bool Ufopaedia::isArticleAvailable(SavedGame *save, ArticleDefinition *article)
 	{
+		if (!article->disabledBy.empty())
+		{
+			// Note: yes, check for non-empty vector is necessary
+			if (save->isResearched(article->disabledBy, false))
+			{
+				return false; // article is disabled, i.e. not available
+			}
+		}
 		return save->isResearched(article->_requires);
 	}
 

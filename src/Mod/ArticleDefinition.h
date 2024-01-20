@@ -82,6 +82,7 @@ namespace OpenXcom
 		std::string id;
 		std::string section;
 		std::vector<std::string> _requires;
+		std::vector<std::string> disabledBy;
 		bool customPalette;
 		bool hiddenCommendation;
 
