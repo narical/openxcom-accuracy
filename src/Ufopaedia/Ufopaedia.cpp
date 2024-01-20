@@ -265,11 +265,11 @@ namespace OpenXcom
 	}
 
 	/**
-	 * Check if the article is hidden.
+	 * Check if this is an invisible commendation article.
 	 * @param save Pointer to saved game.
 	 * @param article Article to check.
 	 */
-	bool Ufopaedia::isArticleHidden(SavedGame *save, ArticleDefinition *article, Mod *mod)
+	bool Ufopaedia::isCommendationArticleInvisible(SavedGame *save, ArticleDefinition *article)
 	{
 		// show hidden Commendations entries if:
 		if (article->hiddenCommendation)
@@ -350,7 +350,7 @@ namespace OpenXcom
 		for (const auto& articleName : mod->getUfopaediaList())
 		{
 			ArticleDefinition *article = mod->getUfopaediaArticle(articleName);
-			if (isArticleAvailable(save, article) && article->section != UFOPAEDIA_NOT_AVAILABLE && !isArticleHidden(save, article, mod))
+			if (isArticleAvailable(save, article) && article->section != UFOPAEDIA_NOT_AVAILABLE && !isCommendationArticleInvisible(save, article))
 			{
 				shared->articleList.push_back(article);
 			}
