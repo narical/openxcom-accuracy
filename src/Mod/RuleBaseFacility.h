@@ -63,7 +63,7 @@ private:
 	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound, _placeSound;
 	int _ammoMax, _rearmRate;
 	int _ammoNeeded;
-	const RuleItem* _ammoItem;
+	const RuleItem* _ammoItem = nullptr;
 	std::string _ammoItemName;
 	std::string _mapName;
 	int _listOrder, _trainingRooms;
