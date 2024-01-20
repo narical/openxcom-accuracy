@@ -284,6 +284,7 @@ namespace OpenXcom
 	void ArticleDefinitionItem::load(const YAML::Node &node, int listOrder)
 	{
 		ArticleDefinition::load(node, listOrder);
+		weapon = node["weapon"].as<std::string>(weapon);
 	}
 
 	/**
