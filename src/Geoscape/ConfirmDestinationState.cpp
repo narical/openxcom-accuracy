@@ -45,6 +45,7 @@
 #include "../Savegame/Soldier.h"
 #include "../Engine/Options.h"
 #include "../Engine/Sound.h"
+#include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
 {
@@ -290,7 +291,7 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	for (auto& articleName : list)
 	{
 		ArticleDefinition *article = _game->getMod()->getUfopaediaArticle(articleName, false);
-		if (article && _game->getSavedGame()->isResearched(article->_requires))
+		if (article && Ufopaedia::isArticleAvailable(_game->getSavedGame(), article))
 		{
 			if (i > 0)
 				ss << ", ";

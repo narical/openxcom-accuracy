@@ -33,6 +33,7 @@
 #include "../Engine/Options.h"
 #include "../Engine/Screen.h"
 #include "../Engine/Unicode.h"
+#include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
 {
@@ -117,7 +118,7 @@ void BriefingLightState::checkStartingCondition(AlienDeployment *deployment)
 			for (auto& armorType : list)
 			{
 				ArticleDefinition* article = _game->getMod()->getUfopaediaArticle(armorType, false);
-				if (article && _game->getSavedGame()->isResearched(article->_requires))
+				if (article && Ufopaedia::isArticleAvailable(_game->getSavedGame(), article))
 				{
 					std::string translation = tr(armorType);
 					armorNameList.push_back(translation);
