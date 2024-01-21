@@ -921,6 +921,10 @@ interfaces: #done
         color: 1
         color2: 239
         border: 1
+      - id: listExtended
+        color: 156
+        color2: 244
+        border: 1
       - id: button1
         color: 1
       - id: button2

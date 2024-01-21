@@ -70,6 +70,8 @@ namespace OpenXcom
 	public:
 		static const int PEDIA_STATUS_NEW = 0;
 		static const int PEDIA_STATUS_NORMAL = 1;
+		static const int PEDIA_STATUS_HIDDEN = 2;
+		static const int PEDIA_STATUSES = 3;
 		/// Destructor.
 		virtual ~ArticleDefinition();
 		/// Gets the type of article definition.
