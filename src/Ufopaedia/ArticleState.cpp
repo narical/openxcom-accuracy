@@ -43,6 +43,10 @@ namespace OpenXcom
 		{
 			current_index++;
 		}
+		if (isCurrentArticleHidden())
+		{
+			nextArticle();
+		}
 	}
 
 	/**
@@ -81,6 +85,10 @@ namespace OpenXcom
 		else
 		{
 			current_index--;
+		}
+		if (isCurrentArticleHidden())
+		{
+			prevArticle();
 		}
 	}
 
