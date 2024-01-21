@@ -3842,7 +3842,7 @@ void BattlescapeState::btnAIClick(Action *action)
 	std::vector<BattleUnit*> units;
 	for (auto* bu : *_battleGame->getSave()->getUnits())
 	{
-		if (bu->getFaction() == FACTION_PLAYER) {units.push_back(bu);}
+		if (bu->getFaction() == FACTION_PLAYER && !bu->isOut()) {units.push_back(bu);}
 	}
 	_game->pushState(new SoldiersAIState(units));
 }
