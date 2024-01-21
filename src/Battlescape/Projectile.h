@@ -68,10 +68,12 @@ private:
 	Mod *_mod;
 	SavedBattleGame *_save;
 	BattleAction _action;
+	const BattleItem* _ammo = nullptr;
 	Position _origin, _targetVoxel;
 	std::vector<Position> _trajectory;
 	size_t _position;
 	float _distance;
+	float _distanceMax;
 	int _speed;
 	int _bulletSprite;
 	bool _reversed;

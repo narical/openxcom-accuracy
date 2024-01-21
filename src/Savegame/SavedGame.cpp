@@ -3452,6 +3452,18 @@ void randomRangeScript(RNG::RandomState* rs, int& val, int min, int max)
 	}
 }
 
+void randomRangeSymmetricScript(RNG::RandomState* rs, int& val, int max)
+{
+	if (rs && max >= 0)
+	{
+		val = rs->generate(-max, max);
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
 void getDaysPastEpochScript(const GameTime* p, int& val)
 {
 	if (p)
@@ -3589,6 +3601,7 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 
 		rs.add<&randomChanceScript>("randomChance", "Change value from range 0-100 to 0-1 based on probability");
 		rs.add<&randomRangeScript>("randomRange", "Return random value from defined range");
+		rs.add<&randomRangeSymmetricScript>("randomRangeSymmetric", "Return random value from negative to positive of given max value");
 
 		rs.addDebugDisplay<&debugDisplayScript>();
 	}

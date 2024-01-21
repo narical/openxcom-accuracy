@@ -893,6 +893,10 @@ interfaces:
         color: 133
         color2: 90
         border: 239
+      - id: listExtended
+        color: 100
+        color2: 138
+        border: 239
       - id: button1
         color: 133   # minty green
       - id: button2
