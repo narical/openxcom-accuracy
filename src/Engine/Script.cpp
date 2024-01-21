@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <tuple>
 #include <algorithm>
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <bitset>
 #include <array>
