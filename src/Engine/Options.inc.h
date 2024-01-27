@@ -136,6 +136,7 @@ OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT int oxceGeoSlowdownFactor;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
+OPT int oxceBaseManufactureInfinityButton;
 
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableHitLog;

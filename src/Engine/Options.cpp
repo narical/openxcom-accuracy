@@ -376,6 +376,11 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceGeoSlowdownFactor", &oxceGeoSlowdownFactor, 1, "", "HIDDEN"));
 
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseInfoDefenseScaleMultiplier", &oxceBaseInfoDefenseScaleMultiplier, 100, "", "HIDDEN"));
+#ifdef __MOBILE__
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseManufactureInfinityButton", &oxceBaseManufactureInfinityButton, true, "", "HIDDEN"));
+#else
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBaseManufactureInfinityButton", &oxceBaseManufactureInfinityButton, false, "", "HIDDEN"));
+#endif
 
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableAlienInventory", &oxceDisableAlienInventory, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableHitLog", &oxceDisableHitLog, false, "", "HIDDEN"));
