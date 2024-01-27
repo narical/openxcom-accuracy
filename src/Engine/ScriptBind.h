@@ -577,10 +577,10 @@ template<typename T>
 struct ArgRegDef
 {
 	using ReturnType = T;
-	static constexpr size_t size = sizeof(Uint8);
+	static constexpr size_t size = sizeof(RegEnum);
 	static ReturnType get(ScriptWorkerBase& sw, const Uint8* arg, ProgPos& curr)
 	{
-		return sw.ref<ReturnType>(*arg);
+		return sw.ref<ReturnType>(sw.const_val<RegEnum>(arg));
 	}
 
 	static bool parse(ParserWriter& ph, const ScriptRefData& t)

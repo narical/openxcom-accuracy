@@ -2823,7 +2823,7 @@ bool ParserWriter::pushRegTry(const ScriptRefData& data, ArgEnum type)
 	type = ArgSpecAdd(type, ArgSpecReg);
 	if (data && ArgCompatible(type, data.type, 0) && data.getValue<RegEnum>() != RegInvalid)
 	{
-		pushValue(static_cast<Uint8>(data.getValue<RegEnum>()));
+		pushValue(data.getValue<RegEnum>());
 		return true;
 	}
 	return false;

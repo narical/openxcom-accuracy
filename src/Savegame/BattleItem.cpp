@@ -217,7 +217,7 @@ const RuleItem *BattleItem::getRules() const
 }
 
 /**
- * Gets the turns until detonation. -1 = unprimed grenade
+ * Gets the turns until detonation. -1 = unprimed grenade. -2 = mapblock grenade to explode before battle.
  * @return turns until detonation.
  */
 int BattleItem::getFuseTimer() const

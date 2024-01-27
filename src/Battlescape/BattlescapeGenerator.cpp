@@ -955,6 +955,11 @@ void BattlescapeGenerator::run()
 	{
 		explodePowerSources();
 	}
+
+	if (!isPreview)
+	{
+		explodeOtherJunk();
+	}
 }
 
 /**
@@ -2405,6 +2410,79 @@ void BattlescapeGenerator::explodePowerSources()
 		t->setExplosive(0, 0, true);
 		Position p = t->getPosition().toVoxel() + Position(8,8,0);
 		_save->getTileEngine()->explode({ }, p, power, _game->getMod()->getDamageType(DT_HE), power / 10);
+		t = _save->getTileEngine()->checkForTerrainExplosions();
+	}
+}
+
+/**
+ * Terraforming.
+ */
+void BattlescapeGenerator::explodeOtherJunk()
+{
+	std::vector<BattleItem*> itemsToGoBoom;
+	std::vector<std::tuple<Tile*, const RuleItem*> > explosionParams;
+
+	for (auto* bi : *_save->getItems())
+	{
+		if (bi->isOwnerIgnored() || !bi->getTile())
+		{
+			continue;
+		}
+		if ((!bi->getRules()->getSpawnUnit() && !bi->getRules()->getSpawnItem()) && !bi->getXCOMProperty() && !bi->isSpecialWeapon())
+		{
+			// fuseTimer == 0 cannot be used, because it is already used for "explode after the first player turn"
+			// fuseTimer == -1 is also used, means "unprimed grenade"
+			if (bi->getRules()->getBattleType() == BT_GRENADE && bi->getFuseTimer() == -2 /* && !bi->isFuseEnabled() */)
+			{
+				itemsToGoBoom.push_back(bi);
+				explosionParams.push_back(std::tuple(bi->getTile(), bi->getRules()));
+			}
+		}
+	}
+
+	for (auto* item : itemsToGoBoom)
+	{
+		_save->removeItem(item);
+	}
+
+	for (auto& params : explosionParams)
+	{
+		Tile* tile = std::get<Tile*>(params);
+		const RuleItem* rule = std::get<const RuleItem*>(params);
+
+		Position p = tile->getPosition().toVoxel() + Position(8, 8, -tile->getTerrainLevel());
+		_save->getTileEngine()->explode(
+			{ },
+			p,
+			rule->getPower(),
+			rule->getDamageType(),
+			rule->getExplosionRadius({ })
+		);
+	}
+
+	Tile* t = _save->getTileEngine()->checkForTerrainExplosions();
+	while (t)
+	{
+		ItemDamageType DT;
+		switch (t->getExplosiveType())
+		{
+		case 0:
+			DT = DT_HE;
+			break;
+		case 5:
+			DT = DT_IN;
+			break;
+		case 6:
+			DT = DT_STUN;
+			break;
+		default:
+			DT = DT_SMOKE;
+			break;
+		}
+		int power = t->getExplosive();
+		t->setExplosive(0, 0, true);
+		Position p = t->getPosition().toVoxel() + Position(8, 8, 0);
+		_save->getTileEngine()->explode({ }, p, power, _game->getMod()->getDamageType(DT), power / 10);
 		t = _save->getTileEngine()->checkForTerrainExplosions();
 	}
 }
