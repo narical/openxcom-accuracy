@@ -378,6 +378,7 @@
     <ClCompile Include="Basescape\SoldiersState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformationListState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformationState.cpp" />
+    <ClCompile Include="Basescape\SoldierTransformState.cpp" />
     <ClCompile Include="Basescape\StoresState.cpp" />
     <ClCompile Include="Basescape\TechTreeSelectState.cpp" />
     <ClCompile Include="Basescape\TechTreeViewerState.cpp" />
@@ -758,6 +759,7 @@
     <ClInclude Include="Basescape\SoldiersState.h" />
     <ClInclude Include="Basescape\SoldierTransformationListState.h" />
     <ClInclude Include="Basescape\SoldierTransformationState.h" />
+    <ClInclude Include="Basescape\SoldierTransformState.h" />
     <ClInclude Include="Basescape\StoresState.h" />
     <ClInclude Include="Basescape\TechTreeSelectState.h" />
     <ClInclude Include="Basescape\TechTreeViewerState.h" />
