@@ -282,6 +282,8 @@ en-GB:
   STR_SAVE_PERSONAL_EQUIPMENT: "Save Personal Equipment"
   STR_LOAD_PERSONAL_EQUIPMENT: "Load Personal Equipment"
   STR_PERSONAL_EQUIPMENT_SAVED: "Personal equipment saved."
+#Map.cpp
+  STR_THINKING: "Thinking..."
 #NextTurnState.cpp
   STR_TELL_ME_MORE: "Tell me more..."
   STR_REINFORCEMENTS_ALERT: "Reinforcements alert!"

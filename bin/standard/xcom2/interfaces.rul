@@ -2086,6 +2086,10 @@ interfaces: #done
         color: 47
         color2: 60
         border: 51
+      - id: thinkingProgressBar
+        color: 177
+        color2: 81
+        border: 1
       - id: warning
         size: [232, 24]
         pos: [44, 32]

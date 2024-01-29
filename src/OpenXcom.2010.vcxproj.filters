@@ -1136,6 +1136,9 @@
     <ClCompile Include="Basescape\SoldierTransformState.cpp">
       <Filter>Basescape</Filter>
     </ClCompile>
+    <ClCompile Include="Interface\ProgressBar.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2335,6 +2338,9 @@
     </ClInclude>
     <ClInclude Include="Basescape\SoldierTransformState.h">
       <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\ProgressBar.h">
+      <Filter>Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

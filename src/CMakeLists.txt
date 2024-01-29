@@ -232,6 +232,7 @@ set ( interface_src
   Interface/Frame.cpp
   Interface/ImageButton.cpp
   Interface/NumberText.cpp
+  Interface/ProgressBar.cpp
   Interface/ScrollBar.cpp
   Interface/Slider.cpp
   Interface/Text.cpp
