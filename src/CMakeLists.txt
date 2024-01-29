@@ -55,6 +55,7 @@ set ( basescape_src
   Basescape/SoldiersState.cpp
   Basescape/SoldierTransformationState.cpp
   Basescape/SoldierTransformationListState.cpp
+  Basescape/SoldierTransformState.cpp
   Basescape/StoresState.cpp
   Basescape/TechTreeSelectState.cpp
   Basescape/TechTreeViewerState.cpp

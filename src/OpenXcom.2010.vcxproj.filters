@@ -1137,6 +1137,9 @@
       <Filter>Savegame</Filter>
     </ClCompile>
     <ClCompile Include="Geoscape\HiddenAlienActivityState.cpp" />
+    <ClCompile Include="Basescape\SoldierTransformState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2336,6 +2339,9 @@
     </ClInclude>
     <ClInclude Include="Basescape\SoldiersAIState.h" />
     <ClInclude Include="Geoscape\HiddenAlienActivityState.h" />
+    <ClInclude Include="Basescape\SoldierTransformState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Geoscape">

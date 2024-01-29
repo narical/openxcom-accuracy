@@ -108,7 +108,7 @@ SoldierTransformationState::SoldierTransformationState(RuleSoldierTransformation
 	_btnStart->onMouseClick((ActionHandler)&SoldierTransformationState::btnStartClick);
 	_btnStart->onKeyboardPress((ActionHandler)&SoldierTransformationState::btnStartClick, Options::keyOk);
 
-	if (_filteredListOfSoldiers->size() > 1)
+	if (_filteredListOfSoldiers && _filteredListOfSoldiers->size() > 1)
 	{
 		_btnLeftArrow->setText("<<");
 		_btnLeftArrow->onMouseClick((ActionHandler)&SoldierTransformationState::btnLeftArrowClick);

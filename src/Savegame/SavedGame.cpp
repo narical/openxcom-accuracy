@@ -1958,9 +1958,15 @@ void SavedGame::getDependableManufacture (std::vector<RuleManufacture *> & depen
  */
 void SavedGame::getAvailableTransformations (std::vector<RuleSoldierTransformation *> & transformations, const Mod * mod, Base * base) const
 {
+	auto& list = mod->getSoldierTransformationList();
+	if (list.empty())
+	{
+		return;
+	}
+
 	RuleBaseFacilityFunctions baseFunc = base->getProvidedBaseFunc({});
 
-	for (const auto& transformType : mod->getSoldierTransformationList())
+	for (const auto& transformType : list)
 	{
 		RuleSoldierTransformation *m = mod->getSoldierTransformation(transformType);
 		if (!isResearched(m->getRequiredResearch()))

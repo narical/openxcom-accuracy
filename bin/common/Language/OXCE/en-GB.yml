@@ -137,6 +137,9 @@ en-GB:
 #SoldiersState.h
   STR_TRAINING: "Training"
   STR_SOLDIER_INFO: "Soldier Info"
+#SoldierTransformState.cpp
+  STR_SELECT_TRANSFORMATION_FOR: "SELECT TRANSFORMATION FOR{NEWLINE}{0}"
+  STR_TRANSFORMATIONS_BUTTON: "^"
 #SoldierTransformationAssignState.cpp
   STR_TRANSFER_TIME: "Transfer Time>{ALT}{0}"
   STR_RECOVERY_TIME: "Recovery Time>{ALT}{0}"
