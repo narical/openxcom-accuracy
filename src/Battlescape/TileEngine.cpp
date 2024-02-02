@@ -4747,9 +4747,21 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 				}
 			}
 			victim->setMindControllerId(attack.attacker->getId());
-			victim->convertToFaction(attack.attacker->getFaction());
-			calculateLighting(LL_UNITS, victim->getPosition());
-			calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
+			if (attack.weapon_item->getRules()->convertToCivilian() && victim->getOriginalFaction() == FACTION_HOSTILE)
+			{
+				victim->convertToFaction(FACTION_NEUTRAL);
+				if (victim->getAIModule())
+				{
+					// rewire them to attack hostiles
+					victim->getAIModule()->setTargetFaction(FACTION_HOSTILE);
+				}
+			}
+			else
+			{
+				victim->convertToFaction(attack.attacker->getFaction());
+				calculateLighting(LL_UNITS, victim->getPosition());
+				calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
+			}
 			victim->recoverTimeUnits();
 			victim->allowReselect();
 			victim->abortTurn(); // resets unit status to STANDING

@@ -2074,7 +2074,12 @@ void BattlescapeGame::psiAttackMessage(BattleActionAttack attack, BattleUnit *vi
 			if (attack.type == BA_PANIC)
 				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_MORALE_ATTACK_SUCCESSFUL")));
 			else if (attack.type == BA_MINDCONTROL)
-				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_MIND_CONTROL_SUCCESSFUL")));
+			{
+				if (attack.weapon_item->getRules()->convertToCivilian() && victim->getOriginalFaction() == FACTION_HOSTILE)
+					game->pushState(new InfoboxState(game->getLanguage()->getString("STR_MIND_CONTROL_SUCCESSFUL_ALT")));
+				else
+					game->pushState(new InfoboxState(game->getLanguage()->getString("STR_MIND_CONTROL_SUCCESSFUL")));
+			}
 			getSave()->getBattleState()->updateSoldierInfo();
 		}
 	}

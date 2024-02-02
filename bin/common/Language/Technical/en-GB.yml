@@ -118,6 +118,7 @@ en-GB:
   landOnly: "Land only?"
   psiRequired: "Psi skill required?"
   targetMatrix: "Item targets"
+  convertToCivilian: "Convert to civilian?"
   manaRequired: "Mana required?"
   LOSRequired: "Sight required?"
 #

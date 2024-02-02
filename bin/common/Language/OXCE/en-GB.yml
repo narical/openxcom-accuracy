@@ -234,6 +234,7 @@ en-GB:
   STR_NOT_ENOUGH_HEALTH: "Not Enough Health!"
   STR_NOT_ENOUGH_MANA: "Not Enough Mana!"
   STR_NOT_ENOUGH_STUN: "Stun level is too high!"
+  STR_MIND_CONTROL_SUCCESSFUL_ALT: "Action Successful"
   STR_LINE_OF_SIGHT_REQUIRED: "Line of sight (LoS) required."
 #BattlescapeState.cpp
   STR_CENTER_ON_WOUNDED_FRIEND: "Centre on Wounded Friend"
