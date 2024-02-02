@@ -2219,7 +2219,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 					//too many prison types, give up
 					if (prisonCurr == prisonEnd)
 					{
-						return BPE_Used;
+						return BPE_Used_AlienContainment;
 					}
 					*prisonCurr = type;
 					++prisonCurr;
@@ -2348,22 +2348,42 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 		{
 			if (typeSize.second < getUsedContainment(typeSize.first))
 			{
-				return BPE_Used;
+				return BPE_Used_AlienContainment;
 			}
 		}
 	}
 
 	// only check space for things that are removed
-	return (
-		(removed.quarters > 0 && available.quarters < getUsedQuarters()) ||
-		(removed.stores > 0 && available.stores < getUsedStores()) ||
-		(removed.laboratories > 0 && available.laboratories < getUsedLaboratories()) ||
-		(removed.workshops > 0 && available.workshops < getUsedWorkshops()) ||
-		(removed.hangars > 0 && available.hangars < getUsedHangars()) ||
-		(removed.psiLaboratories > 0 && available.psiLaboratories < getUsedPsiLabs()) ||
-		(removed.training > 0 && available.training < getUsedTraining()) ||
-		false
-	) ? BPE_Used : BPE_None;
+	if (removed.stores > 0 && available.stores < getUsedStores())
+	{
+		return BPE_Used_Stores;
+	}
+	else if (removed.quarters > 0 && available.quarters < getUsedQuarters())
+	{
+		return BPE_Used_Quarters;
+	}
+	else if (removed.laboratories > 0 && available.laboratories < getUsedLaboratories())
+	{
+		return BPE_Used_Laboratories;
+	}
+	else if (removed.workshops > 0 && available.workshops < getUsedWorkshops())
+	{
+		return BPE_Used_Workshops;
+	}
+	else if (removed.hangars > 0 && available.hangars < getUsedHangars())
+	{
+		return BPE_Used_Hangars;
+	}
+	else if (removed.psiLaboratories > 0 && available.psiLaboratories < getUsedPsiLabs())
+	{
+		return BPE_Used_PsiLabs;
+	}
+	else if (removed.training > 0 && available.training < getUsedTraining())
+	{
+		return BPE_Used_Gyms;
+	}
+
+	return BPE_None;
 }
 
 /**
