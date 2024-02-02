@@ -5929,14 +5929,20 @@ std::map<Position, int, PositionComparator> BattleUnit::getReachablePositions()
 	return _reachablePositions;
 }
 
-void BattleUnit::setPositionOfUpdate(Position pos)
+void BattleUnit::setPositionOfUpdate(Position pos, bool withMaxTUs)
 {
 	_positionWhenReachableWasUpdated = pos;
+	_maxTUsWhenReachableWasUpdated = withMaxTUs;
 }
 
 Position BattleUnit::getPositionOfUpdate()
 {
 	return _positionWhenReachableWasUpdated;
+}
+
+bool BattleUnit::wasMaxTusOfUpdate()
+{
+	return _maxTUsWhenReachableWasUpdated;
 }
 
 bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const

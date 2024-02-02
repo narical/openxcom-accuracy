@@ -3201,7 +3201,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		if (isEnemy(target))
 		{
-			if(target->getTurnsSinceSeen(_unit->getFaction()) <= 1)
+			if (target->getTurnsSinceSeen(_unit->getFaction()) <= 1)
 			{
 				if (!_unit->isCheatOnMovement())
 					pos = _save->getTileCoords(target->getTileLastSpotted(_unit->getFaction()));
@@ -6364,7 +6364,7 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 		startPosition = unit->getPosition();
 	if (startPosition == TileEngine::invalid)
 		return tuAtPositionMap;
-	if (unit->getPositionOfUpdate() == startPosition && !forceRecalc)
+	if (unit->getPositionOfUpdate() == startPosition && unit->wasMaxTusOfUpdate() == useMaxTUs && !forceRecalc)
 	{
 		ranOutOfTUs = unit->getRanOutOfTUs();
 		return unit->getReachablePositions();
@@ -6384,7 +6384,7 @@ std::map<Position, int, PositionComparator> AIModule::getReachableBy(BattleUnit*
 		//	tile->setTUMarker(TUs - (*it)->getTUCost(false).time);
 		//}
 	}
-	unit->setPositionOfUpdate(startPosition);
+	unit->setPositionOfUpdate(startPosition, useMaxTUs);
 	unit->setReachablePositions(tuAtPositionMap);
 	unit->setRanOutOfTUs(ranOutOfTUs);
 	return tuAtPositionMap;

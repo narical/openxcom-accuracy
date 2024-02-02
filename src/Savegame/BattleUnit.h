@@ -172,6 +172,7 @@ private:
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	std::map<Position, int, PositionComparator> _reachablePositions;
 	Position _positionWhenReachableWasUpdated = Position(-1, -1, -1);
+	bool _maxTUsWhenReachableWasUpdated;
 	bool _capturable;
 	bool _vip;
 	bool _bannedInNextStage;
@@ -884,8 +885,9 @@ public:
 	void setReachablePositions(std::map<Position, int, PositionComparator> reachable);
 	std::map<Position, int, PositionComparator> getReachablePositions();
 	/// Remember this value in order to check whether an update is due
-	void setPositionOfUpdate(Position posOfUpdate);
+	void setPositionOfUpdate(Position posOfUpdate, bool withMaxTUs);
 	Position getPositionOfUpdate();
+	bool wasMaxTusOfUpdate();
 	/// Remember whether it ran out of TUs while doing the reachability-check
 	void setRanOutOfTUs(bool ranOutOfTUs) { _ranOutOfTUs = ranOutOfTUs; }
 	bool getRanOutOfTUs() { return _ranOutOfTUs; }
