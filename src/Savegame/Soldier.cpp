@@ -56,7 +56,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
 	_corpseRecovered(false),
-	_allowAutoCombat(Options::autoCombatDefaultSoldier), _aggression(1)
+	_allowAutoCombat(Options::autoCombatDefaultSoldier), _aggression(3)
 {
 	if (id != 0)
 	{
