@@ -861,7 +861,11 @@ void BattlescapeState::think()
 		if (_popups.empty())
 		{
 			State::think();
-			_battleGame->think();
+			int ret = _battleGame->think();
+			if (ret > -1)
+			{
+				_map->refreshAIProgress(100 - ret); // progress = 100 - ret;
+			}
 			_animTimer->think(this, 0);
 			_gameTimer->think(this, 0);
 			if (popped)

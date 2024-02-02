@@ -1829,7 +1829,22 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		&& !specialDamageTransform->getZombieUnit(this).empty()
 		&& getArmor()->getZombiImmune() == false)
 	{
-		specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getZombieUnitChance() : 0;
+		if (attack.attacker)
+		{
+			if (getOriginalFaction() == FACTION_HOSTILE && attack.attacker->getOriginalFaction() == FACTION_HOSTILE)
+			{
+				// (mind-controlled) chryssalid on snakeman action still not allowed
+				specialDamageTransformChance = 0;
+			}
+			else
+			{
+				specialDamageTransformChance = specialDamageTransform->getZombieUnitChance();
+			}
+		}
+		else
+		{
+			specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getZombieUnitChance() : 0;
+		}
 	}
 	else
 	{

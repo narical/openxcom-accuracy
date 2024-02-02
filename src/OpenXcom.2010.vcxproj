@@ -545,6 +545,7 @@
     <ClCompile Include="Interface\Frame.cpp" />
     <ClCompile Include="Interface\ImageButton.cpp" />
     <ClCompile Include="Interface\NumberText.cpp" />
+    <ClCompile Include="Interface\ProgressBar.cpp" />
     <ClCompile Include="Interface\ScrollBar.cpp" />
     <ClCompile Include="Interface\Slider.cpp" />
     <ClCompile Include="Interface\Text.cpp" />
@@ -945,6 +946,7 @@
     <ClInclude Include="Interface\Frame.h" />
     <ClInclude Include="Interface\ImageButton.h" />
     <ClInclude Include="Interface\NumberText.h" />
+    <ClInclude Include="Interface\ProgressBar.h" />
     <ClInclude Include="Interface\ScrollBar.h" />
     <ClInclude Include="Interface\Slider.h" />
     <ClInclude Include="Interface\Text.h" />

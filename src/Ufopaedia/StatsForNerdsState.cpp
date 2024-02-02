@@ -1836,6 +1836,7 @@ void StatsForNerdsState::initItemList()
 	addBoolean(ss, itemRule->isManaRequired(), "manaRequired");
 	int targetMatrixDefault = itemBattleType == BT_PSIAMP ? 6 : 7;
 	addItemTargets(ss, itemRule, "targetMatrix", targetMatrixDefault);
+	addBoolean(ss, itemRule->convertToCivilian(), "convertToCivilian");
 	addBoolean(ss, itemRule->isLOSRequired(), "LOSRequired");
 
 	if (itemBattleType == BT_FIREARM

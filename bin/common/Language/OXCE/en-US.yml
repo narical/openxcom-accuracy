@@ -236,6 +236,7 @@ en-US:
   STR_NOT_ENOUGH_HEALTH: "Not Enough Health!"
   STR_NOT_ENOUGH_MANA: "Not Enough Mana!"
   STR_NOT_ENOUGH_STUN: "Stun level is too high!"
+  STR_MIND_CONTROL_SUCCESSFUL_ALT: "Action Successful"
   STR_LINE_OF_SIGHT_REQUIRED: "Line of sight (LoS) required."
 #BattlescapeState.cpp
   STR_CENTER_ON_WOUNDED_FRIEND: "Center on Wounded Friend"
@@ -284,6 +285,8 @@ en-US:
   STR_SAVE_PERSONAL_EQUIPMENT: "Save Personal Equipment"
   STR_LOAD_PERSONAL_EQUIPMENT: "Load Personal Equipment"
   STR_PERSONAL_EQUIPMENT_SAVED: "Personal equipment saved."
+#Map.cpp
+  STR_THINKING: "Thinking..."
 #NextTurnState.cpp
   STR_TELL_ME_MORE: "Tell me more..."
   STR_REINFORCEMENTS_ALERT: "Reinforcements alert!"
