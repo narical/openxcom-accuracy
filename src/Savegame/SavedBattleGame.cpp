@@ -2197,6 +2197,7 @@ BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
 	const Unit* type = unit->getSpawnUnit();
 
 	BattleUnit *newUnit = createTempUnit(type, unit->getSpawnUnitFaction());
+	newUnit->setSpawnUnitFaction(unit->getSpawnUnitFaction()); // allied/neutral zombie should spawn an allied/neutral chryssalid?
 
 	newUnit->clearTimeUnits();
 	newUnit->setVisible(visible);
