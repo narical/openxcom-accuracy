@@ -3360,7 +3360,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 					}
 					if (cheapestInventoryToMoveToHand != nullptr)
 					{
-						if (cheapestInventoryToMoveToHand->getType() == INV_SLOT)
+						if (cheapestInventoryToMoveToHand->getType() != INV_GROUND)
 						{
 							placed = fitItemToInventory(cheapestInventoryToMoveToHand, item);
 						}
