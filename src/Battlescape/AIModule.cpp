@@ -3092,7 +3092,10 @@ void AIModule::brutalThink(BattleAction* action)
 						continue;
 					if (ally->getFaction() != _unit->getFaction())
 						continue;
-					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
+					float avgSmoke = (targetTile->getSmoke() + ally->getTile()->getSmoke()) / 2.0;
+					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + avgSmoke / 3.0);
+					if (targetTile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && targetTile->getFire() == 0)
+						minViewDistance = std::min((float)ally->getMaxViewDistanceAtDark(unitToWalkTo), minViewDistance);
 					if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && Position::distance(targetPosition, ally->getPosition()) <= minViewDistance)
 					{
 						tileChecked = true;
@@ -3399,7 +3402,6 @@ void AIModule::brutalThink(BattleAction* action)
 	bool iHaveLofIncludingEncircle = false;
 	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
 	BattleActionCost hitCost = BattleActionCost(BA_HIT, _unit, action->weapon);
-	bool targetIsInSmoke = false;
 	BattleAction originAction;
 	originAction.actor = _unit;
 	originAction.weapon = action->weapon;
@@ -3409,8 +3411,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 		Tile* tileOfTarget = _save->getTile(targetPosition);
-		if (tileOfTarget->getSmoke() > 0)
-			targetIsInSmoke = true;
 		originAction.target = unitToWalkTo->getPosition();
 		Position origin = _save->getTileEngine()->getOriginVoxel(originAction, myTile);
 		iHaveLof = _save->getTileEngine()->canTargetUnit(&origin, unitToWalkTo->getTile(), nullptr, _unit, false);
@@ -3578,15 +3578,15 @@ void AIModule::brutalThink(BattleAction* action)
 			int currLastStepCost = 0;
 			Position ref;
 			float viewDistance = _save->getMod()->getMaxViewDistance();
-			int higherSmoke = myTile->getSmoke();
+			float avgSmoke = myTile->getSmoke();
 			if (unitToWalkTo)
 			{
 				viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo);
 				if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
 					viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo);
-				higherSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), higherSmoke);
+				avgSmoke = (unitToWalkTo->getTile()->getSmoke() + avgSmoke + tile->getSmoke()) / 3.0;
 			}
-			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + higherSmoke / 3.0)));
+			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + avgSmoke / 3.0)));
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
 				Position unitPosition = unit->getPosition();
@@ -3673,6 +3673,8 @@ void AIModule::brutalThink(BattleAction* action)
 			bool realLineOfFire = lineOfFire;
 			bool specialDoorCase = false;
 			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > myMaxTU * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
+			if (spotter && _unit->getTimeUnits() == myMaxTU)
+				enoughTUToPeak = true;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
 			if (!lineOfFire && enoughTUToPeak)
 			{
@@ -3999,9 +4001,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			//if (_traceAI)
 			//{
-			//	tile->setMarkerColor(discoverThreat);
+			//	tile->setMarkerColor(viewDistance);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(viewDistance);
 			//}
 		}
 		if (_traceAI)
