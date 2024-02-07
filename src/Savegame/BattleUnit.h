@@ -506,7 +506,7 @@ public:
 	/// Is left hand preferred for reactions?
 	bool isLeftHandPreferredForReactions() const;
 	/// Get preferred weapon for reactions, if applicable.
-	BattleItem *getWeaponForReactions(bool meleeOnly) const;
+	BattleItem *getWeaponForReactions() const;
 
 	/// Check if this unit is in the exit area
 	bool isInExitArea(SpecialTileType stt) const;

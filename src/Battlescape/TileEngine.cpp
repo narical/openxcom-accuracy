@@ -2985,55 +2985,58 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		re.reactionReduction = 1.0 * BattleActionCost(type, re.unit, weapon).Time * re.unit->getBaseStats()->reactions / re.unit->getBaseStats()->tu;
 	};
 
-	// prioritize melee
+	std::vector<BattleItem*> reactionWeapons;
+	// 1. first try the preferred weapon (player units only... to prevent abuse)
+	bool isPlayer = (unit->getFaction() == FACTION_PLAYER);
+	if (isPlayer)
+	{
+		if (BattleItem* preferredWeapon = unit->getWeaponForReactions())
+		{
+			reactionWeapons.push_back(preferredWeapon);
+		}
+	}
+	// 2. then prioritize melee
+	if (BattleItem* meleeWeapon = unit->getUtilityWeapon(BT_MELEE))
+	{
+		reactionWeapons.push_back(meleeWeapon);
+	}
+	// 3. then the rest (AI: quickest weapon, Player: last selected/main weapon)
+	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer))
+	{
+		reactionWeapons.push_back(otherWeapon);
+	}
+
 	int tempDirection = unit->getDirection();
 	if (Mod::EXTENDED_MELEE_REACTIONS == 2)
 	{
 		// temporarily face the target to allow melee reactions when attacked from any side, not just from the front
 		tempDirection = getDirectionTo(unit->getPosition(), target->getPosition());
 	}
-	BattleItem *meleeWeapon = unit->getWeaponForReactions(true);
-	if (!meleeWeapon)
-	{
-		meleeWeapon = unit->getUtilityWeapon(BT_MELEE);
-	}
-	// has a melee weapon and is in melee range
-	if (_save->canUseWeapon(meleeWeapon, unit, false, BA_HIT) &&
-		validMeleeRange(unit, target, tempDirection) &&
-		meleeWeapon->getAmmoForAction(BA_HIT) &&
-		BattleActionCost(BA_HIT, unit, meleeWeapon).haveTU())
-	{
-		setReaction(reaction, BA_HIT, meleeWeapon);
-		return reaction;
-	}
 
-	// has a weapon
-	BattleItem *weapon = unit->getWeaponForReactions(false);
-	if (!weapon)
+	for (auto* weapon : reactionWeapons)
 	{
-		weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER);
-	}
-	if (_save->canUseWeapon(weapon, unit, false, BA_HIT))
-	{
-		// has a weapon capable of melee and is in melee range
-		if (validMeleeRange(unit, target, tempDirection) &&
-			weapon->getAmmoForAction(BA_HIT) &&
-			BattleActionCost(BA_HIT, unit, weapon).haveTU())
+		if (_save->canUseWeapon(weapon, unit, false, BA_HIT))
 		{
-			setReaction(reaction, BA_HIT, weapon);
-			return reaction;
+			// has a weapon capable of melee and is in melee range
+			if (validMeleeRange(unit, target, tempDirection) &&
+				weapon->getAmmoForAction(BA_HIT) &&
+				BattleActionCost(BA_HIT, unit, weapon).haveTU())
+			{
+				setReaction(reaction, BA_HIT, weapon);
+				return reaction;
+			}
 		}
-	}
-	if (_save->canUseWeapon(weapon, unit, false, BA_SNAPSHOT))
-	{
-		// has a gun capable of snap shot with ammo
-		if (weapon->getRules()->getBattleType() == BT_FIREARM &&
-			!weapon->getRules()->isOutOfRange(unit->distance3dToUnitSq(target)) &&
-			weapon->getAmmoForAction(BA_SNAPSHOT) &&
-			BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU())
+		if (_save->canUseWeapon(weapon, unit, false, BA_SNAPSHOT))
 		{
-			setReaction(reaction, BA_SNAPSHOT, weapon);
-			return reaction;
+			// has a gun capable of snap shot with ammo
+			if (weapon->getRules()->getBattleType() == BT_FIREARM &&
+				!weapon->getRules()->isOutOfRange(unit->distance3dToUnitSq(target)) &&
+				weapon->getAmmoForAction(BA_SNAPSHOT) &&
+				BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU())
+			{
+				setReaction(reaction, BA_SNAPSHOT, weapon);
+				return reaction;
+			}
 		}
 	}
 
