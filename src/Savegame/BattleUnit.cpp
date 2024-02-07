@@ -3637,7 +3637,7 @@ bool BattleUnit::isLeftHandPreferredForReactions() const
 /**
  * Get preferred weapon for reactions, if applicable.
  */
-BattleItem *BattleUnit::getWeaponForReactions(bool meleeOnly) const
+BattleItem *BattleUnit::getWeaponForReactions() const
 {
 	if (_preferredHandForReactions.empty())
 		return nullptr;
@@ -3648,11 +3648,21 @@ BattleItem *BattleUnit::getWeaponForReactions(bool meleeOnly) const
 	else
 		weapon = getLeftHandWeapon();
 
-	if (!weapon && meleeOnly)
+	if (!weapon)
 	{
-		// try also empty hands melee
-		weapon = getSpecialWeapon(BT_MELEE);
-		if (weapon && !weapon->getRules()->isSpecialUsingEmptyHand())
+		// find the empty hands weapon using the standard algorithm (i.e. standard order)
+		auto typesToCheck = { BT_MELEE, BT_PSIAMP, BT_FIREARM/*, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE*/};
+		for (auto& type : typesToCheck)
+		{
+			weapon = getSpecialWeapon(type);
+			if (weapon && weapon->getRules()->isSpecialUsingEmptyHand())
+			{
+				break;
+			}
+			weapon = nullptr;
+		}
+		// but only use BT_MELEE and BT_FIREARM (BT_PSIAMP doesn't have BA_HIT nor BA_SNAPSHOT)
+		if (weapon && weapon->getRules()->getBattleType() == BT_PSIAMP)
 		{
 			weapon = nullptr;
 		}
@@ -3661,10 +3671,9 @@ BattleItem *BattleUnit::getWeaponForReactions(bool meleeOnly) const
 	if (!weapon)
 		return nullptr;
 
-	if (meleeOnly)
+	if (weapon->getRules()->getBattleType() == BT_MELEE)
 	{
-		if (weapon->getRules()->getBattleType() == BT_MELEE)
-			return weapon;
+		return weapon;
 	}
 	else
 	{
