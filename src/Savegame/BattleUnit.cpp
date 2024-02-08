@@ -4592,6 +4592,8 @@ int BattleUnit::getIntelligence() const
  */
 int BattleUnit::getAggression() const
 {
+	if (getGeoscapeSoldier())
+		return getGeoscapeSoldier()->getAggression();
 	return _aggression;
 }
 
@@ -4602,6 +4604,8 @@ int BattleUnit::getAggression() const
 void BattleUnit::setAggression(int aggression)
 {
 	_aggression = aggression;
+	if (getGeoscapeSoldier())
+		getGeoscapeSoldier()->setAggression(aggression);
 }
 
 int BattleUnit::getMaxViewDistance(int baseVisibility, int nerf, int buff) const
@@ -5982,7 +5986,7 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 float BattleUnit::getAggressiveness() const
 {
 	if (getFaction() == FACTION_PLAYER)
-		return 1;
+		return getAggression();
 	float aggressiveness = 0;
 	if (Options::aggressionMode >= 1)
 		aggressiveness = getAggression();

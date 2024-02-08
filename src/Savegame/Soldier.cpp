@@ -192,7 +192,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	_healthMissing = node["healthMissing"].as<int>(_healthMissing);
 	_recovery = node["recovery"].as<float>(_recovery);
 	_allowAutoCombat = node["allowAutoCombat"].as<bool>(_allowAutoCombat);
-	_aggression = node["aggression"].as<bool>(_aggression);
+	_aggression = node["aggression"].as<int>(_aggression);
 	Armor *armor = _armor;
 	if (node["armor"])
 	{
