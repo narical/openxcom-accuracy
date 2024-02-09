@@ -1497,7 +1497,8 @@ void BattlescapeState::btnLeftHandItemClick(Action *action)
 		bool rightClick = _game->isRightClick(action, true);
 		if (rightClick)
 		{
-			_save->getSelectedUnit()->toggleLeftHandForReactions();
+			bool isCtrl = _game->isCtrlPressed(true);
+			_save->getSelectedUnit()->toggleLeftHandForReactions(isCtrl);
 			return;
 		}
 
@@ -1545,7 +1546,8 @@ void BattlescapeState::btnRightHandItemClick(Action *action)
 		bool rightClick = _game->isRightClick(action, true);
 		if (rightClick)
 		{
-			_save->getSelectedUnit()->toggleRightHandForReactions();
+			bool isCtrl = _game->isCtrlPressed(true);
+			_save->getSelectedUnit()->toggleRightHandForReactions(isCtrl);
 			return;
 		}
 
@@ -1885,7 +1887,7 @@ bool BattlescapeState::playableUnitSelected()
 /**
  * Draw hand item with ammo number.
  */
-void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<NumberText*> &ammoText, std::vector<NumberText*> &medikitText, NumberText *twoHandedText, bool drawReactionIndicator)
+void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<NumberText*> &ammoText, std::vector<NumberText*> &medikitText, NumberText *twoHandedText, bool drawReactionIndicator, bool drawNoReactionIndicator)
 {
 	hand->clear();
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
@@ -1962,6 +1964,18 @@ void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<Num
 			tempSurface->blitNShade(hand, 28, 0);
 		}
 	}
+	if (drawNoReactionIndicator)
+	{
+		if (Surface* noReactionIndicator = _game->getMod()->getSurface("noReactionIndicator", false))
+		{
+			noReactionIndicator->blitNShade(hand, 0, 0);
+		}
+		else
+		{
+			Surface* tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6); // red dot
+			tempSurface->blitNShade(hand, 28, 0);
+		}
+	}
 }
 
 /**
@@ -1972,12 +1986,16 @@ void BattlescapeState::drawHandsItems()
 	BattleUnit *battleUnit = _battleGame->playableUnitSelected() ? _save->getSelectedUnit() : nullptr;
 	bool left = false;
 	bool right = false;
+	bool left2 = false;
+	bool right2 = false;
 	BattleItem* leftHandItem = nullptr;
 	BattleItem* rightHandItem = nullptr;
 	if (battleUnit)
 	{
 		left = battleUnit->isLeftHandPreferredForReactions();
 		right = battleUnit->isRightHandPreferredForReactions();
+		left2 = battleUnit->isLeftHandDisabledForReactions();
+		right2 = battleUnit->isRightHandDisabledForReactions();
 		leftHandItem = battleUnit->getLeftHandWeapon();
 		rightHandItem = battleUnit->getRightHandWeapon();
 		if (!leftHandItem || !rightHandItem)
@@ -1996,8 +2014,8 @@ void BattlescapeState::drawHandsItems()
 			}
 		}
 	}
-	drawItem(leftHandItem, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left);
-	drawItem(rightHandItem, _btnRightHandItem, _numAmmoRight, _numMedikitRight, _numTwoHandedIndicatorRight, right);
+	drawItem(leftHandItem, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left, left2);
+	drawItem(rightHandItem, _btnRightHandItem, _numAmmoRight, _numMedikitRight, _numTwoHandedIndicatorRight, right, right2);
 }
 
 /**

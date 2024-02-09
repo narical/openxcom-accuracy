@@ -66,7 +66,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
+	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
@@ -641,6 +642,8 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
 	_activeHand = node["activeHand"].as<std::string>(_activeHand);
 	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
+	_reactionsDisabledForLeftHand = node["reactionsDisabledForLeftHand"].as<bool>(_reactionsDisabledForLeftHand);
+	_reactionsDisabledForRightHand = node["reactionsDisabledForRightHand"].as<bool>(_reactionsDisabledForRightHand);
 	if (node["tempUnitStatistics"])
 	{
 		_statistics->load(node["tempUnitStatistics"]);
@@ -758,6 +761,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["activeHand"] = _activeHand;
 	if (!_preferredHandForReactions.empty())
 		node["preferredHandForReactions"] = _preferredHandForReactions;
+	if (_reactionsDisabledForLeftHand)
+		node["reactionsDisabledForLeftHand"] = _reactionsDisabledForLeftHand;
+	if (_reactionsDisabledForRightHand)
+		node["reactionsDisabledForRightHand"] = _reactionsDisabledForRightHand;
 	node["tempUnitStatistics"] = _statistics->save();
 	if (_murdererId)
 		node["murdererId"] = _murdererId;
@@ -3371,7 +3378,7 @@ BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
  * @param quickest Whether to get the quickest weapon, default true
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
+BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool reactions) const
 {
 	BattleItem *weaponRightHand = getRightHandWeapon();
 	BattleItem *weaponLeftHand = getLeftHandWeapon();
@@ -3381,6 +3388,16 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
 		weaponRightHand = 0;
 	if (!weaponLeftHand || !weaponLeftHand->haveAnyAmmo())
 		weaponLeftHand = 0;
+
+	// ignore disabled hands/weapons (player units only... to prevent abuse)
+	// Note: there is another check later, but this one is still needed, so that also non-main weapons get a chance to be used in case the main weapon is disabled
+	if (reactions && _faction == FACTION_PLAYER)
+	{
+		if (_reactionsDisabledForRightHand)
+			weaponRightHand = nullptr;
+		if (_reactionsDisabledForLeftHand)
+			weaponLeftHand = nullptr;
+	}
 
 	// if there is only one weapon, it's easy:
 	if (weaponRightHand && !weaponLeftHand)
@@ -3599,23 +3616,55 @@ bool BattleUnit::reloadAmmo()
 /**
  * Toggle the right hand as main hand for reactions.
  */
-void BattleUnit::toggleRightHandForReactions()
+void BattleUnit::toggleRightHandForReactions(bool isCtrl)
 {
-	if (isRightHandPreferredForReactions())
-		_preferredHandForReactions = "";
+	if (isCtrl)
+	{
+		if (isRightHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		_reactionsDisabledForRightHand = !_reactionsDisabledForRightHand;
+	}
 	else
-		_preferredHandForReactions = "STR_RIGHT_HAND";
+	{
+		if (isRightHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		else
+		{
+			_preferredHandForReactions = "STR_RIGHT_HAND";
+		}
+		_reactionsDisabledForRightHand = false;
+	}
 }
 
 /**
  * Toggle the left hand as main hand for reactions.
  */
-void BattleUnit::toggleLeftHandForReactions()
+void BattleUnit::toggleLeftHandForReactions(bool isCtrl)
 {
-	if (isLeftHandPreferredForReactions())
-		_preferredHandForReactions = "";
+	if (isCtrl)
+	{
+		if (isLeftHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		_reactionsDisabledForLeftHand = !_reactionsDisabledForLeftHand;
+	}
 	else
-		_preferredHandForReactions = "STR_LEFT_HAND";
+	{
+		if (isLeftHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		else
+		{
+			_preferredHandForReactions = "STR_LEFT_HAND";
+		}
+		_reactionsDisabledForLeftHand = false;
+	}
 }
 
 /**
