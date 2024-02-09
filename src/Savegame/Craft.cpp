@@ -714,8 +714,8 @@ void Craft::calculateTotalSoldierEquipment()
 				// ...but not their ammo
 				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 				{
-					const std::string& invItemAmmo = invItem->getAmmoItemForSlot(slot);
-					if (invItemAmmo != "NONE")
+					const auto* invItemAmmo = invItem->getAmmoItemForSlot(slot);
+					if (invItemAmmo != nullptr)
 					{
 						_tempSoldierItems->addItem(invItemAmmo);
 					}

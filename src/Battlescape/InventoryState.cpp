@@ -1336,14 +1336,14 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		bool found = false;
 
 		bool needsAmmo[RuleItem::AmmoSlotMax] = { };
-		std::string targetAmmo[RuleItem::AmmoSlotMax] = { };
+		const RuleItem* targetAmmo[RuleItem::AmmoSlotMax] = { };
 		BattleItem *matchedWeapon = nullptr;
 		BattleItem *matchedAmmo[RuleItem::AmmoSlotMax] = { };
 
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
 			targetAmmo[slot] = equipmentLayoutItem->getAmmoItemForSlot(slot);
-			needsAmmo[slot] = (targetAmmo[slot] != "NONE");
+			needsAmmo[slot] = (targetAmmo[slot] != nullptr);
 			matchedAmmo[slot] = nullptr;
 		}
 
@@ -1351,12 +1351,12 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		{
 			// if we find the appropriate ammo, remember it for later for if we find
 			// the right weapon but with the wrong ammo
-			const std::string groundItemName = groundItem->getRules()->getType();
+			auto* groundItemRule = groundItem->getRules();
 
 			bool skipAmmo = false;
 			for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 			{
-				if (needsAmmo[slot] && !matchedAmmo[slot] && targetAmmo[slot] == groundItemName)
+				if (needsAmmo[slot] && !matchedAmmo[slot] && targetAmmo[slot] == groundItemRule)
 				{
 					matchedAmmo[slot] = groundItem;
 					skipAmmo = true;
@@ -1367,7 +1367,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 				continue;
 			}
 
-			if (equipmentLayoutItem->isFixed() == false && equipmentLayoutItem->getItemType() == groundItemName)
+			if (equipmentLayoutItem->isFixed() == false && equipmentLayoutItem->getItemType() == groundItemRule)
 			{
 				// if the loaded ammo doesn't match the template item's,
 				// remember the weapon for later and continue scanning
@@ -1379,7 +1379,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 						continue;
 					}
 					BattleItem *loadedAmmo = groundItem->getAmmoForSlot(slot);
-					if ((needsAmmo[slot] && (!loadedAmmo || targetAmmo[slot] != loadedAmmo->getRules()->getType()))
+					if ((needsAmmo[slot] && (!loadedAmmo || targetAmmo[slot] != loadedAmmo->getRules()))
 						|| (!needsAmmo[slot] && loadedAmmo))
 					{
 						// remember the last matched weapon for simplicity (but prefer empty weapons if any are found)
@@ -1408,10 +1408,10 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 					// this is not a fixed item, continue searching...
 					continue;
 				}
-				if (fixedItem->getSlot()->getId() == equipmentLayoutItem->getSlot() &&
+				if (fixedItem->getSlot() == equipmentLayoutItem->getSlot() &&
 					fixedItem->getSlotX() == equipmentLayoutItem->getSlotX() &&
 					fixedItem->getSlotY() == equipmentLayoutItem->getSlotY() &&
-					fixedItem->getRules()->getType() == equipmentLayoutItem->getItemType())
+					fixedItem->getRules() == equipmentLayoutItem->getItemType())
 				{
 					// if the loaded ammo doesn't match the template item's,
 					// remember the weapon for later and continue scanning
@@ -1423,7 +1423,7 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 							continue;
 						}
 						BattleItem* loadedAmmo = fixedItem->getAmmoForSlot(slot);
-						if ((needsAmmo[slot] && (!loadedAmmo || targetAmmo[slot] != loadedAmmo->getRules()->getType()))
+						if ((needsAmmo[slot] && (!loadedAmmo || targetAmmo[slot] != loadedAmmo->getRules()))
 							|| (!needsAmmo[slot] && loadedAmmo))
 						{
 							// remember the last matched weapon for simplicity (but prefer empty weapons if any are found)
@@ -1492,13 +1492,13 @@ void InventoryState::_applyInventoryTemplate(std::vector<EquipmentLayoutItem*> &
 		if (matchedWeapon && !_inv->overlapItems(
 			unit,
 			matchedWeapon,
-			_game->getMod()->getInventory(equipmentLayoutItem->getSlot(), true),
+			equipmentLayoutItem->getSlot(),
 			equipmentLayoutItem->getSlotX(),
 			equipmentLayoutItem->getSlotY()))
 		{
 			// move matched item from ground to the appropriate inventory slot
 			matchedWeapon->moveToOwner(unit);
-			matchedWeapon->setSlot(_game->getMod()->getInventory(equipmentLayoutItem->getSlot()));
+			matchedWeapon->setSlot(equipmentLayoutItem->getSlot());
 			matchedWeapon->setSlotX(equipmentLayoutItem->getSlotX());
 			matchedWeapon->setSlotY(equipmentLayoutItem->getSlotY());
 			matchedWeapon->setFuseTimer(equipmentLayoutItem->getFuseTimer());
