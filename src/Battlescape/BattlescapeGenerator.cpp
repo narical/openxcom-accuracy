@@ -1227,7 +1227,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		// add items that are in the craft
 		for (const auto& pair : *_craft->getItems()->getContents())
 		{
-			if (startingCondition != 0 && !startingCondition->isItemPermitted(pair.first, _game->getMod(), _craft))
+			if (startingCondition != 0 && !startingCondition->isItemPermitted(pair.first->getType(), _game->getMod(), _craft))
 			{
 				// send disabled items back to base
 				_base->getStorageItems()->addItem(pair.first, pair.second);
@@ -1249,7 +1249,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 			// add items that are in the base
 			for (auto i = _base->getStorageItems()->getContents()->begin(); i != _base->getStorageItems()->getContents()->end();)
 			{
-				RuleItem *rule = _game->getMod()->getItem(i->first, true);
+				const RuleItem *rule = i->first;
 				if (
 					// is item allowed in base defense?
 					rule->canBeEquippedBeforeBaseDefense() &&
@@ -1265,7 +1265,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 					{
 						_save->createItemForTile(i->first, _craftInventoryTile);
 					}
-					std::map<std::string, int>::iterator tmp = i; // copy
+					auto tmp = i; // copy
 					++i;
 					if (!_baseInventory)
 					{

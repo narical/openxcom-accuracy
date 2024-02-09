@@ -177,20 +177,16 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 		}
 	}
 
-	_items->load(node["items"]);
+	_items->load(node["items"], mod);
 	// Some old saves have bad items, better get rid of them to avoid further bugs
 	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
 	{
-		auto* ruleItem = mod->getItem(iter->first);
-		if (!ruleItem)
+		auto* ruleItem = iter->first;
+		if (!ruleItem->canBeEquippedToCraftInventory())
 		{
-			Log(LOG_ERROR) << "Failed to load item " << iter->first;
-			_items->getContents()->erase(iter++);
-		}
-		else if (!ruleItem->canBeEquippedToCraftInventory())
-		{
-			Log(LOG_WARNING) << "Item '" << iter->first << "' cannot be equipped in the craft inventory (" << _rules->getType() << ", " << _id << "). Skipping " << iter->second << " items.";
-			_items->getContents()->erase(iter++);
+			Log(LOG_WARNING) << "Item '" << iter->first->getType() << "' cannot be equipped in the craft inventory (" << _rules->getType() << ", " << _id << "). Skipping " << iter->second << " items.";
+			auto old = iter++; // avoid erase in `removeItem`
+			_items->removeItem(old->first, old->second);
 		}
 		else
 		{
@@ -698,7 +694,7 @@ std::vector<Vehicle*> *Craft::getVehicles()
  */
 void Craft::calculateTotalSoldierEquipment()
 {
-	_tempSoldierItems->getContents()->clear();
+	_tempSoldierItems->clear();
 
 	for (auto* soldier : *_base->getSoldiers())
 	{
@@ -1837,7 +1833,7 @@ void Craft::unload()
 	// Remove vehicles
 	for (auto*& vehicle : _vehicles)
 	{
-		_base->getStorageItems()->addItem(vehicle->getRules()->getType());
+		_base->getStorageItems()->addItem(vehicle->getRules());
 		if (vehicle->getRules()->getVehicleClipAmmo())
 		{
 			_base->getStorageItems()->addItem(vehicle->getRules()->getVehicleClipAmmo(), vehicle->getRules()->getVehicleClipsLoaded());

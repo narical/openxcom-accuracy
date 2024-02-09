@@ -674,7 +674,7 @@ void SellState::btnOkClick(Action *)
 					{
 						if (tmpSoldier->getArmor()->getStoreItem())
 						{
-							_base->getStorageItems()->addItem(tmpSoldier->getArmor()->getStoreItem()->getType());
+							_base->getStorageItems()->addItem(tmpSoldier->getArmor()->getStoreItem());
 						}
 						_base->getSoldiers()->erase(soldierIt);
 						break;

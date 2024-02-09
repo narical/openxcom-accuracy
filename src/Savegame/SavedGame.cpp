@@ -706,7 +706,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		std::string key = oss.str();
 		if (const YAML::Node &loadout = doc[key])
 		{
-			_globalCraftLoadout[j]->load(loadout);
+			_globalCraftLoadout[j]->load(loadout, mod);
 		}
 		std::ostringstream oss2;
 		oss2 << "globalCraftLoadoutName" << j;

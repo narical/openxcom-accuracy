@@ -1958,13 +1958,13 @@ void InventoryState::onMoveGroundInventoryToBase(Action *)
 	// step 1: move stuff from craft to base
 	for (auto* bi : *groundInv)
 	{
-		const auto& weaponType = bi->getRules()->getType();
+		const auto& weaponType = bi->getRules();
 		// check all ammo slots first
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
 			if (bi->getAmmoForSlot(slot))
 			{
-				const auto& ammoType = bi->getAmmoForSlot(slot)->getRules()->getType();
+				const auto& ammoType = bi->getAmmoForSlot(slot)->getRules();
 				// only real ammo
 				if (weaponType != ammoType)
 				{

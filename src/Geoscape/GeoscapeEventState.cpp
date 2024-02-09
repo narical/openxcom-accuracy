@@ -294,7 +294,7 @@ void GeoscapeEventState::eventLogic()
 	{
 		if (Options::oxceGeoscapeEventsInstantDelivery)
 		{
-			hq->getStorageItems()->addItem(ti.first, ti.second);
+			hq->getStorageItems()->addItem(mod->getItem(ti.first, true), ti.second);
 		}
 		else
 		{

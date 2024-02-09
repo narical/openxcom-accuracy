@@ -170,20 +170,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		}
 	}
 
-	_items->load(node["items"]);
-	// Some old saves have bad items, better get rid of them to avoid further bugs
-	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
-	{
-		if (_mod->getItem(iter->first) == 0)
-		{
-			Log(LOG_ERROR) << "Failed to load item " << iter->first;
-			_items->getContents()->erase(iter++);
-		}
-		else
-		{
-			++iter;
-		}
-	}
+	_items->load(node["items"], _mod);
 
 	_scientists = node["scientists"].as<int>(_scientists);
 	_engineers = node["engineers"].as<int>(_engineers);
@@ -746,7 +733,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	}
 	for (const auto& storeItem : *_items->getContents())
 	{
-		auto* ruleItem = _mod->getItem(storeItem.first, true);
+		auto* ruleItem = storeItem.first;
 		if (ruleItem->getMonthlySalary() != 0)
 		{
 			staffCount += storeItem.second;
@@ -762,7 +749,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	{
 		for (const auto& craftItem : *xcraft->getItems()->getContents())
 		{
-			auto* ruleItem = _mod->getItem(craftItem.first, true);
+			auto* ruleItem = craftItem.first;
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += craftItem.second;
@@ -1477,7 +1464,7 @@ int Base::getFreeTrainingSpace() const
 int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 {
 	int total = 0;
-	RuleItem *rule = 0;
+	const RuleItem *rule = 0;
 	for (const auto* transfer : _transfers)
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
@@ -1508,7 +1495,7 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 
 	for (const auto& pair : *_items->getContents())
 	{
-		rule = _mod->getItem(pair.first, true);
+		rule = pair.first;
 		if (rule->isAlien() && rule->getPrisonType() == prisonType)
 		{
 			total += pair.second;
@@ -1643,9 +1630,8 @@ void Base::setupDefenses(AlienMission* am)
 	// add vehicles left on the base
 	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end(); )
 	{
-		const auto& itemId = iter->first;
 		int itemQty = iter->second;
-		RuleItem *rule = _mod->getItem(itemId, true);
+		const RuleItem *rule = iter->first;
 		if (rule->getVehicleUnit())
 		{
 			int size = rule->getVehicleUnit()->getArmor()->getTotalSize();
@@ -1657,7 +1643,7 @@ void Base::setupDefenses(AlienMission* am)
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 				}
-				_items->removeItem(itemId, itemQty);
+				_items->removeItem(rule, itemQty);
 			}
 			else // so this vehicle needs ammo
 			{
@@ -1678,7 +1664,7 @@ void Base::setupDefenses(AlienMission* am)
 					_vehiclesFromBase.push_back(vehicle);
 					_items->removeItem(ammo, ammoPerVehicle);
 				}
-				_items->removeItem(itemId, canBeAdded);
+				_items->removeItem(rule, canBeAdded);
 			}
 
 			iter = _items->getContents()->begin(); // we have to start over because iterator is broken because of the removeItem
@@ -2121,7 +2107,7 @@ void Base::cleanupPrisons(int prisonType)
 				const auto* rule = transfer->getItems();
 				if (rule->isAlien() && rule->getPrisonType() == prisonType)
 				{
-					getStorageItems()->addItem(transfer->getItems(), transfer->getQuantity());
+					getStorageItems()->addItem(rule, transfer->getQuantity());
 					return true;
 				}
 			}
@@ -2143,7 +2129,7 @@ void Base::cleanupDefenses(bool reclaimItems)
 		for (auto* vehicle : _vehiclesFromBase)
 		{
 			const RuleItem *rule = vehicle->getRules();
-			_items->addItem(rule->getType());
+			_items->addItem(rule);
 			if (rule->getVehicleClipAmmo())
 			{
 				_items->addItem(rule->getVehicleClipAmmo(), rule->getVehicleClipsLoaded());
