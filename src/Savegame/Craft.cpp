@@ -807,7 +807,7 @@ void Craft::addCraftStats(const RuleCraftStats& s)
 	_stats += s;
 
 	int overflowFuel = _fuel - _stats.fuelMax;
-	if (overflowFuel > 0 && !_rules->getRefuelItem().empty())
+	if (overflowFuel > 0 && _rules->getRefuelItem())
 	{
 		_base->getStorageItems()->addItem(_rules->getRefuelItem(), overflowFuel / _rules->getRefuelRate());
 	}
@@ -1018,7 +1018,7 @@ double Craft::getDistanceFromBase() const
  */
 int Craft::getFuelConsumption(int speed, int escortSpeed) const
 {
-	if (!_rules->getRefuelItem().empty())
+	if (_rules->getRefuelItem())
 		return 1;
 	if (escortSpeed > 0)
 	{
@@ -1336,8 +1336,8 @@ std::string Craft::refuel()
 	std::string fuel;
 	if (_fuel < _stats.fuelMax)
 	{
-		std::string item = _rules->getRefuelItem();
-		if (item.empty())
+		const auto* item = _rules->getRefuelItem();
+		if (item == nullptr)
 		{
 			setFuel(_fuel + _rules->getRefuelRate());
 		}
@@ -1351,7 +1351,7 @@ std::string Craft::refuel()
 			}
 			else if (!_lowFuel)
 			{
-				fuel = item;
+				fuel = item->getType();
 				if (_fuel > 0)
 				{
 					_status = "STR_READY";
@@ -1889,7 +1889,7 @@ void Craft::reuseItem(const RuleItem* item)
 		return;
 
 	// Check if it's fuel to refuel the craft
-	if (item->getType() == _rules->getRefuelItem() && _fuel < _stats.fuelMax)
+	if (item == _rules->getRefuelItem() && _fuel < _stats.fuelMax)
 		_status = "STR_REFUELLING";
 }
 
