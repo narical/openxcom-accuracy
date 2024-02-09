@@ -431,7 +431,7 @@ public:
 	void setPreviousOwner(BattleUnit *owner);
 
 	/// Gets the item in the specified slot.
-	BattleItem *getItem(RuleInventory *slot, int x = 0, int y = 0) const;
+	BattleItem *getItem(const RuleInventory *slot, int x = 0, int y = 0) const;
 	/// Gets the item in the main hand.
 	BattleItem *getMainHandWeapon(bool quickest = true, bool reactions = false) const;
 	/// Gets a grenade from the belt, if any.

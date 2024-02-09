@@ -3346,7 +3346,7 @@ void BattleUnit::setPreviousOwner(BattleUnit *owner)
  * @param y Y position in slot.
  * @return Item in the slot, or NULL if none.
  */
-BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
+BattleItem *BattleUnit::getItem(const RuleInventory *slot, int x, int y) const
 {
 	// Soldier items
 	if (slot->getType() != INV_GROUND)
