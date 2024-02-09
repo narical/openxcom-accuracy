@@ -2142,7 +2142,7 @@ void Base::cleanupDefenses(bool reclaimItems)
 	{
 		for (auto* vehicle : _vehiclesFromBase)
 		{
-			RuleItem *rule = vehicle->getRules();
+			const RuleItem *rule = vehicle->getRules();
 			_items->addItem(rule->getType());
 			if (rule->getVehicleClipAmmo())
 			{

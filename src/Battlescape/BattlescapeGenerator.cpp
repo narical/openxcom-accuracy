@@ -993,7 +993,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		{
 			for (auto* vehicle : *_craft->getVehicles())
 			{
-				RuleItem *item = vehicle->getRules();
+				const RuleItem *item = vehicle->getRules();
 				bool hwpDisabled = false;
 				if (startingCondition)
 				{
@@ -1125,7 +1125,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		{
 			for (auto* vehicle : *_craft->getVehicles())
 			{
-				RuleItem *item = vehicle->getRules();
+				const RuleItem *item = vehicle->getRules();
 				bool hwpDisabled = false;
 				if (startingCondition)
 				{
