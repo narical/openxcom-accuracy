@@ -2175,45 +2175,68 @@ bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
 
 /**
  * Validates craft space and craft constraints on adding soldier to a craft.
- * @return True, if adding a soldier is allowed.
  */
-bool Craft::validateAddingSoldier(int space, const Soldier* s) const
+CraftPlacementErrors Craft::validateAddingSoldier(int space, const Soldier* s) const
 {
 	if (space < s->getArmor()->getTotalSize())
 	{
-		return false;
+		return CPE_NotEnoughSpace;
 	}
 	if (_rules->getMaxSoldiers() > -1 && getNumTotalSoldiers() >= _rules->getMaxSoldiers())
 	{
-		return false;
+		return CPE_TooManySoldiers;
 	}
 	if (s->getArmor()->getSize() == 1)
 	{
 		if (_rules->getMaxSmallSoldiers() > -1 && getNumSmallSoldiers() >= _rules->getMaxSmallSoldiers())
 		{
-			return false;
+			return CPE_TooManySmallSoldiers;
 		}
 		if (_rules->getMaxSmallUnits() > -1 && getNumSmallUnits() >= _rules->getMaxSmallUnits())
 		{
-			return false;
+			return CPE_TooManySmallUnits;
 		}
 	}
 	else // armorSize > 1
 	{
 		if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiersClamped())
 		{
-			return false;
+			return CPE_TooManyVehiclesAndLargeSoldiers;
 		}
 		if (_rules->getMaxLargeSoldiers() > -1 && getNumLargeSoldiers() >= _rules->getMaxLargeSoldiers())
 		{
-			return false;
+			return CPE_TooManyLargeSoldiers;
 		}
 		if (_rules->getMaxLargeUnits() > -1 && getNumLargeUnits() >= _rules->getMaxLargeUnits())
 		{
-			return false;
+			return CPE_TooManyLargeUnits;
 		}
 	}
-	return true;
+	auto& allowedSoldierGroups = _rules->getAllowedSoldierGroups();
+	if (!allowedSoldierGroups.empty())
+	{
+		if (std::find(allowedSoldierGroups.begin(), allowedSoldierGroups.end(), s->getRules()->getGroup()) == allowedSoldierGroups.end())
+		{
+			return CPE_SoldierGroupNotAllowed;
+		}
+	}
+	if (_rules->isOnlyOneSoldierGroupAllowed() && getNumTotalSoldiers() > 0)
+	{
+		int currentGroup = -1;
+		for (const auto* tmpSoldier : *_base->getSoldiers())
+		{
+			if (tmpSoldier->getCraft() == this)
+			{
+				currentGroup = tmpSoldier->getRules()->getGroup();
+				break;
+			}
+		}
+		if (s->getRules()->getGroup() != currentGroup)
+		{
+			return CPE_SoldierGroupNotSame;
+		}
+	}
+	return CPE_None;
 }
 
 /**

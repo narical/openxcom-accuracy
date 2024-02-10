@@ -52,6 +52,8 @@ en-GB:
   STR_BOLD: "Bold (+50%)"
   STR_VERY_BOLD: "Very bold (+100%)"
 #CraftSoldiersState.cpp
+  STR_SOLDIER_GROUP_NOT_ALLOWED: "This soldier type is not allowed onboard."
+  STR_SOLDIER_GROUP_NOT_SAME: "This soldier type is not compatible with other soldiers onboard."
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
   STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED: "Preview *"
   STR_CRAFT_DEPLOYMENT_PREVIEW_BRIEFING: "This feature allows you to preview and customise the deployment of your units at the beginning of a battle. You have unlimited movement. Press and hold 'Alt' to highlight valid unit positions. Click on the 'Abort Mission' icon to save a custom deployment. Click on the 'End Turn' icon to exit the preview.{NEWLINE}Note that adding any new soldiers or vehicles to the craft automatically invalidates the saved custom deployment. Presence of a custom deployment is indicated by an asterisk on the 'Preview' button."

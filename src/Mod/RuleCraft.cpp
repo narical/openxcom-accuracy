@@ -40,7 +40,7 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(24), _score(0), _battlescapeTerrainData(0), _maxSkinIndex(0),
 	_keepCraftAfterFailedMission(false), _allowLanding(true), _spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _undetectable(false),
-	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _stats(),
+	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _onlyOneSoldierGroupAllowed(false), _stats(),
 	_shieldRechargeAtBase(1000),
 	_mapVisible(true), _forceShowInMonthlyCosts(false), _useAllStartTiles(false)
 {
@@ -141,10 +141,9 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	{
 		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
 	}
-	if (const YAML::Node& craftGroups = node["groups"])
-	{
-		_groups = craftGroups.as<std::vector<int> >(_groups);
-	}
+	mod->loadUnorderedInts(_type, _groups, node["groups"]);
+	mod->loadUnorderedInts(_type, _allowedSoldierGroups, node["allowedSoldierGroups"]);
+	_onlyOneSoldierGroupAllowed = node["onlyOneSoldierGroupAllowed"].as<bool>(_onlyOneSoldierGroupAllowed);
 	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
 	_deployment = node["deployment"].as< RuleCraftDeployment >(_deployment);
 	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
