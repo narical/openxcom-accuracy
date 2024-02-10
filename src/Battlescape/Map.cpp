@@ -2024,8 +2024,7 @@ void Map::drawTerrain(Surface *surface)
 							0, false, 3);
 					}
 				}
-				offset.y += 24 - /*myUnit->getHeight()*/ 21; // no spoilers
-				if (myUnit->isKneeled())
+				if (myUnit->getScannedTurn() == _save->getTurn())
 				{
 					temp = myUnit->getPosition();
 					temp.z = _camera->getViewLevel();
@@ -2037,7 +2036,7 @@ void Map::drawTerrain(Surface *surface)
 					{
 						offset.y += 4;
 					}
-					offset.y += 24 - myUnit->getHeight();
+					offset.y += 24 - /*myUnit->getHeight()*/ 21; // no spoilers
 					if (myUnit->isKneeled())
 					{
 						offset.y -= 2;

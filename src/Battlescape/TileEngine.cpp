@@ -3001,7 +3001,7 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		reactionWeapons.push_back(meleeWeapon);
 	}
 	// 3. then the rest (AI: quickest weapon, Player: last selected/main weapon)
-	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer, true))
+	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer, true, true))
 	{
 		reactionWeapons.push_back(otherWeapon);
 	}
