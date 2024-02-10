@@ -3001,7 +3001,7 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		reactionWeapons.push_back(meleeWeapon);
 	}
 	// 3. then the rest (AI: quickest weapon, Player: last selected/main weapon)
-	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer))
+	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer, true))
 	{
 		reactionWeapons.push_back(otherWeapon);
 	}
@@ -3013,8 +3013,39 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		tempDirection = getDirectionTo(unit->getPosition(), target->getPosition());
 	}
 
+	BattleItem* disabledLeft = nullptr;
+	BattleItem* disabledRight = nullptr;
+	// player units only... to prevent abuse
+	if (isPlayer)
+	{
+		BattleItem* leftHandItem = unit->getLeftHandWeapon();
+		BattleItem* rightHandItem = unit->getRightHandWeapon();
+		BattleItem* emptyHandItem = nullptr;
+		if ((!leftHandItem && unit->isLeftHandDisabledForReactions()) || (!rightHandItem && unit->isRightHandDisabledForReactions()))
+		{
+			auto typesToCheck = { BT_MELEE, BT_PSIAMP, BT_FIREARM/*, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE*/ };
+			for (auto& type : typesToCheck)
+			{
+				emptyHandItem = unit->getSpecialWeapon(type);
+				if (emptyHandItem && emptyHandItem->getRules()->isSpecialUsingEmptyHand())
+				{
+					break;
+				}
+				emptyHandItem = nullptr;
+			}
+		}
+		disabledLeft = unit->isLeftHandDisabledForReactions() ? (leftHandItem ? leftHandItem : emptyHandItem) : nullptr;
+		disabledRight = unit->isRightHandDisabledForReactions() ? (rightHandItem ? rightHandItem : emptyHandItem) : nullptr;
+	}
+
 	for (auto* weapon : reactionWeapons)
 	{
+		if (weapon == disabledLeft || weapon == disabledRight)
+		{
+			// the player doesn't want to react with this weapon
+			continue;
+		}
+
 		if (_save->canUseWeapon(weapon, unit, false, BA_HIT))
 		{
 			// has a weapon capable of melee and is in melee range

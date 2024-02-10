@@ -3222,6 +3222,9 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiersLimit(), "maxHWPUnitsLimit", craftRule->getMaxVehiclesAndLargeSoldiers());
 
+	addBoolean(ss, craftRule->isOnlyOneSoldierGroupAllowed(), "onlyOneSoldierGroupAllowed");
+	addVectorOfIntegers(ss, craftRule->getAllowedSoldierGroups(), "allowedSoldierGroups");
+
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);
 	addInteger(ss, craftRule->getMaxSmallVehicles(), "maxSmallVehicles", -1);

@@ -412,6 +412,8 @@ en-US:
   maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
   vehicles: "HWP capacity"
+  onlyOneSoldierGroupAllowed: "Only one soldier group allowed?"
+  allowedSoldierGroups: "Allowed soldier groups"
   maxHWPUnitsLimit: "Max HWP capacity"
   maxSmallSoldiers: "Max small soldiers"
   maxLargeSoldiers: "Max large soldiers"

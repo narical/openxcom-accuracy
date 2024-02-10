@@ -56,7 +56,7 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from. NULL to use the dead soldiers list.
  * @param soldierId ID of the selected soldier.
  */
-SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), _soldierId(soldierId), _soldier(0)
+SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimits) : _base(base), _soldierId(soldierId), _forceLimits(forceLimits), _soldier(0)
 {
 	if (_base == 0)
 	{
@@ -661,7 +661,11 @@ void SoldierInfoState::btnOkClick(Action *)
 	_game->popState();
 	if (_game->getSavedGame()->getMonthsPassed() > -1 && Options::storageLimitsEnforced && _base != 0 && _base->storesOverfull())
 	{
-		_game->pushState(new SellState(_base, 0));
+		if (_forceLimits)
+		{
+			// Note: we could sell a currently opened craft here and crash the game
+			_game->pushState(new SellState(_base, 0));
+		}
 		_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(_base->getName()), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 	}
 }

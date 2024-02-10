@@ -680,6 +680,8 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
 	_activeHand = node["activeHand"].as<std::string>(_activeHand);
 	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
+	_reactionsDisabledForLeftHand = node["reactionsDisabledForLeftHand"].as<bool>(_reactionsDisabledForLeftHand);
+	_reactionsDisabledForRightHand = node["reactionsDisabledForRightHand"].as<bool>(_reactionsDisabledForRightHand);
 	if (node["tempUnitStatistics"])
 	{
 		_statistics->load(node["tempUnitStatistics"]);
@@ -811,6 +813,10 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["activeHand"] = _activeHand;
 	if (!_preferredHandForReactions.empty())
 		node["preferredHandForReactions"] = _preferredHandForReactions;
+	if (_reactionsDisabledForLeftHand)
+		node["reactionsDisabledForLeftHand"] = _reactionsDisabledForLeftHand;
+	if (_reactionsDisabledForRightHand)
+		node["reactionsDisabledForRightHand"] = _reactionsDisabledForRightHand;
 	node["tempUnitStatistics"] = _statistics->save();
 	if (_murdererId)
 		node["murdererId"] = _murdererId;
@@ -3666,7 +3672,7 @@ BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
  * @param quickest Whether to get the quickest weapon, default true
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
+BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo, bool reactions) const
 {
 	BattleItem *weaponRightHand = getRightHandWeapon();
 	BattleItem *weaponLeftHand = getLeftHandWeapon();
@@ -3676,6 +3682,16 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo) const
 		weaponRightHand = 0;
 	if (!weaponLeftHand || (!weaponLeftHand->haveAnyAmmo() && needammo))
 		weaponLeftHand = 0;
+
+	// ignore disabled hands/weapons (player units only... to prevent abuse)
+	// Note: there is another check later, but this one is still needed, so that also non-main weapons get a chance to be used in case the main weapon is disabled
+	if (reactions && _faction == FACTION_PLAYER)
+	{
+		if (_reactionsDisabledForRightHand)
+			weaponRightHand = nullptr;
+		if (_reactionsDisabledForLeftHand)
+			weaponLeftHand = nullptr;
+	}
 
 	// if there is only one weapon, it's easy:
 	if (weaponRightHand && !weaponLeftHand)
@@ -3900,23 +3916,55 @@ bool BattleUnit::reloadAmmo()
 /**
  * Toggle the right hand as main hand for reactions.
  */
-void BattleUnit::toggleRightHandForReactions()
+void BattleUnit::toggleRightHandForReactions(bool isCtrl)
 {
-	if (isRightHandPreferredForReactions())
-		_preferredHandForReactions = "";
+	if (isCtrl)
+	{
+		if (isRightHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		_reactionsDisabledForRightHand = !_reactionsDisabledForRightHand;
+	}
 	else
-		_preferredHandForReactions = "STR_RIGHT_HAND";
+	{
+		if (isRightHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		else
+		{
+			_preferredHandForReactions = "STR_RIGHT_HAND";
+		}
+		_reactionsDisabledForRightHand = false;
+	}
 }
 
 /**
  * Toggle the left hand as main hand for reactions.
  */
-void BattleUnit::toggleLeftHandForReactions()
+void BattleUnit::toggleLeftHandForReactions(bool isCtrl)
 {
-	if (isLeftHandPreferredForReactions())
-		_preferredHandForReactions = "";
+	if (isCtrl)
+	{
+		if (isLeftHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		_reactionsDisabledForLeftHand = !_reactionsDisabledForLeftHand;
+	}
 	else
-		_preferredHandForReactions = "STR_LEFT_HAND";
+	{
+		if (isLeftHandPreferredForReactions())
+		{
+			_preferredHandForReactions = "";
+		}
+		else
+		{
+			_preferredHandForReactions = "STR_LEFT_HAND";
+		}
+		_reactionsDisabledForLeftHand = false;
+	}
 }
 
 /**
