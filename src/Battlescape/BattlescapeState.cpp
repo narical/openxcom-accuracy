@@ -2844,6 +2844,45 @@ inline void BattlescapeState::handle(Action *action)
 						_battleGame->checkForCasualties(nullptr, BattleActionAttack{}, true, false);
 						_battleGame->handleState();
 					}
+					else if (_save->getDebugMode() && (key == SDLK_m || key == SDLK_p) && ctrlPressed && shiftPressed)
+					{
+						BattleUnit* unitUnderTheCursor = nullptr;
+						{
+							Position newPos;
+							_map->getSelectorPosition(&newPos);
+							Tile* tile = _save->getTile(newPos);
+							if (tile)
+							{
+								unitUnderTheCursor = tile->getOverlappingUnit(_save);
+							}
+						}
+						// mind control (ctrl-shift-m) or panic (ctrl-shift-p) just a single unit (under the cursor)
+						if (unitUnderTheCursor && !unitUnderTheCursor->isOut())
+						{
+							if (key == SDLK_p)
+							{
+								int moraleLoss = unitUnderTheCursor->reduceByBravery(100);
+								if (moraleLoss > 0)
+								{
+									debug("Have you paid your taxes yet?");
+									unitUnderTheCursor->moraleChange(-moraleLoss);
+									_game->pushState(new InfoboxState(_game->getLanguage()->getString("STR_MORALE_ATTACK_SUCCESSFUL")));
+								}
+							}
+							else
+							{
+								if (unitUnderTheCursor->getFaction() != FACTION_PLAYER)
+								{
+									debug("My mind to your mind, my thoughts to your thoughts.");
+									unitUnderTheCursor->convertToFaction(FACTION_PLAYER);
+									//unitUnderTheCursor->recoverTimeUnits();
+									unitUnderTheCursor->allowReselect();
+									unitUnderTheCursor->abortTurn(); // resets unit status to STANDING
+									_game->pushState(new InfoboxState(_game->getLanguage()->getString("STR_MIND_CONTROL_SUCCESSFUL")));
+								}
+							}
+						}
+					}
 					// f11 - voxel map dump
 					else if (key == SDLK_F11)
 					{
