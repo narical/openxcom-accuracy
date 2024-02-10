@@ -1687,7 +1687,7 @@ void Map::drawTerrain(Surface *surface)
 				{
 					offset.y += 4;
 				}
-				offset.y += 24 - myUnit->getHeight();
+				offset.y += 24 - /*myUnit->getHeight()*/ 21; // no spoilers
 				if (myUnit->isKneeled())
 				{
 					offset.y -= 2;
