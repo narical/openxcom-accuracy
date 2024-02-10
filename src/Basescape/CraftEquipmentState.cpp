@@ -1055,7 +1055,7 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 	for (_sel = 0; _sel != _items.size(); ++_sel)
 	{
 		RuleItem *item = _game->getMod()->getItem(_items[_sel], true);
-		int tQty = tmpl->getItem(item->getName());
+		int tQty = tmpl->getItem(item);
 		moveRightByValue(tQty, true);
 	}
 
@@ -1074,13 +1074,13 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 				// Note: we will also report HWPs as missing:
 				// - if there is not enough ammo to arm them
 				// - if there is not enough cargo space in the craft
-				cQty = c->getVehicleCount(item->getName());
+				cQty = c->getVehicleCount(item->getType());
 				if (onlyAddItems)
 				{
 					int total = 0;
 					for (const auto* vehicle : craftVehiclesBackup)
 					{
-						if (vehicle->getRules()->getType() == item->getName())
+						if (vehicle->getRules() == item)
 						{
 							total++;
 						}
@@ -1090,16 +1090,16 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 			}
 			else
 			{
-				cQty = c->getItems()->getItem(item->getName());
+				cQty = c->getItems()->getItem(item);
 				if (onlyAddItems)
 				{
-					cQty -= craftItemsBackup.getItem(item->getName()); // i.e. only count newly added items
+					cQty -= craftItemsBackup.getItem(item); // i.e. only count newly added items
 				}
 			}
 			int missing = tQty - cQty;
 			if (missing > 0)
 			{
-				ReequipStat stat = { item->getName(), missing, craftName, item->getListOrder() };
+				ReequipStat stat = { item->getType(), missing, craftName, item->getListOrder() };
 				_missingItems.push_back(stat);
 			}
 		}
