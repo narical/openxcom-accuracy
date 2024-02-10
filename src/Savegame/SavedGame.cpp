@@ -3337,7 +3337,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 		if (spawnedItem)
 		{
 			Transfer* t = new Transfer(1);
-			t->setItems(myResearchRule->getSpawnedItem(), std::max(1, myResearchRule->getSpawnedItemCount()));
+			t->setItems(spawnedItem, std::max(1, myResearchRule->getSpawnedItemCount()));
 			base->getTransfers()->push_back(t);
 		}
 		for (const auto& spawnedItemName2 : myResearchRule->getSpawnedItemList())
@@ -3346,7 +3346,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 			if (spawnedItem2)
 			{
 				Transfer* t = new Transfer(1);
-				t->setItems(spawnedItemName2);
+				t->setItems(spawnedItem2);
 				base->getTransfers()->push_back(t);
 			}
 		}

@@ -557,7 +557,7 @@ void SoldierTransformationState::retire()
 	{
 		int transferTime = _transformationRule->getTransferTime() > 0 ? _transformationRule->getTransferTime() : 1;
 		Transfer *transfer = new Transfer(transferTime);
-		transfer->setItems(_transformationRule->getProducedItem(), 1);
+		transfer->setItems(_game->getMod()->getItem(_transformationRule->getProducedItem(), true), 1);
 		_base->getTransfers()->push_back(transfer);
 	}
 }

@@ -299,7 +299,7 @@ void GeoscapeEventState::eventLogic()
 		else
 		{
 			Transfer* t = new Transfer(1);
-			t->setItems(ti.first, ti.second);
+			t->setItems(mod->getItem(ti.first, true), ti.second);
 			hq->getTransfers()->push_back(t);
 		}
 

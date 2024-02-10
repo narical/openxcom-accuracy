@@ -601,7 +601,7 @@ void TransferItemsState::completeTransfer()
 				RuleItem *item = (RuleItem*)transferRow.rule;
 				_baseFrom->getStorageItems()->removeItem(item, transferRow.amount);
 				t = new Transfer(time);
-				t->setItems(item->getType(), transferRow.amount);
+				t->setItems(item, transferRow.amount);
 				_baseTo->getTransfers()->push_back(t);
 				if (_debriefingState != 0)
 				{

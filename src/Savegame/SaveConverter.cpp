@@ -850,9 +850,9 @@ void SaveConverter::loadDatTransfer()
 				break;
 			default:
 				if (type == TRANSFER_ITEM)
-					transfer->setItems(_rules->getItems()[dat], qty);
+					transfer->setItems(_mod->getItem(_rules->getItems()[dat], true), qty);
 				else
-					transfer->setItems(_aliens[dat]);
+					transfer->setItems(_mod->getItem(_aliens[dat], true));
 				break;
 			}
 

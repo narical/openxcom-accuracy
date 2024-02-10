@@ -717,7 +717,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			auto* ruleItem = _mod->getItem(transfer->getItems(), true);
+			const auto* ruleItem = transfer->getItems();
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += transfer->getQuantity();
@@ -860,7 +860,7 @@ double Base::getUsedStores(bool excludeNormalItems) const
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			total += transfer->getQuantity() * _mod->getItem(transfer->getItems(), true)->getSize();
+			total += transfer->getQuantity() * transfer->getItems()->getSize();
 		}
 		else if (transfer->getType() == TRANSFER_CRAFT)
 		{
@@ -1482,7 +1482,7 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			rule = _mod->getItem(transfer->getItems(), true);
+			rule = transfer->getItems();
 			if (rule->isAlien() && rule->getPrisonType() == prisonType)
 			{
 				total += transfer->getQuantity();
@@ -2118,7 +2118,7 @@ void Base::cleanupPrisons(int prisonType)
 		{
 			if (transfer->getType() == TRANSFER_ITEM)
 			{
-				RuleItem* rule = _mod->getItem(transfer->getItems(), true);
+				const auto* rule = transfer->getItems();
 				if (rule->isAlien() && rule->getPrisonType() == prisonType)
 				{
 					getStorageItems()->addItem(transfer->getItems(), transfer->getQuantity());

@@ -311,7 +311,7 @@ void StoresState::initList()
 							qty += 1;
 						}
 					}
-					else if (transfer->getItems() == itemType)
+					else if (transfer->getItems() == rule)
 					{
 						// 5b. items in transfer
 						qty += transfer->getQuantity();
