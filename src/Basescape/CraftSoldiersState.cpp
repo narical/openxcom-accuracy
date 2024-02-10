@@ -545,7 +545,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{
-		_game->pushState(new SoldierInfoState(_base, row));
+		_game->pushState(new SoldierInfoState(_base, row, false));
 	}
 }
 

@@ -40,6 +40,7 @@ class SoldierInfoState : public State
 private:
 	Base *_base;
 	size_t _soldierId;
+	bool _forceLimits;
 	Soldier *_soldier;
 	std::vector<Soldier*> *_list;
 
@@ -57,7 +58,7 @@ private:
 
 public:
 	/// Creates the Soldier Info state.
-	SoldierInfoState(Base *base, size_t soldierId);
+	SoldierInfoState(Base *base, size_t soldierId, bool forceLimits = true);
 	/// Cleans up the Soldier Info state.
 	~SoldierInfoState();
 	/// Updates the soldier info.
