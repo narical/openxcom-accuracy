@@ -39,6 +39,7 @@
 #include "../Mod/Unit.h"
 #include "../Mod/RuleEnviroEffects.h"
 #include "../Mod/RuleInventory.h"
+#include "../Mod/RuleItemCategory.h"
 #include "../Mod/RuleSkill.h"
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
@@ -2892,7 +2893,7 @@ std::vector<BattleItem*> *BattleUnit::getInventory()
  * @param item Item to fit.
  * @return True if succeeded, false otherwise.
  */
-bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
+bool BattleUnit::fitItemToInventory(const RuleInventory *slot, BattleItem *item)
 {
 	auto rule = item->getRules();
 	if (rule->canBePlacedIntoInventorySection(slot) == false)
@@ -3037,6 +3038,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength * 0.66 >= weight) // weight is always considered 0 for aliens
 			{
+				// C1 - vanilla right-hand main weapon (and OXCE left-hand second main weapon)
 				if (fitItemToInventory(rightHand, item))
 				{
 					placed = true;
@@ -3092,6 +3094,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 	default:
 		if (rule->getBattleType() == BT_PSIAMP && getFaction() == FACTION_HOSTILE)
 		{
+			// C2 - vanilla left-hand psi-amp for hostiles
 			if (fitItemToInventory(rightHand, item) || fitItemToInventory(leftHand, item))
 			{
 				placed = true;
@@ -3101,16 +3104,56 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
-				// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
-				for (const auto& s : mod->getInvsList())
+				// D1 - default slot by item
+				if (!placed && getFaction() == FACTION_PLAYER)
 				{
-					RuleInventory *slot = mod->getInventory(s);
-					if (slot->getType() == INV_SLOT)
+					if (item->getRules()->getDefaultInventorySlot())
 					{
-						placed = fitItemToInventory(slot, item);
-						if (placed)
+						const RuleInventory* slot = item->getRules()->getDefaultInventorySlot();
+						if (slot->getType() != INV_GROUND)
 						{
-							break;
+							placed = fitItemToInventory(slot, item);
+							if (placed)
+							{
+								break;
+							}
+						}
+					}
+				}
+				// D2 - slot order by item category
+				if (!placed && getFaction() == FACTION_PLAYER)
+				{
+					auto* cat = item->getRules()->getFirstCategoryWithInvOrder(mod);
+					if (cat)
+					{
+						for (const auto& s : cat->getInvOrder())
+						{
+							RuleInventory* slot = mod->getInventory(s);
+							if (slot->getType() != INV_GROUND)
+							{
+								placed = fitItemToInventory(slot, item);
+								if (placed)
+								{
+									break;
+								}
+							}
+						}
+					}
+				}
+				// C3 - fallback: vanilla slot order by listOrder
+				if (!placed)
+				{
+					// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
+					for (const auto& s : mod->getInvsList())
+					{
+						RuleInventory* slot = mod->getInventory(s);
+						if (slot->getType() == INV_SLOT)
+						{
+							placed = fitItemToInventory(slot, item);
+							if (placed)
+							{
+								break;
+							}
 						}
 					}
 				}

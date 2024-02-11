@@ -22,6 +22,7 @@
 #include "Armor.h"
 #include "Unit.h"
 #include "RuleItem.h"
+#include "RuleItemCategory.h"
 #include "RuleInventory.h"
 #include "RuleDamageType.h"
 #include "RuleSoldier.h"
@@ -885,6 +886,22 @@ const std::vector<std::string> &RuleItem::getCategories() const
 bool RuleItem::belongsToCategory(const std::string &category) const
 {
 	return std::find(_categories.begin(), _categories.end(), category) != _categories.end();
+}
+
+/**
+ * Returns the first item category that has a non-empty invOrder, if it exists.
+ */
+const RuleItemCategory* RuleItem::getFirstCategoryWithInvOrder(const Mod* mod) const
+{
+	for (auto& catName : _categories)
+	{
+		auto* cat = mod->getItemCategory(catName, false);
+		if (cat && !cat->getInvOrder().empty())
+		{
+			return cat;
+		}
+	}
+	return nullptr;
 }
 
 /**
