@@ -999,7 +999,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		{
 			for (auto* vehicle : *_craft->getVehicles())
 			{
-				RuleItem *item = vehicle->getRules();
+				const RuleItem *item = vehicle->getRules();
 				bool hwpDisabled = false;
 				if (startingCondition)
 				{
@@ -1131,7 +1131,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		{
 			for (auto* vehicle : *_craft->getVehicles())
 			{
-				RuleItem *item = vehicle->getRules();
+				const RuleItem *item = vehicle->getRules();
 				bool hwpDisabled = false;
 				if (startingCondition)
 				{
@@ -1233,7 +1233,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		// add items that are in the craft
 		for (const auto& pair : *_craft->getItems()->getContents())
 		{
-			if (startingCondition != 0 && !startingCondition->isItemPermitted(pair.first, _game->getMod(), _craft))
+			if (startingCondition != 0 && !startingCondition->isItemPermitted(pair.first->getType(), _game->getMod(), _craft))
 			{
 				// send disabled items back to base
 				_base->getStorageItems()->addItem(pair.first, pair.second);
@@ -1255,7 +1255,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 			// add items that are in the base
 			for (auto i = _base->getStorageItems()->getContents()->begin(); i != _base->getStorageItems()->getContents()->end();)
 			{
-				RuleItem *rule = _game->getMod()->getItem(i->first, true);
+				const RuleItem *rule = i->first;
 				if (
 					// is item allowed in base defense?
 					rule->canBeEquippedBeforeBaseDefense() &&
@@ -1271,7 +1271,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 					{
 						_save->createItemForTile(i->first, _craftInventoryTile);
 					}
-					std::map<std::string, int>::iterator tmp = i; // copy
+					auto tmp = i; // copy
 					++i;
 					if (!_baseInventory)
 					{
@@ -1880,8 +1880,6 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 {
 	if (item->getSlot() == _inventorySlotGround)
 	{
-		auto& itemType = item->getRules()->getType();
-
 		// find the first soldier with a matching layout-slot
 		for (auto unit : *_save->getUnits())
 		{
@@ -1897,9 +1895,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				// fixed items will be handled elsewhere
 				if (layoutItem->isFixed()) continue;
 
-				if (itemType != layoutItem->getItemType()) continue;
-
-				auto inventorySlot = _game->getMod()->getInventory(layoutItem->getSlot(), true);
+				if (item->getRules() != layoutItem->getItemType()) continue;
 
 				// we need to check all "slot boxes" for overlap (not just top left)
 				bool overlaps = false;
@@ -1907,7 +1903,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				{
 					for (int y = 0; y < item->getRules()->getInventoryHeight(); ++y)
 					{
-						if (!overlaps && unit->getItem(inventorySlot, x + layoutItem->getSlotX(), y + layoutItem->getSlotY()))
+						if (!overlaps && unit->getItem(layoutItem->getSlot(), x + layoutItem->getSlotX(), y + layoutItem->getSlotY()))
 						{
 							overlaps = true;
 						}
@@ -1918,7 +1914,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				auto toLoad = 0;
 				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 				{
-					if (layoutItem->getAmmoItemForSlot(slot) != "NONE")
+					if (layoutItem->getAmmoItemForSlot(slot) != nullptr)
 					{
 						++toLoad;
 					}
@@ -1931,10 +1927,9 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 					{
 						if (ammo->getSlot() == _inventorySlotGround)
 						{
-							auto& ammoType = ammo->getRules()->getType();
 							for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 							{
-								if (ammoType == layoutItem->getAmmoItemForSlot(slot))
+								if (ammo->getRules() == layoutItem->getAmmoItemForSlot(slot))
 								{
 									if (item->setAmmoPreMission(ammo))
 									{
@@ -1956,7 +1951,7 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				if (!toLoad || item->haveAnyAmmo())
 				{
 					item->moveToOwner(unit);
-					item->setSlot(inventorySlot);
+					item->setSlot(layoutItem->getSlot());
 					item->setSlotX(layoutItem->getSlotX());
 					item->setSlotY(layoutItem->getSlotY());
 					if (Options::includePrimeStateInSavedLayout && item->getRules()->getFuseTimerType() != BFT_NONE)
@@ -1994,10 +1989,10 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 			BattleItem* fixedItem = nullptr;
 			for (auto item : *unit->getInventory())
 			{
-				if (item->getSlot()->getId() == layoutItem->getSlot() &&
+				if (item->getSlot() == layoutItem->getSlot() &&
 					item->getSlotX() == layoutItem->getSlotX() &&
 					item->getSlotY() == layoutItem->getSlotY() &&
-					item->getRules()->getType() == layoutItem->getItemType())
+					item->getRules() == layoutItem->getItemType())
 				{
 					fixedItem = item;
 					break;
@@ -2008,7 +2003,7 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 			auto toLoad = 0;
 			for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 			{
-				if (layoutItem->getAmmoItemForSlot(slot) != "NONE")
+				if (layoutItem->getAmmoItemForSlot(slot) != nullptr)
 				{
 					++toLoad;
 				}
@@ -2021,10 +2016,9 @@ void BattlescapeGenerator::reloadFixedWeaponsByLayout()
 				{
 					if (ammo->getSlot() == _inventorySlotGround)
 					{
-						auto& ammoType = ammo->getRules()->getType();
 						for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 						{
-							if (ammoType == layoutItem->getAmmoItemForSlot(slot))
+							if (ammo->getRules() == layoutItem->getAmmoItemForSlot(slot))
 							{
 								if (fixedItem->setAmmoPreMission(ammo))
 								{

@@ -507,7 +507,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_maxAmbienceRandomDelay = node["maxAmbienceRandomDelay"].as<int>(_maxAmbienceRandomDelay);
 	_currentAmbienceDelay = node["currentAmbienceDelay"].as<int>(_currentAmbienceDelay);
 	_music = node["music"].as<std::string>(_music);
-	_baseItems->load(node["baseItems"]);
+	_baseItems->load(node["baseItems"], mod);
 	_turnLimit = node["turnLimit"].as<int>(_turnLimit);
 	_chronoTrigger = ChronoTrigger(node["chronoTrigger"].as<int>(_chronoTrigger));
 	_cheatTurn = node["cheatTurn"].as<int>(_cheatTurn);

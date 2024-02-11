@@ -3344,7 +3344,7 @@ void StatsForNerdsState::initCraftList()
 	}
 	addInteger(ss, craftRule->getShieldRechargeAtBase(), "shieldRechargedAtBase", 1000);
 
-	addSingleString(ss, craftRule->getRefuelItem(), "refuelItem");
+	addRule(ss, craftRule->getRefuelItem(), "refuelItem");
 	addInteger(ss, craftRule->getRefuelRate(), "refuelRate", 1);
 	addInteger(ss, craftRule->getRepairRate(), "repairRate", 1);
 

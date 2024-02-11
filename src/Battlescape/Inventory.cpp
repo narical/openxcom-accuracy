@@ -502,7 +502,7 @@ std::vector<std::vector<char>>* Inventory::clearOccupiedSlotsCache()
  * @param x X position in slot.
  * @param y Y position in slot.
  */
-void Inventory::moveItem(BattleItem *item, RuleInventory *slot, int x, int y)
+void Inventory::moveItem(BattleItem *item, const RuleInventory *slot, int x, int y)
 {
 	_game->getSavedGame()->getSavedBattle()->getTileEngine()->itemMoveInventory(_selUnit->getTile(), _selUnit, item, slot, x, y);
 }
@@ -517,7 +517,7 @@ void Inventory::moveItem(BattleItem *item, RuleInventory *slot, int x, int y)
  * @param y Y position in slot.
  * @return If there's overlap.
  */
-bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, RuleInventory *slot, int x, int y)
+bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, const RuleInventory *slot, int x, int y)
 {
 	if (slot->getType() != INV_GROUND)
 	{
@@ -1617,7 +1617,7 @@ void Inventory::arrangeGround(int alterOffset)
  * @param warning Warning message if item could not be placed.
  * @return True, if the item was successfully placed in the inventory.
  */
-bool Inventory::fitItem(RuleInventory* newSlot, BattleItem* item, std::string& warning, bool testMode)
+bool Inventory::fitItem(const RuleInventory* newSlot, BattleItem* item, std::string& warning, bool testMode)
 {
 	// Check if this inventory section supports the item
 	if (!item->getRules()->canBePlacedIntoInventorySection(newSlot))

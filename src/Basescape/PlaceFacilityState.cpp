@@ -291,7 +291,7 @@ void PlaceFacilityState::viewClick(Action *)
 						_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + checkFacility->getRules()->getBuildCost());
 						for (auto& item : itemCost)
 						{
-							_base->getStorageItems()->addItem(item.first, item.second.first);
+							_base->getStorageItems()->addItem(_game->getMod()->getItem(item.first, true), item.second.first);
 						}
 					}
 					else
@@ -300,7 +300,7 @@ void PlaceFacilityState::viewClick(Action *)
 						_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + checkFacility->getRules()->getRefundValue());
 						for (auto& item : itemCost)
 						{
-							_base->getStorageItems()->addItem(item.first, item.second.second);
+							_base->getStorageItems()->addItem(_game->getMod()->getItem(item.first, true), item.second.second);
 						}
 
 						// Reduce the build time of the new facility

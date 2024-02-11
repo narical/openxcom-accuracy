@@ -29,6 +29,7 @@ namespace OpenXcom
 typedef std::vector<std::vector<int> > RuleCraftDeployment;
 
 class RuleTerrain;
+class RuleItem;
 class Mod;
 class ModScript;
 class ScriptParserBase;
@@ -198,7 +199,8 @@ private:
 	int _monthlyBuyLimit;
 	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
-	std::string _refuelItem;
+	const RuleItem* _refuelItem;
+	std::string _refuelItemName;
 	std::string _weaponStrings[WeaponMax];
 	std::string _fixedWeaponNames[WeaponMax];
 	int _repairRate, _refuelRate, _transferTime, _score;
@@ -298,7 +300,7 @@ public:
 	/// Gets the craft's value.
 	int getSellCost() const;
 	/// Gets the craft's refuel item.
-	const std::string &getRefuelItem() const;
+	const RuleItem* getRefuelItem() const;
 	/// Gets the craft's repair rate.
 	int getRepairRate() const;
 	/// Gets the craft's refuel rate.

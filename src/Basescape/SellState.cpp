@@ -245,7 +245,7 @@ void SellState::delayedInit()
 			{
 				for (auto* transfer : *_base->getTransfers())
 				{
-					if (transfer->getItems() == itemType)
+					if (transfer->getItems() == rule)
 					{
 						qty += transfer->getQuantity();
 					}
@@ -678,7 +678,7 @@ void SellState::btnOkClick(Action *)
 					{
 						if (tmpSoldier->getArmor()->getStoreItem())
 						{
-							_base->getStorageItems()->addItem(tmpSoldier->getArmor()->getStoreItem()->getType());
+							_base->getStorageItems()->addItem(tmpSoldier->getArmor()->getStoreItem());
 						}
 						_base->getSoldiers()->erase(soldierIt);
 						break;
@@ -718,7 +718,7 @@ void SellState::btnOkClick(Action *)
 					for (auto transferIt = _base->getTransfers()->begin(); transferIt != _base->getTransfers()->end() && toRemove;)
 					{
 						auto* transfer = (*transferIt);
-						if (transfer->getItems() == item->getType())
+						if (transfer->getItems() == item)
 						{
 							if (transfer->getQuantity() <= toRemove)
 							{

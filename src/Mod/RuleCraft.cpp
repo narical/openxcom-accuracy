@@ -127,7 +127,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_costBuy = node["costBuy"].as<int>(_costBuy);
 	_costRent = node["costRent"].as<int>(_costRent);
 	_costSell = node["costSell"].as<int>(_costSell);
-	_refuelItem = node["refuelItem"].as<std::string>(_refuelItem);
+	mod->loadName(_type, _refuelItemName, node["refuelItem"]);
 	_repairRate = node["repairRate"].as<int>(_repairRate);
 	_refuelRate = node["refuelRate"].as<int>(_refuelRate);
 	_transferTime = node["transferTime"].as<int>(_transferTime);
@@ -208,6 +208,8 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
  */
 void RuleCraft::afterLoad(const Mod* mod)
 {
+	mod->linkRule(_refuelItem, _refuelItemName);
+
 	// No turning soldiers into antimatter
 	mod->checkForSoftError(_stats.soldiers < 0, _type, "Default unit capacity cannot be negative.", LOG_ERROR);
 	mod->checkForSoftError(_stats.vehicles < 0, _type, "Default HWP capacity cannot be negative.", LOG_ERROR);
@@ -404,7 +406,7 @@ int RuleCraft::getSellCost() const
  * the craft is refuelling.
  * @return The item ID or "" if none.
  */
-const std::string &RuleCraft::getRefuelItem() const
+const RuleItem* RuleCraft::getRefuelItem() const
 {
 	return _refuelItem;
 }
@@ -722,7 +724,7 @@ int RuleCraft::calculateRange(int type)
 	int totalFuelTicks = _stats.fuelMax;
 
 	// If no item is used to refuel, the tick rate depends on speed
-	if (_refuelItem.empty())
+	if (_refuelItem == nullptr)
 	{
 		// Craft with less than 100 speed don't consume fuel and therefore have infinite range
 		if (_stats.speedMax < 100)
