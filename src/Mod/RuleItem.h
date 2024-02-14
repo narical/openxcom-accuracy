@@ -97,6 +97,7 @@ class SurfaceSet;
 class Surface;
 class Mod;
 class RuleInventory;
+class RuleItemCategory;
 
 enum UnitFaction : int;
 
@@ -443,6 +444,8 @@ public:
 	const std::vector<std::string> &getCategories() const;
 	/// Checks if the item belongs to a category.
 	bool belongsToCategory(const std::string &category) const;
+	/// Returns the first item category that has a non-empty invOrder, if it exists.
+	const RuleItemCategory* getFirstCategoryWithInvOrder(const Mod* mod) const;
 	/// Gets unit rule if the item is vehicle weapon.
 	Unit* getVehicleUnit() const;
 	/// Gets the item's size.

@@ -36,6 +36,7 @@
 #include "../Engine/SurfaceSet.h"
 #include "../Savegame/BattleItem.h"
 #include "../Mod/RuleItem.h"
+#include "../Mod/RuleItemCategory.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Engine/Action.h"
 #include "../Engine/Sound.h"
@@ -744,7 +745,7 @@ void Inventory::mouseClick(Action *action, State *state)
 					}
 					else if (_game->isCtrlPressed())
 					{
-						RuleInventory *newSlot = _inventorySlotGround;
+						const RuleInventory* newSlot = _inventorySlotGround;
 						std::string warning = "STR_NOT_ENOUGH_SPACE";
 						bool placed = false;
 
@@ -781,51 +782,119 @@ void Inventory::mouseClick(Action *action, State *state)
 							}
 							else
 							{
-								switch (item->getRules()->getBattleType())
+								// B1 - default slot by item
+								if (!placed)
 								{
-								case BT_FIREARM:
-									newSlot = _inventorySlotRightHand;
-									break;
-								case BT_MINDPROBE:
-								case BT_PSIAMP:
-								case BT_MELEE:
-								case BT_CORPSE:
-									newSlot = _inventorySlotLeftHand;
-									break;
-								default:
-									if (item->getRules()->getInventoryHeight() > 2)
+									_stackLevel[item->getSlotX()][item->getSlotY()] -= 1;
+
+									if (item->getRules()->getDefaultInventorySlot() && item->getRules()->getDefaultInventorySlot()->getType() != INV_GROUND)
 									{
-										newSlot = _inventorySlotBackPack;
+										newSlot = item->getRules()->getDefaultInventorySlot();
+
+										placed = fitItem(newSlot, item, warning);
 									}
-									else
+								}
+
+								// B2 - slot order by item category
+								if (!placed)
+								{
+									auto* cat = item->getRules()->getFirstCategoryWithInvOrder(_game->getMod());
+									if (cat)
 									{
-										newSlot = _inventorySlotBelt;
+										for (const auto& s : cat->getInvOrder())
+										{
+											if (placed)
+											{
+												break; // loop finished
+											}
+											newSlot = _game->getMod()->getInventory(s);
+											if (newSlot->getType() == INV_GROUND)
+											{
+												continue;
+											}
+											placed = fitItem(newSlot, item, warning);
+										}
 									}
-									break;
+								}
+
+								// A1 - vanilla default attempt
+								if (!placed)
+								{
+									// reset
+									_stackLevel[item->getSlotX()][item->getSlotY()] += 1;
+									newSlot = _inventorySlotGround;
+
+									switch (item->getRules()->getBattleType())
+									{
+									case BT_FIREARM:
+										newSlot = _inventorySlotRightHand;
+										break;
+									case BT_MINDPROBE:
+									case BT_PSIAMP:
+									case BT_MELEE:
+									case BT_CORPSE:
+										newSlot = _inventorySlotLeftHand;
+										break;
+									default:
+										if (item->getRules()->getInventoryHeight() > 2)
+										{
+											newSlot = _inventorySlotBackPack;
+										}
+										else
+										{
+											newSlot = _inventorySlotBelt;
+										}
+										break;
+									}
 								}
 							}
 						}
 
 						if (newSlot->getType() != INV_GROUND)
 						{
-							_stackLevel[item->getSlotX()][item->getSlotY()] -= 1;
+							// A1 - vanilla default attempt
+							if (!placed)
+							{
+								_stackLevel[item->getSlotX()][item->getSlotY()] -= 1;
 
-							placed = fitItem(newSlot, item, warning);
+								placed = fitItem(newSlot, item, warning);
+							}
 
 							if (!placed)
 							{
-								for (const auto& wildCard : *_game->getMod()->getInventories())
+								if (Mod::EXTENDED_INVENTORY_SLOT_SORTING)
 								{
-									if (placed)
+									// B3 - fallback: slot order by listOrder
+									for (const auto& s : _game->getMod()->getInvsList())
 									{
-										break; // loop finished
+										if (placed)
+										{
+											break; // loop finished
+										}
+										newSlot = _game->getMod()->getInventory(s);
+										if (newSlot->getType() == INV_GROUND)
+										{
+											continue;
+										}
+										placed = fitItem(newSlot, item, warning);
 									}
-									newSlot = wildCard.second;
-									if (newSlot->getType() == INV_GROUND)
+								}
+								else
+								{
+									// A2 - fallback: vanilla alphabetical slot order
+									for (const auto& wildCard : *_game->getMod()->getInventories())
 									{
-										continue;
+										if (placed)
+										{
+											break; // loop finished
+										}
+										newSlot = wildCard.second;
+										if (newSlot->getType() == INV_GROUND)
+										{
+											continue;
+										}
+										placed = fitItem(newSlot, item, warning);
 									}
-									placed = fitItem(newSlot, item, warning);
 								}
 							}
 							if (!placed)

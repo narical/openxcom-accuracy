@@ -43,20 +43,20 @@ ItemContainer::~ItemContainer()
  */
 void ItemContainer::load(const YAML::Node &node, const Mod* mod)
 {
-	if (node)
+	if (node && node.IsMap())
 	{
 		_qty.clear();
-		auto temp = node.as< std::map<std::string, int> >();
-		for (auto& pair : temp)
+		for (const std::pair<YAML::Node, YAML::Node>& pair : node)
 		{
-			auto* type = mod->getItem(pair.first);
+			auto name = pair.first.as<std::string>();
+			const auto* type = mod->getItem(name);
 			if (type)
 			{
-				_qty[type] = pair.second;
+				_qty[type] = pair.second.as<int>();
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Failed to load item " << pair.first;
+				Log(LOG_ERROR) << "Failed to load item " << name;
 			}
 		}
 	}
@@ -68,11 +68,21 @@ void ItemContainer::load(const YAML::Node &node, const Mod* mod)
  */
 YAML::Node ItemContainer::save() const
 {
-	YAML::Node node;
+	YAML::Node node(YAML::NodeType::Map);
+	std::vector<std::pair<std::string, int>> sortedItems;
+
 	for (auto& pair : _qty)
 	{
-		node[pair.first->getType()] = pair.second;
+		sortedItems.push_back(std::make_pair(pair.first->getType(), pair.second));
 	}
+
+	// enforce order of positions in node
+	std::sort(sortedItems.begin(), sortedItems.end(), [](auto& a, auto& b){ return a < b; });
+	for (auto& pair : sortedItems)
+	{
+		node[pair.first] = pair.second;
+	}
+
 	return node;
 }
 

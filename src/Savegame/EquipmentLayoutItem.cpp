@@ -26,6 +26,11 @@ namespace OpenXcom
 {
 
 /**
+ * Value used for save backward and forward compatibility. Represent empty slot.
+ */
+const std::string EmptyPlaceHolder = "NONE";
+
+/**
  * Initializes a new soldier-equipment layout item from YAML.
  * @param node YAML node.
  */
@@ -157,7 +162,8 @@ void EquipmentLayoutItem::load(const YAML::Node &node, const Mod* mod)
 		{
 			if (ammoSlots[slot])
 			{
-				_ammoItem[slot] = mod->getItem(ammoSlots[slot].as<std::string>(), true);
+				auto s = ammoSlots[slot].as<std::string>();
+				_ammoItem[slot] = s != EmptyPlaceHolder ? mod->getItem(s, true) : nullptr;
 			}
 		}
 	}
@@ -196,7 +202,7 @@ YAML::Node EquipmentLayoutItem::save() const
 		},
 		[&](const RuleItem* s)
 		{
-			node["ammoItemSlots"].push_back(s->getType());
+			node["ammoItemSlots"].push_back(s ? s->getType() : EmptyPlaceHolder);
 		}
 	);
 	if (_fuseTimer >= 0)

@@ -1076,8 +1076,8 @@ void InventoryState::btnOkClick(Action *)
 				Craft* c = _backup[soldier];
 				if (!soldier->getCraft() && c && c->getStatus() != "STR_OUT")
 				{
-					auto space = c->getSpaceAvailable();
-					if (c->validateAddingSoldier(space, soldier))
+					int space = c->getSpaceAvailable();
+					if (c->validateAddingSoldier(space, soldier) == CPE_None)
 					{
 						soldier->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, _resetCustomDeploymentBackup);
 					}

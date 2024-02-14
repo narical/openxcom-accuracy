@@ -527,8 +527,8 @@ void NewBattleState::initSave()
 
 		base->getSoldiers()->push_back(soldier);
 
-		auto space = _craft->getSpaceAvailable();
-		if (_craft->validateAddingSoldier(space, soldier))
+		int space = _craft->getSpaceAvailable();
+		if (_craft->validateAddingSoldier(space, soldier) == CPE_None)
 		{
 			soldier->setCraft(_craft);
 		}
@@ -786,8 +786,8 @@ void NewBattleState::cbxCraftChange(Action *)
 		if (soldier->getCraft() == tmpCraft)
 		{
 			count--;
-			auto space = _craft->getSpaceAvailable();
-			if (_craft->validateAddingSoldier(space, soldier))
+			int space = _craft->getSpaceAvailable();
+			if (_craft->validateAddingSoldier(space, soldier) == CPE_None)
 			{
 				soldier->setCraft(_craft);
 			}
