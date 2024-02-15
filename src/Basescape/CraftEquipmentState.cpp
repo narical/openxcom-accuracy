@@ -192,10 +192,16 @@ CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 	_cbxFilterBy->onChange((ActionHandler)&CraftEquipmentState::cbxFilterByChange);
 
 	_lstEquipment->setArrowColumn(203, ARROW_HORIZONTAL);
-//	_lstEquipment->setColumns(3, 156, 83, 41);
-	_lstEquipment->setColumns(3, 140, 50, 50, 40);
 	_lstEquipment->setAlign(ALIGN_RIGHT, 1);
-	_lstEquipment->setAlign(ALIGN_RIGHT, 2);
+	if (Options::oxceAlternateCraftEquipmentManagement)
+	{
+		_lstEquipment->setColumns(3, 156, 83, 41);
+	}
+	else
+	{
+		_lstEquipment->setColumns(3, 140, 50, 50, 40);
+		_lstEquipment->setAlign(ALIGN_RIGHT, 2);
+	}
 	_lstEquipment->setSelectable(true);
 	_lstEquipment->setBackground(_window);
 	_lstEquipment->setMargin(8);
