@@ -93,7 +93,7 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 	if (const YAML::Node &item = node["itemId"])
 	{
 		auto name = item.as<std::string>();
-		auto _itemId = mod->getItem(name);
+		_itemId = mod->getItem(name);
 		if (_itemId == 0)
 		{
 			Log(LOG_ERROR) << "Failed to load item " << name;
