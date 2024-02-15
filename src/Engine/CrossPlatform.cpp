@@ -1364,7 +1364,7 @@ void stackTrace(void *ctx)
 
 /**
  * Generates a timestamp of the current time.
- * @return String in D-M-Y_H-M-S format.
+ * @return String in Y-M-D_H-M-S format.
  */
 std::string now()
 {
@@ -1372,8 +1372,8 @@ std::string now()
 	char result[MAX_RESULT] = { 0 };
 #ifdef _WIN32
 	char date[MAX_LEN], time[MAX_LEN];
-	if (GetDateFormatA(LOCALE_INVARIANT, 0, 0, "dd'-'MM'-'yyyy", date, MAX_LEN) == 0)
-		return "00-00-0000";
+	if (GetDateFormatA(LOCALE_INVARIANT, 0, 0, "yyyy'-'MM'-'dd", date, MAX_LEN) == 0)
+		return "0000-00-00";
 	if (GetTimeFormatA(LOCALE_INVARIANT, TIME_FORCE24HOURFORMAT, 0, "HH'-'mm'-'ss", time, MAX_LEN) == 0)
 		return "00-00-00";
 	sprintf(result, "%s_%s", date, time);
@@ -1383,7 +1383,7 @@ std::string now()
 	struct tm *timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(buffer, MAX_LEN, "%d-%m-%Y_%H-%M-%S", timeinfo);
+	strftime(buffer, MAX_LEN, "%Y-%m-%d_%H-%M-%S", timeinfo);
 	sprintf(result, "%s", buffer);
 #endif
 	return result;
