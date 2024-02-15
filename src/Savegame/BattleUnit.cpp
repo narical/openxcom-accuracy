@@ -3340,6 +3340,42 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
+				// D1 - default slot by item
+				if (!placed && getFaction() == FACTION_PLAYER)
+				{
+					if (item->getRules()->getDefaultInventorySlot())
+					{
+						const RuleInventory* slot = item->getRules()->getDefaultInventorySlot();
+						if (slot->getType() != INV_GROUND)
+						{
+							placed = fitItemToInventory(slot, item);
+							if (placed)
+							{
+								break;
+							}
+						}
+					}
+				}
+				// D2 - slot order by item category
+				if (!placed && getFaction() == FACTION_PLAYER)
+				{
+					auto* cat = item->getRules()->getFirstCategoryWithInvOrder(mod);
+					if (cat)
+					{
+						for (const auto& s : cat->getInvOrder())
+						{
+							RuleInventory* slot = mod->getInventory(s);
+							if (slot->getType() != INV_GROUND)
+							{
+								placed = fitItemToInventory(slot, item);
+								if (placed)
+								{
+									break;
+								}
+							}
+						}
+					}
+				}
 				if (Options::oxceSmartCtrlEquip)
 				{
 					int cheapestCostToMoveToHand = INT_MAX;
@@ -3351,15 +3387,9 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 							continue;
 						if (fitItemToInventory(slot, item, true))
 						{
-							int currCost = std::min(slot->getCost(mod->getInventoryRightHand()), slot->getCost(mod->getInventoryRightHand()));
-							if ((slot->isLeftHand() && getRightHandWeapon() && getRightHandWeapon()->getRules()->isBlockingBothHands()) || (slot->isRightHand() && getLeftHandWeapon() && getLeftHandWeapon()->getRules()->isBlockingBothHands()))
-							{
+							int currCost = std::min(slot->getCost(mod->getInventoryRightHand()), slot->getCost(mod->getInventoryLeftHand()));
+							if (slot->isLeftHand() || slot->isRightHand())
 								continue;
-							}
-							else if ((slot->isLeftHand() && getRightHandWeapon() && getRightHandWeapon()->getRules()->isTwoHanded()) || (slot->isRightHand() && getLeftHandWeapon() && getLeftHandWeapon()->getRules()->isTwoHanded()))
-							{
-								currCost += 10;
-							}
 							if (currCost <= cheapestCostToMoveToHand)
 							{
 								cheapestCostToMoveToHand = currCost;
@@ -3369,65 +3399,27 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 					}
 					if (cheapestInventoryToMoveToHand != nullptr)
 					{
-						if (cheapestInventoryToMoveToHand->getType() != INV_GROUND)
+						if (cheapestInventoryToMoveToHand->getType() == INV_SLOT)
 						{
 							placed = fitItemToInventory(cheapestInventoryToMoveToHand, item);
 						}
 					}
 				}
-				else
+			}
+			// C3 - fallback: vanilla slot order by listOrder
+			if (!placed)
+			{
+				// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
+				for (const auto& s : mod->getInvsList())
 				{
-					// D1 - default slot by item
-					if (!placed && getFaction() == FACTION_PLAYER)
+					RuleInventory* slot = mod->getInventory(s);
+					if (slot->getType() == INV_SLOT)
 					{
-						if (item->getRules()->getDefaultInventorySlot())
+						placed = fitItemToInventory(slot, item);
+						if (placed)
 						{
-							const RuleInventory* slot = item->getRules()->getDefaultInventorySlot();
-							if (slot->getType() != INV_GROUND)
-							{
-								placed = fitItemToInventory(slot, item);
-								if (placed)
-								{
-									break;
-								}
-							}
-						}
-					}
-					// D2 - slot order by item category
-					if (!placed && getFaction() == FACTION_PLAYER)
-					{
-						auto* cat = item->getRules()->getFirstCategoryWithInvOrder(mod);
-						if (cat)
-						{
-							for (const auto& s : cat->getInvOrder())
-							{
-								RuleInventory* slot = mod->getInventory(s);
-								if (slot->getType() != INV_GROUND)
-								{
-									placed = fitItemToInventory(slot, item);
-									if (placed)
-									{
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
-				// C3 - fallback: vanilla slot order by listOrder
-				if (!placed)
-				{
-					// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
-					for (const auto& s : mod->getInvsList())
-					{
-						RuleInventory* slot = mod->getInventory(s);
-						if (slot->getType() == INV_SLOT)
-						{
-							placed = fitItemToInventory(slot, item);
-							if (placed)
-							{
-								break;
-							}
+							Log(LOG_INFO) << item->getRules()->getName() << " placed to " << slot->getId() << " due to fallback";
+							break;
 						}
 					}
 				}
