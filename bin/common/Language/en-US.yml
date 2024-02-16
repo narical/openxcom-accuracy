@@ -121,7 +121,7 @@ en-US:
   STR_BATTLEREALISTICIMPSNAP: "Realistic accuracy improved snap/auto"
   STR_BATTLEREALISTICIMPSNAP_DESC: "Increase aiming distance for snap/auto for a variety of weapons (6-9 to 10 tiles)"
   STR_BATTLEREALISTICSHOTDISPERSION: "Realistic accuracy shot dispersion"
-  STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic 1> Normal"
+  STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic, higher accuracy, tighter shot dispersion grouping 1> Normal, closer to original OXC logic, lower accuracy and wider shot dispersion."
   STR_BATTLEREALISTICDISPLAYROLLS: "Realistic accuracy display RNG rolls"
   STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
   STR_INSTANTPRIME: "One-click grenade priming"
