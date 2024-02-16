@@ -3376,7 +3376,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 						}
 					}
 				}
-				if (Options::oxceSmartCtrlEquip)
+				if (!placed && Options::oxceSmartCtrlEquip)
 				{
 					int cheapestCostToMoveToHand = INT_MAX;
 					RuleInventory* cheapestInventoryToMoveToHand = nullptr;
@@ -3405,21 +3405,20 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 						}
 					}
 				}
-			}
-			// C3 - fallback: vanilla slot order by listOrder
-			if (!placed)
-			{
-				// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
-				for (const auto& s : mod->getInvsList())
+				// C3 - fallback: vanilla slot order by listOrder
+				if (!placed)
 				{
-					RuleInventory* slot = mod->getInventory(s);
-					if (slot->getType() == INV_SLOT)
+					// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
+					for (const auto& s : mod->getInvsList())
 					{
-						placed = fitItemToInventory(slot, item);
-						if (placed)
+						RuleInventory* slot = mod->getInventory(s);
+						if (slot->getType() == INV_SLOT)
 						{
-							Log(LOG_INFO) << item->getRules()->getName() << " placed to " << slot->getId() << " due to fallback";
-							break;
+							placed = fitItemToInventory(slot, item);
+							if (placed)
+							{
+								break;
+							}
 						}
 					}
 				}
