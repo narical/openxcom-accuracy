@@ -2945,9 +2945,11 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 	const RuleItem *rule = item->getRules();
 	int weight = 0;
 
+	bool isStandardPlayerUnit = getFaction() == FACTION_PLAYER && hasInventory() && !isSummonedPlayerUnit();
+
 	// tanks and aliens don't care about weight or multiple items,
 	// their loadouts are defined in the rulesets and more or less set in stone.
-	if (getFaction() == FACTION_PLAYER && hasInventory() && !isSummonedPlayerUnit())
+	if (isStandardPlayerUnit)
 	{
 		weight = getCarriedWeight() + item->getTotalWeight();
 		// allow all weapons to be loaded by avoiding this check,
@@ -3105,7 +3107,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
 				// D1 - default slot by item
-				if (!placed && getFaction() == FACTION_PLAYER)
+				if (!placed && isStandardPlayerUnit)
 				{
 					if (item->getRules()->getDefaultInventorySlot())
 					{
@@ -3121,7 +3123,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 					}
 				}
 				// D2 - slot order by item category
-				if (!placed && getFaction() == FACTION_PLAYER)
+				if (!placed && isStandardPlayerUnit)
 				{
 					auto* cat = item->getRules()->getFirstCategoryWithInvOrder(mod);
 					if (cat)
