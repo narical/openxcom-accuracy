@@ -3250,11 +3250,18 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	bool spotter = false;
+	bool moveIn = false;
 	if (!knowEnemies && enemyDiscoverThreat > getMaxTU(_unit) && bestSpotter == _unit)
 	{
 		if (_traceAI)
 			Log(LOG_INFO) << "I will be a spotter. enemyDiscoverThreat: " << enemyDiscoverThreat << " bestSpotterScore: " << bestSpotterScore;
 		spotter = true;
+	}
+	if ((knowEnemies || enemyDiscoverThreat > getMaxTU(_unit)) && !contact)
+	{
+		if (_traceAI)
+			Log(LOG_INFO) << "A fight broke out or is about to break out. Moving in aggressively.";
+		moveIn = true;
 	}
 
 	bool sweepMode = _unit->isLeeroyJenkins() || immobile || _unit->getFaction() == FACTION_PLAYER && myAggressiveness == 3;
@@ -3777,19 +3784,22 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (!sweepMode && validCover)
 				{
-					for (auto& reachable : enemyReachable)
+					if (!moveIn)
 					{
-						if (reachable.second > discoverThreat)
+						for (auto& reachable : enemyReachable)
 						{
-							for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+							if (reachable.second > discoverThreat)
 							{
-								for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+								for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 								{
-									Position compPos = pos;
-									compPos.x += x;
-									compPos.y += y;
-									if (hasTileSight(compPos, reachable.first))
-										discoverThreat = reachable.second;
+									for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
+									{
+										Position compPos = pos;
+										compPos.x += x;
+										compPos.y += y;
+										if (hasTileSight(compPos, reachable.first))
+											discoverThreat = reachable.second;
+									}
 								}
 							}
 						}
