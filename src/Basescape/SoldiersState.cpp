@@ -362,17 +362,17 @@ void SoldiersState::initList(size_t scrl)
 			if(selectedCraftIndex == 0)
 			{
 				_filteredListOfSoldiers.push_back(soldier);
-				_baseIndexSoldiers.push_back(i);
+				_filteredIndicesOfSoldiers.push_back(i);
 			}else if(selectedCraftIndex == 1){
 				if (soldier->getCraft() == 0){
 					_filteredListOfSoldiers.push_back(soldier);	
-					_baseIndexSoldiers.push_back(i);									
+					_filteredIndicesOfSoldiers.push_back(i);									
 				}	
 			}else{
 				if (soldier->getCraft() == _base->getCrafts()->at(selectedCraftIndex-2))
 				{
 					_filteredListOfSoldiers.push_back(soldier);
-					_baseIndexSoldiers.push_back(i);
+					_filteredIndicesOfSoldiers.push_back(i);
 				}
 			
 			}
@@ -493,7 +493,7 @@ void SoldiersState::lstItemsLeftArrowClick(Action *action)
 void SoldiersState::moveSoldierUp(Action *action, unsigned int row, bool max)
 {
 	Soldier *s = _filteredListOfSoldiers.at(row);
-	size_t baseIndex = _baseIndexSoldiers.at(row);
+	size_t baseIndex = _filteredIndicesOfSoldiers.at(row);
 	if (max)
 	{
 		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + baseIndex);
@@ -501,7 +501,7 @@ void SoldiersState::moveSoldierUp(Action *action, unsigned int row, bool max)
 	}
 	else
 	{
-		size_t baseIndexNext = _baseIndexSoldiers.at(row-1);
+		size_t baseIndexNext = _filteredIndicesOfSoldiers.at(row - 1);
 		_base->getSoldiers()->at(baseIndex) = _base->getSoldiers()->at(baseIndexNext);
 		_base->getSoldiers()->at(baseIndexNext) = s;
 		if (row != _lstSoldiers->getScroll())
@@ -548,7 +548,7 @@ void SoldiersState::lstItemsRightArrowClick(Action *action)
 void SoldiersState::moveSoldierDown(Action *action, unsigned int row, bool max)
 {
 	Soldier *s = _filteredListOfSoldiers.at(row);
-	size_t baseIndex = _baseIndexSoldiers.at(row);
+	size_t baseIndex = _filteredIndicesOfSoldiers.at(row);
 	if (max)
 	{
 		_base->getSoldiers()->erase(_base->getSoldiers()->begin() + baseIndex);
@@ -556,7 +556,7 @@ void SoldiersState::moveSoldierDown(Action *action, unsigned int row, bool max)
 	}
 	else
 	{
-		size_t baseIndexNext = _baseIndexSoldiers.at(row+1);
+		size_t baseIndexNext = _filteredIndicesOfSoldiers.at(row + 1);
 		_base->getSoldiers()->at(baseIndex) = _base->getSoldiers()->at(baseIndexNext);
 		_base->getSoldiers()->at(baseIndexNext) = s;
 		if (row != _lstSoldiers->getVisibleRows() - 1 + _lstSoldiers->getScroll())
