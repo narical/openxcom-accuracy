@@ -688,6 +688,8 @@ static bool showHelp()
 	help << "        set MOD to the current master mod (eg. -master xcom2)" << std::endl << std::endl;
 	help << "-KEY VALUE" << std::endl;
 	help << "        override option KEY with VALUE (eg. -displayWidth 640)" << std::endl << std::endl;
+	help << "-continue" << std::endl;
+	help << "        load last save" << std::endl << std::endl;
 	help << "-version" << std::endl;
 	help << "        show version number" << std::endl << std::endl;
 	help << "-help" << std::endl;
@@ -719,6 +721,10 @@ static bool showHelp()
 			{
 				std::cout << OPENXCOM_VERSION_SHORT << OPENXCOM_VERSION_GIT << std::endl;
 				return true;
+			}
+			if (argname == "cont" || argname == "continue")
+			{
+				continue;
 			}
 
 			// skip next option argument, only couple options do not have it.
