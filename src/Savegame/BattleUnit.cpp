@@ -3172,7 +3172,7 @@ bool BattleUnit::fitItemToInventory(const RuleInventory *slot, BattleItem *item,
  * @param allowUnloadedWeapons allow equip of weapons without ammo.
  * @return if the item was placed or not.
  */
-bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons)
+bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons, bool allowInfinite)
 {
 	RuleInventory *rightHand = mod->getInventoryRightHand();
 	RuleInventory *leftHand = mod->getInventoryLeftHand();
@@ -3193,22 +3193,25 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		if (rule->getBattleType() != BT_FIREARM && rule->getBattleType() != BT_MELEE)
 		{
 			int tally = 0;
-			for (auto* bi : *getInventory())
+			if (!allowInfinite)
 			{
-				if (rule->getType() == bi->getRules()->getType())
+				for (auto* bi : *getInventory())
 				{
-					if (allowSecondClip && rule->getBattleType() == BT_AMMO)
+					if (rule->getType() == bi->getRules()->getType())
 					{
-						tally++;
-						if (tally == 2)
+						if (allowSecondClip && rule->getBattleType() == BT_AMMO)
 						{
+							tally++;
+							if (tally == 2)
+							{
+								return false;
+							}
+						}
+						else
+						{
+							// we already have one, thanks.
 							return false;
 						}
-					}
-					else
-					{
-						// we already have one, thanks.
-						return false;
 					}
 				}
 			}

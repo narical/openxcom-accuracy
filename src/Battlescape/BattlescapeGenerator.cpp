@@ -1409,6 +1409,33 @@ void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, s
 			++iter;
 		}
 	}
+	// Xilmi: Continue trying to distribute leftovers in a round-robin-kind of way until noone can take anything anymore
+	bool someoneGotSomething = false;
+	do
+	{
+		someoneGotSomething = false;
+		for (auto* bu : units)
+		{
+			for (BattleItem* bi : (*craftInv))
+			{
+				if (bi->getRules()->getInventoryHeight() == 0 || bi->getRules()->getInventoryWidth() == 0)
+				{
+					// don't autoequip hidden items, whatever they are
+					continue;
+				}
+				if (bi->getSlot() == groundRuleInv)
+				{
+					if (!bu->hasInventory() || !bu->getGeoscapeSoldier() || (!overrideEquipmentLayout && !bu->getGeoscapeSoldier()->getEquipmentLayout()->empty()))
+						continue;
+					if (bu->addItem(bi, mod, true, allowAutoLoadout, false, true))
+					{
+						someoneGotSomething = true;
+						break;
+					}
+				}
+			}
+		}
+	} while (someoneGotSomething);
 }
 
 /**

@@ -441,7 +441,7 @@ public:
 	/// Fit item into inventory slot.
 	bool fitItemToInventory(const RuleInventory *slot, BattleItem *item, bool testMode = false);
 	/// Add item to unit.
-	bool addItem(BattleItem *item, const Mod *mod, bool allowSecondClip = false, bool allowAutoLoadout = false, bool allowUnloadedWeapons = false);
+	bool addItem(BattleItem *item, const Mod *mod, bool allowSecondClip = false, bool allowAutoLoadout = false, bool allowUnloadedWeapons = false, bool allowInfinite = false);
 
 	/// Let AI do their thing.
 	void think(BattleAction *action);
