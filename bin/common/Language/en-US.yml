@@ -163,7 +163,7 @@ en-US:
   STR_AITARGETMODE: "Targeting behavior for Brutal AI"
   STR_AITARGETMODE_DESC: "1> Units can only target what they see. 2> Units can also target what others on their team see. 3> Units can also target locations they or their comrades were attacked from. 4> No limitations."
   STR_AGGRESSIONMODE: "Aggressiveness-mode"
-  STR_AGGRESSIONMODE_DESC: "0> Baseline Aggressivness. 1> Multiplied with unit-aggression. 2> Multiplied with unit-aggression and take Leeroy-flag into account."
+  STR_AGGRESSIONMODE_DESC: "0> Seek out best cover possible. 1> Use unit-aggression. 2> Breaking line of sight is good enough. 3> Don't care about cover."
   STR_INTELLIGENCEMODE: "Intelligence-mode"
   STR_INTELLIGENCEMODE_DESC: "0> Static intelligence. 1> Inherit intelligence from unit-intelligence. 2> Inherit intelligence from difficulty-level."
   STR_INTELLIGENCE: "Static intelligence"

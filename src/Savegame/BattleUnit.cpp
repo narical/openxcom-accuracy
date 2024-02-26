@@ -6064,7 +6064,7 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 {
 	if (!isBrutal() || ignoreBrutal)
 		return _isLeeroyJenkins;
-	else if (Options::aggressionMode >= 2)
+	else if (Options::aggressionMode >= 1)
 		return _isLeeroyJenkins;
 	else
 		return false;
@@ -6075,8 +6075,10 @@ float BattleUnit::getAggressiveness() const
 	if (getFaction() == FACTION_PLAYER)
 		return getAggression();
 	float aggressiveness = 0;
-	if (Options::aggressionMode >= 1)
+	if (Options::aggressionMode == 1)
 		aggressiveness = getAggression();
+	else
+		return Options::aggressionMode;
 	return aggressiveness;
 }
 

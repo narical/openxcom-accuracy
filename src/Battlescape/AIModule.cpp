@@ -3034,9 +3034,7 @@ void AIModule::brutalThink(BattleAction* action)
 	std::map<Position, int, PositionComparator> enemyReachable;
 	std::map<Position, int, PositionComparator> friendReachable;
 	bool immobileEnemies = false;
-	float myAggressiveness = _unit->getAggressiveness() * _unit->getMorale() / 100.0;
-	if (_unit->getFaction() == FACTION_PLAYER)
-		myAggressiveness = _unit->getAggression();
+	int myAggressiveness = _unit->getAggressiveness();
 	float totalEnemyPower = 0;
 	float totalAllyPower = 0;
 
@@ -3257,14 +3255,10 @@ void AIModule::brutalThink(BattleAction* action)
 			Log(LOG_INFO) << "I will be a spotter. enemyDiscoverThreat: " << enemyDiscoverThreat << " bestSpotterScore: " << bestSpotterScore;
 		spotter = true;
 	}
-	if ((knowEnemies || enemyDiscoverThreat > getMaxTU(_unit)) && !contact)
-	{
-		if (_traceAI)
-			Log(LOG_INFO) << "A fight broke out or is about to break out. Moving in aggressively.";
+	if (myAggressiveness >= 1)
 		moveIn = true;
-	}
 
-	bool sweepMode = _unit->isLeeroyJenkins() || immobile || _unit->getFaction() == FACTION_PLAYER && myAggressiveness == 3;
+	bool sweepMode = _unit->isLeeroyJenkins() || immobile || myAggressiveness >= 3;
 	_unit->setCharging(nullptr);
 
 	// Phase 1: Check if you can attack anything from where you currently are
@@ -3822,9 +3816,9 @@ void AIModule::brutalThink(BattleAction* action)
 					else if (myAggressiveness > 0)
 					{
 						if (!_save->getTileEngine()->isNextToDoor(tile))
-							goodCoverScore = 100 / (discoverThreat + walkToDist * myAggressiveness);
+							goodCoverScore = 100 / (discoverThreat + walkToDist);
 						else
-							okayCoverScore = 100 / (discoverThreat + walkToDist * myAggressiveness);
+							okayCoverScore = 100 / (discoverThreat + walkToDist);
 					}
 				}
 				if ((discoverThreat == 0 || immobileEnemies) && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))

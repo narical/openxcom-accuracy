@@ -159,7 +159,7 @@ de:
   STR_INTELLIGENCE: "Statische Intelligenz"
   STR_INTELLIGENCE_DESC: "Ein zufälliger Wert zwischen 0,2-mal diesem Wert und 1,0 wird mit den Punkten in der Bewegungslogik der KI multipliziert."
   STR_AGGRESSIONMODE: "Aggressionsmodus"
-  STR_AGGRESSIONMODE_DESC: "0> Grundaggressivität 1> Multipliziert mit Einheitenaggression 2> Multipliziert mit Einheitenaggression und berücksichtigt Leeroy-Flagge."
+  STR_AGGRESSIONMODE_DESC: "0> Suche die bestmögliche Deckung. 1> Verwende Einheit-Aggression. 2> Unterbrechung der Sichtlinie reicht aus. 3> Kümmere dich nicht um Deckung."
   STR_AIAGGRESSION: "Zähler der Feindesaggressivität"
   STR_AIAGGRESSION_DESC: "Balancieren Sie diesen Wert mit dem Nenner der Feindesaggressivität, um ein Verhältnis zwischen 1/9 und 9 zu erhalten."
   STR_AICAREFULNESS: "Nenner der Feindesaggressivität"
