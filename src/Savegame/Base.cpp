@@ -2818,17 +2818,20 @@ std::vector<Craft*>::iterator Base::removeCraft(Craft *craft, bool unload)
 	}
 
 	// Clear slots in hangar containing craft
+	bool breakOuterLoop = false;
 	for (auto* fac : _facilities)
 	{
 		for(Craft *fCraft : fac->getCraftsForDrawing()) // Now, we consider a vector of crafts at the hangar facility
 		{ 
 			if (fCraft == craft) 
 			{
-				fac->delCraftForDrawing(fCraft); // If craft is at the hangar, it is deleted 
-				fac=*(_facilities.end()); // Craft has been found; no more search at facilities
+				fac->delCraftForDrawing(fCraft); // If craft is at the hangar, it is deleted
+				breakOuterLoop = true;
 				break;
 			}
 		}
+		if (breakOuterLoop)
+			break;
 	}
 
 	// Remove craft from base vector
