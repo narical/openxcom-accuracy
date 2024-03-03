@@ -105,15 +105,15 @@ void getErrorDialog()
 #ifndef _WIN32
 	if (system(NULL))
 	{
-		if (getenv("KDE_SESSION_UID") && system("which kdialog 2>&1 > /dev/null") == 0)
+		if (getenv("KDE_SESSION_UID") && system("which kdialog > /dev/null 2>&1") == 0)
 			errorDlg = "kdialog --error ";
-		else if (system("which zenity 2>&1 > /dev/null") == 0)
+		else if (system("which zenity > /dev/null 2>&1") == 0)
 			errorDlg = "zenity --no-wrap --error --text=";
-		else if (system("which kdialog 2>&1 > /dev/null") == 0)
+		else if (system("which kdialog > /dev/null 2>&1") == 0)
 			errorDlg = "kdialog --error ";
-		else if (system("which gdialog 2>&1 > /dev/null") == 0)
+		else if (system("which gdialog > /dev/null 2>&1") == 0)
 			errorDlg = "gdialog --msgbox ";
-		else if (system("which xdialog 2>&1 > /dev/null") == 0)
+		else if (system("which xdialog > /dev/null 2>&1") == 0)
 			errorDlg = "xdialog --msgbox ";
 	}
 #endif
@@ -473,7 +473,6 @@ std::string searchDataFile(const std::string &filename)
 		path = dataPath + name;
 		if (fileExists(path))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -486,21 +485,32 @@ std::string searchDataFolder(const std::string &foldername)
 {
 	// Correct folder separator
 	std::string name = foldername;
+	std::string path;
 
-	// Check current data path
-	std::string path = Options::getDataFolder() + name;
-	if (folderExists(path))
+	// Set miminum possible of dirs
+	std::size_t minNumOfElementsInFolder = (
+		foldername == "TFTD" || foldername == "UFO" ? 9 : // At least 9 dictionaries with original data data
+		foldername == "common" ? 6 : // Files: "Language/", "Palettes/", "Resources/", "Shaders/", "SoldierName/", "openxcom.png"
+		foldername == "standard" ? 20 : // Now 48 mods, some buffer if some decide to drop some mods
+		0
+	);
+
+	if (Options::getDataFolder() != "")
 	{
-		return path;
+		// Check current data path
+		path = Options::getDataFolder() + name;
+		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
+		{
+			return path;
+		}
 	}
 
 	// Check every other path
 	for (auto& dataPath : Options::getDataList())
 	{
 		path = dataPath + name;
-		if (folderExists(path))
+		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -714,6 +724,30 @@ std::string baseFilename(const std::string &path)
 	else
 	{
 		filename = path.substr(sep + 1);
+	}
+	return filename;
+}
+
+/**
+ * Returns the directory from a specified path.
+ * @param path Full path.
+ * @return Directory component.
+ */
+std::string dirFilename(const std::string &path)
+{
+	size_t sep = path.find_last_of('/');
+	std::string filename;
+	if (sep == std::string::npos)
+	{
+		filename = "";
+	}
+	else if (sep == path.size() - 1)
+	{
+		return dirFilename(path.substr(0, path.size() - 1));
+	}
+	else
+	{
+		filename = path.substr(0, sep + 1);
 	}
 	return filename;
 }
@@ -1816,6 +1850,22 @@ static auto dummy = ([]
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 2, 2, 2}));
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 3, 1, 2}));
 
+	return 0;
+})();
+
+static auto dummyPaths = ([]
+{
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc/") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc//") == "ccc");
+	assert(CrossPlatform::baseFilename("/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("ccc") == "ccc");
+
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc/") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc//") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("/ccc") == "/");
+	assert(CrossPlatform::dirFilename("ccc") == "");
 	return 0;
 })();
 
