@@ -3729,7 +3729,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 			float walkToDist = myMaxTU + tuDistFromTarget;
-			if (!sweepMode)
+			if (!sweepMode && !badPath)
 			{
 				if (enoughTUToPeak && (!outOfRangeForShortRangeWeapon || pos == myPos) && (pos != myPos || justNeedToTurnToPeek) && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
@@ -4005,9 +4005,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			//if (_traceAI)
 			//{
-			//	tile->setMarkerColor(viewDistance);
+			//	tile->setMarkerColor(discoverThreat);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(viewDistance);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -4651,6 +4651,15 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 					{
 						Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
 						if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
+							return false;
+					}
+				}
+				if (!_unit->isCheatOnMovement())
+				{
+					if (hasTileSight(_save->getTileCoords(unit->getTileLastSpotted(_myFaction)), tile->getPosition()))
+					{
+						Tile* prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
+						if (hasTileSight(_save->getTileCoords(unit->getTileLastSpotted(_myFaction)), prevTile->getPosition()))
 							return false;
 					}
 				}
