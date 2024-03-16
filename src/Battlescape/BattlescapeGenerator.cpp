@@ -1342,6 +1342,16 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, std::vector<BattleItem*> *craftInv,
 		RuleInventory *groundRuleInv, int worldShade, bool allowAutoLoadout, bool overrideEquipmentLayout)
 {
+	std::sort(units.begin(), units.end(),
+		[](const BattleUnit* a, const BattleUnit* b)
+		{
+			return a->getBaseStats()->strength > b->getBaseStats()->strength;
+		});
+	std::sort(craftInv->begin(), craftInv->end(),
+		[](const BattleItem* a, const BattleItem* b)
+		{
+			return a->getTotalWeight() > b->getTotalWeight();
+		});
 	for (int pass = 0; pass < 4; ++pass)
 	{
 		BattleItem* bi = nullptr;
