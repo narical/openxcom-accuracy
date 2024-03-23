@@ -1377,8 +1377,8 @@ void Map::drawTerrain(Surface *surface)
 								const RuleItem *weapon = action->weapon->getRules();
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
-								int distanceSq = 0;
-								int distanceTiles = 0;
+								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
+								int distanceTiles = (int)std::ceil(sqrt(float(distanceSq)));
 								int distanceVoxels = 0;
 								int maxRange = weapon->getMaxRange();
 								int upperLimit = weapon->getAimRange();
