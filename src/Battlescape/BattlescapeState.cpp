@@ -2793,10 +2793,18 @@ inline void BattlescapeState::handle(Action *action)
 				}
 				if (key == Options::keyToggleAutoPlay && ctrlPressed)
 				{
+					std::ostringstream ss;
 					if (Options::autoCombat)
+					{
 						Options::autoCombat = false;
+						ss << tr("STR_AUTOPLAY_DISABLED");
+					}
 					else
+					{
 						Options::autoCombat = true;
+						ss << tr("STR_AUTOPLAY_ENABLED");
+					}
+					_game->pushState(new InfoboxState(ss.str()));
 				}
 				else if (key == Options::keyAIList)
 				{

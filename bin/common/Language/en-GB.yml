@@ -487,3 +487,5 @@ en-GB:
   STR_USER_FOLDER_DESC: "The log file ('openxcom.log') is stored here. All custom mods belong here too (in the 'mods' sub-folder)."
   STR_SAVE_FOLDER_DESC: "Your saved games are located here. Also, the mission generator settings ('battle.cfg') can be found here."
   STR_CONFIG_FOLDER_DESC: "This is where OpenXcom settings ('options.cfg') are stored. Normally the same as the User Folder."
+  STR_AUTOPLAY_DISABLED: "Autoplay disabled"
+  STR_AUTOPLAY_ENABLED: "Autoplay enabled"
