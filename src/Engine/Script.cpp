@@ -648,17 +648,19 @@ class SelectedToken : public ScriptRef
 {
 	/// type of this token.
 	TokenEnum _type;
+	/// line where token start.
+	size_t _linePos;
 
 public:
 
 	/// Default constructor.
-	SelectedToken() : ScriptRef{ }, _type{ TokenNone }
+	SelectedToken() : ScriptRef{ }, _type{ TokenNone }, _linePos{ 0 }
 	{
 
 	}
 
 	/// Constructor from range.
-	SelectedToken(TokenEnum type, ScriptRef range) : ScriptRef{ range }, _type{ type }
+	SelectedToken(TokenEnum type, ScriptRef range, size_t linePos) : ScriptRef{ range }, _type{ type }, _linePos{linePos}
 	{
 
 	}
@@ -667,6 +669,12 @@ public:
 	TokenEnum getType() const
 	{
 		return _type;
+	}
+
+	/// Get token line postion in script.
+	size_t getLinePos() const
+	{
+		return _linePos;
 	}
 
 	/// Convert token to script ref.
@@ -702,6 +710,9 @@ public:
 
 class ScriptRefTokens : public ScriptRef
 {
+	/// Current line position.
+	size_t _linePos = 1;
+
 public:
 	/// Using default constructors.
 	using ScriptRef::ScriptRef;
@@ -1048,6 +1059,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		//it will stop on `\0` character
 		if (curr)
 		{
+			if (*_begin == '\n') ++_linePos;
 			++_begin;
 		}
 		return curr;
@@ -1056,6 +1068,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 	auto backCharacter = [&]()
 	{
 		--_begin;
+		if (*_begin == '\n') --_linePos;
 	};
 
 	//find first no whitespace character.
@@ -1233,7 +1246,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 
 	}
 	auto end = _begin;
-	return SelectedToken{ type, ScriptRef{ begin, end } };
+	return SelectedToken{ type, ScriptRef{ begin, end }, _linePos };
 }
 
 
@@ -1384,9 +1397,9 @@ int getOverloadArgSize(const ScriptProcData& spd)
 /**
  * Return type of public argument of given function.
  */
-ScriptRange<ArgEnum> getOverloadArgType(const ScriptProcData& spd, int argPos)
+ScriptRange<ArgEnum> getOverloadArgType(ScriptRange<ScriptRange<ArgEnum>> over, int argPos)
 {
-	for (auto& currOver : spd.overloadArg)
+	for (auto& currOver : over)
 	{
 		if (currOver)
 		{
@@ -1399,6 +1412,42 @@ ScriptRange<ArgEnum> getOverloadArgType(const ScriptProcData& spd, int argPos)
 	}
 
 	return {};
+}
+
+/**
+ * Return type of public argument of given function.
+ */
+ScriptRange<ArgEnum> getOverloadArgType(const ScriptProcData& spd, int argPos)
+{
+	return getOverloadArgType(spd.overloadArg, argPos);
+}
+
+/**
+ * Return tail type list of public arguments of given function.
+ */
+ScriptRange<ScriptRange<ArgEnum>> getOverloadArgTypeTail(ScriptRange<ScriptRange<ArgEnum>> over, int argPos)
+{
+	for (auto& currOver : over)
+	{
+		if (currOver)
+		{
+			if (argPos == 0)
+			{
+				return { &currOver, over.end() };
+			}
+			--argPos;
+		}
+	}
+
+	return {};
+}
+
+/**
+ * Return tail type list of public arguments of given function.
+ */
+ScriptRange<ScriptRange<ArgEnum>> getOverloadArgTypeTail(const ScriptProcData& spd, int argPos)
+{
+	return getOverloadArgTypeTail(spd.overloadArg, argPos);
 }
 
 std::tuple<int, const ScriptProcData*> findBestOverloadProc(const ScriptRange<ScriptProcData>& proc, const ScriptRefData* begin, const ScriptRefData* end)
@@ -1477,6 +1526,39 @@ ScriptRefOperation findOperationAndArg(const ParserWriter& ph, ScriptRef op)
 	}
 
 	return result;
+}
+
+ScriptRefOperation replaceOperation(const ParserWriter& ph, const ScriptRefOperation& op, ScriptRef from, ScriptRef to)
+{
+	ScriptRefOperation result = op;
+
+	bool correct = false;
+	if (result.procName.size())
+	{
+		auto last = result.procName.last();
+		auto lastHead = last.headFromEnd(from.size());
+		auto lastTail = last.tailFromEnd(from.size());
+		if (lastHead == from)
+		{
+			correct = true;
+			correct &= result.procName.tryPopBack();
+			if (lastTail)
+			{
+				correct &= result.procName.tryPushBack(lastTail);
+			}
+			correct &= result.procName.tryPushBack(to);
+			correct &= bool(result.procList = ph.parser.getProc(result.procName));
+		}
+	}
+
+	if (correct)
+	{
+		return result;
+	}
+	else
+	{
+		return {};
+	}
 }
 
 void logErrorOnOperationArg(const ScriptRefOperation& op)
@@ -1854,9 +1936,9 @@ bool parseBegin(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
  */
 bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
 {
-	if (std::distance(begin, end) != 3)
+	if (std::distance(begin, end) < 3)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'loop'";
+		Log(LOG_ERROR) << "Missing symbols after 'loop'";
 		return false;
 	}
 	if (begin[0].name != ScriptRef{ "var" })
@@ -1868,40 +1950,167 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 	// each operation can fail, we can't prevent
 	auto correct = true;
 
-	auto& loop = ph.pushScopeBlock(BlockLoop);
-	loop.nextLabel = ph.addLabel();
-	loop.finalLabel = ph.addLabel();
+	// we support simple `loop var x 100;` or complex like `loop var x obj.getInv.list "BIG_GUN";`
+	const auto functionPostfix = ScriptRef{ ".list" };
+	const auto functionName = begin[2].name;
+	const auto functionArgSep = ph.getReferece(ScriptRef{ "__" });
+	const auto functionArgPh = ph.getReferece(ScriptRef{ "_" });
 
-	auto limit = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
-	auto curr = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
-	auto var = ph.addReg(begin[1].name, ArgSpecAdd(ArgInt, ArgSpecVar));
+	assert(!!functionArgSep);
+	assert(!!functionArgPh);
 
-	correct &= !!limit;
-	correct &= !!curr;
-	correct &= !!var;
-
-	correct &= parseVariableImpl(ph, limit, begin[2]);
-	correct &= parseVariableImpl(ph, curr);
-
-	correct &= ph.setLabel(loop.nextLabel, ph.getCurrPos());
-
-	ScriptRefData breakCond[] =
+	if (functionName.headFromEnd(functionPostfix.size()) == functionPostfix && !isKnowNamePrefix(functionName.tailFromEnd(functionPostfix.size())))
 	{
-		ScriptRefData { ScriptRef{ "lt" }, ArgInvalid },
-		curr,
-		limit,
-	};
-	correct &= parseFullConditionImpl(ph, loop.finalLabel, std::begin(breakCond), std::end(breakCond));
+		auto& loop = ph.pushScopeBlock(BlockLoop);
+		loop.nextLabel = ph.addLabel();
+		loop.finalLabel = ph.addLabel();
 
-	correct &= parseVariableImpl(ph, var, curr);
+		ScriptArgList loopArgs = {};
 
-	ScriptRefData addArgs[] =
+		auto getProcAndRegTypes = [&](const ScriptRefOperation& proc, size_t placeHolders) -> std::tuple<const ScriptProcData*, ScriptRange<ScriptRange<ArgEnum>>>
+		{
+			ScriptArgList temp;
+			temp.tryPushBack(loopArgs);
+			size_t org = temp.size();
+			for (size_t i = 0; i < placeHolders; ++i)
+			{
+				if (!temp.tryPushBack(functionArgPh))
+				{
+					return {};
+				}
+			}
+
+			auto bestOverload = std::get<const ScriptProcData*>(findBestOverloadProc(proc.procList, std::begin(temp), std::end(temp)));
+			if (!bestOverload)
+			{
+				Log(LOG_ERROR) << "Conflicting overloads for operator '" + proc.procList.begin()->name.toString() + "' for:";
+				Log(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ temp }, [](const ScriptRefData& r){ return r.type; });
+				Log(LOG_ERROR) << "Expected:";
+				for (auto& p : proc.procList)
+				{
+					if (p.parserArg != nullptr && p.overloadArg)
+					{
+						Log(LOG_ERROR) << "  " << displayOverloadProc(&ph.parser, p.overloadArg);
+					}
+				}
+				return {};
+			}
+
+			return std::make_tuple(bestOverload, getOverloadArgTypeTail(*bestOverload, org));
+		};
+
+		auto parseReg = [&](ScriptRef name, ScriptRange<ArgEnum> types) -> ScriptRefData
+		{
+			if (types.size() != 1)
+			{
+				return {};
+			}
+
+			auto c = true;
+			auto r = ph.addReg(name, ArgSpecAdd(*types.begin(), ArgSpecVar));
+			c &= !!r;
+			c &= loopArgs.tryPushBack(r);
+			c &= parseVariableImpl(ph, r);
+			return r;
+		};
+
+
+		// now we known that parameter look like `obj.foo.list` but not like `Tag.list`
+		auto loopFunction = findOperationAndArg(ph, functionName);
+		auto initFunction = replaceOperation(ph, loopFunction, functionPostfix, ScriptRef{".init"});
+
+
+		if (!loopFunction)
+		{
+			logErrorOnOperationArg(loopFunction);
+			Log(LOG_ERROR) << "Unsupported function '" << functionName.toString() << "' for 'loop'";
+			return false;
+		}
+
+		if (!initFunction)
+		{
+			Log(LOG_ERROR) << "Unsupported function '" << functionName.toString() << "' for 'loop'";
+			return false;
+		}
+
+		correct &= loopArgs.tryPushBack(loopFunction.argRef);
+		correct &= loopArgs.tryPushBack(begin + 3, end);
+		correct &= loopArgs.tryPushBack(functionArgSep);
+
+		// init part of loop, try parse arg types of control registers
+		auto [initBestProc, initBestOverload] = getProcAndRegTypes(initFunction, 2);
+		if (!correct || !initBestOverload)
+		{
+			Log(LOG_ERROR) << "Error in processing init of 'loop'";
+			return false;
+		}
+		auto curr = parseReg({}, *initBestOverload.begin());
+		auto limit = parseReg({}, *(initBestOverload.begin() + 1));
+		correct &= !!curr;
+		correct &= !!limit;
+		correct &= parseCustomProc(*initBestProc, ph, std::begin(loopArgs), std::end(loopArgs));
+
+
+		// check part of loop, break if control register are equal
+		correct &= ph.setLabel(loop.nextLabel, ph.getCurrPos());
+		ScriptRefData breakCond[] =
+		{
+			ScriptRefData { ScriptRef{ "lt" }, ArgInvalid },
+			curr,
+			limit,
+		};
+		correct &= parseFullConditionImpl(ph, loop.finalLabel, std::begin(breakCond), std::end(breakCond));
+
+
+		// increment part and getting current element of loop
+		correct &= loopArgs.tryPushBack(functionArgSep);
+		auto [loopBestProc, loopBestOverload] = getProcAndRegTypes(loopFunction, 1);
+		if (!correct || !loopBestOverload)
+		{
+			Log(LOG_ERROR) << "Error in processing step of 'loop'";
+			return false;
+		}
+
+		auto var = parseReg(begin[1].name, *loopBestOverload.begin());
+		correct &= !!var;
+		correct &= parseCustomProc(*loopBestProc, ph, std::begin(loopArgs), std::end(loopArgs));
+	}
+	else
 	{
-		curr,
-		{ {}, ArgInt, 1 },
-	};
-	correct &= parseOverloadProc(ph, ph.parser.getProc(ScriptRef{ "add" }), std::begin(addArgs), std::end(addArgs));
+		auto& loop = ph.pushScopeBlock(BlockLoop);
+		loop.nextLabel = ph.addLabel();
+		loop.finalLabel = ph.addLabel();
 
+		auto limit = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
+		auto curr = ph.addReg({}, ArgSpecAdd(ArgInt, ArgSpecVar));
+		auto var = ph.addReg(begin[1].name, ArgSpecAdd(ArgInt, ArgSpecVar));
+
+		correct &= !!limit;
+		correct &= !!curr;
+		correct &= !!var;
+
+		correct &= parseVariableImpl(ph, limit, begin[2]);
+		correct &= parseVariableImpl(ph, curr);
+
+		correct &= ph.setLabel(loop.nextLabel, ph.getCurrPos());
+
+		ScriptRefData breakCond[] =
+		{
+			ScriptRefData { ScriptRef{ "lt" }, ArgInvalid },
+			curr,
+			limit,
+		};
+		correct &= parseFullConditionImpl(ph, loop.finalLabel, std::begin(breakCond), std::end(breakCond));
+
+		correct &= parseVariableImpl(ph, var, curr);
+
+		ScriptRefData addArgs[] =
+		{
+			curr,
+			{ {}, ArgInt, 1 },
+		};
+		correct &= parseOverloadProc(ph, ph.parser.getProc(ScriptRef{ "add" }), std::begin(addArgs), std::end(addArgs));
+	}
 
 	if (correct)
 	{
@@ -3337,7 +3546,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		if (!op_curr)
 		{
 			logErrorOnOperationArg(op_curr);
-			Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+			Log(LOG_ERROR) << "Invalid operation '" << op.toString() << "'";
 		}
 
 		// change form of `Reg.Function` to `Type.Function Reg`.
@@ -3346,7 +3555,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			// we already loaded op_curr = "Reg.Function", args[0] = "X"
 			// then switch it to op_curr = "Type.Function", args[0] = "Reg", args[1] = "X"
 			args[1] = args[0];
-			args[0] = { TokenSymbol, op_curr.argName };
+			args[0] = { TokenSymbol, op_curr.argName, op.getLinePos() };
 		}
 
 		for (size_t i = (op_curr.haveArg() ? 2 : 1); i < ScriptMaxArg; ++i)
@@ -3377,12 +3586,12 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			{
 				if (args[i].getType() == TokenInvalid)
 				{
-					Log(LOG_ERROR) << err << "invalid argument '"<<  args[i].toString() <<"' in line: '" << std::string(line_begin, line_end) << "'";
+					Log(LOG_ERROR) << err << "invalid argument '"<<  args[i].toString() <<"' in line: '" << std::string(line_begin, line_end) << "' (at " + std::to_string(op.getLinePos()) + ")";
 					return false;
 				}
 			}
 
-			Log(LOG_ERROR) << err << "invalid line: '" << std::string(line_begin, line_end) << "'";
+			Log(LOG_ERROR) << err << "invalid line: '" << std::string(line_begin, line_end) << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 
@@ -3397,17 +3606,17 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 		if (haveLastReturn && !isEnd)
 		{
-			Log(LOG_ERROR) << err << "unreachable line after return: '" << line.toString() << "'";
+			Log(LOG_ERROR) << err << "unreachable code after return in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 		if (haveCodeNormal && isVarDef)
 		{
-			Log(LOG_ERROR) << err << "invalid variable definition after other operations: '" << line.toString() << "'";
+			Log(LOG_ERROR) << err << "invalid variable definition after other operations in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 		if (label && isVarDef)
 		{
-			Log(LOG_ERROR) << err << "label can't be before variable definition: '" << line.toString() << "'";
+			Log(LOG_ERROR) << err << "label can't be before variable definition in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 
@@ -3426,21 +3635,21 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 			if (!argData.tryPushBack(t.parse(help)))
 			{
-				Log(LOG_ERROR) << err << "too many arguments in line: '" << line.toString() << "'";
+				Log(LOG_ERROR) << err << "too many arguments in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 				return false;
 			}
 		}
 
 		if (label && !help.setLabel(label.parse(help), help.getCurrPos()))
 		{
-			Log(LOG_ERROR) << err << "invalid label '"<< label.toString() <<"' in line: '" << line.toString() << "'";
+			Log(LOG_ERROR) << err << "invalid label '"<< label.toString() <<"' in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 
 		// create normal proc call
 		if (parseOverloadProc(help, op_curr.procList, std::begin(argData), std::end(argData)) == false)
 		{
-			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
+			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "' (at " + std::to_string(op.getLinePos()) + ")";
 			return false;
 		}
 	}
@@ -3455,12 +3664,19 @@ void ScriptParserBase::parseNode(ScriptContainerBase& container, const std::stri
 	{
 		if (const YAML::Node& curr = scripts[getName()])
 		{
-			parseBase(container, parentName, curr.as<std::string>());
+			if (false == parseBase(container, parentName, curr.as<std::string>()))
+			{
+				Log(LOG_ERROR) << "    for node with code at line " << node.Mark().line << " in " << getGlobal()->getCurrentFile();
+				Log(LOG_ERROR) << ""; // dummy line to separate similar errors
+			}
 		}
 	}
 	if (!container && !getDefault().empty())
 	{
-		parseBase(container, parentName, getDefault());
+		if (parseBase(container, parentName, getDefault()))
+		{
+			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
+		}
 	}
 }
 
@@ -3471,11 +3687,18 @@ void ScriptParserBase::parseCode(ScriptContainerBase& container, const std::stri
 {
 	if (!srcCode.empty())
 	{
-		parseBase(container, parentName, srcCode);
+		if (false == parseBase(container, parentName, srcCode))
+		{
+			Log(LOG_ERROR) << "    for code in " << getGlobal()->getCurrentFile();
+			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
+		}
 	}
 	if (!container && !getDefault().empty())
 	{
-		parseBase(container, parentName, getDefault());
+		if (false == parseBase(container, parentName, getDefault()))
+		{
+			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
+		}
 	}
 }
 
@@ -3688,9 +3911,13 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 	{
 		return std::get<bool>(nn);
 	};
+	auto getLineFromNode = [&](const YAML::Node& n)
+	{
+		return std::to_string(n.Mark().line);
+	};
 	auto getDescriptionNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
 	{
-		return std::string("'") + std::get<std::string>(nn) + "' at line " + std::to_string(std::get<YAML::Node>(nn).Mark().line);
+		return std::string("'") + std::get<std::string>(nn) + "' at line " + getLineFromNode(std::get<YAML::Node>(nn));
 	};
 	auto getNameFromNode = [&](const std::tuple<std::string, YAML::Node, bool>& nn)
 	{
@@ -3712,6 +3939,9 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 			const auto updateNode = getNode(i, "update");
 			const auto ignoreNode = getNode(i, "ignore");
 
+			// default name for case when use don't define node with name
+			auto name = std::string{ };
+
 			{
 				// check for duplicates
 				const std::tuple<std::string, YAML::Node, bool>* last = nullptr;
@@ -3726,6 +3956,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 						else
 						{
 							last = p;
+							name = getNameFromNode(*p);
 						}
 					}
 				}
@@ -3733,8 +3964,6 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 
 			if (haveNode(deleteNode))
 			{
-				auto name = getNameFromNode(deleteNode);
-
 				auto it = findPos(name);
 				if (havePos(it))
 				{
@@ -3743,6 +3972,8 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				else
 				{
 					Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(deleteNode);
+					Log(LOG_WARNING) << "    in " << getGlobal()->getCurrentFile();
+					Log(LOG_WARNING) << ""; // dummy line to separate similar errors
 				}
 			}
 			else
@@ -3754,21 +3985,26 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				offset = i["offset"].as<double>(0) * OffsetScale;
 				if (offset == 0 || offset >= (int)OffsetMax || offset <= -(int)OffsetMax)
 				{
-					//TODO make it a exception
+					//TODO: make it a exception
 					Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
+					Log(LOG_ERROR) << "    for node at line " << getLineFromNode(i["offset"]) << " in " << getGlobal()->getCurrentFile();
+					Log(LOG_ERROR) << ""; // dummy line to separate similar errors
 					continue;
 				}
 
-				if (false == parseBase(scp, "Global Event Script", i["code"].as<std::string>("")))
 				{
-					continue;
+					auto nameWithPrefix = name.size() ? "Global:" + name : "Global off: " + i["offset"].as<std::string>();
+					if (false == parseBase(scp, nameWithPrefix, i["code"].as<std::string>("")))
+					{
+						Log(LOG_ERROR) << "    for node with code at line " << getLineFromNode(i["code"]) << " in " << getGlobal()->getCurrentFile();
+						Log(LOG_ERROR) << ""; // dummy line to separate similar errors
+						continue;
+					}
 				}
 
 
 				if (haveNode(updateNode))
 				{
-					auto name = getNameFromNode(updateNode);
-
 					auto it = findPos(name);
 					if (havePos(it))
 					{
@@ -3777,13 +4013,13 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 					}
 					else
 					{
-						Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(updateNode);
+						Log(LOG_WARNING) << "Unknown script name '" + name + "' for " + getDescriptionNode(updateNode);
+						Log(LOG_WARNING) << "    in " << getGlobal()->getCurrentFile();
+						Log(LOG_WARNING) << ""; // dummy line to separate similar errors
 					}
 				}
 				else if (haveNode(overrideNode))
 				{
-					auto name = getNameFromNode(overrideNode);
-
 					auto it = findPos(name);
 					if (havePos(it))
 					{
@@ -3792,7 +4028,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 					}
 					else
 					{
-						throw Exception("Unknown script name '" + name  + "' for " + getDescriptionNode(overrideNode));
+						throw Exception("Unknown script name '" + name + "' for " + getDescriptionNode(overrideNode));
 					}
 				}
 				else if (haveNode(ignoreNode))
@@ -3801,15 +4037,12 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				}
 				else
 				{
-					std::string name;
 					if (haveNode(newNode))
 					{
-						name = getNameFromNode(newNode);
-
 						auto it = findPos(name);
 						if (havePos(it))
 						{
-							throw Exception("Script script name '" + name  + "' already used for " + getDescriptionNode(newNode));
+							throw Exception("Script script name '" + name + "' already used for " + getDescriptionNode(newNode));
 						}
 					}
 					EventData data = EventData{};
@@ -4138,6 +4371,14 @@ const ScriptRefData* ScriptGlobal::getRef(ScriptRef name, ScriptRef postfix) con
 void ScriptGlobal::beginLoad()
 {
 
+}
+
+/**
+ * Prepare for loading file from mod.
+ */
+void ScriptGlobal::fileLoad(const std::string& path)
+{
+	_currFile = path;
 }
 
 /**
@@ -4496,6 +4737,21 @@ static auto dummyTestScriptFunctionParser = ([]
 	{
 		auto r = findOperationAndArg(help, ScriptRef{"Tag.foo.test2"});
 		assert(!!r && "func 'Tag.foo.test2'");
+
+		{
+			auto u = replaceOperation(help, r, ScriptRef{"test2"}, ScriptRef{"test3"});
+			assert(!!u && "updated 'test2' to 'Tag.foo.test3'");
+		}
+
+		{
+			auto u = replaceOperation(help, r, ScriptRef{"2"}, ScriptRef{"3"});
+			assert(!!u && "updated '2' to 'Tag.foo.test1'");
+		}
+
+		{
+			auto u = replaceOperation(help, r, ScriptRef{"test3"}, ScriptRef{"test3"});
+			assert(!u && "updated 'test3' to 'Tag.foo.test3'");
+		}
 	}
 
 	return 0;
