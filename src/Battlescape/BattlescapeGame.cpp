@@ -383,7 +383,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || unit->isBrutal();
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
-	if (!weapon || !weapon->haveAnyAmmo() || !weapon->canBeUsedInCurrentEnvironment(getDepth()))
+	if ((!weapon || !weapon->haveAnyAmmo() || !weapon->canBeUsedInCurrentEnvironment(getDepth())) && !unit->getGrenadeFromBelt())
 	{
 		if (Options::traceAI)
 		{
