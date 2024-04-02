@@ -3673,7 +3673,7 @@ void ScriptParserBase::parseNode(ScriptContainerBase& container, const std::stri
 	}
 	if (!container && !getDefault().empty())
 	{
-		if (parseBase(container, parentName, getDefault()))
+		if (false == parseBase(container, parentName, getDefault()))
 		{
 			Log(LOG_ERROR) << ""; // dummy line to separate similar errors
 		}
