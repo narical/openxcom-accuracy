@@ -2439,7 +2439,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 					//too many hangar types, give up
 					if (hangarCurr == hangarEnd)
 					{
-						return BPE_Used;
+						return BPE_Used_Hangars;
 					}
 					*hangarCurr = type;
 					++hangarCurr;
@@ -2604,7 +2604,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 		{
 			if (typeSize.second < getUsedHangars(typeSize.first))
 			{
-				return BPE_Used;
+				return BPE_Used_Hangars;
 			}
 		}			
 	}
