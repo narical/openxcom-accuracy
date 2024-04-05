@@ -1503,15 +1503,15 @@ const RuleResearch* SavedGame::selectGetOneFree(const RuleResearch* research)
 		{
 			if (isResearched(pair.first, false))
 			{
-				for (auto* research : pair.second)
+				for (auto* res : pair.second)
 				{
-					if (isResearchRuleStatusDisabled(research->getName()))
+					if (isResearchRuleStatusDisabled(res->getName()))
 					{
 						continue; // skip disabled topics
 					}
-					if (!isResearched(research, false))
+					if (!isResearched(res, false))
 					{
-						possibilities.push_back(research);
+						possibilities.push_back(res);
 					}
 				}
 			}
