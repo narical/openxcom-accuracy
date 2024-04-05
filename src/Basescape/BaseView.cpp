@@ -589,11 +589,12 @@ void BaseView::draw()
 		if (fac->getBuildTime() == 0 && fac->getRules()->getCrafts() > 0)
 		{
 			auto craftIt = _base->getCrafts()->begin();
+			std::vector<Position> drawnPositions;
 			for (const auto &p : fac->getRules()->getCraftSlots())
 			{			
 				while((craftIt != _base->getCrafts()->end()) && (((*craftIt)->getStatus() == "STR_OUT") ||  (*craftIt)->getIsAssignedToSlot() || (fac->getRules()->getHangarType() !=  (*craftIt)->getRules()->getHangarType())))
 						++craftIt;	
-				if ((craftIt != _base->getCrafts()->end()))
+				if ((craftIt != _base->getCrafts()->end()) && std::find(drawnPositions.begin(), drawnPositions.end(), p) == drawnPositions.end()) 
 				{
 					Surface *frame = _texture->getFrame((*craftIt)->getSkinSprite() + 33);		
 					int spriteWidthOffset= frame->getWidth()/2;  
@@ -604,6 +605,7 @@ void BaseView::draw()
 					frame->blitNShade(this, fx, fy);
 					fac->addCraftForDrawing(*craftIt);
 					(*craftIt)->setIsAssignedToSlot(true);
+					drawnPositions.push_back(p);
 				}
 				else
 					break;
