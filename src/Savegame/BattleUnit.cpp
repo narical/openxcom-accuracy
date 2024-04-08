@@ -2034,9 +2034,9 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		if (rand.percent(std::get<arg_specialDamageTransformChance>(args.data)) && specialDamageTransform
 			&& !getSpawnUnit())
 		{
-			auto& typeName = specialDamageTransform->getZombieUnit(this);
-			auto* type = save->getMod()->getUnit(typeName);
-			if (type->getArmor()->getSize() <= getArmor()->getSize())
+			auto& spawnName = specialDamageTransform->getZombieUnit(this);
+			auto* spawnType = save->getMod()->getUnit(spawnName);
+			if (spawnType->getArmor()->getSize() <= getArmor()->getSize())
 			{
 				UnitFaction faction = specialDamageTransform->getZombieUnitFaction();
 				if (faction == FACTION_NONE)
@@ -2054,11 +2054,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 				// converts the victim to a zombie on death
 				setRespawn(true);
 				setSpawnUnitFaction(faction);
-				setSpawnUnit(type);
+				setSpawnUnit(spawnType);
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Transforming armor type '" << this->getArmor()->getType() << "' to unit type '" << typeName << "' is not allowed because of bigger armor size";
+				Log(LOG_ERROR) << "Transforming armor type '" << this->getArmor()->getType() << "' to unit type '" << spawnName << "' is not allowed because of bigger armor size";
 			}
 		}
 

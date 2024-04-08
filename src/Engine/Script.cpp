@@ -1379,11 +1379,11 @@ int overloadCustomProc(const ScriptProcData& spd, const ScriptRefData* begin, co
 /**
  * Return public argument number of given function.
  */
-int getOverloadArgSize(const ScriptProcData& spd)
+int getOverloadArgSize(ScriptRange<ScriptRange<ArgEnum>> over)
 {
 	int argSize = 0;
 
-	for (auto& currOver : spd.overloadArg)
+	for (auto& currOver : over)
 	{
 		if (currOver)
 		{
@@ -1392,6 +1392,15 @@ int getOverloadArgSize(const ScriptProcData& spd)
 	}
 
 	return argSize;
+}
+
+/**
+ * Return public argument number of given function.
+ */
+[[maybe_unused]]
+int getOverloadArgSize(const ScriptProcData& spd)
+{
+	return getOverloadArgSize(spd.overloadArg);
 }
 
 /**
@@ -1417,6 +1426,7 @@ ScriptRange<ArgEnum> getOverloadArgType(ScriptRange<ScriptRange<ArgEnum>> over, 
 /**
  * Return type of public argument of given function.
  */
+[[maybe_unused]]
 ScriptRange<ArgEnum> getOverloadArgType(const ScriptProcData& spd, int argPos)
 {
 	return getOverloadArgType(spd.overloadArg, argPos);
@@ -2039,13 +2049,13 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 
 		// init part of loop, try parse arg types of control registers
 		auto [initBestProc, initBestOverload] = getProcAndRegTypes(initFunction, 2);
-		if (!correct || !initBestOverload)
+		if (!correct || getOverloadArgSize(initBestOverload) != 2)
 		{
 			Log(LOG_ERROR) << "Error in processing init of 'loop'";
 			return false;
 		}
-		auto curr = parseReg({}, *initBestOverload.begin());
-		auto limit = parseReg({}, *(initBestOverload.begin() + 1));
+		auto curr = parseReg({}, getOverloadArgType(initBestOverload, 0));
+		auto limit = parseReg({}, getOverloadArgType(initBestOverload, 1));
 		correct &= !!curr;
 		correct &= !!limit;
 		correct &= parseCustomProc(*initBestProc, ph, std::begin(loopArgs), std::end(loopArgs));
@@ -2065,13 +2075,13 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 		// increment part and getting current element of loop
 		correct &= loopArgs.tryPushBack(functionArgSep);
 		auto [loopBestProc, loopBestOverload] = getProcAndRegTypes(loopFunction, 1);
-		if (!correct || !loopBestOverload)
+		if (!correct || getOverloadArgSize(loopBestOverload) != 1)
 		{
 			Log(LOG_ERROR) << "Error in processing step of 'loop'";
 			return false;
 		}
 
-		auto var = parseReg(begin[1].name, *loopBestOverload.begin());
+		auto var = parseReg(begin[1].name, getOverloadArgType(loopBestOverload, 0));
 		correct &= !!var;
 		correct &= parseCustomProc(*loopBestProc, ph, std::begin(loopArgs), std::end(loopArgs));
 	}
