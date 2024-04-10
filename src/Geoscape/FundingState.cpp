@@ -111,10 +111,8 @@ FundingState::FundingState()
 	_txtCountry->setText(tr("STR_COUNTRY"));
 
 	_txtFunding->setText(tr("STR_FUNDING"));
-	_txtFunding->setAlign(ALIGN_RIGHT);
 
 	_txtChange->setText(tr("STR_CHANGE"));
-	_txtChange->setAlign(ALIGN_RIGHT);
 
 	//	_lstCountries->setColumns(3, 108, 100, 52);
 	_lstCountries->setColumns(3, 100, 60, 100);
