@@ -1935,7 +1935,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (isWoundable())
 		{
-			setValueMax(_fatalWounds[bodypart], std::get<toWound>(args.data), 0, 100);
+			setValueMax(_fatalWounds[bodypart], std::get<toWound>(args.data), 0, UnitStats::BaseStatLimit);
 			moraleChange(-std::get<toWound>(args.data));
 		}
 
@@ -4415,7 +4415,7 @@ void BattleUnit::setFatalWound(int wound, UnitBodyPart part)
 {
 	if (part < 0 || part >= BODYPART_MAX)
 		return;
-	_fatalWounds[part] = Clamp(wound, 0, 100);
+	_fatalWounds[part] = Clamp(wound, 0, UnitStats::BaseStatLimit);
 }
 
 /**
@@ -4431,7 +4431,7 @@ void BattleUnit::heal(UnitBodyPart part, int woundAmount, int healthAmount)
 		return;
 	}
 
-	setValueMax(_fatalWounds[part], -woundAmount, 0, 100);
+	setValueMax(_fatalWounds[part], -woundAmount, 0, UnitStats::BaseStatLimit);
 	setValueMax(_health, healthAmount, std::min(_health, 1), getBaseStats()->health); //Hippocratic Oath: First do no harm
 
 }
