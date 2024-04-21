@@ -300,9 +300,10 @@ int Projectile::calculateThrow(double accuracy)
 		else
 		{
 			applyAccuracy(originVoxel, &targetVoxel, accuracy, true, false); //arcing shot deviation
+			targetTile = _save->getTile(targetVoxel.toTile());
+			if (!targetTile) break;
 			deltas = Position(0,0,0);
 		}
-
 
 		test = _save->getTileEngine()->calculateParabolaVoxel(originVoxel, targetVoxel, true, &_trajectory, _action.actor, curvature, deltas);
 		if (forced) return O_OBJECT; //fake hit
@@ -688,6 +689,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					deviate.x += RNG::generate(-horizontal_deviation, horizontal_deviation);
 					deviate.y += RNG::generate(-horizontal_deviation, horizontal_deviation);
 					deviate.z += RNG::generate(-vertical_deviation,   vertical_deviation);
+
+					// if the point belongs to invalid tile
+					Tile *testTile = _save->getTile(deviate.toTile());
+					if (!testTile) continue;
 
 					// if the point is between shooter and target - we don't like it, look for the next one
 					// we need a point close to normal to LOS, or behind the target
