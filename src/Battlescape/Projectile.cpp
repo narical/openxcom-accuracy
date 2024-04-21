@@ -332,6 +332,8 @@ int Projectile::calculateThrow(double accuracy)
  */
 void Projectile::applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine)
 {
+	bool isArcingShot = _action.weapon->getArcingShot(_action.type);
+
 	int distanceTiles = 0;
 	int distanceVoxels = 0;
 	bool hasLOS = false;
@@ -376,7 +378,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (upperLimit > maxRange) upperLimit = maxRange;
 
-	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH && _action.type != BA_THROW)
+	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH && _action.type != BA_THROW && !isArcingShot)
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
 		int targetSize = 0;

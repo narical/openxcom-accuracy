@@ -1375,6 +1375,7 @@ void Map::drawTerrain(Surface *surface)
 								double maxExposure = 0.0;
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
+								bool isArcingShot = action->weapon->getArcingShot(action->type);
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
 								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
@@ -1446,7 +1447,7 @@ void Map::drawTerrain(Surface *surface)
 								_txtAccuracy->setColor( TXT_YELLOW );
 								accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
 
-								if (_cursorType == CT_AIM && Options::battleRealisticAccuracy) // Realistic accuracy
+								if (_cursorType == CT_AIM && Options::battleRealisticAccuracy && !isArcingShot) // Realistic accuracy
 								{
 									BattleUnit* shooterUnit = action->actor;
 
