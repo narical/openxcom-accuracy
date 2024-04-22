@@ -18,18 +18,6 @@ jobs:
             compiler: clang
             cpp-compiler: clang++
 
-          - name: Linux
-            os: ubuntu-20.04  # -latest is still stuck at 18.04
-            compiler: mingw
-            cpp-compiler: mingw
-
-          - name: macOS
-            os: macOS-latest
-            packages: ccache sdl sdl_gfx sdl_image sdl_mixer
-            compiler: clang
-            cpp-compiler: clang++
-            app-bundle: openxcom.app  # all other builds default to bin/
-
     runs-on: ${{ matrix.os }}
 
     steps:
