@@ -849,6 +849,7 @@ alienDeployments:
     duration: [4, 10]
     despawnPenalty: 1000
   - type: STR_ALIEN_BASE_ASSAULT
+    minBrutalAggression: 1
     data:
       - alienRank: 6
         lowQty: 1
@@ -1015,6 +1016,7 @@ alienDeployments:
     objectivePopup: STR_CONTROL_CENTER_DESTROYED
     points: 5
   - type: STR_BASE_DEFENSE
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -1174,6 +1176,7 @@ alienDeployments:
       background: BACK01.SCR
       music: GMENBASE
   - type: STR_MARS_CYDONIA_LANDING
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -1252,6 +1255,7 @@ alienDeployments:
       music: GMNEWMAR
       showTarget: false
   - type: STR_MARS_THE_FINAL_ASSAULT
+    minBrutalAggression: 1
     data:
       - alienRank: 0
         lowQty: 2

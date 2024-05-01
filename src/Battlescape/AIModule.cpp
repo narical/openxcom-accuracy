@@ -3035,6 +3035,8 @@ void AIModule::brutalThink(BattleAction* action)
 	std::map<Position, int, PositionComparator> friendReachable;
 	bool immobileEnemies = false;
 	int myAggressiveness = _unit->getAggressiveness();
+	if (_myFaction == FACTION_HOSTILE)
+		myAggressiveness = std::max(myAggressiveness, _save->getMod()->getDeployment(_save->getMissionType())->getMinBrutalAggression());
 	float totalEnemyPower = 0;
 	float totalAllyPower = 0;
 

@@ -1117,6 +1117,7 @@ alienDeployments: #done
     duration: [4, 10]
     despawnPenalty: 1000
   - type: STR_CARGO_SHIP_P1
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -1420,6 +1421,7 @@ alienDeployments: #done
       background: BACK01.SCR
     markerName: STR_TERROR_SITE
   - type: STR_CRUISE_SHIP_P1
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -1723,6 +1725,7 @@ alienDeployments: #done
       background: BACK01.SCR
     markerName: STR_TERROR_SITE
   - type: STR_ARTIFACT_SITE_P1
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -1882,6 +1885,7 @@ alienDeployments: #done
     despawnPenalty: 2000
     objectiveFailed: [STR_ALIEN_SYNOMIUM_DEVICE_FAILED, -750]
   - type: STR_ARTIFACT_SITE_P2
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -2034,6 +2038,7 @@ alienDeployments: #done
     objectiveFailed: [STR_ALIEN_SYNOMIUM_DEVICE_FAILED, -750]
     objectivePopup: STR_CONTROL_CENTER_DESTROYED
   - type: STR_ALIEN_BASE_ASSAULT
+    minBrutalAggression: 1
     data:
       - alienRank: 6
         lowQty: 2
@@ -2210,6 +2215,7 @@ alienDeployments: #done
       background: BACK01.SCR
     points: 5
   - type: STR_ALIEN_COLONY_P2
+    minBrutalAggression: 1
     data:
       - alienRank: 6
         lowQty: 2
@@ -2381,6 +2387,7 @@ alienDeployments: #done
     objectiveComplete: [STR_ALIEN_BASE_CONTROL_DESTROYED, 500]
     objectivePopup: STR_CONTROL_CENTER_DESTROYED
   - type: STR_BASE_DEFENSE # use of this name is hard coded. this is because of REASONS.
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -2553,6 +2560,7 @@ alienDeployments: #done
       music: GMDEFBAS
       background: BACK01.SCR
   - type: STR_TLETH_P1
+    minBrutalAggression: 1
     data:
       - alienRank: 5
         lowQty: 4
@@ -2656,6 +2664,7 @@ alienDeployments: #done
       showTarget: false
       cutscene: tleth
   - type: STR_TLETH_P2
+    minBrutalAggression: 1
     data:
       - alienRank: 0
         lowQty: 2
@@ -2798,6 +2807,7 @@ alienDeployments: #done
       showTarget: false
       showCraft: false
   - type: STR_TLETH_P3
+    minBrutalAggression: 1
     data:
       - alienRank: 0
         lowQty: 2
