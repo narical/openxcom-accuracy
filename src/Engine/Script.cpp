@@ -25,6 +25,7 @@
 #include <bitset>
 #include <array>
 #include <numeric>
+#include <climits>
 
 #include "Logger.h"
 #include "Options.h"
@@ -115,10 +116,21 @@ static inline void addShade_h(int& reg, const int& var)
 [[gnu::always_inline]]
 static inline RetEnum mulAddMod_h(int& reg, const int& mul, const int& add, const int& mod)
 {
-	const int a = reg * mul + add;
+	const int64_t a = ((int64_t)reg) * mul + add;
 	if (mod)
 	{
 		reg = (a % mod + mod) % mod;
+		return RetContinue;
+	}
+	return RetError;
+}
+
+[[gnu::always_inline]]
+static inline RetEnum mulDiv_h(int& reg, const int& mul, const int& div)
+{
+	if (div)
+	{
+		reg = (((int64_t)reg) * mul) / div;
 		return RetContinue;
 	}
 	return RetError;
@@ -239,9 +251,9 @@ static inline RetEnum bit_popcount_h(int& reg)
 	IMPL(offset,	MACRO_QUOTE({ Reg0 = Reg0 * Data1 + Data2;						return RetContinue; }),		(int& Reg0, int Data1, int Data2),			"arg1 = (arg1 * arg2) + arg3") \
 	IMPL(offsetmod,	MACRO_QUOTE({ return mulAddMod_h(Reg0, Mul1, Add2, Mod3);							}),		(int& Reg0, int Mul1, int Add2, int Mod3),	"arg1 = ((arg1 * arg2) + arg3) % arg4") \
 	\
-	IMPL(div,		MACRO_QUOTE({ if (!Data1) return RetError; Reg0 /= Data1;					return RetContinue; }),		(int& Reg0, int Data1),		"arg1 = arg1 / arg2") \
-	IMPL(mod,		MACRO_QUOTE({ if (!Data1) return RetError; Reg0 %= Data1;					return RetContinue; }),		(int& Reg0, int Data1),		"arg1 = arg1 % arg2") \
-	IMPL(muldiv,	MACRO_QUOTE({ if (!Data2) return RetError; Reg0 = (Reg0 * Data1) / Data2;	return RetContinue; }),		(int& Reg0, int Data1, int Data2),	"arg1 = (arg1 * arg2) / arg3") \
+	IMPL(div,		MACRO_QUOTE({ if (!Data1) return RetError; Reg0 /= Data1;		return RetContinue; }),		(int& Reg0, int Data1),		"arg1 = arg1 / arg2") \
+	IMPL(mod,		MACRO_QUOTE({ if (!Data1) return RetError; Reg0 %= Data1;		return RetContinue; }),		(int& Reg0, int Data1),		"arg1 = arg1 % arg2") \
+	IMPL(muldiv,	MACRO_QUOTE({ return mulDiv_h(Reg0, Data1, Data2);									}),		(int& Reg0, int Data1, int Data2),	"arg1 = (arg1 * arg2) / arg3") \
 	\
 	IMPL(shl,		MACRO_QUOTE({ Reg0 <<= Data1;									return RetContinue; }),		(int& Reg0, int Data1),		"Left bit shift of arg1 by arg2") \
 	IMPL(shr,		MACRO_QUOTE({ Reg0 >>= Data1;									return RetContinue; }),		(int& Reg0, int Data1),		"Right bit shift of arg1 by arg2") \
@@ -4978,6 +4990,34 @@ static auto dummyTestScriptArgList = ([]
 	assert(list3.size() == 16);
 	assert(!list3.tryPushBack(arg_a));
 	assert(list3.size() == 16);
+
+	return 0;
+})();
+
+
+[[maybe_unused]]
+static auto dummyTestFunctions = ([]
+{
+	auto call_mulDiv_h = [](int reg, int mul, int div)
+	{
+		mulDiv_h(reg, mul, div);
+		return reg;
+	};
+
+	assert(1 == call_mulDiv_h(1, 100, 100));
+	assert(1 == call_mulDiv_h(2, 50, 100));
+	assert(INT_MAX == call_mulDiv_h(INT_MAX, 100, 100));
+	assert(INT_MAX / 2 == call_mulDiv_h(INT_MAX, 50, 100));
+
+	auto call_mulAddMod_h = [](int reg, int mul, int add, int div)
+	{
+		mulAddMod_h(reg, mul, add, div);
+		return reg;
+	};
+
+	assert(1 == call_mulAddMod_h(100, 100, 1, 100));
+	assert(1 == call_mulAddMod_h(INT_MAX, 100, 1, 100));
+
 
 	return 0;
 })();
