@@ -300,9 +300,10 @@ int Projectile::calculateThrow(double accuracy)
 		else
 		{
 			applyAccuracy(originVoxel, &targetVoxel, accuracy, true, false); //arcing shot deviation
+			targetTile = _save->getTile(targetVoxel.toTile());
+			if (!targetTile) break;
 			deltas = Position(0,0,0);
 		}
-
 
 		test = _save->getTileEngine()->calculateParabolaVoxel(originVoxel, targetVoxel, true, &_trajectory, _action.actor, curvature, deltas);
 		if (forced) return O_OBJECT; //fake hit
@@ -331,6 +332,8 @@ int Projectile::calculateThrow(double accuracy)
  */
 void Projectile::applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine)
 {
+	bool isArcingShot = _action.weapon->getArcingShot(_action.type);
+
 	int distanceTiles = 0;
 	int distanceVoxels = 0;
 	bool hasLOS = false;
@@ -375,7 +378,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	if (upperLimit > maxRange) upperLimit = maxRange;
 
-	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH &&_action.type != BA_THROW)
+	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH && _action.type != BA_THROW && !isArcingShot)
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
 		int targetSize = 0;
@@ -689,6 +692,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					deviate.y += RNG::generate(-horizontal_deviation, horizontal_deviation);
 					deviate.z += RNG::generate(-vertical_deviation,   vertical_deviation);
 
+					// if the point belongs to invalid tile
+					Tile *testTile = _save->getTile(deviate.toTile());
+					if (!testTile) continue;
+
 					// if the point is between shooter and target - we don't like it, look for the next one
 					// we need a point close to normal to LOS, or behind the target
 					if (Position::distanceSq(origin, deviate) < Position::distanceSq(origin,visibleCenter)) continue;
@@ -793,23 +800,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		int deviation = RNG::generate(0, 100) - (accuracy * 100);
 
-		// Shooting has per-voxel precision
-		if (_action.type != BA_THROW)
-		{
-			if (deviation >= 0)
-				deviation += 50;	// add extra spread to "miss" cloud
-			else
-				deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
-		}
-
-		// Throwing has per-tile precision
+		if (deviation >= 0)
+			deviation += 50;	// add extra spread to "miss" cloud
 		else
-		{
-			if (deviation >= 0)
-				deviation += 30;	// Extra spread to "miss" cloud is like 2 additional tiles maximum
-			else
-				deviation = 18;		// Successfull hit means that "grenade" hits target or (sometimes) adjanced tile
-		}
+			deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
 
 		deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
