@@ -2968,10 +2968,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
-				//if (Options::traceAI)
+				// if (Options::traceAI)
 				//{
 				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
-				//}
+				// }
 				return;
 			}
 		}
@@ -2982,10 +2982,10 @@ void AIModule::brutalThink(BattleAction* action)
 				action->type = BA_WAIT;
 				action->number -= 1;
 				_save->getBattleGame()->setNextUnitToSelect(ally);
-				//if (Options::traceAI)
+				// if (Options::traceAI)
 				//{
 				//	Log(LOG_INFO) << "#" << _unit->getId() << " with myReachable: " << myReachable << " and " << myDist << " wants " << ally->getId() << " with allyReachable: " << allyReachable << " and " << allyDist << " to move next.";
-				//}
+				// }
 				return;
 			}
 		}
@@ -2994,7 +2994,7 @@ void AIModule::brutalThink(BattleAction* action)
 	// Create reachabiliy and turncost-list for the entire map
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: " << _save->getTurn() << " Intelligence: "<<_unit->getBrutalIntelligence();
+		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: " << _save->getTurn() << " Intelligence: " << _unit->getBrutalIntelligence();
 	}
 
 	if (_tuWhenChecking != _unit->getTimeUnits())
@@ -3036,7 +3036,13 @@ void AIModule::brutalThink(BattleAction* action)
 	bool immobileEnemies = false;
 	int myAggressiveness = _unit->getAggressiveness();
 	if (_myFaction == FACTION_HOSTILE)
-		myAggressiveness = std::max(myAggressiveness, _save->getMod()->getDeployment(_save->getMissionType())->getMinBrutalAggression());
+	{
+		AlienDeployment* deployment = _save->getMod()->getDeployment(_save->getReinforcementsDeployment());
+		if (deployment == nullptr)
+			deployment = _save->getMod()->getDeployment(_save->getMissionType());
+		if (deployment != nullptr)
+			myAggressiveness = std::max(myAggressiveness, deployment->getMinBrutalAggression());
+	}
 	float totalEnemyPower = 0;
 	float totalAllyPower = 0;
 
