@@ -2334,7 +2334,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 
 	if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
 	{
-		Log(LOG_ERROR) << "Can't create variable of type '" << begin[0].name.toString() << "'";
+		Log(LOG_ERROR) << "Can't create variable of type '" << begin[0].name.toString() << "', require 'ptr'";
 		return false;
 	}
 
