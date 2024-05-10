@@ -3889,7 +3889,7 @@ const BattleItem *BattleUnit::getActiveHand(const BattleItem *left, const Battle
  * Check if we have ammo and reload if needed (used for AI).
  * @return Do we have ammo?
  */
-bool BattleUnit::reloadAmmo()
+bool BattleUnit::reloadAmmo(bool justCheckIfICould)
 {
 	BattleItem *list[2] =
 	{
@@ -3924,6 +3924,8 @@ bool BattleUnit::reloadAmmo()
 					ammo = bi;
 					slotAmmo = slot;
 				}
+				if (justCheckIfICould)
+					ammo = bi;
 			}
 		}
 
@@ -3944,6 +3946,8 @@ bool BattleUnit::reloadAmmo()
 			_lastReloadSound = sound;
 			return true;
 		}
+		if (ammo && justCheckIfICould)
+			return true;
 	}
 	return false;
 }

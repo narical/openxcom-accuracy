@@ -497,7 +497,7 @@ public:
 	/// Choose what weapon was last use by unit.
 	const BattleItem *getActiveHand(const BattleItem *left, const BattleItem *right) const;
 	/// Reloads a weapon if needed.
-	bool reloadAmmo();
+	bool reloadAmmo(bool justCheckIfICould = false);
 
 	/// Toggle the right hand as main hand for reactions.
 	void toggleRightHandForReactions(bool isCtrl);
