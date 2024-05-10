@@ -1636,7 +1636,7 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									// If target is a unit without a LoF - show just a brown cursor
-									else if (unit && maxVoxels == 0)
+									else if (unit && (unit->getVisible() || _save->getDebugMode()) && maxVoxels == 0)
 									{
 										_txtAccuracy->setColor( TXT_BROWN );
 									}
