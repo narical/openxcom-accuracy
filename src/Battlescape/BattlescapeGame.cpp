@@ -379,11 +379,11 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	}
 	action.tuBefore = action.actor->getTimeUnits();
 	_AIActionCounter = action.number;
-	BattleItem *weapon = unit->getMainHandWeapon();
+	BattleItem *weapon = unit->getMainHandWeapon(true, false);
 	bool pickUpWeaponsMoreActively = unit->getPickUpWeaponsMoreActively() || unit->isBrutal();
 	bool weaponPickedUp = false;
 	bool walkToItem = false;
-	if ((!weapon || !weapon->haveAnyAmmo() || !weapon->canBeUsedInCurrentEnvironment(getDepth())) && !unit->getGrenadeFromBelt())
+	if (!weapon || (!weapon->haveAnyAmmo() && !unit->reloadAmmo(true)) || !weapon->canBeUsedInCurrentEnvironment(getDepth()))
 	{
 		if (Options::traceAI)
 		{
