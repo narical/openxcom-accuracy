@@ -3489,8 +3489,6 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	if (_traceAI)
-		Log(LOG_INFO) << "iHaveLof : " << iHaveLof << " sweep - mode : " << sweepMode << " could be found : " << amInLoSToFurthestReachable << " energy - recovery : " << getEnergyRecovery(_unit) << " myAggressiveness : " << myAggressiveness << " base - aggressiveness : " << _unit->getAggressiveness();
-	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (_traceAI && immobileEnemies)
 		Log(LOG_INFO) << "Immobile enemies detected. Taking cover takes precedent over attacking.";
@@ -3520,6 +3518,11 @@ void AIModule::brutalThink(BattleAction* action)
 			wantToPrime = true;
 		}
 	}
+	float myWeaponScore = getItemPickUpScore(_unit->getMainHandWeapon(true, false));
+	if (saveDistance)
+		improveItemization(myWeaponScore, action);
+	if (_traceAI)
+		Log(LOG_INFO) << "iHaveLof : " << iHaveLof << " sweep - mode : " << sweepMode << " could be found : " << amInLoSToFurthestReachable << " energy - recovery : " << getEnergyRecovery(_unit) << " myAggressiveness : " << myAggressiveness << " base - aggressiveness : " << _unit->getAggressiveness() << " wantToPrime: " << wantToPrime << " saveDistance: " << saveDistance << " contact: " << contact;
 	bool winnerWasSpecialDoorCase = false;
 	bool shouldHaveLofAfterMove = false;
 	bool shouldEndTurnAfterMove = false;
@@ -3821,12 +3824,30 @@ void AIModule::brutalThink(BattleAction* action)
 						else
 							okayCoverScore = 100 / discoverThreat;
 					}
-					else if (myAggressiveness > 0)
+					else if (myAggressiveness > 0 && walkToDist < myWalkToDist)
 					{
 						if (!_save->getTileEngine()->isNextToDoor(tile))
 							goodCoverScore = 100 / (discoverThreat + walkToDist);
 						else
 							okayCoverScore = 100 / (discoverThreat + walkToDist);
+					}
+					float highestPickupScore = 0;
+					for (BattleItem* item : *tile->getInventory())
+					{
+						float pickUpScore = getItemPickUpScore(item);
+						if (pickUpScore > myWeaponScore && pickUpScore > highestPickupScore)
+						{
+							highestPickupScore = pickUpScore;
+						}
+					}
+					if (highestPickupScore > 0)
+					{
+						if (greatCoverScore > 0)
+							greatCoverScore += highestPickupScore - myWeaponScore;
+						if (goodCoverScore > 0)
+							goodCoverScore += highestPickupScore - myWeaponScore;
+						if (okayCoverScore > 0)
+							okayCoverScore += highestPickupScore - myWeaponScore;
 					}
 				}
 				if ((discoverThreat == 0 || immobileEnemies) && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
@@ -4013,9 +4034,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			//if (_traceAI)
 			//{
-			//	tile->setMarkerColor(discoverThreat);
+			//	tile->setMarkerColor(goodCoverScore);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(goodCoverScore * 100);
 			//}
 		}
 		if (_traceAI)
@@ -4103,6 +4124,27 @@ void AIModule::brutalThink(BattleAction* action)
 		travelTarget = bestFallbackPosition;
 		shouldEndTurnAfterMove = true;
 	}
+	if (travelTarget == myPos)
+	{
+		if (wantToPrime)
+		{
+			BattleItem* grenade = _unit->getGrenadeFromBelt();
+			primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand());
+			if (primeCost <= _unit->getTimeUnits())
+			{
+				_unit->spendTimeUnits(grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand()));
+				_unit->spendCost(_unit->getActionTUs(BA_PRIME, grenade));
+				grenade->setFuseTimer(0); // don't just spend the TUs for nothing! If we already circumvent the API anyways, we might as well actually prime the damn thing!
+				if (_traceAI)
+					Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade.";
+				action->type = BA_RETHINK;
+				action->number -= 1;
+				return;
+			}
+		}
+		improveItemization(myWeaponScore, action);
+	}
+
 	if (_traceAI)
 	{
 		Log(LOG_INFO) << "Brutal-AI wants to go from "
@@ -6185,7 +6227,7 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 		return 0;
 	float score = 0;
 	bool valid = false;
-	if (item->haveAnyAmmo())
+	if (item->haveAnyAmmo() || item == _unit->getMainHandWeapon(true, false))
 	{
 		if (item->getRules()->getBattleType() == BT_FIREARM || item->getRules()->getBattleType() == BT_GRENADE || item->getRules()->getBattleType() == BT_MELEE)
 			valid = true;
@@ -6204,9 +6246,14 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 	if (!valid)
 		return 0;
 	score = item->getRules()->getSellCost();
-	float encumbrance = (float)_unit->getBaseStats()->strength / (float)(_unit->getCarriedWeight() + item->getRules()->getWeight());
+	int mainHandWeight = 0;
+	if (_unit->getMainHandWeapon())
+		mainHandWeight = _unit->getMainHandWeapon()->getRules()->getWeight();
+	float encumbrance = (float)_unit->getBaseStats()->strength / (float)(_unit->getCarriedWeight() - mainHandWeight + item->getRules()->getWeight());
 	if (encumbrance < 1)
 		score *= encumbrance;
+	if (_traceAI)
+		Log(LOG_INFO) << "Pickup-score for " << item->getRules()->getName() << ": " << score;
 	return score;
 }
 
@@ -6635,6 +6682,83 @@ std::vector<Tile*> AIModule::getDoorTiles(const std::vector<PathfindingNode*> no
 		}
 	}
 	return doorVector;
+}
+
+bool AIModule::improveItemization(float currentItemScore, BattleAction* action)
+{
+	bool pickedSomethingUp = false;
+	Tile* myTile = _unit->getTile();
+	Position myPos = _unit->getPosition();
+	if (!myTile->getInventory()->empty())
+	{
+		float highestPickupScore = 0;
+		BattleItem* bestItem = nullptr;
+		for (BattleItem* item : *myTile->getInventory())
+		{
+			float pickUpScore = getItemPickUpScore(item);
+			if (pickUpScore > currentItemScore && pickUpScore > highestPickupScore)
+			{
+				highestPickupScore = pickUpScore;
+				bestItem = item;
+			}
+		}
+		if (bestItem)
+		{
+			if (_unit->getMainHandWeapon())
+			{
+				BattleActionCost cost{action->actor};
+				cost.Time += 2;
+				if (cost.spendTU())
+				{
+					if (_traceAI)
+						Log(LOG_INFO) << "Dropping " << _unit->getMainHandWeapon()->getRules()->getName() << " to " << myTile->getPosition() << " to replace it with " << bestItem->getRules()->getName();
+					_save->getBattleGame()->dropItem(myPos, _unit->getMainHandWeapon());
+				}
+			}
+			if (_save->getBattleGame()->takeItemFromGround(bestItem, action) == 0)
+			{
+				pickedSomethingUp = true;
+				if (_traceAI)
+					Log(LOG_INFO) << "Picked up " << bestItem->getRules()->getName() << " from " << myTile->getPosition();
+			}
+		}
+		bool additionalPickup = false;
+		do
+		{
+			additionalPickup = false;
+			BattleItem* itemToPickup = nullptr;
+			for (BattleItem* item : *myTile->getInventory())
+			{
+				if (item->getRules()->getWeight() + _unit->getCarriedWeight() > _unit->getBaseStats()->strength)
+					continue;
+				bool IsUsefull = false;
+				if (item->getRules()->getBattleType() == BT_AMMO && _unit->getMainHandWeapon())
+				{
+					if (_unit->getMainHandWeapon()->getRules()->getSlotForAmmo(item->getRules()) != -1)
+						IsUsefull = true;
+				}
+				if (item->getRules()->getBattleType() == BT_GRENADE)
+					IsUsefull = true;
+				if (IsUsefull)
+				{
+					itemToPickup = item;
+					break;
+				}
+			}
+			if (itemToPickup)
+			{
+				int takeResult = _save->getBattleGame()->takeItemFromGround(itemToPickup, action);
+				if (takeResult == 0)
+				{
+					pickedSomethingUp = true;
+					if (_traceAI)
+						Log(LOG_INFO) << "Picked up " << itemToPickup->getRules()->getName() << " from " << myTile->getPosition();
+					additionalPickup = true;
+				}
+			}
+		} while (additionalPickup);
+	}
+	return pickedSomethingUp;
 }
 
 }

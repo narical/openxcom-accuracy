@@ -257,6 +257,8 @@ public:
 	float getUnitPower(BattleUnit* unit);
 	/// returns a vector of Tiles next to doors
 	std::vector<Tile*> getDoorTiles(const std::vector<PathfindingNode*> nodeVector);
+	/// tries to pick up weapon and ammo from current tile if it's an upgrade
+	bool improveItemization(float currentItemScore, BattleAction* action);
 };
 
 }
