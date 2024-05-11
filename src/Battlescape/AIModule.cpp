@@ -4629,6 +4629,7 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 			break;
 		}
 	}
+	bool save = true;
 	if (targetNode != NULL)
 	{
 		while (targetNode->getPrevNode() != NULL)
@@ -4696,12 +4697,12 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 				if (unit->hasVisibleTile(tile) && suspectReaction)
 				{
 					if (unit->hasVisibleUnit(_unit))
-						return false;
+						save = false;
 					else if (targetNode->getPrevNode())
 					{
 						Tile *prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
 						if (!_unit->isCheatOnMovement() || unit->hasVisibleTile(prevTile) && unit->getReactionScore() > (double)_unit->getBaseStats()->reactions * ((double)(_unit->getTimeUnits() - (double)targetNode->getPrevNode()->getTUCost(false).time) / (_unit->getBaseStats()->tu)))
-							return false;
+							save = false;
 					}
 				}
 				if (!_unit->isCheatOnMovement())
@@ -4710,14 +4711,14 @@ bool AIModule::isPathToPositionSave(Position target, bool &saveForProxies)
 					{
 						Tile* prevTile = _save->getTile(targetNode->getPrevNode()->getPosition());
 						if (hasTileSight(_save->getTileCoords(unit->getTileLastSpotted(_myFaction)), prevTile->getPosition()))
-							return false;
+							save = false;
 					}
 				}
 			}
 			targetNode = targetNode->getPrevNode();
 		}
 	}
-	return true;
+	return save;
 }
 
 bool AIModule::brutalPsiAction()
