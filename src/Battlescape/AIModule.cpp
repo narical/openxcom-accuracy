@@ -5173,11 +5173,16 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
 	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
 	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getStunFinalDamage(damage) / (2 * damage);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
+	if (damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) > 0)
+		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
+	if (damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) > 0)
+		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
+	if (damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) > 0)
+		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
+	if (damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) > 0)
+		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
+	if (damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) > 0)
+		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
 
