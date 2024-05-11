@@ -124,6 +124,8 @@ en-US:
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic - tight spread, high chance to destroy target cover  1> Normal - tighter than vanilla, wider then 'Realistic'"
   STR_BATTLEREALISTICDISPLAYROLLS: "Realistic accuracy display RNG rolls"
   STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
+  STR_BATTLEALTGRENADES: "Alternate throwing accuracy"
+  STR_BATTLEALTGRENADES_DESC: "Less precise throwing, additional penalty for each tile after Sqrt(T.Accuracy)*3 distance"
   STR_INSTANTPRIME: "One-click grenade priming"
   STR_INSTANTPRIME_DESC: "You can no longer select the amount of turns after which grenades shall explode. The timer will just be set to 0 without having to pick a value."
   STR_UPDATETURNSSINCESEENBYCLUE: "Precise projectile-tracking"

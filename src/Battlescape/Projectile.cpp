@@ -800,10 +800,28 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		int deviation = RNG::generate(0, 100) - (accuracy * 100);
 
-		if (deviation >= 0)
-			deviation += 50;	// add extra spread to "miss" cloud
+		// Alternative throwing mechanic
+		if (_action.type == BA_THROW && Options::battleAltGrenades)
+		{
+			int maxDistanceWithoutPenalty = sqrt(accuracy * 100) * 3;
+			int penalty = std::max( 0, (distanceTiles - maxDistanceWithoutPenalty)*16 );
+			deviation += RNG::generate(0, penalty);
+
+			if (deviation >= 0)
+				deviation += 30;	// Extra spread to "miss" cloud is like 2 additional tiles maximum
+			else
+				deviation = 18;		// Successfull hit means that "grenade" hits target or (sometimes) adjanced tile
+									// Throwing has per-tile precision
+		}
+
+		// Shooting has per-voxel precision
 		else
-			deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
+		{
+			if (deviation >= 0)
+				deviation += 50;	// add extra spread to "miss" cloud
+			else
+				deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
+		}
 
 		deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
