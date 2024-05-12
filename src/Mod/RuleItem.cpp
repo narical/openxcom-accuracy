@@ -943,9 +943,9 @@ int RuleItem::getBuyCostAdjusted(const Base* base, const SavedGame* save) const
 {
 	(void)base; //TODO: not exposed to scripts yet
 
-	int buyPriceCoefficient = 100;
+	int buyPriceCoefficient = save->getBuyPriceCoefficient();
 	int cost = getBuyCost();
-	int adjusted = cost;
+	int adjusted = ((int64_t)cost) * buyPriceCoefficient / 100;
 
 	adjusted = ModScript::scriptFunc2<ModScript::BuyCostItem>(this, adjusted, cost, this, save, buyPriceCoefficient);
 
