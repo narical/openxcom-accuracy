@@ -1012,6 +1012,16 @@ int SavedGame::getSellPriceCoefficient() const
 }
 
 /**
+ * Returns the game's buy price coefficient based
+ * on the current difficulty level.
+ * @return Buy price coefficient.
+ */
+int SavedGame::getBuyPriceCoefficient() const
+{
+	return Mod::BUY_PRICE_COEFFICIENT[std::min((int)_difficulty, 4)];
+}
+
+/**
  * Returns the game's current ending.
  * @return Ending state.
  */

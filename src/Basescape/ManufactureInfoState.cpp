@@ -257,8 +257,8 @@ void ManufactureInfoState::initProfitInfo ()
 	{
 		for (auto& pair : manuf->getProducedItems())
 		{
-			int64_t adjustedSellValue = pair.first->getSellCost();
-			adjustedSellValue = adjustedSellValue * pair.second * _game->getSavedGame()->getSellPriceCoefficient() / 100;
+			int64_t adjustedSellValue = pair.first->getSellCostAdjusted(_base, _game->getSavedGame());
+			adjustedSellValue *= pair.second;
 			_producedItemsValue += adjustedSellValue;
 		}
 	}

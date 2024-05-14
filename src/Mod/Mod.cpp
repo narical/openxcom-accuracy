@@ -184,6 +184,7 @@ std::string Mod::DEBRIEF_MUSIC_GOOD;
 std::string Mod::DEBRIEF_MUSIC_BAD;
 int Mod::DIFFICULTY_COEFFICIENT[5];
 int Mod::SELL_PRICE_COEFFICIENT[5];
+int Mod::BUY_PRICE_COEFFICIENT[5];
 int Mod::DIFFICULTY_BASED_RETAL_DELAY[5];
 int Mod::UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
 int Mod::PEDIA_FACILITY_RENDER_PARAMETERS[4];
@@ -275,6 +276,12 @@ void Mod::resetGlobalStatics()
 	SELL_PRICE_COEFFICIENT[2] = 100;
 	SELL_PRICE_COEFFICIENT[3] = 100;
 	SELL_PRICE_COEFFICIENT[4] = 100;
+
+	BUY_PRICE_COEFFICIENT[0] = 100;
+	BUY_PRICE_COEFFICIENT[1] = 100;
+	BUY_PRICE_COEFFICIENT[2] = 100;
+	BUY_PRICE_COEFFICIENT[3] = 100;
+	BUY_PRICE_COEFFICIENT[4] = 100;
 
 	DIFFICULTY_BASED_RETAL_DELAY[0] = 0;
 	DIFFICULTY_BASED_RETAL_DELAY[1] = 0;
@@ -3292,6 +3299,15 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		for (YAML::const_iterator i = doc["sellPriceCoefficient"].begin(); i != doc["sellPriceCoefficient"].end() && num < MaxDifficultyLevels; ++i)
 		{
 			SELL_PRICE_COEFFICIENT[num] = (*i).as<int>(SELL_PRICE_COEFFICIENT[num]);
+			++num;
+		}
+	}
+	if (doc["buyPriceCoefficient"])
+	{
+		size_t num = 0;
+		for (YAML::const_iterator i = doc["buyPriceCoefficient"].begin(); i != doc["buyPriceCoefficient"].end() && num < MaxDifficultyLevels; ++i)
+		{
+			BUY_PRICE_COEFFICIENT[num] = (*i).as<int>(BUY_PRICE_COEFFICIENT[num]);
 			++num;
 		}
 	}

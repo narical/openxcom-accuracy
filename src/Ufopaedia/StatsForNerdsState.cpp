@@ -2158,7 +2158,20 @@ void StatsForNerdsState::initItemList()
 	addVectorOfRulesId(ss, itemRule->getSupportedInventorySections(), "supportedInventorySections");
 
 	addDouble(ss, itemRule->getSize(), "size");
-	addInteger(ss, itemRule->getBuyCost(), "costBuy", 0, true);
+	if (_game->getSavedGame()->getBuyPriceCoefficient() == 100)
+	{
+		addInteger(ss, itemRule->getBuyCost(), "costBuy", 0, true);
+	}
+	else
+	{
+		addHeading("_calculatedValues", "STR_FOR_DIFFICULTY", true);
+		{
+			int adjustedCost = itemRule->getBuyCost() * _game->getSavedGame()->getBuyPriceCoefficient() / 100;
+			addInteger(ss, adjustedCost, "costBuy", 0, true);
+
+			endHeading();
+		}
+	}
 	addInteger(ss, itemRule->getMonthlyBuyLimit(), "monthlyBuyLimit");
 	addInteger(ss, itemRule->getTransferTime(), "transferTime", 24);
 	addInteger(ss, itemRule->getMonthlySalary(), "monthlySalary", 0, true);
