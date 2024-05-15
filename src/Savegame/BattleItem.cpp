@@ -1746,7 +1746,7 @@ ModScript::SellCostItemParser::SellCostItemParser(ScriptGlobal* shared, const st
 
 	"item_rule",
 	"geoscape_game",
-	"difficualty_coefficient"
+	"difficulty_coefficient"
 }
 {
 	BindBase b { this };
@@ -1759,7 +1759,7 @@ ModScript::BuyCostItemParser::BuyCostItemParser(ScriptGlobal* shared, const std:
 
 	"item_rule",
 	"geoscape_game",
-	"difficualty_coefficient"
+	"difficulty_coefficient"
 }
 {
 	BindBase b { this };
