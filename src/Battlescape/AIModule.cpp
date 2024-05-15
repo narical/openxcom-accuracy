@@ -5599,22 +5599,42 @@ void AIModule::brutalBlaster()
 				if (targetNode->getPrevNode() != NULL)
 				{
 					int direction = _save->getTileEngine()->getDirectionTo(targetNode->getPosition(), targetNode->getPrevNode()->getPosition());
+					Position wpPosition = targetNode->getPosition();
+					Tile* wpTile = _save->getTile(wpPosition);
+					if (_attackAction.weapon->getCurrentWaypoints() == -1  && wpTile->getMapData(O_OBJECT))
+					{
+						Tile* aboveTile = _save->getAboveTile(wpTile);
+						if (aboveTile && !aboveTile->getMapData(O_OBJECT) && aboveTile->hasNoFloor())
+							wpPosition.z++;
+					}
 					bool zChange = false;
-					if (targetNode->getPosition().z != targetNode->getPrevNode()->getPosition().z)
+					if (wpPosition.z != targetNode->getPrevNode()->getPosition().z)
 						zChange = true;
 					//If we have unlimited way-points for our blaster, we might as well put a way-point on every single node along the path
 					if (_attackAction.weapon->getCurrentWaypoints() == -1)
 					{
-						_attackAction.waypoints.push_front(targetNode->getPosition());
+						_attackAction.waypoints.push_front(wpPosition);
 					}
 					else if (direction != lastDirection || zChange)
 					{
-						_attackAction.waypoints.push_front(targetNode->getPosition());
+						_attackAction.waypoints.push_front(wpPosition);
 					}
 					lastDirection = direction;
 				}
 				targetNode = targetNode->getPrevNode();
 			}
+			//if (_traceAI)
+			//{
+			//	int iStep = 0;
+			//	for (Position pos : _attackAction.waypoints)
+			//	{
+			//		iStep++;
+			//		Tile* wpTile = _save->getTile(pos);
+			//		wpTile->setMarkerColor(_unit->getId());
+			//		wpTile->setPreview(10);
+			//		wpTile->setTUMarker(iStep);
+			//	}
+			//}
 			_attackAction.target = _attackAction.waypoints.front();
 			if (_attackAction.waypoints.size() > maxWaypoints)
 				_attackAction.type = BA_RETHINK;
