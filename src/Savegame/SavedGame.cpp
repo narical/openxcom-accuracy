@@ -3442,6 +3442,18 @@ void randomRangeSymmetricScript(RNG::RandomState* rs, int& val, int max)
 	}
 }
 
+void difficultyLevelScript(const SavedGame* sg, int& val)
+{
+	if (sg)
+	{
+		val = sg->getDifficulty();
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
 void getDaysPastEpochScript(const GameTime* p, int& val)
 {
 	if (p)
@@ -3605,6 +3617,8 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 
 	sgg.add<&getTimeScript>("getTime", "Get global time that is Greenwich Mean Time");
 	sgg.add<&getRandomScript>("getRandomState");
+
+	sgg.add<&difficultyLevelScript>("difficultyLevel", "Get difficulty level");
 
 	sgg.add<&isResearchedScript>("isResearched");
 
