@@ -587,7 +587,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
 			int unitRadius = 4; // and this radius
 			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
-			int unitMin_X{0}, unitMin_Y{0}, unitMax_X{0}, unitMax_Y{0}; //Unit's bounds
+			int unitMin_X{ target->x - unitRadius - 1 };
+			int unitMin_Y{ target->y - unitRadius - 1 };
+			int unitMax_X{ target->x + unitRadius + 1 };
+			int unitMax_Y{ target->y + unitRadius + 1 }; //"Virtual" unit's bounds for targeting empty tile
 
 			if (targetUnit) // Finding boundaries of target unit
 			{
@@ -719,12 +722,14 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 						}
 					}
 
-					if (test != V_UNIT) // We successfully missed the target, use the point we found
+					if ((targetUnit && test != V_UNIT) || (!targetUnit && test == V_UNIT))
+					// We successfully missed the target, use the point we found
 					{
 						*target = deviate;
 						goto target_calculated;
 					}
-					else if ( test == V_UNIT && targetUnit && !trajectory.empty()) // Hit some unit eh?
+
+					else if (targetUnit && !trajectory.empty())
 					{
 						int impactX = trajectory.at(0).x;
 						int impactY = trajectory.at(0).y;
@@ -740,8 +745,20 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 						*target = deviate;
 						goto target_calculated;
 					}
-					else // Targeted empty tile but hit a unit? It's a miss)
+
+					else
 					{
+						int impactX = deviate.x;
+						int impactY = deviate.y;
+						int impactZ = deviate.z;
+
+						if (impactX >= unitMin_X && impactX <= unitMax_X &&
+							impactY >= unitMin_Y && impactY <= unitMax_Y &&
+							impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
+						{
+							continue; // We hit our virtual target, it's not what we want
+						}
+
 						*target = deviate;
 						goto target_calculated;
 					}
