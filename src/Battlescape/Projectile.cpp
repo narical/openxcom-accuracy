@@ -453,10 +453,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		}
 		else // Get distance to target empty tile
 		{
-			_action.relativeOrigin = BattleActionOrigin::CENTRE;
 			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-			Position targetPos = _action.target.toVoxel() + Position{8, 8, 0};
-			distanceVoxels = Position::distance( tempOrigin, targetPos );
+			distanceVoxels = Position::distance( tempOrigin, *target );
 		}
 
 		distanceTiles = distanceVoxels / 16 + 1; // Should never be 0
