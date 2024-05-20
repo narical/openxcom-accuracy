@@ -576,7 +576,12 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 		}
-
+		else if (hit_successful) // "Hitting" empty tile or fully covered target
+		{
+			target->x += RNG::generate(-3, 3); // Add some deviation
+			target->y += RNG::generate(-3, 3);
+			target->z += RNG::generate(-2, 2);
+		}
 		else if (targetTile) // We missed, time to find a line of fire to perform a miss with a realistic deviation
 		{
 			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
