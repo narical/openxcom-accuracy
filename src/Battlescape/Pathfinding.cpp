@@ -1160,7 +1160,7 @@ bool Pathfinding::validateUpDown(const BattleUnit *bu, const Position& startPosi
 	}
 	else
 	{
-		if (bu->getMovementType() == MT_FLY || startTile->hasLadder())
+		if (bu->getMovementType() == MT_FLY || startTile->hasLadder() || missile)
 		{
 			if ((direction == DIR_UP && destinationTile->hasNoFloor(_save)) // flying up only possible when there is no roof
 				|| (direction == DIR_DOWN && startTile->hasNoFloor(_save)) // falling down only possible when there is no floor
