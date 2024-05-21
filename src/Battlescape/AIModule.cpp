@@ -5529,7 +5529,7 @@ void AIModule::brutalBlaster()
 				}
 				if (havePath)
 				{
-					if (requiredWayPointCount(targetPos, path) + 1 <= maxWaypoints)
+					if (requiredWayPointCount(targetPos, path) <= maxWaypoints)
 					{
 						auto ammo = _attackAction.weapon->getAmmoForAction(BA_LAUNCH);
 						float score = brutalExplosiveEfficacy(targetPos, _unit, ammo->getRules()->getExplosionRadius({BA_LAUNCH, _unit, _attackAction.weapon, ammo}), false);
@@ -5588,10 +5588,6 @@ void AIModule::brutalBlaster()
 
 		if (targetNode != NULL)
 		{
-			_attackAction.waypoints.push_back(target);
-			//If we perform a blind shot we add the final node twice so we hit the ground and not something we might not want to hit
-			if (blindMode && blindTarget != _aggroTarget->getPosition())
-				_attackAction.waypoints.push_back(target);
 			Tile *tile = _save->getTile(target);
 			int lastDirection = -1;
 			while (targetNode->getPrevNode() != NULL)
@@ -5610,12 +5606,15 @@ void AIModule::brutalBlaster()
 					bool zChange = false;
 					if (wpPosition.z != targetNode->getPrevNode()->getPosition().z)
 						zChange = true;
+					bool losBreak = false;
+					if (!hasTileSight(targetNode->getPrevNode()->getPosition(), _attackAction.waypoints.front()))
+						losBreak = true;
 					//If we have unlimited way-points for our blaster, we might as well put a way-point on every single node along the path
 					if (_attackAction.weapon->getCurrentWaypoints() == -1)
 					{
 						_attackAction.waypoints.push_front(wpPosition);
 					}
-					else if (direction != lastDirection || zChange)
+					else if (direction != lastDirection || zChange || losBreak)
 					{
 						_attackAction.waypoints.push_front(wpPosition);
 					}
@@ -5623,6 +5622,8 @@ void AIModule::brutalBlaster()
 				}
 				targetNode = targetNode->getPrevNode();
 			}
+			if (_attackAction.waypoints.size() < maxWaypoints)
+				_attackAction.waypoints.push_back(target);
 			//if (_traceAI)
 			//{
 			//	int iStep = 0;
@@ -6561,6 +6562,7 @@ int AIModule::requiredWayPointCount(Position to, const std::vector<PathfindingNo
 	}
 	int lastDirection = -1;
 	int directionChanges = 1;
+	PathfindingNode* lastWPNode = targetNode;
 	if (targetNode != NULL)
 	{
 		while (targetNode->getPrevNode() != NULL)
@@ -6569,11 +6571,15 @@ int AIModule::requiredWayPointCount(Position to, const std::vector<PathfindingNo
 			{
 				int direction = _save->getTileEngine()->getDirectionTo(targetNode->getPosition(), targetNode->getPrevNode()->getPosition());
 				bool zChange = false;
+				bool losBreak = false;
 				if (targetNode->getPosition().z != targetNode->getPrevNode()->getPosition().z)
 					zChange = true;
-				if (direction != lastDirection || zChange)
+				if (!hasTileSight(targetNode->getPrevNode()->getPosition(), lastWPNode->getPosition()))
+					losBreak = true;
+				if (direction != lastDirection || zChange || losBreak)
 				{
 					++directionChanges;
+					lastWPNode = targetNode;
 				}
 				lastDirection = direction;
 			}
@@ -6712,6 +6718,8 @@ std::vector<Tile*> AIModule::getDoorTiles(const std::vector<PathfindingNode*> no
 
 bool AIModule::improveItemization(float currentItemScore, BattleAction* action)
 {
+	if (!_unit->hasInventory())
+		return false;
 	bool pickedSomethingUp = false;
 	Tile* myTile = _unit->getTile();
 	Position myPos = _unit->getPosition();
