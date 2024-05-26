@@ -30,24 +30,27 @@ class Surface;
 class Tile;
 class Mod;
 
-struct	// Real Accuracy mod configuration
+struct AccuracyModType // Renamed for clarity
 {
-	int MinCap = 5;			// Minimum accuracy value
-	int MaxCap = 95;		// Maximum accuracy value
-	int AimBonus = 3;		// Additional bonus for aimed shot if total accuracy is 5% or less
-	int KneelBonus = 2;		// Additional bonus for kneeling if total accuracy is 5% or less
-	int aimedDivider = 4;
-	int snapDivider = 3;	// Dividers are used for adding roll-based deviation
-	int autoDivider = 3;
-	int twoHandsBonus = 1;	// Less shots dispersion for one weapon in both hands
-	int distanceDivider = 3;// Additional 1 voxel of deviation per this number of distance tiles
+	int MinCap;     // Minimum accuracy value
+	int MaxCap;     // Maximum accuracy value
+	int AimBonus;   // Additional bonus for aimed shot if total accuracy is 5% or less
+	int KneelBonus; // Additional bonus for kneeling if total accuracy is 5% or less
+	int aimedDivider;
+	int snapDivider; // Dividers are used for adding roll-based deviation
+	int autoDivider;
+	int twoHandsBonus;   // Less shots dispersion for one weapon in both hands
+	int distanceDivider; // Additional 1 voxel of deviation per this number of distance tiles
 
-	double SizeMultiplier = 1.35; // Accuracy multiplier when targeting big units
+	double SizeMultiplier; // Accuracy multiplier when targeting big units
 
-	int suicideProtectionDistance = 50;	// Missing shot shouldn't land too close to a shooter
-	int bonusDistanceMax = 10; // Improved accuracy distance - top threshold
-	int bonusDistanceMin = 6; // Improved accuracy distance - bottom threshold
-} AccuracyMod;
+	int suicideProtectionDistance; // Missing shot shouldn't land too close to a shooter
+	int bonusDistanceMax;          // Improved accuracy distance - top threshold
+	int bonusDistanceMin;          // Improved accuracy distance - bottom threshold
+};
+
+extern AccuracyModType AccuracyMod; // Declaration of the instance
+
 
 /**
  * A class that represents a projectile. Map is the owner of an instance of this class during its short life.
