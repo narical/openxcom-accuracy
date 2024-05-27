@@ -88,14 +88,10 @@ void ListLoadState::loadSave(size_t list_idx)
 {
 	bool confirm = false;
 	const SaveInfo &saveInfo(_saves[list_idx]);
-	for (const std::string& modName : saveInfo.mods)
+	for (const auto& modName : saveInfo.mods)
 	{
 		std::string name = SavedGame::sanitizeModName(modName);
-
-		Options::ModsList::iterator it = std::find_if(Options::mods.begin(), Options::mods.end(), [&name](Options::ModSettings& p) { return p.name == name; });
-
-		//mod not found, so confirm loading
-		if (it == Options::mods.end())
+		if (std::find(Options::mods.begin(), Options::mods.end(), std::make_pair(name, true)) == Options::mods.end())
 		{
 			confirm = true;
 			break;

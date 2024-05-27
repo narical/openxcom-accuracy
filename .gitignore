@@ -62,9 +62,7 @@ _ReSharper.*/
 *.dgml
 .vs/
 *.VC.*
-CMakeSettings.json
 #OpenXcom stuff (no ending slashes for dirs so symlinks can be ignored as well as real dirs)
-data/
 bin/UFO
 bin/TFTD
 deps/

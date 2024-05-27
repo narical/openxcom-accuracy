@@ -176,9 +176,6 @@ protected:
  */
 namespace CrossPlatform
 {
-	using FolderTuple = std::tuple<std::string, bool, time_t>;
-	using FolderContents = std::vector<FolderTuple>;
-
 	/// Retrieve and decode command-line arguments
 	void processArgs (int argc, char *argv[]);
 	/// Returns the command-line arguments
@@ -206,7 +203,7 @@ namespace CrossPlatform
 	/// Terminates a path.
 	std::string convertPath(const std::string &path);
 	/// Returns the list of files in a folder as a vector of tuples (filename, id_dir, mtime)
-	FolderContents getFolderContents(const std::string& path, const std::string& ext = "");
+	std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::string &path, const std::string &ext = "");
 	/// Checks if the path is an existing folder.
 	bool folderExists(const std::string &path);
 	/// Checks if the path is an existing file.

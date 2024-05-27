@@ -18,7 +18,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
-#include <filesystem>
 #include <map>
 #include <vector>
 #include <yaml-cpp/yaml.h>
@@ -44,7 +43,7 @@ typedef std::pair<std::string, ModInfoNormalizedVersion> ModInfoVersion;
 class ModInfo
 {
 private:
-	const std::filesystem::path _path;
+	const std::string _path;
 	std::string _name, _desc, _author, _url, _id, _master;
 	std::string _versionDisplay;
 	ModInfoVersion _version;
@@ -58,16 +57,13 @@ private:
 
 	std::string _resourceConfigFile;
 	std::vector<std::string> _externalResourceDirs;
-
-	std::filesystem::path _luaScript;
-
-  public:
+public:
 	/// Creates default metadata for a mod at the specified path.
-	ModInfo(const std::filesystem::path& path);
+	ModInfo(const std::string &path);
 	/// Loads the metadata from YAML.
 	void load(const YAML::Node &doc);
 	/// Gets the path where this mod resides on disk.
-	const std::filesystem::path& getPath() const;
+	const std::string &getPath() const;
 	/// Gets the name of this mod.
 	const std::string &getName() const;
 	/// Gets the description for this mod.
@@ -80,10 +76,6 @@ private:
 	const std::string &getAuthor() const;
 	/// Gets the id for this mod.
 	const std::string &getId() const;
-	/// Returns true if Lua is enabled for this mod.
-	bool hasLua() const;
-	/// Gets the path to the lua script for this mod.
-	const std::filesystem::path &getLuaScript() const;
 
 	/// Gets the master this mod can load under.  If it can load under any
 	/// master (or if this mod is a master itself FIXME: this is wrong), the return value is empty.
