@@ -576,7 +576,7 @@ static time_t FILETIME2mtime(FILETIME& ft) {
  * @param ext Extension of files ("" if it doesn't matter).
  * @return Ordered list of all the files in the form of tuple(filename, is_folder, mtime).
  */
-FolderContents getFolderContents(const std::string &path, const std::string &ext)
+std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::string &path, const std::string &ext)
 {
 	std::vector<std::tuple<std::string, bool, time_t>> files;
 #ifdef _WIN32

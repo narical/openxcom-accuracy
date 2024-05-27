@@ -35,8 +35,6 @@
 #include "RuleBaseFacilityFunctions.h"
 #include "RuleItem.h"
 
-#include "../Lua/LuaState.h"
-
 namespace OpenXcom
 {
 
@@ -153,8 +151,6 @@ public:
 	constexpr static int TransparenciesOpacityLevels = 4;
 
 private:
-	LuaState _lua;
-
 	Music *_muteMusic;
 	Sound *_muteSound;
 	std::string _playingMusic, _currentMusicTrack;

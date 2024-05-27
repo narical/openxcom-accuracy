@@ -51,10 +51,7 @@ std::string _configFolder;
 std::vector<std::string> _userList;
 std::map<std::string, std::string> _commandLine;
 std::vector<OptionInfo> _info;
-
-using ModInfoMap = std::map<std::string, ModInfo>;
-ModInfoMap _modInfos;
-
+std::map<std::string, ModInfo> _modInfos;
 std::string _masterMod;
 int _passwordCheck = -1;
 bool _loadLastSave = false;
@@ -613,12 +610,12 @@ static void _setDefaultMods()
 	bool haveUfo = _ufoIsInstalled();
 	if (haveUfo)
 	{
-		mods.push_back(ModSettings{"xcom1", true});
+		mods.push_back(std::pair<std::string, bool>("xcom1", true));
 	}
 
 	if (_tftdIsInstalled())
 	{
-		mods.push_back(ModSettings{"xcom2", !haveUfo});
+		mods.push_back(std::pair<std::string, bool>("xcom2", !haveUfo));
 	}
 }
 
@@ -788,7 +785,7 @@ static bool showHelp()
 	return false;
 }
 
-const ModInfoMap &getModInfos() { return _modInfos; }
+const std::map<std::string, ModInfo> &getModInfos() { return _modInfos; }
 
 /**
  * Splits the game's User folder by master mod,
@@ -912,14 +909,13 @@ void refreshMods()
 
 	// remove mods from list that no longer exist
 	bool nonMasterModFound = false;
-	using CurruptedMastersMap = std::map<std::string, bool>;
-	CurruptedMastersMap corruptedMasters;
+	std::map<std::string, bool> corruptedMasters;
 	for (auto i = mods.begin(); i != mods.end();)
 	{
-		auto modIt = _modInfos.find(i->name);
+		auto modIt = _modInfos.find(i->first);
 		if (_modInfos.end() == modIt)
 		{
-			Log(LOG_VERBOSE) << "removing references to missing mod: " << i->name;
+			Log(LOG_VERBOSE) << "removing references to missing mod: " << i->first;
 			i = mods.erase(i);
 			continue;
 		}
@@ -929,8 +925,8 @@ void refreshMods()
 			{
 				if (nonMasterModFound)
 				{
-					Log(LOG_ERROR) << "Removing master mod '" << i->name << "' from the list, because it is on a wrong position. It will be re-added automatically.";
-					corruptedMasters[i->name] = i->active;
+					Log(LOG_ERROR) << "Removing master mod '" << i->first << "' from the list, because it is on a wrong position. It will be re-added automatically.";
+					corruptedMasters[i->first] = i->second;
 					i = mods.erase(i);
 					continue;
 				}
@@ -942,50 +938,50 @@ void refreshMods()
 		}
 		++i;
 	}
-
-	// re-insert corrupted masters at the beginning of the list	//KN NOTE: why?
-	for (const CurruptedMastersMap::value_type& pair : corruptedMasters)
+	// re-insert corrupted masters at the beginning of the list
+	for (const auto& pair : corruptedMasters)
 	{
-		mods.insert(mods.begin(), ModSettings{pair.first, pair.second});
+		std::pair<std::string, bool> newMod(pair.first, pair.second);
+		mods.insert(mods.begin(), newMod);
 	}
 
 	// add in any new mods picked up from the scan and ensure there is but a single
 	// master active
 	std::string activeMaster;
 	std::string inactiveMaster;
-	for (const ModInfoMap::value_type& modInfoPair : _modInfos)
+	for (auto i = _modInfos.cbegin(); i != _modInfos.cend(); ++i)
 	{
 		bool found = false;
-		for (ModSettings& modSettings : mods)
+		for (auto j = mods.begin(); j != mods.end(); ++j)
 		{
-			if (modInfoPair.first == modSettings.name)
+			if (i->first == j->first)
 			{
 				found = true;
-				if (modInfoPair.second.isMaster())
+				if (i->second.isMaster())
 				{
 					if (!_masterMod.empty())
 					{
-						modSettings.active = (_masterMod == modSettings.name);
+						j->second = (_masterMod == j->first);
 					}
-					if (modSettings.active)
+					if (j->second)
 					{
 						if (!activeMaster.empty())
 						{
-							Log(LOG_WARNING) << "Too many active masters detected; turning off " << modSettings.name;
-							modSettings.active = false;
+							Log(LOG_WARNING) << "Too many active masters detected; turning off " << j->first;
+							j->second = false;
 						}
 						else
 						{
-							activeMaster = modSettings.name;
+							activeMaster = j->first;
 						}
 					}
 					else
 					{
 						// prefer activating standard masters over a possibly broken
 						// third party master
-						if (inactiveMaster.empty() || modSettings.name == "xcom1" || modSettings.name == "xcom2")
+						if (inactiveMaster.empty() || j->first == "xcom1" || j->first == "xcom2")
 						{
-							inactiveMaster = modSettings.name;
+							inactiveMaster = j->first;
 						}
 					}
 				}
@@ -999,8 +995,8 @@ void refreshMods()
 		}
 
 		// not active by default
-		ModSettings newMod{modInfoPair.first, false};
-		if (modInfoPair.second.isMaster())
+		std::pair<std::string, bool> newMod(i->first, false);
+		if (i->second.isMaster())
 		{
 			// it doesn't matter what order the masters are in since
 			// only one can be active at a time anyway
@@ -1008,7 +1004,7 @@ void refreshMods()
 
 			if (inactiveMaster.empty())
 			{
-				inactiveMaster = modInfoPair.first;
+				inactiveMaster = i->first;
 			}
 		}
 		else
@@ -1027,13 +1023,7 @@ void refreshMods()
 		else
 		{
 			Log(LOG_INFO) << "no master already active; activating " << inactiveMaster;
-			std::vector<ModSettings>::iterator found = std::find_if(mods.begin(), mods.end(), [inactiveMaster](const ModSettings& m) -> bool
-																	{ return m.name == inactiveMaster; });
-			if (found != mods.end())
-			{
-				(*found).active = true;
-			}
-
+			std::find(mods.begin(), mods.end(), std::pair<std::string, bool>(inactiveMaster, false))->second = true;
 			_masterMod = inactiveMaster;
 		}
 	}
@@ -1055,7 +1045,7 @@ void updateMods()
 
 	// check active mods that don't meet the enforced OXCE requirements
 	auto* masterInf = getActiveMasterInfo();
-	ModInfoList activeModsList = getActiveMods();
+	auto activeModsList = getActiveMods();
 	bool forceQuit = false;
 	for (auto* modInf : activeModsList)
 	{
@@ -1089,7 +1079,7 @@ void updateMods()
 	userSplitMasters();
 
 	Log(LOG_INFO) << "Active mods:";
-	ModInfoList activeMods = getActiveMods();
+	auto activeMods = getActiveMods();
 	for (auto* modInf : activeMods)
 	{
 		Log(LOG_INFO) << "- " << modInf->getId() << " v" << modInf->getVersion();
@@ -1260,7 +1250,7 @@ bool load(const std::string &filename)
 		{
 			std::string id = (*i)["id"].as<std::string>();
 			bool active = (*i)["active"].as<bool>(false);
-			mods.push_back(ModSettings{id, active});
+			mods.push_back(std::pair<std::string, bool>(id, active));
 		}
 		if (mods.empty())
 		{
@@ -1338,11 +1328,11 @@ bool save(const std::string &filename)
 		}
 		doc["options"] = node;
 
-		for (const ModSettings& modSettings : mods)
+		for (const auto& pair : mods)
 		{
 			YAML::Node mod;
-			mod["id"] = modSettings.name;
-			mod["active"] = modSettings.active;
+			mod["id"] = pair.first;
+			mod["active"] = pair.second;
 			doc["mods"].push_back(mod);
 		}
 
@@ -1440,14 +1430,14 @@ const std::vector<OptionInfo> &getOptionInfo()
  * @sa ModInfo::canActivate
  * @return List of info for the active mods.
  */
-ModInfoList getActiveMods()
+std::vector<const ModInfo *> getActiveMods()
 {
 	std::vector<const ModInfo*> activeMods;
-	for (const ModSettings& modSettings : mods)
+	for (const auto& pair : mods)
 	{
-		if (modSettings.active)
+		if (pair.second)
 		{
-			const ModInfo* info = &_modInfos.at(modSettings.name);
+			const ModInfo *info = &_modInfos.at(pair.first);
 			if (info->canActivate(_masterMod))
 			{
 				activeMods.push_back(info);
