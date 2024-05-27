@@ -66,7 +66,7 @@ inline constexpr auto allOf(Functions... funcs)
 {
 	return [=](const auto& x)
 	{
-		return (... and funcs(x));
+		return (true && ... && funcs(x)); // Using `true &&` to ensure fold expression works correctly
 	};
 }
 

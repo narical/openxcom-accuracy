@@ -36,6 +36,23 @@
 namespace OpenXcom
 {
 
+// Initialize the instance
+AccuracyModType AccuracyMod = {
+	/*.MinCap =*/ 5,
+	/*.MaxCap =*/ 95,
+	/*.AimBonus =*/ 3,
+	/*.KneelBonus =*/ 2,
+	/*.aimedDivider =*/ 4,
+	/*.snapDivider =*/ 3,
+	/*.autoDivider =*/ 3,
+	/*.twoHandsBonus =*/ 1,
+	/*.distanceDivider =*/ 3,
+	/*.SizeMultiplier =*/ 1.35,
+	/*.suicideProtectionDistance =*/ 50,
+	/*.bonusDistanceMax =*/ 10,
+	/*.bonusDistanceMin =*/ 6
+};
+
 /**
  * Sets up a UnitSprite with the specified size and position.
  * @param mod Pointer to mod.

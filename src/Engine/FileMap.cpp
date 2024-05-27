@@ -71,7 +71,7 @@ SDL_RWops *SDL_RWFromMZ(mz_zip_archive *zip, mz_uint file_index) {
 		SDL_SetError("miniz extract: %s", mz_zip_get_error_string(mz_zip_get_last_error(zip)));
 		return NULL;
 	}
-	SDL_RWops *rv = SDL_RWFromConstMem(data, size);
+	SDL_RWops *rv = SDL_RWFromConstMem(data, (int)size);
 	rv->close = mzops_close;
 	return rv;
 }
@@ -122,7 +122,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 		data = newdata;
 	}
 
-	size_read = SDL_RWread(src, (char *)data+size_total, 1, (size_t)(size-size_total));
+	size_read = SDL_RWread(src, (char *)data+size_total, 1, (int)(size-size_total));
 	if (size_read == 0) {
 			break;
 		}
@@ -149,9 +149,9 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 
 static size_t mz_rwops_read_func(void *vops, mz_uint64 file_ofs, void *pBuf, size_t n) {
 	SDL_RWops *rwops = (SDL_RWops *)vops;
-	Sint64 size_seek = SDL_RWseek(rwops, file_ofs, SEEK_SET);
+	Sint64 size_seek = SDL_RWseek(rwops, (int)file_ofs, SEEK_SET);
 	if (size_seek != (Sint64)file_ofs) { return 0; }
-	int size_read = SDL_RWread(rwops, pBuf, 1, n);
+	int size_read = SDL_RWread(rwops, pBuf, 1, (int)n);
 	return size_read;
 }
 static mz_bool mz_zip_reader_init_rwops(mz_zip_archive *pZip, SDL_RWops *rwops) {
@@ -211,7 +211,7 @@ SDL_RWops *FileRecord::getRWops() const
 {
 	SDL_RWops *rv;
 	if (zip != NULL) {
-		rv = SDL_RWFromMZ((mz_zip_archive *)zip, findex);
+		rv = SDL_RWFromMZ((mz_zip_archive *)zip, (int)findex);
 	} else {
 		rv = SDL_RWFromFile(fullpath.c_str(), "rb");
 	}
@@ -224,7 +224,7 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 	SDL_RWops *rv;
 	if (zip != NULL)
 	{
-		rv = SDL_RWFromMZ((mz_zip_archive *)zip, findex);
+		rv = SDL_RWFromMZ((mz_zip_archive *)zip, (int)findex);
 	}
 	else
 	{
@@ -235,7 +235,7 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 			auto data = SDL_LoadFile_RW(rv, &size, SDL_TRUE);
 			if (data)
 			{
-				rv = SDL_RWFromConstMem(data, size);
+				rv = SDL_RWFromConstMem(data, (int)size);
 
 				//close callback
 				rv->close = [](struct SDL_RWops *context)
@@ -266,7 +266,7 @@ std::unique_ptr<std::istream> FileRecord::getIStream() const
 {
 	if (zip != NULL) {
 		size_t size;
-		void *data = mz_zip_reader_extract_to_heap((mz_zip_archive *)zip, findex, &size, 0);
+		void* data = mz_zip_reader_extract_to_heap((mz_zip_archive*)zip, (mz_uint)findex, &size, 0);
 		if (data == NULL) {
 			auto err = "FileRecord::getIStream(): failed to decompress " + fullpath + ": ";
 			err += mz_zip_get_error_string(mz_zip_get_last_error((mz_zip_archive *)zip));
@@ -653,7 +653,7 @@ struct VFS {
 		auto rulesets = mod->getRulesets();
 		auto modId = mod->modInfo.getId();
 		// 	typedef std::vector<std::pair<std::string, std::vector<FileRecord *>>> RSOrder;
-		rsorder.push_back(std::make_pair(modId, rulesets));
+		rsorder.push_back(FileRecordNamed{modId, rulesets});
 	}
 	void map_common(bool embeddedOnly) {
 		auto mrec = new ModRecord("common");
@@ -677,7 +677,9 @@ struct VFS {
 	}
 };
 
-static std::unordered_map<std::string, ModRecord *> ModsAvailable;
+using ModMap = std::unordered_map<std::string, ModRecord *>;
+
+static ModMap ModsAvailable;
 static std::unordered_set<VFSLayer *> MappedVFSLayers; // owned here so we can have some sense of their lifetime
 												       // only the layers that get dropped on FileMap::clear()
 static std::vector<mz_zip_archive *> ZipContexts;	   // zip decompression contexts shared between layers that came from
@@ -765,7 +767,10 @@ void setup(const std::vector<const ModInfo* >& active, bool embeddedOnly)
 		TheVFS.dump(Logger().get(LOG_VERBOSE), "\n" + log_ctx, Options::oxceListVFSContents);
 	}
 }
+
+#ifndef MSVC_VER
 [[gnu::unused]]
+#endif
 static void dump_mods_layers(std::ostream &out, const std::string& prefix, bool verbose) {
 	out << prefix << ModsAvailable.size() << " mods mapped:";
 	for (auto i = ModsAvailable.begin(); i != ModsAvailable.end(); ++i) {
@@ -782,7 +787,7 @@ static void dump_mods_layers(std::ostream &out, const std::string& prefix, bool 
  * @param basename - extRes name to map (from userDir/dataDir)
  */
 static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool embeddedOnly) {
-	auto modId = mrec->modInfo.getId();
+	const std::string& modId = mrec->modInfo.getId();
 	std::string log_ctx = "FileMap::mapExtResources(" + modId + ", " + basename + "): ";
 	bool mapped_anything = false;
 	std::string zipname = basename + ".zip";
@@ -858,28 +863,28 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
  */
 static void mapZippedMod(mz_zip_archive *zip, const std::string& zipfname, const std::string& prefix) {
 	std::string log_ctx = "mapZippedMod(" + zipfname + ", '" + prefix + "'): ";
-	auto layer = new VFSLayer(concatPaths(zipfname, prefix));
+	VFSLayer* layer = new VFSLayer(concatPaths(zipfname, prefix));
 	if (!layer->mapZip(zip, zipfname, prefix)) {
 		Log(LOG_WARNING) << log_ctx << "Failed to map, skipping.";
 		delete layer;
 		return;
 	}
-	auto frec = layer->at("metadata.yml");
+	const FileRecord* frec = layer->at("metadata.yml");
 	if (frec == NULL) { // whoa, no metadata
 		Log(LOG_WARNING) << log_ctx << "No metadata.yml found, skipping.";
 		delete layer;
 		return;
 	}
-	auto modpath = concatOptionalPaths(zipfname, prefix);
-	auto doc = frec->getYAML();
+	std::string modpath = concatOptionalPaths(zipfname, prefix);
+	YAML::Node doc = frec->getYAML();
 	if (!doc.IsMap()) {
 		Log(LOG_WARNING) << log_ctx << "Bad metadata.yml found, skipping.";
 		delete layer;
 		return;
 	}
-	auto mrec = new ModRecord(modpath);
+	ModRecord* mrec = new ModRecord(modpath);
 	mrec->modInfo.load(doc);
-	auto mri = ModsAvailable.find(mrec->modInfo.getId());
+	ModMap::iterator mri = ModsAvailable.find(mrec->modInfo.getId());
 	if (mri != ModsAvailable.end()) {
 		Log(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << modpath;
 		delete mrec;
@@ -1090,9 +1095,13 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 
 	// now this dir can contain both moddirs and modzips.
 	// first scan for modzips : that is, anything but a directory
-	auto contents = CrossPlatform::getFolderContents(fullname);
-	std::vector<std::string> dirlist;
-	for (auto zi = contents.begin(); zi != contents.end(); ++zi) {
+	CrossPlatform::FolderContents contents = CrossPlatform::getFolderContents(fullname);	//KN Note: Copying the entire contents of the folder contents is just wasteful
+
+	using DirectoryList = std::vector<std::string>;
+	DirectoryList dirlist;
+
+	for (CrossPlatform::FolderContents::iterator zi = contents.begin(); zi != contents.end(); ++zi)
+	{
 		auto is_dir =  std::get<1>(*zi);
 		if (is_dir) {
 			if (protectedLocation)
@@ -1114,8 +1123,9 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 		auto subpath = concatPaths(fullname, std::get<0>(*zi));
 		scanModZip(subpath);
 	}
-	for (auto di = dirlist.begin(); di != dirlist.end(); ++di) {
-		auto mp_basename = *di;
+
+	for (const std::string& mp_basename : dirlist)
+	{
 		auto modpath = concatPaths(fullname, mp_basename);
 		// map dat dir! (if it has metadata.yml, naturally)
 		auto layer = new VFSLayer(modpath);
@@ -1240,11 +1250,11 @@ std::map<std::string, ModInfo> getModInfos() {
 	return rv;
 }
 
-const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::string& relpath)
+const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::filesystem::path& relpath)
 {
 	if (!relpath.empty())
 	{
-		auto fullPath = concatPaths(modInfo->getPath(), relpath);
+		std::filesystem::path fullPath = modInfo->getPath() / relpath;
 		for (auto& r : ModsAvailable.at(modInfo->getId())->stack.rulesets)
 		{
 			if (r.fullpath == fullPath)
