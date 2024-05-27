@@ -20,6 +20,7 @@
 #include <list>
 #include <string>
 #include <SDL.h>
+#include "../Lua/LuaState.h"
 
 namespace OpenXcom
 {
@@ -45,6 +46,7 @@ class Game
 {
 private:
 	SDL_Event _event;
+	LuaState _lua;
 	Screen *_screen;
 	Cursor *_cursor;
 	Language *_lang;

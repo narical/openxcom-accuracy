@@ -409,6 +409,10 @@ set ( ufopedia_src
   Ufopaedia/UfopaediaStartState.cpp
 )
 
+set ( lua_src
+  Lua/LuaState.cpp
+)
+
 set ( cxx_src
     ${root_src}
     ${basescape_src}
@@ -420,6 +424,7 @@ set ( cxx_src
     ${mod_src}
     ${savegame_src}
     ${ufopedia_src}
+    ${lua_src}
 )
 
 set ( c_src
@@ -430,6 +435,7 @@ set_property ( SOURCE ${c_src} APPEND PROPERTY COMPILE_DEFINITIONS MINIZ_NO_STDI
 # External libraries
 include(FetchContent)
 
+# Fetch YAML
 FetchContent_Declare(
   yaml-cpp
   GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
@@ -437,11 +443,60 @@ FetchContent_Declare(
 )
 FetchContent_GetProperties(yaml-cpp)
 
+
 if(NOT yaml-cpp_POPULATED)
   message(STATUS "Fetching yaml-cpp...")
   FetchContent_Populate(yaml-cpp)
   add_subdirectory(${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR})
 endif()
+
+# Fetch Lua
+#  Lua is used as a scripting language to showcase the script binding capabilities of SimpleRTTR
+FetchContent_Declare(
+  lua
+  GIT_REPOSITORY https://github.com/lua/lua.git
+  GIT_TAG "origin/v5.4"
+)
+FetchContent_MakeAvailable(lua)
+
+# Lua does not provide a CMake build system, so we need to manually set up the target
+add_library(lua STATIC  ${lua_SOURCE_DIR}/lapi.c
+                        ${lua_SOURCE_DIR}/lauxlib.c
+                        ${lua_SOURCE_DIR}/lbaselib.c
+                        ${lua_SOURCE_DIR}/lcode.c
+                        ${lua_SOURCE_DIR}/lcorolib.c
+                        ${lua_SOURCE_DIR}/lctype.c
+                        ${lua_SOURCE_DIR}/ldblib.c
+                        ${lua_SOURCE_DIR}/ldebug.c
+                        ${lua_SOURCE_DIR}/ldo.c
+                        ${lua_SOURCE_DIR}/ldump.c
+                        ${lua_SOURCE_DIR}/lfunc.c
+                        ${lua_SOURCE_DIR}/lgc.c
+                        ${lua_SOURCE_DIR}/linit.c
+                        ${lua_SOURCE_DIR}/liolib.c
+                        ${lua_SOURCE_DIR}/llex.c
+                        ${lua_SOURCE_DIR}/lmathlib.c
+                        ${lua_SOURCE_DIR}/lmem.c
+                        ${lua_SOURCE_DIR}/loadlib.c
+                        ${lua_SOURCE_DIR}/lobject.c
+                        ${lua_SOURCE_DIR}/lopcodes.c
+                        ${lua_SOURCE_DIR}/loslib.c
+                        ${lua_SOURCE_DIR}/lparser.c
+                        ${lua_SOURCE_DIR}/lstate.c
+                        ${lua_SOURCE_DIR}/lstring.c
+                        ${lua_SOURCE_DIR}/lstrlib.c
+                        ${lua_SOURCE_DIR}/ltable.c
+                        ${lua_SOURCE_DIR}/ltablib.c
+                        ${lua_SOURCE_DIR}/ltests.c
+                        ${lua_SOURCE_DIR}/ltm.c
+                        ${lua_SOURCE_DIR}/lua.c
+                        ${lua_SOURCE_DIR}/lundump.c
+                        ${lua_SOURCE_DIR}/lutf8lib.c
+                        ${lua_SOURCE_DIR}/lvm.c
+                        ${lua_SOURCE_DIR}/lzio.c)
+
+target_include_directories(lua PUBLIC ${lua_SOURCE_DIR}/src)
+
 
 set ( data_install_dir bin )
 if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
@@ -610,8 +665,8 @@ if (WIN32)
   set(WIN32_LIBS imagehlp dbghelp)
 endif(WIN32)
 
-target_link_libraries ( openxcom PUBLIC ${system_libs} ${PKG_DEPS_LDFLAGS} ${WIN32_LIBS} yaml-cpp::yaml-cpp )
-target_include_directories ( openxcom PUBLIC ${yaml-cpp_SOURCE_DIR}/include )
+target_link_libraries ( openxcom PUBLIC ${system_libs} ${PKG_DEPS_LDFLAGS} ${WIN32_LIBS} yaml-cpp::yaml-cpp lua )
+target_include_directories ( openxcom PUBLIC ${yaml-cpp_SOURCE_DIR}/include ${lua_SOURCE_DIR} )
 
 # Pack libraries into bundle and link executable appropriately
 if ( APPLE AND CREATE_BUNDLE )
