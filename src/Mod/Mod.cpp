@@ -2085,8 +2085,11 @@ static void throwModOnErrorHelper(const std::string& modId, const std::string& e
 	if (!Options::debug)
 	{
 		Log(LOG_WARNING) << "disabling mod with invalid ruleset: " << modId;
-		auto it = std::find(Options::mods.begin(), Options::mods.end(), std::pair<std::string, bool>(modId, true));
-		if (it == Options::mods.end())
+
+		std::vector<Options::ModSettings>::iterator found = std::find_if(Options::mods.begin(), Options::mods.end(), [modId](const Options::ModSettings& m) -> bool
+																{ return m.name == modId; });
+
+		if (found == Options::mods.end())
 		{
 			Log(LOG_ERROR) << "cannot find broken mod in mods list: " << modId;
 			Log(LOG_ERROR) << "clearing mods list";
@@ -2094,7 +2097,7 @@ static void throwModOnErrorHelper(const std::string& modId, const std::string& e
 		}
 		else
 		{
-			it->second = false;
+			found->active = false;
 		}
 		Options::save();
 

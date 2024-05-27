@@ -89,23 +89,22 @@ ModListState::ModListState() : _curMasterIdx(0)
 	//Options::refreshMods(); // TODO: uncomment (and properly test!) after mod.io integration is merged
 	const std::map<std::string, ModInfo> &modInfos(Options::getModInfos());
 	std::vector<std::string> masterNames;
-	for (const auto& pair : Options::mods)
+	for (const Options::ModSettings& modSettings : Options::mods)
 	{
-		const auto& modId = pair.first;
-		auto search = modInfos.find(modId);
+		auto search = modInfos.find(modSettings.name);
 		if (search == modInfos.end())
 		{
 			continue;
 		}
-		const ModInfo *modInfo = &modInfos.at(modId);
+		const ModInfo* modInfo = &modInfos.at(modSettings.name);
 		if (!modInfo->isMaster())
 		{
 			continue;
 		}
 
-		if (pair.second)
+		if (modSettings.active)
 		{
-			_curMasterId = modId;
+			_curMasterId = modSettings.name;
 		}
 		else if (_curMasterId.empty())
 		{
@@ -182,15 +181,15 @@ void ModListState::cbxMasterChange(Action *)
 void ModListState::changeMasterMod()
 {
 	std::string masterId = _masters[_cbxMasters->getSelected()]->getId();
-	for (auto& pair : Options::mods)
+	for (Options::ModSettings& modSettings : Options::mods)
 	{
-		if (masterId == pair.first)
+		if (masterId == modSettings.name)
 		{
-			pair.second = true;
+			modSettings.active = true;
 		}
-		else if (_curMasterId == pair.first)
+		else if (_curMasterId == modSettings.name)
 		{
-			pair.second = false;
+			modSettings.active = false;
 		}
 	}
 	Options::reload = true;
@@ -211,9 +210,9 @@ void ModListState::lstModsRefresh(size_t scrollLoc)
 	_mods.clear();
 
 	// only show mods that work with the current master
-	for (const auto& pair : Options::mods)
+	for (Options::ModSettings& modSettings : Options::mods)
 	{
-		auto search = Options::getModInfos().find(pair.first);
+		Options::ModInfoMap::const_iterator search = Options::getModInfos().find(modSettings.name);
 		if (search == Options::getModInfos().end())
 		{
 			continue;
@@ -225,8 +224,8 @@ void ModListState::lstModsRefresh(size_t scrollLoc)
 		}
 
 		std::string modName = modInfo.getName();
-		_lstMods->addRow(3, modName.c_str(), "", (pair.second ? tr("STR_YES").c_str() : tr("STR_NO").c_str()));
-		_mods.push_back(pair);
+		_lstMods->addRow(3, modName.c_str(), "", (modSettings.active ? tr("STR_YES").c_str() : tr("STR_NO").c_str()));
+		_mods.push_back(std::make_pair(modSettings.name, modSettings.active));
 	}
 
 	_lstMods->scrollTo(scrollLoc);
@@ -273,15 +272,15 @@ void ModListState::toggleMod()
 {
 	std::pair<std::string, bool> &mod(_mods.at(_lstMods->getSelectedRow()));
 
-	for (auto& pair : Options::mods)
+	for (Options::ModSettings& modsettings : Options::mods)
 	{
-		if (mod.first != pair.first)
+		if (mod.first != modsettings.name)
 		{
 			continue;
 		}
 
 		mod.second = ! mod.second;
-		pair.second = mod.second;
+		modsettings.active = mod.second;
 		_lstMods->setCellText(_lstMods->getSelectedRow(), 2, (mod.second ? tr("STR_YES") : tr("STR_NO")));
 
 		break;
@@ -310,19 +309,19 @@ void ModListState::lstModsLeftArrowClick(Action *action)
 static void _moveAbove(const std::pair<std::string, bool> &srcMod, const std::pair<std::string, bool> &destMod)
 {
 	// insert copy of srcMod above destMod
-	for (auto i = Options::mods.begin(); i != Options::mods.end(); ++i)
+	for (Options::ModsList::iterator i = Options::mods.begin(); i != Options::mods.end(); ++i)
 	{
-		if (destMod.first == i->first)
+		if (destMod.first == i->name)
 		{
-			Options::mods.insert(i, srcMod);
+			Options::mods.insert(i, Options::ModSettings{srcMod.first, srcMod.second});
 			break;
 		}
 	}
 
 	// remove old copy of srcMod in separate loop since the insert above invalidated the iterator
-	for (std::vector< std::pair<std::string, bool> >::reverse_iterator i = Options::mods.rbegin(); i != Options::mods.rend(); ++i)
+	for (Options::ModsList::reverse_iterator i = Options::mods.rbegin(); i != Options::mods.rend(); ++i)
 	{
-		if (srcMod.first == i->first)
+		if (srcMod.first == i->name)
 		{
 			Options::mods.erase(i.base() - 1);
 			break;
@@ -389,19 +388,19 @@ void ModListState::lstModsRightArrowClick(Action *action)
 static void _moveBelow(const std::pair<std::string, bool> &srcMod, const std::pair<std::string, bool> &destMod)
 {
 	// insert copy of srcMod below destMod
-	for (std::vector< std::pair<std::string, bool> >::reverse_iterator i = Options::mods.rbegin(); i != Options::mods.rend(); ++i)
+	for (Options::ModsList::reverse_iterator i = Options::mods.rbegin(); i != Options::mods.rend(); ++i)
 	{
-		if (destMod.first == i->first)
+		if (destMod.first == i->name)
 		{
-			Options::mods.insert(i.base(), srcMod);
+			Options::mods.insert(i.base(), Options::ModSettings{srcMod.first, srcMod.second});
 			break;
 		}
 	}
 
 	// remove old copy of srcMod in separate loop since the insert above invalidated the iterator
-	for (auto i = Options::mods.begin(); i != Options::mods.end(); ++i)
+	for (Options::ModsList::iterator i = Options::mods.begin(); i != Options::mods.end(); ++i)
 	{
-		if (srcMod.first == i->first)
+		if (srcMod.first == i->name)
 		{
 			Options::mods.erase(i);
 			break;
