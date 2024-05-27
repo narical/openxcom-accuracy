@@ -31,6 +31,8 @@ extern "C"
 namespace OpenXcom
 {
 
+struct ModData;
+
 /**
  * LuaState is the base state used to run the LUA scripts. It instantiates a lua_State object and provides it with the in-game API.
  */
@@ -41,27 +43,23 @@ private:
 	bool _error; // Error flag
 	std::string _errorString; // Error message
 
-	std::filesystem::path scriptPath; // The path to the script file
-public:
-	LuaState(); // Constructor
+	ModData* _modData; // The mod data
+
+	std::filesystem::path _scriptPath; // The path to the script file
+
+	/**
+	 * Loads a script from a file.
+	 * @param filename The name of the file to load.
+	 * @return True if the script was loaded successfully, false otherwise.
+	 */
+	bool loadScript(const std::filesystem::path& filename);
+
+  public:
+	LuaState(const std::filesystem::path& scriptPath, const ModData* modData); // Constructor
 	~LuaState(); // Destructor
 
 	const std::filesystem::path &getScriptPath() const; // Returns the path to the script file
-
-	/**
-	* Loads a script from a file.
-	* @param filename The name of the file to load.
-	* @return True if the script was loaded successfully, false otherwise.
-	*/
-	bool loadScript(const std::filesystem::path &filename);
-
-	/**
-	* Runs the loaded script.
-	* @return True if the script was run successfully, false otherwise. Use the getErrorString() method to get the error message.
-	*/
-	bool runScript();
-
-
+	const ModData* getModData() const; // Returns the mod data
 };
 
 }

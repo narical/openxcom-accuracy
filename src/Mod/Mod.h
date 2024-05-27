@@ -153,7 +153,8 @@ public:
 	constexpr static int TransparenciesOpacityLevels = 4;
 
 private:
-	LuaState _lua;
+	using LuaMods = std::vector<LuaState>;
+	LuaMods _luaMods;
 
 	Music *_muteMusic;
 	Sound *_muteSound;

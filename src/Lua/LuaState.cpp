@@ -66,7 +66,7 @@ int LuaPanic(lua_State* luaState)
 	return 0; /* return to Lua to abort */
 }
 
-LuaState::LuaState()
+LuaState::LuaState(const std::filesystem::path& scriptPath, const ModData* modData)
 {
 	_state = nullptr;
 	_error = false;
@@ -84,9 +84,13 @@ LuaState::~LuaState()
 
 const std::filesystem::path& LuaState::getScriptPath() const
 {
-	return scriptPath;
+	return _scriptPath;
 }
 
+const ModData* LuaState::getModData() const
+{
+	return _modData;
+}
 
 bool LuaState::loadScript(const std::filesystem::path& filename)
 {
@@ -98,7 +102,7 @@ bool LuaState::loadScript(const std::filesystem::path& filename)
 	}
 
 	// store the script path
-	scriptPath = filename;
+	_scriptPath = filename;
 
 	// create the lua state
 	_state = luaL_newstate();
@@ -123,7 +127,7 @@ bool LuaState::loadScript(const std::filesystem::path& filename)
 	lua_pop(_state, 1);
 
 	// load the script
-	CurrentScriptPath = scriptPath;
+	CurrentScriptPath = _scriptPath;
 	if (luaL_loadfile(_state, filename.string().c_str()) != LUA_OK)
 	{
 		Log(LOG_ERROR) << "LuaState::loadScript: Could not load script " << filename << ": " << lua_tostring(_state, -1);

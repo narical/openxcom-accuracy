@@ -2214,12 +2214,8 @@ void Mod::loadAll()
 		// manage the life-cycle of the Lua stuff separately from everything else.
 		if (modData.info->hasLua())
 		{
-			// create LuaState object
 			std::filesystem::path luaPath = modData.info->getPath() / modData.info->getLuaScript();
-			LuaState* luaState = new LuaState();
-			luaState->loadScript(luaPath);
-
-			delete luaState;
+			_luaMods.push_back(LuaState(luaPath, &modData));
 		}
 	}
 	Log(LOG_INFO) << "Loading Lua done.";

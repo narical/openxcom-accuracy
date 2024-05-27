@@ -46,7 +46,6 @@ class Game
 {
 private:
 	SDL_Event _event;
-	LuaState _lua;
 	Screen *_screen;
 	Cursor *_cursor;
 	Language *_lang;
