@@ -4434,7 +4434,7 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 				tile = _save->getTile(unit->getPosition() + Position(x,y,z) + pair.first);
 				if (tile)
 				{
-					door = tile->openDoor(pair.second, unit, _save->getBattleGame()->getReservedAction(), rClick);
+					door = tile->openDoor(pair.second, unit, _save->getBattleGame()->getReservedAction(), rClick, _save->getBattleGame()->getKneelReserved());
 					if (door != -1)
 					{
 						part = pair.second;
