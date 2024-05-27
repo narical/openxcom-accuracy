@@ -1055,7 +1055,7 @@ void updateMods()
 
 	// check active mods that don't meet the enforced OXCE requirements
 	auto* masterInf = getActiveMasterInfo();
-	auto activeModsList = getActiveMods();
+	ModInfoList activeModsList = getActiveMods();
 	bool forceQuit = false;
 	for (auto* modInf : activeModsList)
 	{
@@ -1089,7 +1089,7 @@ void updateMods()
 	userSplitMasters();
 
 	Log(LOG_INFO) << "Active mods:";
-	auto activeMods = getActiveMods();
+	ModInfoList activeMods = getActiveMods();
 	for (auto* modInf : activeMods)
 	{
 		Log(LOG_INFO) << "- " << modInf->getId() << " v" << modInf->getVersion();
@@ -1440,7 +1440,7 @@ const std::vector<OptionInfo> &getOptionInfo()
  * @sa ModInfo::canActivate
  * @return List of info for the active mods.
  */
-std::vector<const ModInfo *> getActiveMods()
+ModInfoList getActiveMods()
 {
 	std::vector<const ModInfo*> activeMods;
 	for (const ModSettings& modSettings : mods)

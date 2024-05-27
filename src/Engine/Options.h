@@ -76,6 +76,7 @@ namespace Options
 
 	using ModsList = std::vector<ModSettings>;
 	using ModInfoMap = std::map<std::string, ModInfo>;
+	using ModInfoList = std::vector<const ModInfo*>;
 
 #define OPT extern
 #include "Options.inc.h"
@@ -135,7 +136,7 @@ namespace Options
 	/// Refreshes the mods and filemaps.
 	void updateMods();
 	/// Gets the list of currently active mods.
-	std::vector<const ModInfo*> getActiveMods();
+	ModInfoList getActiveMods();
 	/// If we should skip the main menu and just load the last save
 	bool getLoadLastSave();
 	/// And do it only at startup

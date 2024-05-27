@@ -653,7 +653,7 @@ struct VFS {
 		auto rulesets = mod->getRulesets();
 		auto modId = mod->modInfo.getId();
 		// 	typedef std::vector<std::pair<std::string, std::vector<FileRecord *>>> RSOrder;
-		rsorder.push_back(std::make_pair(modId, rulesets));
+		rsorder.push_back(FileRecordNamed{modId, rulesets});
 	}
 	void map_common(bool embeddedOnly) {
 		auto mrec = new ModRecord("common");
@@ -1250,11 +1250,11 @@ std::map<std::string, ModInfo> getModInfos() {
 	return rv;
 }
 
-const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::string& relpath)
+const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::filesystem::path& relpath)
 {
 	if (!relpath.empty())
 	{
-		auto fullPath = concatPaths(modInfo->getPath(), relpath);
+		std::filesystem::path fullPath = modInfo->getPath() / relpath;
 		for (auto& r : ModsAvailable.at(modInfo->getId())->stack.rulesets)
 		{
 			if (r.fullpath == fullPath)

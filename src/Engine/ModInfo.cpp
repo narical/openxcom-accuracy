@@ -155,8 +155,8 @@ const ModInfoVersion defaultModVersion = normalizeModVersion("def", "1.0");
 
 } //namespace
 
-ModInfo::ModInfo(const std::string &path) :
-	 _path(path), _name(CrossPlatform::baseFilename(path)),
+ModInfo::ModInfo(const std::filesystem::path& path) :
+	_path(path), _name(path.filename().string()),
 	_desc("No description."), _author("unknown author"),
 	_id(_name), _master("xcom1"),
 	_versionDisplay("1.0"),
@@ -263,15 +263,22 @@ void ModInfo::load(const YAML::Node& doc)
 			_requiredMasterModVersion = normalizeModVersion(_id, req.as<std::string>());
 		}
 	}
+
+	if (doc["lua"].IsDefined())
+	{
+		_luaScript = doc["lua"].as<std::string>(_id);
+	}
 }
 
-const std::string &ModInfo::getPath()                    const { return _path;                    }
+const std::filesystem::path &ModInfo::getPath()          const { return _path;                    }
 const std::string &ModInfo::getName()                    const { return _name;                    }
 const std::string &ModInfo::getDescription()             const { return _desc;                    }
 const std::string &ModInfo::getVersion()                 const { return _version.first;           }
 const std::string &ModInfo::getVersionDisplay()          const { return _versionDisplay;          }
 const std::string &ModInfo::getAuthor()                  const { return _author;                  }
 const std::string &ModInfo::getId()                      const { return _id;                      }
+bool ModInfo::hasLua()                                   const { return !getLuaScript().empty();  }
+const std::filesystem::path& ModInfo::getLuaScript()     const { return _luaScript;               }
 const std::string &ModInfo::getMaster()                  const { return _master;                  }
 const std::string &ModInfo::getRequiredMasterVersion()   const { return _requiredMasterModVersion.first; }
 bool               ModInfo::isMaster()                   const { return _isMaster;                }

@@ -2116,7 +2116,7 @@ static void throwModOnErrorHelper(const std::string& modId, const std::string& e
 void Mod::loadAll()
 {
 	ModScript parser{ _scriptGlobal, this };
-	const auto& mods = FileMap::getRulesets();
+	const FileMap::RSOrder& mods = FileMap::getRulesets();
 
 	Log(LOG_INFO) << "Loading begins...";
 	if (Options::oxceModValidationLevel < LOG_ERROR)
@@ -2140,16 +2140,16 @@ void Mod::loadAll()
 	size_t offset = 0;
 	for (size_t i = 0; mods.size() > i; ++i)
 	{
-		const std::string& modId = mods[i].first;
+		const std::string& modId = mods[i].name;
 		if (usedModNames.insert(modId).second == false)
 		{
 			throwModOnErrorHelper(modId, "this mod name is already used");
 		}
-		_scriptGlobal->addMod(mods[i].first, 1000 * (int)offset);
+		_scriptGlobal->addMod(mods[i].name, 1000 * (int)offset);
 		const ModInfo *modInfo = &Options::getModInfos().at(modId);
 		size_t size = modInfo->getReservedSpace();
 		_modData[i].name = modId;
-		_modData[i].offset = 1000 * offset;
+		_modData[i].offset = 1000 * offset;			//KN NOTE: WTF?
 		_modData[i].info = modInfo;
 		_modData[i].size = 1000 * size;
 		offset += size;
@@ -2193,18 +2193,37 @@ void Mod::loadAll()
 		{
 			_modCurrent = &_modData.at(i);
 			_scriptGlobal->setMod((int)_modCurrent->offset);
-			loadMod(mods[i].second, parser);
+			loadMod(mods[i].files, parser);
 		}
 		catch (Exception &e)
 		{
-			const std::string &modId = mods[i].first;
+			const std::string &modId = mods[i].name;
 			throwModOnErrorHelper(modId, e.what());
 		}
 	}
+
+	// back master
+	_modCurrent = &_modData.at(0);
 	Log(LOG_INFO) << "Loading rulesets done.";
 
-	//back master
-	_modCurrent = &_modData.at(0);
+	Log(LOG_INFO) << "Loading Lua...";
+	for (const ModData& modData : _modData)
+	{
+		//okay, so this gets a bit tricky. The whole "mod" part was originally developed just to allow cascading rulesets, so
+		// there is no central "mod" object that I can utilize for the LuaState object. What this means is that I have to
+		// manage the life-cycle of the Lua stuff separately from everything else.
+		if (modData.info->hasLua())
+		{
+			// create LuaState object
+			std::filesystem::path luaPath = modData.info->getPath() / modData.info->getLuaScript();
+			LuaState* luaState = new LuaState();
+			luaState->loadScript(luaPath);
+
+			delete luaState;
+		}
+	}
+	Log(LOG_INFO) << "Loading Lua done.";
+
 	_scriptGlobal->endLoad();
 
 	// post-processing item categories
@@ -2450,7 +2469,7 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 	// the order in which variables are determined for a mission, and the order is DIFFERENT for regular missions vs
 	// missions that spawn a mission site. where normally we pick a region, then a mission based on the weights for that region.
 	// a terror-type mission picks a mission type FIRST, then a region based on the criteria defined by the mission.
-	// there is no way i can conceive of to reconcile this difference to allow mixing and matching,
+	// there is no way i can conceive of to reconcile this difference to allow mixing and matching,	//KN NOTE: Lua?
 	// short of knowing the results of calls to the RNG before they're determined.
 	// the best solution i can come up with is to disallow it, as there are other ways to achieve what this would amount to anyway,
 	// and they don't require time travel. - Warboy

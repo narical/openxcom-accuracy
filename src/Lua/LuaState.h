@@ -40,9 +40,13 @@ private:
 	lua_State *_state; // The lua_State object
 	bool _error; // Error flag
 	std::string _errorString; // Error message
+
+	std::filesystem::path scriptPath; // The path to the script file
 public:
 	LuaState(); // Constructor
 	~LuaState(); // Destructor
+
+	const std::filesystem::path &getScriptPath() const; // Returns the path to the script file
 
 	/**
 	* Loads a script from a file.
@@ -56,6 +60,8 @@ public:
 	* @return True if the script was run successfully, false otherwise. Use the getErrorString() method to get the error message.
 	*/
 	bool runScript();
+
+
 };
 
 }
