@@ -33,7 +33,7 @@ OPT SDLKey keyAIList;
 // Battlescape options
 OPT ScrollType battleEdgeScroll;
 OPT PathPreview battleNewPreviewPath;
-OPT int battleRealisticShotDispersion, battleScrollSpeed, battleDragScrollButton, battleFireSpeed, battleXcomSpeed, battleAlienSpeed, battleExplosionHeight, battlescapeScale, battleTerrainSquishyness;
+OPT int battleRealisticShotDispersion, battleRealisticCoverEfficiency, battleScrollSpeed, battleDragScrollButton, battleFireSpeed, battleXcomSpeed, battleAlienSpeed, battleExplosionHeight, battlescapeScale, battleTerrainSquishyness;
 OPT bool traceAI, battleInstantGrenade, battleNotifyDeath, battleTooltips, battleHairBleach, battleAutoEnd,
 	strafe, forceFire, showMoreStatsInInventoryView, allowPsionicCapture, skipNextTurnScreen, disableAutoEquip, battleDragScrollInvert,
 	battleUFOExtenderAccuracy, battleRealisticAccuracy, battleRealisticImprovedSnap, battleRealisticDisplayRolls, battleAltGrenades, battleConfirmFireMode, battleSmoothCamera, noAlienPanicMessages, alienBleeding, instantPrime, strictBlockedChecking, updateTurnsSinceSeenByClue;

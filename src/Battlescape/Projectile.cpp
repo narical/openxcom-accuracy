@@ -35,6 +35,22 @@
 
 namespace OpenXcom
 {
+AccuracyModConfig AccuracyMod = {
+	5,		// MinCap			Minimum accuracy value
+	95,		// MaxCap			Maximum accuracy value
+	3,		// AimBonus			For aimed shot if total accuracy is 5% or less
+	2,		// KneelBonus		For kneeling if total accuracy is 5% or less
+	4,		// aimedDivider
+	3,		// snapDivider
+	3,		// autoDivider		Dividers are used for adding roll-based deviation
+	1,		// twoHandsBonus	Less shots dispersion for one weapon in both hands
+	3,		// distanceDivider	Additional 1 voxel of deviation per this number of distance tiles
+	1.35,	// SizeMultiplier	Accuracy multiplier when targeting big units
+	50,		// suicideProtectionDistance	// Minimal distance missing shot should fly, in voxels
+	10,		// bonusDistanceMax	Improved accuracy distance - top threshold
+	6,		// bonusDistanceMin	Improved accuracy distance - bottom threshold
+	{0, 30, 50, 70, 100} // coverEfficiency Percentage of accuracy affected by target exposure
+};
 
 /**
  * Sets up a UnitSprite with the specified size and position.
@@ -384,6 +400,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		int targetSize = 0;
 		double sizeMultiplier = 0;
 		double exposure = 0.0;
+		bool coverHasEffect = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
+		double coverEfficiencyCoeff = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
+
 		int real_accuracy = ceil( accuracy * 100 ); // separate variable for realistic accuracy, just in case
 
 		BattleUnit *shooterUnit = _action.actor;
@@ -534,9 +553,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 
 			// Apply the exposure
-			if (exposedVoxelsCount > 0)
+			if (exposedVoxelsCount > 0 && coverHasEffect)
 			{
-				real_accuracy = (int)ceil(real_accuracy * exposure);
+				real_accuracy = (int)ceil(real_accuracy * coverEfficiencyCoeff * exposure + real_accuracy * (1 - coverEfficiencyCoeff));
 			}
 
 			// Apply additional rules for low-accuracy shots
@@ -566,9 +585,20 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		if (Options::battleRealisticDisplayRolls)
 		{
 			std::ostringstream ss;
-			ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
-			ss << " Total " << real_accuracy << "%";
-			ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
+			if (coverHasEffect)
+			{
+				ss << "Acc: "	<< accuracy*100 << "*" << coverEfficiencyCoeff << "*" << exposure << " + ";
+				ss << accuracy*100 << "*" << 1 - coverEfficiencyCoeff;
+				ss << " Total " << real_accuracy << "%";
+				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
+			}
+			else
+			{
+				ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
+				ss << " Total " << real_accuracy << "%";
+				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
+			}
+
 			_save->getBattleState()->debug(ss.str(), true);
 		}
 

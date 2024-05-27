@@ -1373,6 +1373,8 @@ void Map::drawTerrain(Surface *surface)
 								int accuracy = 0;
 								int maxVoxels = 0;
 								double maxExposure = 0.0;
+								bool coverHasEffect = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
+								double coverEffciencyCoeff = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
 								bool isArcingShot = action->weapon->getArcingShot(action->type);
@@ -1600,9 +1602,9 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									// Apply the exposure
-									if (unit && maxVoxels > 0)
+									if (unit && maxVoxels > 0 && coverHasEffect)
 									{
-										accuracy = (int)ceil(accuracy * maxExposure);
+										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
 									}
 
 									// Apply additional rules for low-accuracy shots

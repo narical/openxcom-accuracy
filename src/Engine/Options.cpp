@@ -533,6 +533,7 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "battleRealisticAccuracy", &battleRealisticAccuracy, false, "STR_BATTLEREALISTICACCURACY", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "battleRealisticImprovedSnap", &battleRealisticImprovedSnap, true, "STR_BATTLEREALISTICIMPSNAP", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "battleRealisticShotDispersion", &battleRealisticShotDispersion, 1, "STR_BATTLEREALISTICSHOTDISPERSION", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "battleRealisticCoverEfficiency", &battleRealisticCoverEfficiency, 3, "STR_BATTLEREALISTICCOVEREFFICIENCY", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "battleRealisticDisplayRolls", &battleRealisticDisplayRolls, false, "STR_BATTLEREALISTICDISPLAYROLLS", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "battleAltGrenades", &battleAltGrenades, false, "STR_BATTLEALTGRENADES", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "instantPrime", &instantPrime, false, "STR_INSTANTPRIME", "STR_BATTLESCAPE"));

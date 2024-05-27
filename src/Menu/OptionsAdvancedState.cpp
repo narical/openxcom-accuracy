@@ -382,6 +382,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 1;
 		}
+		else if (i == &Options::battleRealisticCoverEfficiency)
+		{
+			min = 0;
+			max = 4;
+		}
 		else if (i == &Options::battleTerrainSquishyness)
 		{
 			min = 0;

@@ -122,6 +122,8 @@ en-US:
   STR_BATTLEREALISTICIMPSNAP_DESC: "Increase aiming distance for snap/auto for a variety of weapons (6-9 to 10 tiles)"
   STR_BATTLEREALISTICSHOTDISPERSION: "Realistic accuracy shot dispersion"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic - tight spread, high chance to destroy target cover  1> Normal - tighter than vanilla, wider then 'Realistic'"
+  STR_BATTLEREALISTICCOVEREFFICIENCY: "Realistic accuracy cover efficiency"
+  STR_BATTLEREALISTICCOVEREFFICIENCY_DESC: "Part of the accuracy affected by cover: 0> 0% (none) 1> 30% (low) 2> 50% (medium) 3> 70% (high) 4> 100% (full)"
   STR_BATTLEREALISTICDISPLAYROLLS: "Realistic accuracy display RNG rolls"
   STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
   STR_BATTLEALTGRENADES: "Alternate throwing accuracy"
