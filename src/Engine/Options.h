@@ -68,6 +68,16 @@ enum ScaleType
  */
 namespace Options
 {
+	struct ModSettings
+	{
+		std::string name;
+		bool active;
+	};
+
+	using ModsList = std::vector<ModSettings>;
+	using ModInfoMap = std::map<std::string, ModInfo>;
+	using ModInfoList = std::vector<const ModInfo*>;
+
 #define OPT extern
 #include "Options.inc.h"
 #undef OPT
@@ -120,13 +130,13 @@ namespace Options
 	/// Gets the master mod info.
 	const ModInfo* getActiveMasterInfo();
 	/// Gets the map of mod ids to mod infos
-	const std::map<std::string, ModInfo> &getModInfos();
+	const ModInfoMap& getModInfos();
 	/// Refreshes the mods.
 	void refreshMods();
 	/// Refreshes the mods and filemaps.
 	void updateMods();
 	/// Gets the list of currently active mods.
-	std::vector<const ModInfo*> getActiveMods();
+	ModInfoList getActiveMods();
 	/// If we should skip the main menu and just load the last save
 	bool getLoadLastSave();
 	/// And do it only at startup

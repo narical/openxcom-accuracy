@@ -939,6 +939,11 @@ public:
 
 	}
 
+	/// Constructor from const char*.
+	constexpr explicit ScriptRef(const char* p) : ScriptRange{p, p + std::char_traits<char>::length(p)}
+	{
+	}
+
 	/// Constructor from range of pointers.
 	constexpr ScriptRef(ptr b, ptr e) : ScriptRange{ b, e }
 	{
