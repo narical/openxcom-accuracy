@@ -94,13 +94,8 @@ namespace FileMap
 
 	/// Returns the ruleset files found, grouped by mod, while mapping resources.  The highest-priority mod
 	/// will be last in the returned vector.
-	struct FileRecordNamed
-	{
-		std::string name;
-		std::vector<FileRecord> files;
-	};
-	typedef std::vector<FileRecordNamed> RSOrder;
 
+	typedef std::vector<std::pair<std::string, std::vector<FileRecord>>> RSOrder;
 	const RSOrder &getRulesets();
 
 	/// absolutely clears FileMap state and maps common resources (dataDir/common)
@@ -126,7 +121,7 @@ namespace FileMap
 	std::map<std::string, ModInfo> getModInfos();
 
 	/// Get mod file based on mod info.
-	const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::filesystem::path& relpath);
+	const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::string& relpath);
 
 	/// Unzip a file from a .zip into memory.
 	SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullpath);

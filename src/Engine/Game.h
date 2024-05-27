@@ -20,7 +20,6 @@
 #include <list>
 #include <string>
 #include <SDL.h>
-#include "../Lua/LuaState.h"
 
 namespace OpenXcom
 {

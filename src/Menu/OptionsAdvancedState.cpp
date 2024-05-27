@@ -51,11 +51,11 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 	_owner = _btnOXC;
 
 	_isTFTD = false;
-	for (const Options::ModSettings& pair : Options::mods)
+	for (const auto& pair : Options::mods)
 	{
-		if (pair.active)
+		if (pair.second)
 		{
-			if (pair.name == "xcom2")
+			if (pair.first == "xcom2")
 			{
 				_isTFTD = true;
 				break;

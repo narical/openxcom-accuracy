@@ -91,10 +91,7 @@ struct SaveInfo
 	time_t timestamp;
 	std::string isoDate, isoTime;
 	std::string details;
-
-	using SaveInfoModList = std::vector<std::string>;
-	SaveInfoModList mods;
-
+	std::vector<std::string> mods;
 	bool reserved;
 };
 
