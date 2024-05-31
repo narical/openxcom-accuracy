@@ -3789,22 +3789,19 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 				if (!sweepMode && validCover)
 				{
-					if (!moveIn)
+					for (auto& reachable : enemyReachable)
 					{
-						for (auto& reachable : enemyReachable)
+						if (reachable.second > discoverThreat)
 						{
-							if (reachable.second > discoverThreat)
+							for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 							{
-								for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+								for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
 								{
-									for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
-									{
-										Position compPos = pos;
-										compPos.x += x;
-										compPos.y += y;
-										if (hasTileSight(compPos, reachable.first))
-											discoverThreat = reachable.second;
-									}
+									Position compPos = pos;
+									compPos.x += x;
+									compPos.y += y;
+									if (hasTileSight(compPos, reachable.first))
+										discoverThreat = reachable.second;
 								}
 							}
 						}
@@ -4034,9 +4031,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			//if (_traceAI)
 			//{
-			//	tile->setMarkerColor(goodCoverScore);
+			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(goodCoverScore * 100);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
