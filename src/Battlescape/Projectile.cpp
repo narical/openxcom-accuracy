@@ -494,6 +494,11 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			real_accuracy = real_accuracy * noLOSAccuracyPenalty / 100;
 		}
 
+		int unitAccuracy = shooterUnit->getBaseStats()->firing;
+		int unmodifiedAccuracy = real_accuracy;
+		int snipingBonus = ( real_accuracy > unitAccuracy ? (real_accuracy - unitAccuracy)/2 : 0 );
+		// ...BEFORE SIZE MULTIPLIER - or bonus will be too big
+
 		// Apply size multiplier
 		if (exposedVoxelsCount > 0)
 		{
@@ -557,6 +562,11 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			if (exposedVoxelsCount > 0 && coverHasEffect)
 			{
 				real_accuracy = (int)ceil(real_accuracy * coverEfficiencyCoeff * exposure + real_accuracy * (1 - coverEfficiencyCoeff));
+			}
+
+			if (Options::battleRealisticImprovedAimed && real_accuracy < unmodifiedAccuracy)
+			{
+				real_accuracy = std::min( unmodifiedAccuracy, real_accuracy + snipingBonus);
 			}
 
 			// Apply additional rules for low-accuracy shots

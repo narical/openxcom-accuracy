@@ -1371,6 +1371,7 @@ void Map::drawTerrain(Surface *surface)
 								bool targetSelf = false;
 								int accuracy = 0;
 								int maxVoxels = 0;
+								int snipingBonus = 0;
 								double maxExposure = 0.0;
 								bool coverHasEffect = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
 								double coverEffciencyCoeff = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
@@ -1545,6 +1546,12 @@ void Map::drawTerrain(Surface *surface)
 										_txtAccuracy->setColor( TXT_YELLOW );
 									}
 
+									bool isSniperShot = false;
+									int unitAccuracy = shooterUnit->getBaseStats()->firing;
+									int unmodifiedAccuracy = accuracy;
+									snipingBonus = ( accuracy > unitAccuracy ? (accuracy - unitAccuracy)/2 : 0 );
+									// ...BEFORE SIZE MULTIPLIER - or bonus will be too big
+
 									// Apply size multiplier
 									if (unit && maxVoxels > 0)
 									{
@@ -1608,6 +1615,12 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
 									}
 
+									if (Options::battleRealisticImprovedAimed && accuracy < unmodifiedAccuracy)
+									{
+										accuracy = std::min( unmodifiedAccuracy, accuracy + snipingBonus);
+										if (accuracy == unmodifiedAccuracy) isSniperShot = true;
+									}
+
 									// Apply additional rules for low-accuracy shots
 									if (accuracy <= AccuracyMod.MinCap)
 									{
@@ -1630,6 +1643,11 @@ void Map::drawTerrain(Surface *surface)
 
 									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
 									bool outOfRange = weapon->isOutOfRange(distanceSq);
+
+									if (isSniperShot)
+									{
+										_txtAccuracy->setColor( TXT_WHITE );
+									}
 
 									// If target is out of range - show 0% accuracy with brown cursor
 									if (outOfRange)

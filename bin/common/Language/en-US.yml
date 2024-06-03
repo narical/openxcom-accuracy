@@ -120,6 +120,8 @@ en-US:
   STR_BATTLEREALISTICACCURACY_DESC: "Chance to hit depends on how much cover target has. Accuracy number represents precise chance to hit. Kneel and take cover!"
   STR_BATTLEREALISTICIMPSNAP: "Realistic accuracy improved snap/auto"
   STR_BATTLEREALISTICIMPSNAP_DESC: "Increase aiming distance for snap/auto for a variety of weapons (6-9 to 10 tiles)"
+  STR_BATTLEREALISTICIMPAIMED: "Realistic accuracy improved aimed shots"
+  STR_BATTLEREALISTICIMPAIMED_DESC: "Delta between total accuracy and unit's own accuracy added as sniping bonus after applying cover penalty"
   STR_BATTLEREALISTICSHOTDISPERSION: "Realistic accuracy shot dispersion"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic - tight spread, high chance to destroy target cover  1> Normal - tighter than vanilla, wider then 'Realistic'"
   STR_BATTLEREALISTICCOVEREFFICIENCY: "Realistic accuracy cover efficiency"
