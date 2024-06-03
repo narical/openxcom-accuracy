@@ -1576,7 +1576,7 @@ void Map::drawTerrain(Surface *surface)
 										maxDistanceVoxels = upperLimitVoxels;
 
 									// Improve accuracy for close-range aimed shots
-									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange)
+									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange && accuracy < 100)
 									{
 										distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 
@@ -1591,6 +1591,7 @@ void Map::drawTerrain(Surface *surface)
 										// so increase accuracy in reverse proportion to the distance left
 										else
 											accuracy += (int)ceil((100 - accuracy) * distanceRatio);
+										if (accuracy > 100) accuracy = 100;
 									}
 
 									// Improve accuracy for close-range snap/auto shots

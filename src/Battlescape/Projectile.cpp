@@ -527,7 +527,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				maxDistanceVoxels = upperLimitVoxels;
 
 			// Improve accuracy for close-range aimed shots
-			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange)
+			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange && real_accuracy < 100)
 			{
 				distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
 
@@ -542,6 +542,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				// so increase accuracy in reverse proportion to the distance left
 				else
 					real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
+				if (real_accuracy > 100) real_accuracy = 100;
 			}
 
 			// Improve accuracy for close-range snap/auto shots
