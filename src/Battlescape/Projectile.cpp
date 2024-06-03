@@ -36,8 +36,8 @@
 namespace OpenXcom
 {
 AccuracyModConfig AccuracyMod = {
-	5,		// MinCap			Minimum accuracy value
-	95,		// MaxCap			Maximum accuracy value
+	1,		// MinCap			Minimum accuracy value
+	300,	// MaxCap			Maximum accuracy value
 	3,		// AimBonus			For aimed shot if total accuracy is 5% or less
 	2,		// KneelBonus		For kneeling if total accuracy is 5% or less
 	4,		// aimedDivider
