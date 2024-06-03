@@ -439,6 +439,7 @@ static const int TXT_GREEN	= Palette::blockOffset(Pathfinding::green - 1) - 1;
 static const int TXT_YELLOW	= Palette::blockOffset(Pathfinding::yellow - 1) - 1;
 static const int TXT_RED	= Palette::blockOffset(Pathfinding::red - 1) - 1;
 static const int TXT_BROWN	= Palette::blockOffset(Pathfinding::brown - 1) - 1;
+static const int TXT_WHITE	= Palette::blockOffset(Pathfinding::white - 1) - 1;
 
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
 
@@ -1362,8 +1363,6 @@ void Map::drawTerrain(Surface *surface)
 							}
 							tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frameNumber);
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-
-
 
 							// UFO extender / Realistic accuracy: display adjusted accuracy value on crosshair in real-time.
 							if ((_cursorType == CT_AIM || _cursorType == CT_PSI || _cursorType == CT_WAYPOINT)
