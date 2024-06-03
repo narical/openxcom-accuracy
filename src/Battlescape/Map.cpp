@@ -1557,6 +1557,7 @@ void Map::drawTerrain(Surface *surface)
 									bool aboveBonusThreshold = upperLimit > AccuracyMod.bonusDistanceMax;
 									bool maxRangeAllowsBonus = maxRange > AccuracyMod.bonusDistanceMax;
 									bool noMinRange = weapon->getMinRange() == 0;
+									bool improvedSnapBonusEnabled = inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled;
 
 									int maxDistanceVoxels = 0;
 									double distanceRatio = 0;
@@ -1565,7 +1566,7 @@ void Map::drawTerrain(Surface *surface)
 									if (belowBonusThreshold)
 										maxDistanceVoxels = upperLimitVoxels;
 
-									else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
+									else if (improvedSnapBonusEnabled)
 										maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
 
 									else if (aboveBonusThreshold)
