@@ -5956,6 +5956,8 @@ int TileEngine::faceWindow(Position position)
  */
 bool TileEngine::validateThrow(BattleAction &action, Position originVoxel, Position targetVoxel, int depth, double *curve, int *voxelType, bool forced)
 {
+	if (originVoxel == targetVoxel)
+		return false;
 	bool foundCurve = false;
 	double curvature = 0.5;
 	if (action.type == BA_THROW)
