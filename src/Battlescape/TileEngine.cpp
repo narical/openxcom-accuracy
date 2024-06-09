@@ -3137,6 +3137,15 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 				worker.execute(originalAction.weapon->getRules()->getScript<ModScript::ReactionWeaponAction>(), arg);
 			}
 
+			//Use AI to check whether our shot should actually hit
+			if (!action.actor->getAIModule())
+			{
+				// for some reason the unit had no AI routine assigned..
+				action.actor->setAIModule(new AIModule(_save, action.actor, 0));
+			}
+			if (action.actor->getAIModule()->brutalScoreFiringMode(&action, target, true) <= 0)
+				return false;
+
 			worker.execute(target->getArmor()->getScript<ModScript::ReactionUnitAction>(), arg);
 
 			worker.execute(unit->getArmor()->getScript<ModScript::ReactionUnitReaction>(), arg);
