@@ -1466,7 +1466,7 @@ void Map::drawTerrain(Surface *surface)
 									std::vector<Position> exposedVoxels;
 
 									// Determine distance in voxels
-									if (unit) // If we are targeting unit
+									if (unit && unit->getVisible()) // If we are targeting unit
 									{
 										targetSize = unit->getArmor()->getSize();
 										sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod.SizeMultiplier);

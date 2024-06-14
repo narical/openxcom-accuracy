@@ -426,7 +426,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			goto target_calculated;
 		}
 
-		if (targetUnit) // Get distance and exposure
+		if (targetUnit && targetUnit->getVisible()) // Get distance and exposure
 		{
 			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
@@ -596,16 +596,25 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		if (Options::battleRealisticDisplayRolls)
 		{
 			std::ostringstream ss;
-			if (coverHasEffect)
+			if (coverHasEffect && targetUnit && targetUnit->getVisible())
 			{
 				ss << "Acc: "	<< accuracy*100 << "*" << coverEfficiencyCoeff << "*" << exposure << " + ";
 				ss << accuracy*100 << "*" << 1 - coverEfficiencyCoeff;
+				if (snipingBonus > 0) ss << " + " << snipingBonus;
+				ss << " Total " << real_accuracy << "%";
+				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
+			}
+			else if (targetUnit && targetUnit->getVisible())
+			{
+				ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
+				if (snipingBonus > 0) ss << " + " << snipingBonus;
 				ss << " Total " << real_accuracy << "%";
 				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
 			}
 			else
 			{
-				ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
+				ss << "Acc " << accuracy*100;
+				if (snipingBonus > 0) ss << " + " << snipingBonus;
 				ss << " Total " << real_accuracy << "%";
 				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
 			}
