@@ -1518,8 +1518,13 @@ void Map::drawTerrain(Surface *surface)
 									{
 										action->relativeOrigin = BattleActionOrigin::CENTRE;
 										action->target = Position{itX, itY, itZ}; // Needed inside getOriginVoxel() to get direction
+										Position targetPos = action->target.toVoxel();
 										Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
-										Position targetPos = action->target.toVoxel() + Position{8, 8, 0};
+										targetTile = _save->getTile(action->target);
+										bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER ? true : false);
+
+										targetPos = _save->getTileEngine()->adjustTargetVoxelFromTileType(&origin, targetTile, shooterUnit, isPlayer);
+
 										distanceVoxels = Position::distance( origin, targetPos );
 									}
 
