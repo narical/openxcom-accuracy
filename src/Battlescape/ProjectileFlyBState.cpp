@@ -367,41 +367,9 @@ void ProjectileFlyBState::init()
 				}
 			}
 		}
-		else if (targetTile->getMapData(O_OBJECT) != 0)
-		{
-			if (!_parent->getTileEngine()->canTargetTile(&originVoxel, targetTile, O_OBJECT, &_targetVoxel, _unit, isPlayer))
-			{
-				_targetVoxel = _action.target.toVoxel() + Position(8, 8, 10);
-			}
-		}
-		else if (targetTile->getMapData(O_NORTHWALL) != 0)
-		{
-			if (!_parent->getTileEngine()->canTargetTile(&originVoxel, targetTile, O_NORTHWALL, &_targetVoxel, _unit, isPlayer))
-			{
-				_targetVoxel = _action.target.toVoxel() + Position(8, 0, 9);
-			}
-		}
-		else if (targetTile->getMapData(O_WESTWALL) != 0)
-		{
-			if (!_parent->getTileEngine()->canTargetTile(&originVoxel, targetTile, O_WESTWALL, &_targetVoxel, _unit, isPlayer))
-			{
-				_targetVoxel = _action.target.toVoxel() + Position(0, 8, 9);
-			}
-		}
-		else if (targetTile->getMapData(O_FLOOR) != 0)
-		{
-			if (!_parent->getTileEngine()->canTargetTile(&originVoxel, targetTile, O_FLOOR, &_targetVoxel, _unit, isPlayer))
-			{
-				_targetVoxel = _action.target.toVoxel() + Position(8, 8, 2);
-			}
-		}
 		else
 		{
-			// dummy attempt (only to highlight obstacles)
-			_parent->getTileEngine()->canTargetTile(&originVoxel, targetTile, MapData::O_DUMMY, &_targetVoxel, _unit, isPlayer);
-
-			// target nothing, targets the middle of the tile
-			_targetVoxel = _action.target.toVoxel() + TileEngine::voxelTileCenter;
+			_targetVoxel = _parent->getTileEngine()->adjustTargetVoxelFromTileType(&originVoxel, targetTile, _unit, isPlayer);
 		}
 	}
 
