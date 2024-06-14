@@ -2716,6 +2716,51 @@ bool TileEngine::canTargetTile(Position *originVoxel, Tile *tile, int part, Posi
 	return false;
 }
 
+Position TileEngine::adjustTargetVoxelFromTileType(Position *originVoxel, Tile *targetTile, BattleUnit *excludeUnit, bool rememberObstacles)
+{
+	if (targetTile == nullptr || targetTile->getPosition() == TileEngine::invalid) return TileEngine::invalid;
+	Position targetVoxel;
+
+	if (targetTile->getMapData(O_OBJECT) != 0)
+	{
+		if (!canTargetTile(originVoxel, targetTile, O_OBJECT, &targetVoxel, excludeUnit, rememberObstacles))
+		{
+			targetVoxel = targetTile->getPosition().toVoxel() + Position(8, 8, 10);
+		}
+	}
+	else if (targetTile->getMapData(O_NORTHWALL) != 0)
+	{
+		if (!canTargetTile(originVoxel, targetTile, O_NORTHWALL, &targetVoxel, excludeUnit, rememberObstacles))
+		{
+			targetVoxel = targetTile->getPosition().toVoxel() + Position(8, 0, 9);
+		}
+	}
+	else if (targetTile->getMapData(O_WESTWALL) != 0)
+	{
+		if (!canTargetTile(originVoxel, targetTile, O_WESTWALL, &targetVoxel, excludeUnit, rememberObstacles))
+		{
+			targetVoxel = targetTile->getPosition().toVoxel() + Position(0, 8, 9);
+		}
+	}
+	else if (targetTile->getMapData(O_FLOOR) != 0)
+	{
+		if (!canTargetTile(originVoxel, targetTile, O_FLOOR, &targetVoxel, excludeUnit, rememberObstacles))
+		{
+			targetVoxel = targetTile->getPosition().toVoxel() + Position(8, 8, 2);
+		}
+	}
+	else
+	{
+		// dummy attempt (only to highlight obstacles)
+		canTargetTile(originVoxel, targetTile, MapData::O_DUMMY, &targetVoxel, excludeUnit, rememberObstacles);
+
+		// target nothing, targets the middle of the tile
+		targetVoxel = targetTile->getPosition().toVoxel() + TileEngine::voxelTileCenter;
+	}
+
+	return targetVoxel;
+}
+
 /**
  * Calculates line of sight of a soldiers within range of the Position
  * (used when terrain has changed, which can reveal new parts of terrain or units).
