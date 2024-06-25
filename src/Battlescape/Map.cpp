@@ -1603,6 +1603,7 @@ void Map::drawTerrain(Surface *surface)
 										// so increase accuracy in reverse proportion to the distance left
 										else
 											accuracy += (int)ceil((100 - accuracy) * distanceRatio);
+
 										if (accuracy > 100) accuracy = 100;
 									}
 
