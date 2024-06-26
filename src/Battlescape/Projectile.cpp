@@ -547,6 +547,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				// so increase accuracy in reverse proportion to the distance left
 				else
 					real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
+
 				if (real_accuracy > 100) real_accuracy = 100;
 			}
 
@@ -596,29 +597,24 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		if (Options::battleRealisticDisplayRolls)
 		{
 			std::ostringstream ss;
-			if (coverHasEffect && targetUnit && targetUnit->getVisible())
+
+			if (targetUnit && targetUnit->getVisible())
 			{
-				ss << "Acc: "	<< accuracy*100 << "*" << coverEfficiencyCoeff << "*" << exposure << " + ";
-				ss << accuracy*100 << "*" << 1 - coverEfficiencyCoeff;
-				if (snipingBonus > 0) ss << " + " << snipingBonus;
+				ss << "Exposure " << std::round(exposure*100) << "%";
+
+				if (snipingBonus)
+				{
+					ss << " Sniping +" << snipingBonus << "%";
+				}
 				ss << " Total " << real_accuracy << "%";
-				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
-			}
-			else if (targetUnit && targetUnit->getVisible())
-			{
-				ss << "Acc " << accuracy*100 << " Exposure " << std::round(exposure*100) << "%";
-				if (snipingBonus > 0) ss << " + " << snipingBonus;
-				ss << " Total " << real_accuracy << "%";
-				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
 			}
 			else
 			{
-				ss << "Acc " << accuracy*100;
-				if (snipingBonus > 0) ss << " + " << snipingBonus;
+				if (snipingBonus > 0) ss << "Sniping +" << snipingBonus << "%";
 				ss << " Total " << real_accuracy << "%";
-				ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
 			}
 
+			ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
 			_save->getBattleState()->debug(ss.str(), true);
 		}
 

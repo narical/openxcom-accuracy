@@ -1964,6 +1964,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 	tempAction.actor = currentUnit;
 	tempAction.type = action->type;
 	tempAction.target = tile->getPosition();
+	tempAction.weapon = action->weapon;
 
 	Position originVoxel = getOriginVoxel(tempAction, currentUnit->getTile());
 	Position scanVoxel;
@@ -6176,6 +6177,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 {
 	int unitSize = action.actor->getArmor()->getSize();
 	int weaponShift = 4; // Original weapon position shift from the top of units head
+	bool isArcingTrajectory = action.type == BA_THROW;
+	if (action.weapon && action.weapon->getArcingShot(action.type)) isArcingTrajectory = true;
 
 	// If small unit goes either precise aiming or kneeling
 	if (Options::battleRealisticAccuracy && unitSize == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled()))
@@ -6223,7 +6226,7 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 			}
 		}
 
-		if (Options::battleRealisticAccuracy)
+		if (Options::battleRealisticAccuracy && !isArcingTrajectory)
 		{
 			const int dirXshift[8] = {5, 6, 8,10,11,10, 8, 6};
 			const int dirYshift[8] = {8, 6, 5, 6, 8,10,11,10};
