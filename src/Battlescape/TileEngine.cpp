@@ -6556,12 +6556,14 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 		if (direction & 1)
 		{
 			y1 = 0;
+			y2 = maxDist;
 		}
 		else
 		{
 			y1 = -x;
+			y2 = x;
 		}
-		for (int y = y1; y <= maxDist; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
+		for (int y = y1; y <= y2; ++y) // TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
 			const int distanceSqr = x * x + y * y;
 			if (distanceSqr >= 0)
