@@ -5997,6 +5997,8 @@ int BattleUnit::aiTargetMode()
  */
 void BattleUnit::checkForReactivation()
 {
+	if (getBrutalIntelligence() < 5)
+		return;
 	bool haveTUtoAttack = false;
 	std::vector<BattleItem *> weapons;
 	if (getRightHandWeapon())
@@ -6064,7 +6066,7 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 {
 	if (!isBrutal() || ignoreBrutal)
 		return _isLeeroyJenkins;
-	else if (Options::aggressionMode >= 1)
+	else if (Options::aggression >= 1)
 		return _isLeeroyJenkins;
 	else
 		return false;
@@ -6075,10 +6077,10 @@ float BattleUnit::getAggressiveness() const
 	if (getFaction() == FACTION_PLAYER)
 		return getAggression();
 	float aggressiveness = 0;
-	if (Options::aggressionMode == 1)
+	if (Options::aggression == 4)
 		aggressiveness = getAggression();
 	else
-		return Options::aggressionMode;
+		return Options::aggression;
 	return aggressiveness;
 }
 
@@ -6086,12 +6088,12 @@ int BattleUnit::getBrutalIntelligence() const
 {
 	if (getFaction() != FACTION_PLAYER)
 	{
-		if (Options::intelligenceMode == 0)
-			return 5;
-		if (Options::intelligenceMode == 1)
+		if (Options::intelligence == 6)
 			return getIntelligence();
-		if (Options::intelligenceMode == 2 && getAIModule())
+		if (Options::intelligence == 7 && getAIModule())
 			return getAIModule()->getSave()->getGeoscapeSave()->getDifficulty() + 1;
+		else
+			return Options::intelligence;
 	}
 	return 5;
 }
