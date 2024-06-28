@@ -3362,6 +3362,8 @@ void AIModule::brutalThink(BattleAction* action)
 	Position bestOkayCoverPosition = myPos;
 	float bestDirectPeakScore = 0;
 	Position bestDirectPeakPosition = myPos;
+	float bestIndirectPeakScore = 0;
+	Position bestIndirectPeakPosition = myPos;
 	float bestFallbackScore = 0;
 	Position bestFallbackPosition = myPos;
 	float tuToSaveForHide = 0.5;
@@ -3621,6 +3623,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float goodCoverScore = 0;
 			float okayCoverScore = 0;
 			float directPeakScore = 0;
+			float indirectPeakScore = 0;
 			float fallbackScore = 0;
 			if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
 			{
@@ -3647,8 +3650,23 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
+					if (Position::distance(pos, targetPosition) <= viewDistance)
+					{
+						Tile* targetTile = _save->getTile(targetPosition);
+						if (targetTile)
+						{
+							BattleUnit* unitOnTile = targetTile->getUnit();
+							if (unitOnTile)
+							{
+								if (quickLineOfFire(pos, unitOnTile))
+									directPeakScore = remainingTimeUnits;
+							}
+							else if (clearSight(pos, targetPosition))
+								directPeakScore = remainingTimeUnits;
+						}
+					}
 					if (pos == myPos || (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(tile))))
-						directPeakScore = visiblePath;
+						indirectPeakScore = visiblePath;
 				}
 			}
 			float discoverThreat = 0;
@@ -3761,11 +3779,9 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
 				{
-					attackScore *= 2;
 					greatCoverScore *= 10;
 					goodCoverScore *= 10;
 					okayCoverScore *= 10;
-					directPeakScore *= 10;
 					fallbackScore *= 10;
 				}
 				else
@@ -3776,7 +3792,6 @@ void AIModule::brutalThink(BattleAction* action)
 						greatCoverScore /= 10;
 						goodCoverScore /= 10;
 						okayCoverScore /= 10;
-						directPeakScore /= 10;
 						fallbackScore /= 10;
 					}
 					else
@@ -3784,7 +3799,6 @@ void AIModule::brutalThink(BattleAction* action)
 						greatCoverScore = 0;
 						goodCoverScore = 0;
 						okayCoverScore = 0;
-						directPeakScore = 0;
 						fallbackScore = 0;
 					}
 				}
@@ -3813,11 +3827,9 @@ void AIModule::brutalThink(BattleAction* action)
 			// Avoid tiles from which the player can take me with them when retreating
 			if (IAmMindControlled && tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER)
 			{
-				attackScore /= 2;
 				greatCoverScore /= 10;
 				goodCoverScore /= 10;
 				okayCoverScore /= 10;
-				directPeakScore /= 10;
 				fallbackScore /= 10;
 			}
 			if (!tile->getInventory()->empty() && _unit->getFaction() == _unit->getOriginalFaction())
@@ -3837,6 +3849,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				attackScore /= 2;
 				directPeakScore /= 10;
+				indirectPeakScore /= 10;
 			}
 			float intelligenceDeviation = 0.2f * _unit->getBrutalIntelligence();
 			if (intelligenceDeviation < 1.0)
@@ -3854,6 +3867,8 @@ void AIModule::brutalThink(BattleAction* action)
 						okayCoverScore = rngResult;
 					if (directPeakScore > 0)
 						directPeakScore = rngResult;
+					if (indirectPeakScore > 0)
+						indirectPeakScore = rngResult;
 					if (fallbackScore > 0)
 						fallbackScore = rngResult;
 				}
@@ -3865,6 +3880,7 @@ void AIModule::brutalThink(BattleAction* action)
 					goodCoverScore *= rngResult;
 					okayCoverScore *= rngResult;
 					directPeakScore *= rngResult;
+					indirectPeakScore *= rngResult;
 					fallbackScore *= rngResult;
 				}
 			}
@@ -3901,6 +3917,16 @@ void AIModule::brutalThink(BattleAction* action)
 					usePeakDirection = true;
 				}
 			}
+			if (indirectPeakScore > bestIndirectPeakScore)
+			{
+				bestIndirectPeakScore = indirectPeakScore;
+				bestIndirectPeakPosition = pos;
+				if (!sweepMode)
+				{
+					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
+					usePeakDirection = true;
+				}
+			}
 			if (fallbackScore > bestFallbackScore)
 			{
 				bestFallbackScore = fallbackScore;
@@ -3922,6 +3948,10 @@ void AIModule::brutalThink(BattleAction* action)
 			if (bestDirectPeakScore > 0)
 			{
 				Log(LOG_INFO) << "bestDirectPeakPosition: " << bestDirectPeakPosition << " score: " << bestDirectPeakScore;
+			}
+			if (bestIndirectPeakScore > 0)
+			{
+				Log(LOG_INFO) << "bestIndirectPeakScore: " << bestIndirectPeakPosition << " score: " << bestIndirectPeakScore;
 			}
 			if (bestGreatCoverScore > 0)
 			{
@@ -3981,6 +4011,10 @@ void AIModule::brutalThink(BattleAction* action)
 	else if (bestDirectPeakScore > 0 && newVisibleTiles > 0)
 	{
 		travelTarget = bestDirectPeakPosition;
+	}
+	else if (bestIndirectPeakScore > 0 && newVisibleTiles > 0)
+	{
+		travelTarget = bestIndirectPeakPosition;
 	}
 	else if (bestGreatCoverScore > 0)
 	{
