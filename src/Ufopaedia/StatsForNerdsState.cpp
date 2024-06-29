@@ -2936,6 +2936,9 @@ void StatsForNerdsState::initSoldierBonusList()
 	addInteger(ss, bonusRule->getUnderArmor(), "underArmor");
 
 	addInteger(ss, bonusRule->getVisibilityAtDark(), "visibilityAtDark");
+	addInteger(ss, bonusRule->getVisibilityAtDay(), "visibilityAtDay");
+	addInteger(ss, bonusRule->getPsiVision(), "getPsiVision");
+	addInteger(ss, bonusRule->getHeatVision(), "getHeatVision");
 
 	addHeading("recovery");
 	{
