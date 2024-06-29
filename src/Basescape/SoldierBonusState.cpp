@@ -108,6 +108,10 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 	_lstSummary->setVisible(false);
 
 	int visibilityAtDark = 0;
+	int visibilityAtDay = 0;
+	int psiVision = 0;
+	int heatVision = 0;
+
 	int frontArmor = 0, leftArmor = 0, rightArmor = 0, rearArmor = 0, underArmor = 0;
 	UnitStats stats;
 	bool timeRecovery = false, energyRecovery = false, moraleRecovery = false, healthRecovery = false, stunRecovery = false, manaRecovery = false;
@@ -118,7 +122,12 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		rightArmor += bonusRule->getRightSideArmor();
 		rearArmor  += bonusRule->getRearArmor();
 		underArmor += bonusRule->getUnderArmor();
+
 		visibilityAtDark += bonusRule->getVisibilityAtDark();
+		visibilityAtDay += bonusRule->getVisibilityAtDay();
+		psiVision += bonusRule->getPsiVision();
+		heatVision += bonusRule->getHeatVision();
+
 		stats += *bonusRule->getStats();
 		timeRecovery = timeRecovery || bonusRule->getTimeRecoveryRaw()->isModded();
 		energyRecovery = energyRecovery || bonusRule->getEnergyRecoveryRaw()->isModded();
@@ -190,6 +199,23 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		if (gap.tryRun()) _lstSummary->addRow(1, "");
 		_lstSummary->addRow(2, tr("visibilityAtDark").c_str(), std::to_string(visibilityAtDark).c_str());
 	}
+	if (visibilityAtDay != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("visibilityAtDay").c_str(), std::to_string(visibilityAtDay).c_str());
+	}
+	if (psiVision != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("psiVision").c_str(), std::to_string(psiVision).c_str());
+	}
+	if (heatVision != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("heatVision").c_str(), std::to_string(heatVision).c_str());
+	}
+
+
 	if (timeRecovery || energyRecovery || moraleRecovery || healthRecovery || stunRecovery || manaRecovery)
 	{
 		_lstSummary->addRow(1, "");
