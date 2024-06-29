@@ -3163,7 +3163,8 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		_positionAtStartOfTurn = myPos;
 		_lookToEnemy = false;
-		_reposition = false;
+		if (_unit->getVisibleUnits()->empty())
+			_reposition = false;
 	}
 
 	if (_tuWhenChecking == _unit->getTimeUnits() || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || IAmPureMelee)
@@ -3649,7 +3650,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
-					if (Position::distance(pos, targetPosition) <= viewDistance)
+					if (Position::distance(pos, targetPosition) <= viewDistance && myPos != pos)
 					{
 						Tile* targetTile = _save->getTile(targetPosition);
 						if (targetTile)
