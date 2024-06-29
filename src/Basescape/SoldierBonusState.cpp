@@ -21,6 +21,7 @@
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
+#include "../Engine/HelperMeta.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
@@ -150,23 +151,43 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		_lstSummary->addRow(2, tr("STR_PSIONIC_STRENGTH").c_str(), std::to_string(stats.psiStrength).c_str());
 	if (stats.psiSkill != 0)
 		_lstSummary->addRow(2, tr("STR_PSIONIC_SKILL").c_str(), std::to_string(stats.psiSkill).c_str());
-	if (frontArmor != 0 || leftArmor != 0 || rightArmor != 0 || rearArmor != 0 || underArmor != 0)
+
+
+	helper::SingleRun gap;
+
+
+	gap.reset();
+	if (frontArmor != 0)
 	{
-		_lstSummary->addRow(1, "");
-		if (frontArmor != 0)
-			_lstSummary->addRow(2, tr("STR_FRONT_ARMOR_UC").c_str(), std::to_string(frontArmor).c_str());
-		if (leftArmor != 0)
-			_lstSummary->addRow(2, tr("STR_LEFT_ARMOR_UC").c_str(), std::to_string(leftArmor).c_str());
-		if (rightArmor != 0)
-			_lstSummary->addRow(2, tr("STR_RIGHT_ARMOR_UC").c_str(), std::to_string(rightArmor).c_str());
-		if (rearArmor != 0)
-			_lstSummary->addRow(2, tr("STR_REAR_ARMOR_UC").c_str(), std::to_string(rearArmor).c_str());
-		if (underArmor != 0)
-			_lstSummary->addRow(2, tr("STR_UNDER_ARMOR_UC").c_str(), std::to_string(underArmor).c_str());
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_FRONT_ARMOR_UC").c_str(), std::to_string(frontArmor).c_str());
 	}
+	if (leftArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_LEFT_ARMOR_UC").c_str(), std::to_string(leftArmor).c_str());
+	}
+	if (rightArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_RIGHT_ARMOR_UC").c_str(), std::to_string(rightArmor).c_str());
+	}
+	if (rearArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_REAR_ARMOR_UC").c_str(), std::to_string(rearArmor).c_str());
+	}
+	if (underArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_UNDER_ARMOR_UC").c_str(), std::to_string(underArmor).c_str());
+	}
+
+
+	gap.reset();
 	if (visibilityAtDark != 0)
 	{
-		_lstSummary->addRow(1, "");
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
 		_lstSummary->addRow(2, tr("visibilityAtDark").c_str(), std::to_string(visibilityAtDark).c_str());
 	}
 	if (timeRecovery || energyRecovery || moraleRecovery || healthRecovery || stunRecovery || manaRecovery)
