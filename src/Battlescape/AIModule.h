@@ -60,7 +60,9 @@ private:
 	int _tuCostToReachClosestPositionToBreakLos;
 	int _energyCostToReachClosestPositionToBreakLos;
 	int _tuWhenChecking;
-	bool _reposition;
+	bool _lookToEnemy = false;
+	bool _lookAround = false;
+	bool _reposition = false;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 	UnitFaction _myFaction;

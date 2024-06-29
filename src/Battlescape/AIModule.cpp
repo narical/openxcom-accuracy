@@ -2994,7 +2994,7 @@ void AIModule::brutalThink(BattleAction* action)
 	// Create reachabiliy and turncost-list for the entire map
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Power: " << getUnitPower(_unit) << " Turn: " << _save->getTurn() << " Intelligence: " << _unit->getBrutalIntelligence();
+		Log(LOG_INFO) << "#" << _unit->getId() << "--" << _unit->getType() << " TU: " << _unit->getTimeUnits() << "/" << _unit->getBaseStats()->tu << " Position: " << myPos << " Direction: " << _unit->getDirection() << " Turn: " << _save->getTurn();
 	}
 
 	if (_tuWhenChecking != _unit->getTimeUnits())
@@ -3162,8 +3162,10 @@ void AIModule::brutalThink(BattleAction* action)
 	if (_unit->getTimeUnits() == getMaxTU(_unit))
 	{
 		_positionAtStartOfTurn = myPos;
+		_lookToEnemy = false;
 		_reposition = false;
 	}
+
 	if (_tuWhenChecking == _unit->getTimeUnits() || _reposition || _blaster || _unit->getUtilityWeapon(BT_PSIAMP) != nullptr || IAmPureMelee)
 	{
 		checkedAttack = true;
@@ -3199,13 +3201,13 @@ void AIModule::brutalThink(BattleAction* action)
 			action->updateTU();
 			if (action->type == BA_WALK)
 			{
-				action->run = _attackAction.run;
 				_reposition = true;
+				action->run = _attackAction.run;
 				if (_unit->isLeeroyJenkins(true))
 					_unit->setCharging(unitToWalkTo);
 				if (_traceAI)
 					Log(LOG_INFO) << "Should reposition to " << action->target
-									  << " in order to then attack with " << action->weapon->getRules()->getName();
+								  << " in order to then attack with " << action->weapon->getRules()->getName();
 			}
 			else
 				_reposition = false;
@@ -3213,7 +3215,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (action->type != BA_WALK)
 					Log(LOG_INFO) << "Should attack " << action->target
-							  << " with " << action->weapon->getRules()->getName();
+								  << " with " << action->weapon->getRules()->getName();
 			}
 			if (action->type == BA_LAUNCH)
 			{
@@ -3233,76 +3235,20 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 	}
 	_reposition = false;
-
-	// Check if I'm a turret. In this case I can skip everything about walking
-	if (immobile && _tuWhenChecking == _unit->getTimeUnits())
-	{
-		if (_traceAI)
-			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
-		action->type = BA_NONE;
-		setWantToEndTurn(true);
-		return;
-	}
-
-	Tile* encircleTile = NULL;
-	if (unitToWalkTo != NULL)
-	{
-		Position targetPosition = unitToWalkTo->getPosition();
-		if (!_unit->isCheatOnMovement())
-			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
-		encircleTile = _save->getTile(furthestToGoTowards(targetPosition, BattleActionCost(_unit), _allPathFindingNodes, true));
-		if (clearSight(myPos, furthestPositionEnemyCanReach))
-			amInLoSToFurthestReachable = true;
-	}
-	else if (!_unit->isCheatOnMovement() && _unit->getTimeUnits() == _unit->getBaseStats()->tu)
-	{
-		if (!encircleTile)
-		{
-			int LowestTuCost = INT_MAX;
-			int lowestTurnExplored = INT_MAX;
-			for (auto pu : _allPathFindingNodes)
-			{
-				Tile* tile = _save->getTile(pu->getPosition());
-				if (!tile)
-					continue;
-				int lastExplored = tile->getLastExplored(_unit->getFaction());
-				if (lastExplored < lowestTurnExplored)
-				{
-					lowestTurnExplored = lastExplored;
-					encircleTile = tile;
-				}
-				else if (lastExplored == lowestTurnExplored)
-				{
-					int TUCost = tuCostToReachPosition(tile->getPosition(), _allPathFindingNodes);
-					if (TUCost < LowestTuCost)
-					{
-						LowestTuCost = TUCost;
-						encircleTile = tile;
-					}
-				}
-			}
-		}
-	}
-	if (encircleTile)
-	{
-		if (_traceAI)
-		{
-			Log(LOG_INFO) << "Encircle-Tile: " << encircleTile->getPosition();
-			//encircleTile->setMarkerColor(_unit->getId() % 100);
-			//encircleTile->setPreview(10);
-			//encircleTile->setTUMarker(_unit->getId() %100);
-		}
-	}
+	
+	// The turning-stuff needs to be done before the walking stuff but after the attack-checking-stuff
+	if (_traceAI)
+		Log(LOG_INFO) << "Should look towards enemy-path: "<<_lookToEnemy << " should look around to uncover tiles: "<<_lookAround;
+	Position peakPosition = myPos;
 	bool iHaveLof = false;
-	bool iHaveLofIncludingEncircle = false;
-	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
-	BattleActionCost hitCost = BattleActionCost(BA_HIT, _unit, action->weapon);
+	Position targetPosition = myPos;
 	BattleAction originAction;
 	originAction.actor = _unit;
 	originAction.weapon = action->weapon;
-	if (unitToWalkTo != NULL)
+	int bestDirection = _unit->getDirection();
+	if (unitToWalkTo)
 	{
-		Position targetPosition = unitToWalkTo->getPosition();
+		targetPosition = unitToWalkTo->getPosition();
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 		Tile* tileOfTarget = _save->getTile(targetPosition);
@@ -3318,14 +3264,92 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 		iHaveLof = iHaveLof || clearSight(myPos, targetPosition);
-		iHaveLofIncludingEncircle = iHaveLof;
-		if (encircleTile)
+		Position towardsPeekPos = targetPosition;
+		if (!iHaveLof)
+			towardsPeekPos = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos);
+		Tile* towardsPeekTile = _save->getTile(towardsPeekPos);
+		if (towardsPeekTile->getLastExplored(_unit->getFaction()) < _save->getTurn() || _lookToEnemy)
 		{
-			bool sight = clearSight(myPos, encircleTile->getPosition());
-			iHaveLofIncludingEncircle = iHaveLofIncludingEncircle || sight;
+			if (_traceAI)
+			{
+				Log(LOG_INFO) << "Want to look at path towards: " << targetPosition << " Tile to look at: " << towardsPeekPos;
+			}
+			peakPosition = towardsPeekPos;
+			bestDirection = _save->getTileEngine()->getDirectionTo(myPos, peakPosition);
 		}
 	}
+	if (bestDirection == _unit->getDirection() && !contact && _lookAround)
+	{
+		int highestVisibleTiles = 0;
+		for (int i = 0; i < 8; i++)
+		{
+			int newVisibleTiles = _save->getTileEngine()->visibleTilesFrom(_unit, myPos, i, true).size();
+			if (newVisibleTiles > highestVisibleTiles)
+			{
+				highestVisibleTiles = newVisibleTiles;
+				bestDirection = i;
+			}
+		}
+		if (_traceAI && highestVisibleTiles > 0)
+		{
+			Log(LOG_INFO) << "Want to look in direction: " << bestDirection << " to uncover " << highestVisibleTiles << " new tiles.";
+		}
+	}
+	if (bestDirection != _unit->getDirection() && (getMaxTU(_unit) > _unit->getTimeUnits() || contact || _lookAround))
+	{
+		Position posToLookAt = myPos;
+		switch (bestDirection)
+		{
+		case 0:
+			posToLookAt.y--;
+			break;
+		case 1:
+			posToLookAt.x++;
+			posToLookAt.y--;
+			break;
+		case 2:
+			posToLookAt.x++;
+			break;
+		case 3:
+			posToLookAt.x++;
+			posToLookAt.y++;
+			break;
+		case 4:
+			posToLookAt.y++;
+			break;
+		case 5:
+			posToLookAt.x--;
+			posToLookAt.y++;
+			break;
+		case 6:
+			posToLookAt.x--;
+			break;
+		case 7:
+			posToLookAt.x--;
+			posToLookAt.y--;
+			break;
+		}
+		action->type = BA_TURN;
+		action->target = posToLookAt;
+		if (_traceAI)
+		{
+			Log(LOG_INFO) << "Want to look at position: " << posToLookAt;
+		}
+		return;
+	}
 
+	// Check if I'm a turret. In this case I can skip everything about walking
+	if (immobile && _tuWhenChecking == _unit->getTimeUnits())
+	{
+		if (_traceAI)
+			Log(LOG_INFO) << "I'm either not allowed to move or have 0 energy. So I'll just end my turn.";
+		action->type = BA_NONE;
+		setWantToEndTurn(true);
+		return;
+	}
+
+	BattleActionCost snapCost = BattleActionCost(BA_SNAPSHOT, _unit, action->weapon);
+	BattleActionCost hitCost = BattleActionCost(BA_HIT, _unit, action->weapon);
 	BattleActionCost costSnap(BA_SNAPSHOT, _unit, action->weapon);
 
 	if (_unit->getSpecialAbility() == SPECAB_EXPLODEONDEATH || _unit->getSpecialAbility() == SPECAB_BURN_AND_EXPLODE || _unit->isLeeroyJenkins())
@@ -3416,42 +3440,17 @@ void AIModule::brutalThink(BattleAction* action)
 	bool shouldHaveLofAfterMove = false;
 	bool shouldEndTurnAfterMove = false;
 	int peakDirection = _unit->getDirection();
-	bool usePeakDirection = false;
 	int myMaxTU = getMaxTU(_unit);
 	int lastStepCost = 0;
-	Position peakPosition = getPeakPosition();
 	Position travelTarget = myPos;
-	if (unitToWalkTo != NULL || encircleTile)
+	if (unitToWalkTo != NULL)
 	{
-		Position targetPosition = encircleTile->getPosition();
-		bool justNeedToTurn = false;
-		bool justNeedToTurnToPeek = false;
-		if (unitToWalkTo)
-		{
-			targetPosition = unitToWalkTo->getPosition();
-			if (!_unit->isCheatOnMovement())
-				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
-			if (myPos != targetPosition && _save->getTileEngine()->getDirectionTo(myPos, targetPosition) != _unit->getDirection() && iHaveLof)
-				justNeedToTurn = true;
-			Position towardsPeekPos = closestToGoTowards(targetPosition, _allPathFindingNodes, myPos, true);
-			Tile* towardsPeekTile = _save->getTile(towardsPeekPos);
-			if (towardsPeekTile->getLastExplored(_unit->getFaction()) < _save->getTurn())
-			{
-				if (_traceAI)
-				{
-					Log(LOG_INFO) << "Overruling peakPosition: " << peakPosition << " with: " << towardsPeekPos;
-				}
-				peakPosition = towardsPeekPos;
-			}
-		}
-		if (_save->getTileEngine()->getDirectionTo(myPos, peakPosition) != _unit->getDirection())
-			justNeedToTurnToPeek = true;
 		BattleActionCost reserved = BattleActionCost(_unit);
 		Position travelTarget = furthestToGoTowards(targetPosition, reserved, _allPathFindingNodes);
 		std::vector<PathfindingNode*> targetNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &travelTarget, false, false, bam);
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " need to turn: " << justNeedToTurn << " need to turn to peek: " << justNeedToTurnToPeek << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
+			Log(LOG_INFO) << "travelTarget: " << travelTarget << " targetPositon: " << targetPosition << " sweep-mode: " << sweepMode << " furthest-enemy: " << furthestPositionEnemyCanReach << " targetDistanceTofurthestReach: " << targetDistanceTofurthestReach << " tuToSaveForHide: " << tuToSaveForHide << " peakPosition: " << peakPosition;
 		}
 		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
 		float myWalkToDist = myMaxTU + myTuDistFromTarget;
@@ -3576,7 +3575,7 @@ void AIModule::brutalThink(BattleAction* action)
 			int attackTU = snapCost.Time;
 			if (IAmPureMelee) // We want to go in anyways, regardless of whether we still can attack or not
 				attackTU = hitCost.Time;
-			if (!lineOfFire && (pos != myPos || justNeedToTurn))
+			if (!lineOfFire && (pos != myPos))
 			{
 				if (IAmPureMelee || _unit->isCheatOnMovement())
 				{
@@ -3625,7 +3624,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float directPeakScore = 0;
 			float indirectPeakScore = 0;
 			float fallbackScore = 0;
-			if (!_blaster && lineOfFire && haveTUToAttack && (!shouldHaveBeenAbleToAttack || justNeedToTurn))
+			if (!_blaster && lineOfFire && haveTUToAttack && !shouldHaveBeenAbleToAttack)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || IAmPureMelee)
 				{
@@ -3665,7 +3664,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = remainingTimeUnits;
 						}
 					}
-					if (pos == myPos || (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(tile))))
+					if (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(tile)))
 						indirectPeakScore = visiblePath;
 				}
 			}
@@ -3760,7 +3759,7 @@ void AIModule::brutalThink(BattleAction* action)
 							okayCoverScore += highestPickupScore - myWeaponScore;
 					}
 				}
-				if ((discoverThreat == 0 || immobileEnemies) && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
+				if ((discoverThreat == 0 || immobileEnemies) && !contact && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
 				{
 					_tuCostToReachClosestPositionToBreakLos = pu->getTUCost(false).time;
 					_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
@@ -3911,21 +3910,11 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				bestDirectPeakScore = directPeakScore;
 				bestDirectPeakPosition = pos;
-				if (!sweepMode)
-				{
-					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
-					usePeakDirection = true;
-				}
 			}
 			if (indirectPeakScore > bestIndirectPeakScore)
 			{
 				bestIndirectPeakScore = indirectPeakScore;
 				bestIndirectPeakPosition = pos;
-				if (!sweepMode)
-				{
-					peakDirection = _save->getTileEngine()->getDirectionTo(pos, targetPosition);
-					usePeakDirection = true;
-				}
 			}
 			if (fallbackScore > bestFallbackScore)
 			{
@@ -3990,57 +3979,65 @@ void AIModule::brutalThink(BattleAction* action)
 		if (_traceAI)
 			Log(LOG_INFO) << "Attack dismissed due to lack of TU to go back to hiding-spot afterwards. Attack + Hide: " << attackTU << " move: " << moveTU << " current: " << _unit->getTimeUnits();
 	}
-	int newVisibleTiles = 0;
-	int bestPeekDirection = peakDirection;
-	int mostVisibleTiles = 0;
+	int newVisibleTilesDirect = 0;
+	int newVisibleTilesInDirect = 0;
 	for (int i = 0; i < 8; i++)
 	{
-		int visibleTilesInDirection = _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, i, true).size();
-		newVisibleTiles += visibleTilesInDirection;
-		if (visibleTilesInDirection > mostVisibleTiles)
-		{
-			mostVisibleTiles = visibleTilesInDirection;
-			bestPeekDirection = i;
-		}
+		newVisibleTilesDirect += _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, i, true).size();
+		newVisibleTilesInDirect += _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, i, true).size();
+	}
+	if (_traceAI)
+	{
+		Log(LOG_INFO) << "New visible tiles from " << bestDirectPeakPosition << ": " << newVisibleTilesDirect;
+		Log(LOG_INFO) << "New visible tiles from " << bestIndirectPeakPosition << ": " << newVisibleTilesInDirect;
 	}
 	if (bestAttackScore > 0 && haveTUToAttack)
 	{
-		travelTarget = bestAttackPosition;
 		_reposition = true;
+		travelTarget = bestAttackPosition;
 	}
-	else if (bestDirectPeakScore > 0 && newVisibleTiles > 0)
+	else if (bestDirectPeakScore > 0 && newVisibleTilesDirect > 0)
 	{
 		travelTarget = bestDirectPeakPosition;
+		_lookToEnemy = true;
 	}
-	else if (bestIndirectPeakScore > 0 && newVisibleTiles > 0)
+	else if (bestIndirectPeakScore > 0 && newVisibleTilesInDirect > 0)
 	{
 		travelTarget = bestIndirectPeakPosition;
+		if (bestIndirectPeakPosition == myPos)
+		{
+			_lookAround = true;
+			_lookToEnemy = false;
+		}
 	}
 	else if (bestGreatCoverScore > 0)
 	{
-		usePeakDirection = false;
 		travelTarget = bestGreatCoverPosition;
+		_lookToEnemy = true;
 		if (!wantToPrime)
 			shouldEndTurnAfterMove = true;
 	}
 	else if (bestGoodCoverScore > 0)
 	{
-		usePeakDirection = false;
 		travelTarget = bestGoodCoverPosition;
+		_lookToEnemy = true;
 		shouldEndTurnAfterMove = true;
 	}
 	else if (bestOkayCoverScore > 0)
 	{
-		usePeakDirection = false;
 		travelTarget = bestOkayCoverPosition;
+		_lookToEnemy = true;
 		shouldEndTurnAfterMove = true;
 	}
 	else if (bestFallbackScore > 0)
 	{
-		usePeakDirection = false;
 		travelTarget = bestFallbackPosition;
+		_lookToEnemy = true;
 		shouldEndTurnAfterMove = true;
 	}
+	if (_lookToEnemy)
+		_lookAround = false;
+
 	if (travelTarget == myPos)
 	{
 		if (wantToPrime)
@@ -4075,10 +4072,19 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		BattleActionCost reserved = BattleActionCost(_unit);
 		action->target = furthestToGoTowards(travelTarget, reserved, _allPathFindingNodes);
+		action->type = BA_WALK;
+		action->run = wantToRun();
 	} else
 	{
 		tryToPickUpGrenade(_unit->getTile(), action);
 		action->target = myPos;
+		if (!checkedAttack)
+			action->type = BA_RETHINK;
+		else
+		{
+			action->number -= 1;
+			action->type = BA_NONE;
+		}
 	}
 	
 	if (_traceAI)
@@ -4127,8 +4133,6 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (_traceAI && unitToFaceTo)
 		Log(LOG_INFO) << "unit with closest distance after moving " << unitToFaceTo->getId() << " " << unitToFaceTo->getPosition() << " dist: " << shortestDist;
-	action->type = BA_WALK;
-	action->run = wantToRun();
 	action->finalFacing = -1;
 	if (unitToFaceTo != NULL && shouldHaveLofAfterMove)
 	{
@@ -4136,70 +4140,14 @@ void AIModule::brutalThink(BattleAction* action)
 		if (!_unit->isCheatOnMovement())
 			targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
 		action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, targetPosition);
-		usePeakDirection = false;
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing << " should have Lof after move: " << shouldHaveLofAfterMove << " winnerWasSpecialDoorCase: " << winnerWasSpecialDoorCase;
 		}
 	}
-	else if (getPeakPosition(true) != myPos && myPos == travelTarget && !usePeakDirection && peakDirection == _unit->getDirection())
+	else
 	{
-		if (_traceAI)
-			Log(LOG_INFO) << "Overruling peakDirection since it's the same direction we are already looking at and we don't want to do nothing.";
-		usePeakDirection = true;
-		peakPosition = getPeakPosition(true);
-	}
-	Tile* lookAtTile = NULL;
-	if (usePeakDirection && !winnerWasSpecialDoorCase && bestAttackScore == 0)
-	{
-		peakDirection = _save->getTileEngine()->getDirectionTo(myPos, peakPosition);
-		if (_traceAI)
-			Log(LOG_INFO) << "Should look at peak-direction: " << peakDirection << " peakPosition: " << peakPosition;
-		if (travelTarget == bestDirectPeakPosition && bestDirectPeakPosition == myPos && peakDirection == _unit->getDirection())
-		{
-			peakDirection = bestPeekDirection;
-			if (_traceAI)
-				Log(LOG_INFO) << "Looking at direction that uncovers most tiles instead: " << peakDirection << " uncovered Tiles: " << mostVisibleTiles;
-			Position posToLookAt = myPos;
-			switch (peakDirection)
-			{
-			case 0:
-				posToLookAt.y--;
-				break;
-			case 1:
-				posToLookAt.x++;
-				posToLookAt.y--;
-				break;
-			case 2:
-				posToLookAt.x++;
-				break;
-			case 3:
-				posToLookAt.x++;
-				posToLookAt.y++;
-				break;
-			case 4:
-				posToLookAt.y++;
-				break;
-			case 5:
-				posToLookAt.x--;
-				posToLookAt.y++;
-				break;
-			case 6:
-				posToLookAt.x--;
-				break;
-			case 7:
-				posToLookAt.x--;
-				posToLookAt.y--;
-				break;
-			}
-			lookAtTile = _save->getTile(posToLookAt);
-			usePeakDirection = false;
-			iHaveLof = false;
-		}
-		action->finalFacing = peakDirection;
-	}
-	else if (!shouldHaveLofAfterMove)
-	{
+		Tile* lookAtTile = NULL;
 		if (unitToWalkTo != NULL)
 		{
 			Position targetPosition = unitToWalkTo->getPosition();
@@ -4207,10 +4155,8 @@ void AIModule::brutalThink(BattleAction* action)
 				targetPosition = _save->getTileCoords(unitToWalkTo->getTileLastSpotted(_unit->getFaction()));
 			if (_traceAI)
 				Log(LOG_INFO) << "Should look at path towards " << targetPosition;
-			std::vector<PathfindingNode *> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target, false, false, bam);
+			std::vector<PathfindingNode*> myNodes = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, NULL, &action->target, false, false, bam);
 			lookAtTile = _save->getTile(closestToGoTowards(targetPosition, myNodes, action->target));
-			if (lookAtTile && _traceAI)
-				Log(LOG_INFO) << "lookAtTile " << lookAtTile->getPosition() << " action->target: " << action->target;
 			if (lookAtTile && lookAtTile->getPosition() != action->target)
 			{
 				action->finalFacing = _save->getTileEngine()->getDirectionTo(action->target, lookAtTile->getPosition());
@@ -4219,80 +4165,10 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	if (_traceAI)
-	{
-		Log(LOG_INFO) << "My facing now is " << _unit->getDirection() << " and will be " << action->finalFacing;
-	}
-	action->updateTU();
 	if (!_unit->getVisibleUnits()->empty() || contact)
 		shouldEndTurnAfterMove = false;
 	if (shouldEndTurnAfterMove && _unit->getBrutalIntelligence() < 5)
 		_unit->setWantToEndTurn(true);
-	if (action->target == myPos)
-	{
-		if (!checkedAttack)
-		{
-			if (_tuWhenChecking != _unit->getTimeUnits())
-			{
-				_tuWhenChecking = _unit->getTimeUnits();
-				_tuCostToReachClosestPositionToBreakLos = -1;
-				_energyCostToReachClosestPositionToBreakLos = -1;
-			}
-			action->type = BA_RETHINK;
-			if (_traceAI)
-				Log(LOG_INFO) << "Should reconsider my options now that I know whether I can still hide after shooting.";
-			return;
-		}
-		if (action->finalFacing != _unit->getDirection() && action->finalFacing != -1)
-		{
-			action->type = BA_TURN;
-			if (usePeakDirection && !winnerWasSpecialDoorCase)
-			{
-				action->target = peakPosition;
-			}
-			else
-			{
-				if (unitToFaceTo != NULL)
-				{
-					Position targetPosition = unitToFaceTo->getPosition();
-					if (!_unit->isCheatOnMovement())
-						targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
-					action->target = targetPosition;
-				}
-				if (!iHaveLof && lookAtTile && lookAtTile->getPosition() != myPos && !winnerWasSpecialDoorCase)
-				{
-					action->target = lookAtTile->getPosition();
-				}
-			}
-			if (_traceAI)
-			{
-				if (encircleTile)
-					Log(LOG_INFO) << "Want to turn towards " << action->target << " encircleTile: " << encircleTile->getPosition() << " peakPosition: " << peakPosition << " usePeakDirection: " << usePeakDirection;
-				Log(LOG_INFO) << "Want to turn towards " << action->target << " iHaveLof: " << iHaveLof << " winnerWasSpecialDoorCase: " << winnerWasSpecialDoorCase;
-			}
-		}
-		else
-		{
-			action->type = BA_NONE;
-			if (unitToFaceTo != NULL)
-			{
-				Position targetPosition = unitToFaceTo->getPosition();
-				if (!_unit->isCheatOnMovement())
-					targetPosition = _save->getTileCoords(unitToFaceTo->getTileLastSpotted(_unit->getFaction()));
-				action->target = targetPosition;
-			}
-			if (!iHaveLof && lookAtTile && lookAtTile->getPosition() != myPos && !winnerWasSpecialDoorCase)
-				action->target = lookAtTile->getPosition();
-			if (_traceAI)
-			{
-				Log(LOG_INFO) << "Want to end my turn with action->target: " << action->target;
-			}
-		}
-	}
-	else
-	{
-		action->number -= 1;
-	}
 }
 
 /**
