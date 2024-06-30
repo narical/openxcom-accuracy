@@ -3044,6 +3044,8 @@ void AIModule::brutalThink(BattleAction* action)
 			myAggressiveness = std::max(myAggressiveness, deployment->getMinBrutalAggression());
 	}
 
+	float panicked = 0;
+	float total = 0;
 	for (BattleUnit* target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3133,6 +3135,11 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			_save->getPathfinding()->setIgnoreFriends(false);
 		}
+		else
+		{
+			panicked++;
+		}
+		total++;
 		BattleUnit* LoFCheckUnitForPath = NULL;
 		if (_unit->isCheatOnMovement())
 			LoFCheckUnitForPath = target;
@@ -3150,6 +3157,15 @@ void AIModule::brutalThink(BattleAction* action)
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
 		}
+	}
+	if (_unit->getMorale() >= 100)
+	{
+		if (panicked >= 1)
+			myAggressiveness++;
+		if (panicked / total >= 0.5)
+			myAggressiveness++;
+		if (panicked / total == 1)
+			myAggressiveness++;
 	}
 	int weaponRange = maxExtenderRangeWith(_unit, getMaxTU(_unit));
 	bool sweepMode = _unit->isLeeroyJenkins() || immobile || myAggressiveness >= 3;
