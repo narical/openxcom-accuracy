@@ -2631,8 +2631,6 @@ Mod *BattlescapeGame::getMod()
  */
 bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem)
 {
-	// since we overrule what the AI wanted, we must allow more turns
-	action->actor->setWantToEndTurn(false);
 	// terrorists don't have hands.
 	if (action->actor->getRankString() != "STR_LIVE_TERRORIST" || pickUpWeaponsMoreActively)
 	{
@@ -2665,6 +2663,8 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 				// try to pick it up
 				if (takeItemFromGround(targetItem, action) == 0)
 				{
+					// since we overrule what the AI wanted, we must allow more turns
+					action->actor->setWantToEndTurn(false);
 					// if it isn't loaded or it is ammo
 					if (!targetItem->haveAnyAmmo())
 					{
@@ -2685,6 +2685,8 @@ bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActiv
 				action->target = targetItem->getTile()->getPosition();
 				action->type = BA_WALK;
 				walkToItem = true;
+				// since we overrule what the AI wanted, we must allow more turns
+				action->actor->setWantToEndTurn(false);
 				if (pickUpWeaponsMoreActively)
 				{
 					// don't end the turn after walking 1-2 tiles... pick up a weapon and shoot!
