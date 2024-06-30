@@ -2631,6 +2631,8 @@ Mod *BattlescapeGame::getMod()
  */
 bool BattlescapeGame::findItem(BattleAction *action, bool pickUpWeaponsMoreActively, bool& walkToItem)
 {
+	// since we overrule what the AI wanted, we must allow more turns
+	action->actor->setWantToEndTurn(false);
 	// terrorists don't have hands.
 	if (action->actor->getRankString() != "STR_LIVE_TERRORIST" || pickUpWeaponsMoreActively)
 	{
