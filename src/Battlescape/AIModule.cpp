@@ -3551,6 +3551,9 @@ void AIModule::brutalThink(BattleAction* action)
 								lineOfFire = validateArcingShot(&originAction, tile);
 							else
 								lineOfFire = _save->getTileEngine()->canTargetUnit(&origin, unit->getTile(), nullptr, _unit, false);
+							BattleAction* throwAction = grenadeThrowAction(originAction.target);
+							if (throwAction && !lineOfFire)
+								lineOfFire = validateArcingShot(throwAction, tile);
 							if (lineOfFire && Options::battleRealisticAccuracy)
 							{
 								exposureMod = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit);
@@ -3665,7 +3668,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = remainingTimeUnits;
 						}
 					}
-					if (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(tile)))
+					if (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
 						indirectPeakScore = visiblePath;
 				}
 			}
@@ -3926,7 +3929,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker((totalPath + 1) / (visiblePath + 1));
+			//	tile->setTUMarker(_save->getTileEngine()->isNextToDoor(tile));
 			//}
 		}
 		if (_traceAI)
@@ -4166,9 +4169,9 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 		}
 	}
-	if (!_unit->getVisibleUnits()->empty() || contact)
+	if (!_unit->getVisibleUnits()->empty() || contact || _save->getTileEngine()->isNextToDoor(myTile))
 		shouldEndTurnAfterMove = false;
-	if (shouldEndTurnAfterMove && _unit->getBrutalIntelligence() < 5)
+	if (shouldEndTurnAfterMove)
 		_unit->setWantToEndTurn(true);
 }
 
@@ -6595,6 +6598,19 @@ bool AIModule::improveItemization(float currentItemScore, BattleAction* action)
 		} while (additionalPickup);
 	}
 	return pickedSomethingUp;
+}
+
+BattleAction* AIModule::grenadeThrowAction(Position pos)
+{
+	BattleItem* grenade = _unit->getGrenadeFromBelt();
+	if (grenade == NULL || !grenade->isFuseEnabled())
+		return NULL;
+	BattleAction* action = new BattleAction();
+	action->weapon = grenade;
+	action->type = BA_THROW;
+	action->actor = _unit;
+	action->target = pos;
+	return action;
 }
 
 }

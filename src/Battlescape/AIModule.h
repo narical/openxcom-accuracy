@@ -261,6 +261,8 @@ public:
 	std::vector<Tile*> getDoorTiles(const std::vector<PathfindingNode*> nodeVector);
 	/// tries to pick up weapon and ammo from current tile if it's an upgrade
 	bool improveItemization(float currentItemScore, BattleAction* action);
+	/// prepares a grenade-action to use with validateArcingShot
+	BattleAction* grenadeThrowAction(Position pos);
 };
 
 }
