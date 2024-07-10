@@ -6060,7 +6060,7 @@ void AIModule::tryToPickUpGrenade(Tile *tile, BattleAction *action)
 		return;
 	for (BattleItem *item : *(tile->getInventory()))
 	{
-		if (item->isFuseEnabled())
+		if (item->isFuseEnabled() && item->getRules()->isInventoryItem())
 		{
 			if (_save->getBattleGame()->takeItemFromGround(item, action) == 0)
 				if (_traceAI)
