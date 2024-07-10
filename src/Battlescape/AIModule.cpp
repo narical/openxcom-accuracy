@@ -4960,6 +4960,8 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			if (ammo->getRules()->getShotgunPellets() > 0)
 				numberOfShots *= ammo->getRules()->getShotgunPellets();
 		}
+		else
+			return 0;
 	}
 	// I had to make it mutually exclusive from ammo-damage because that way I wouldn't have power from lasers twice. This seems okay for vanilla but might be wrong for other stuff.
 	if (action->weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(*action)))
