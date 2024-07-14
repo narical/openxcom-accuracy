@@ -6216,6 +6216,10 @@ void getListSizeHackScript(BattleUnit* bu, int& i)
 	}
 }
 
+bool filterItemScript(BattleUnit* unit, BattleItem* item)
+{
+	return item;
+}
 
 std::string debugDisplayScript(const BattleUnit* bu)
 {
@@ -6413,8 +6417,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getInventoryItemScript2>("getInventoryItem");
 	bu.add<&getListSizeScript<&BattleUnit::_inventory>>("getInventoryItem.size");
 	bu.add<&getListScript<&BattleUnit::_inventory>>("getInventoryItem");
+	bu.addList<&filterItemScript, &BattleUnit::_inventory>("getInventoryItem");
 	bu.add<&getListSizeHackScript<&BattleUnit::_specWeapon>>("getSpecialItem.size");
 	bu.add<&getListScript<&BattleUnit::_specWeapon>>("getSpecialItem");
+	bu.addList<&filterItemScript, &BattleUnit::_specWeapon>("getSpecialItem");
 
 	bu.add<&getPositionXScript>("getPosition.getX");
 	bu.add<&getPositionYScript>("getPosition.getY");
