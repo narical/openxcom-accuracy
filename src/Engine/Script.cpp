@@ -1049,7 +1049,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		bool is(CharClasses t) const { return decode & t; }
 
 		/// Is this symbol starting next token?
-		bool isStartOfNextToken() const { return is(CC_spec | CC_none); }
+		bool isStartOfNextToken() const { return c == 0 || is(CC_spec | CC_none); }
 	};
 
 	auto peekCharacter = [&]() -> NextSymbol const
@@ -1082,6 +1082,12 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		--_begin;
 		if (*_begin == '\n') --_linePos;
 	};
+
+	//end of sequence, quit.
+	if (_begin == _end)
+	{
+		return SelectedToken{ };
+	}
 
 	//find first no whitespace character.
 	if (peekCharacter().is(CC_none))
@@ -4878,6 +4884,70 @@ static auto dummyTestScriptOverloadSeperator = ([]
 		assert(std::get<int>(o) && "args 'funcSep x y z __'");
 		assert(callFunc(o, std::begin(args), std::end(args)) == 3);
 	}
+
+	return 0;
+})();
+
+
+[[maybe_unused]]
+static auto dummyTestScriptRefTokens = ([]
+{
+	{
+		ScriptRefTokens srt{"aaaa bb"};
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"aaaa"} && next.getType() == TokenSymbol);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"bb"} && next.getType() == TokenSymbol);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next.getType() == TokenNone);
+		}
+	}
+
+	{
+		ScriptRefTokens srt{"0x10 1234"};
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0x10"} && next.getType() == TokenNumber);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"1234"} && next.getType() == TokenNumber);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next.getType() == TokenNone);
+		}
+	}
+
+	auto getType = [](ScriptRef ref, TokenEnum next = TokenNone)
+	{
+		ScriptRefTokens srt{ref.begin(), ref.end()};
+		return srt.getNextToken(next).getType();
+	};
+
+	assert(getType(ScriptRef{":"}) == TokenInvalid);
+	assert(getType(ScriptRef{":"}, TokenColon) == TokenColon);
+	assert(getType(ScriptRef{";"}) == TokenNone);
+	assert(getType(ScriptRef{";"}, TokenSemicolon) == TokenSemicolon);
+	assert(getType(ScriptRef{"\"aaa\""}) == TokenText);
+	assert(getType(ScriptRef{"0x1"}) == TokenNumber);
+	assert(getType(ScriptRef{""}) == TokenNone);
+	assert(getType(ScriptRef{" "}) == TokenNone);
+	assert(getType(ScriptRef{"#aaaaa"}) == TokenNone);
+	assert(getType(ScriptRef{"  #  1235"}) == TokenNone);
+	assert(getType(ScriptRef{"  #  \n1235"}) == TokenNumber);
+	assert(getType(ScriptRef{" a"}) == TokenSymbol);
+	assert(getType(ScriptRef{" \na"}) == TokenSymbol);
+	assert(getType(ScriptRef{"a111"}) == TokenSymbol);
+
+
+	assert(getType(ScriptRef{"0x"}) == TokenInvalid);
+	assert(getType(ScriptRef{"0xk"}) == TokenInvalid);
 
 	return 0;
 })();
