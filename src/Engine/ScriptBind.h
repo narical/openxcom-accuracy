@@ -991,16 +991,15 @@ struct BindMemberInvokeImpl //Work araound ICC 19.0.1 bug
 	template<typename T, typename... TRest>
 	static auto f(T&& a, TRest&&... b) -> decltype(auto)
 	{
-		using ReturnType = std::invoke_result_t<typename Ptr::Type, T, TRest...>;
-
-		ReturnType v = std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...);
 		if constexpr (sizeof...(Rest) > 0)
 		{
-			return BindMemberInvokeImpl<Rest...>::f(std::forward<ReturnType>(v));
+			return BindMemberInvokeImpl<Rest...>::f(
+				std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...)
+			);
 		}
 		else
 		{
-			return std::forward<ReturnType>(v);
+			return std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...);
 		}
 	}
 };
