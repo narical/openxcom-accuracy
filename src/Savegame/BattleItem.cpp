@@ -1531,6 +1531,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.add<&BattleItem::isAmmo>("isAmmo");
 	bi.add<&BattleItem::isSpecialWeapon>("isSpecialWeapon");
 
+	bi.add<&BattleItem::getRules, &RuleItem::getClipSize>("getAmmoQuantityMax");
 	bi.add<&BattleItem::getAmmoQuantity>("getAmmoQuantity");
 	bi.add<&setAmmoQuantityScript>("setAmmoQuantity");
 
