@@ -3595,7 +3595,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		valid &= label.getType() == TokenSymbol || label.getType() == TokenNone;
 		valid &= op.getType() == TokenSymbol;
 		for (size_t i = 0; i < ScriptMaxArg; ++i)
-			valid &= args[i].getType() == TokenSymbol || args[i].getType() == TokenNumber || args[i].getType() == TokenNone || args[i].getType() == TokenText;
+			valid &= args[i].getType() != TokenInvalid;
 		valid &= f.getType() == TokenSemicolon;
 
 		if (!valid)
