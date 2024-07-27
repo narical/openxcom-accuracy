@@ -1690,7 +1690,7 @@ SDL_RWops *getEmbeddedAsset(const std::string& assetName) {
 	return rv;
 #else
 	/* Asset embedding disabled. */
-	Log(LOG_DEBUG) << log_ctx << "assets were not embedded.";
+	Log(LOG_VERBOSE) << log_ctx << "assets were not embedded.";
 	return NULL;
 #endif
 }
