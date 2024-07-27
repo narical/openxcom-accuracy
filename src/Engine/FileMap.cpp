@@ -818,13 +818,17 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 		}
 		if (CrossPlatform::fileExists(fullname)) {
 			Log(LOG_VERBOSE) << log_ctx << "found zip ("<<fullname<<")";
-			auto layer = new VFSLayer(fullname);
-			if (layer->mapZipFile(fullname, basename + "/", true) || layer->mapZipFile(fullname, "", true)) {
-				mrec->push_front(layer);
-				MappedVFSLayers.insert(layer);
+			auto layer = std::make_unique<VFSLayer>(fullname);
+			auto mapped = layer->mapZipFile(fullname, basename + "/", true);
+			if (!mapped) {
+				// some garbage can stay in `layer` after failed mapping, clean up and try different path
+				layer = std::make_unique<VFSLayer>(fullname);
+				mapped = layer->mapZipFile(fullname, "", true);
+			}
+			if (mapped) {
+				mrec->push_front(layer.get());
+				MappedVFSLayers.insert(layer.release());
 				mapped_anything = true;
-			} else {
-				delete layer;
 			}
 		} else {
 			Log(LOG_VERBOSE) << log_ctx << "zip not found ("<<fullname<<")";
