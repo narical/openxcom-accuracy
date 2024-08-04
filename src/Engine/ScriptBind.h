@@ -251,6 +251,9 @@ struct ParserWriter
 	/// Add new reg arg.
 	ScriptRefData addReg(const ScriptRef& s, ArgEnum type);
 
+	/// Add new local const.
+	ScriptRefData addConst(const ScriptRef& s, ArgEnum type, ScriptValueData value);
+
 
 
 	/// Add new code scope.

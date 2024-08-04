@@ -2396,6 +2396,71 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 }
 
 /**
+ * Parser of `const` operation that define local variables.
+ */
+bool parseConst(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	auto spec = ArgSpecNone;
+	if (begin != end)
+	{
+		if (begin[0].name == ScriptRef{ "ptr" })
+		{
+			spec = spec | ArgSpecPtr;
+			++begin;
+		}
+		else if (begin[0].name == ScriptRef{ "ptre" })
+		{
+			spec = spec | ArgSpecPtrE;
+			++begin;
+		}
+	}
+	auto size = std::distance(begin, end);
+	if (3 != size)
+	{
+		Log(LOG_ERROR) << "Invalid length of 'const' definition";
+		return false;
+	}
+
+	// adding new custom variables of type selected type.
+	auto type_curr = ph.parser.getType(begin[0].name);
+	if (!type_curr)
+	{
+		Log(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
+	{
+		Log(LOG_ERROR) << "Can't create const of type '" << begin[0].name.toString() << "', require 'ptr'";
+		return false;
+	}
+
+	++begin;
+	if (begin[0].type != ArgUnknowSimple || !begin[0].name)
+	{
+		Log(LOG_ERROR) << "Invalid const name '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	auto type =  ArgSpecAdd(type_curr->type, spec);
+
+	if (type != begin[1].type)
+	{
+		Log(LOG_ERROR) << "Invalid value '"<< begin[1].name.toString() << "' for const type '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	auto reg = ph.addConst(begin[0].name, type, begin[1].value);
+	if (!reg)
+	{
+		Log(LOG_ERROR) << "Invalid type for const '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * Parse return statement.
  */
 bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
@@ -3112,6 +3177,42 @@ ScriptRefData ParserWriter::addReg(const ScriptRef& s, ArgEnum type)
 }
 
 /**
+ * Add new local const definition.
+ * @param s optional name of const
+ * @param type type of reg
+ * @return Reg data
+ */
+ScriptRefData ParserWriter::addConst(const ScriptRef& s, ArgEnum type, ScriptValueData value)
+{
+	if (!s)
+	{
+		return {};
+	}
+
+	if (getReferece(s))
+	{
+		return {};
+	}
+
+	if (ArgIsReg(type))
+	{
+		return {};
+	}
+
+	auto meta = getRegMeta(parser, type);
+	if (!meta)
+	{
+		return {};
+	}
+
+	ScriptRefData data = { s, type, value };
+
+	regStack.push_back(data);
+
+	return data;
+}
+
+/**
  * Add new code scope.
  * @return Reference to new block.
  */
@@ -3194,6 +3295,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	buildin("else", &parseElse);
 	buildin("end", &parseEnd);
 	buildin("var", &parseVar);
+	buildin("const", &parseConst);
 	buildin("debug_log", &parseDebugLog);
 	buildin("debug_assert", &parseDummy);
 	buildin("loop", &parseLoop);
@@ -3220,6 +3322,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	auto phName = addNameRef("_");
 	auto seperatorName = addNameRef("__");
 	auto varName = addNameRef("var");
+	auto constName = addNameRef("const");
 
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
@@ -3227,6 +3330,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	addSortHelper(_refList, { phName, ArgPlaceholder });
 	addSortHelper(_refList, { seperatorName, ArgSep });
 	addSortHelper(_refList, { varName, ArgInvalid });
+	addSortHelper(_refList, { constName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
 }
@@ -3640,7 +3744,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 		// test validity of operation positions
 		auto isReturn = (op == ScriptRef{ "return" });
-		auto isVarDef = (op == ScriptRef{ "var" });
+		auto isVarDef = (op == ScriptRef{ "var" }) || (op == ScriptRef{ "const" });
 		auto isBegin = (op == ScriptRef{ "if" }) || (op == ScriptRef{ "else" }) || (op == ScriptRef{ "begin" }) || (op == ScriptRef{ "loop" });
 		auto isEnd = (op == ScriptRef{ "end" }) || (op == ScriptRef{ "else" }); // `else;` is begin and end of scope
 		auto isBreak = (op == ScriptRef{ "continue" } || op == ScriptRef{ "break" });
