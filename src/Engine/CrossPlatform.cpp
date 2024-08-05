@@ -246,7 +246,10 @@ std::vector<std::string> findDataFolders()
 		Log(LOG_DEBUG) << "findDataFolders(): SHGetSpecialFolderPathW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
-
+#ifdef DATADIR
+	snprintf(path, MAX_PATH, "%s\\", DATADIR);
+	list.push_back(path);
+#endif
 	// Get binary directory
 	if (GetModuleFileNameW(NULL, pathW, MAX_PATH) != 0)
 	{
@@ -276,7 +279,8 @@ std::vector<std::string> findDataFolders()
 	char path[MAXPATHLEN];
 
 	// Get user-specific data folders
-	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
+	char const *const xdg_data_home = getenv("XDG_DATA_HOME");
+	if (xdg_data_home && *xdg_data_home)
  	{
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
  	}
@@ -289,9 +293,13 @@ std::vector<std::string> findDataFolders()
 #endif
  	}
  	list.push_back(path);
-
+#ifdef DATADIR
+	snprintp(path, MAXPATHLEN, "%s/" DATADIR);
+	list.push_back(path);
+#endif
 	// Get global data folders
-	if (char const *const xdg_data_dirs = getenv("XDG_DATA_DIRS"))
+	char const *const xdg_data_dirs = getenv("XDG_DATA_DIRS");
+	if (xdg_data_dirs && *xdg_data_dirs)
 	{
 		char xdg_data_dirs_copy[strlen(xdg_data_dirs)+1];
 		strcpy(xdg_data_dirs_copy, xdg_data_dirs);
@@ -303,16 +311,18 @@ std::vector<std::string> findDataFolders()
 			dir = strtok(0, ":");
 		}
 	}
+	else
+	{
 #ifdef __APPLE__
-	list.push_back("/Users/Shared/OpenXcom/");
+		list.push_back("/Users/Shared/OpenXcom/");
 #else
-	list.push_back("/usr/local/share/openxcom/");
-	list.push_back("/usr/share/openxcom/");
-#ifdef DATADIR
-	snprintf(path, MAXPATHLEN, "%s/", DATADIR);
-	list.push_back(path);
+		list.push_back("/usr/local/share/openxcom/");
+		list.push_back("/usr/share/openxcom/");
 #endif
-
+	}
+#ifdef INSTALLDIR
+	snprintf(path, MAXPATHLEN, "%s", INSTALLDIR);
+	list.push_back(path);
 #endif
 
 #ifdef __linux
@@ -327,6 +337,7 @@ std::vector<std::string> findDataFolders()
 			if (dir_pos != std::string::npos) {
 				std::string dir = exe_path.substr(0, dir_pos);
 				list.push_back( dir.append("/") );
+				list.push_back( dir.append("/../share/openxcom/") ); // Relative FHS
 			}
 		}
 	}
@@ -481,7 +492,7 @@ std::string searchDataFile(const std::string &filename)
 	return filename;
 }
 
-std::string searchDataFolder(const std::string &foldername)
+std::string searchDataFolder(const std::string &foldername, std::size_t size)
 {
 	// Correct folder separator
 	std::string name = foldername;
@@ -492,14 +503,14 @@ std::string searchDataFolder(const std::string &foldername)
 		foldername == "TFTD" || foldername == "UFO" ? 9 : // At least 9 dictionaries with original data data
 		foldername == "common" ? 6 : // Files: "Language/", "Palettes/", "Resources/", "Shaders/", "SoldierName/", "openxcom.png"
 		foldername == "standard" ? 20 : // Now 48 mods, some buffer if some decide to drop some mods
-		0
+		size
 	);
 
 	if (Options::getDataFolder() != "")
 	{
 		// Check current data path
 		path = Options::getDataFolder() + name;
-		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
+		if (folderMinSize(path, minNumOfElementsInFolder))
 		{
 			return path;
 		}
@@ -509,7 +520,7 @@ std::string searchDataFolder(const std::string &foldername)
 	for (auto& dataPath : Options::getDataList())
 	{
 		path = dataPath + name;
-		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
+		if (folderMinSize(path, minNumOfElementsInFolder))
 		{
 			return path;
 		}
@@ -635,6 +646,27 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
          return std::get<0>(a) > std::get<0>(b);
        });
 	return files;
+}
+
+/**
+ * Gets the contents of a folder and checks
+ * if they meet a required minimum size.
+ * @param path Full path to folder.
+ * @param size Size of the folder (number of contents).
+ * @return False if the folder doesn't exist or doesn't meet the size.
+ */
+bool folderMinSize(const std::string &path, std::size_t size)
+{
+	if (!folderExists(path))
+	{
+		return false;
+	}
+	if (size == 0)
+	{
+		return true;
+	}
+
+	return (getFolderContents(path).size() >= size);
 }
 
 /**
@@ -1658,7 +1690,7 @@ SDL_RWops *getEmbeddedAsset(const std::string& assetName) {
 	return rv;
 #else
 	/* Asset embedding disabled. */
-	Log(LOG_DEBUG) << log_ctx << "assets were not embedded.";
+	Log(LOG_VERBOSE) << log_ctx << "assets were not embedded.";
 	return NULL;
 #endif
 }
