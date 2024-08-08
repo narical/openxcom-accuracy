@@ -4778,7 +4778,7 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
  * @param checkLOF Set to true if you want to check for a valid line of fire
  * @return The calculated score
  */
-float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, bool checkLOF, Tile* simulationTile, bool needToHideAfterwards)
+float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, bool checkLOF, Tile* simulationTile, bool needToHideAfterwards, bool checkMayHarmFriends)
 {
 	// Sanity check first, if the passed action has no type or weapon, return 0.
 	if (!action->type || !action->weapon)
@@ -5050,7 +5050,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 					if (targetQuality < EPSILON)
 						return 0;
 				}
-				if (projectileMayHarmFriends(originPosition, target->getPosition()))
+				if (checkMayHarmFriends && projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
 		}
@@ -5069,7 +5069,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 				{
 					return 0;
 				}
-				if (projectileMayHarmFriends(originPosition, target->getPosition()))
+				if (checkMayHarmFriends && projectileMayHarmFriends(originPosition, target->getPosition()))
 					return 0;
 			}
 		}
