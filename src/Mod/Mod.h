@@ -225,7 +225,7 @@ private:
 	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
 	int _chanceToStopRetaliation;
 	bool _lessAliensDuringBaseDefense;
-	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry;
+	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry, _infiltrateRandomCountryInTheRegion;
 	bool _allowAlienBasesOnWrongTextures;
 	int _kneelBonusGlobal, _oneHandedPenaltyGlobal;
 	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal, _closeQuartersSneakUpGlobal;
@@ -855,6 +855,8 @@ public:
 	bool getAllowCountriesToCancelAlienPact() const { return _allowCountriesToCancelAlienPact; }
 	/// Should alien infiltration bases be built close to the infiltrated country?
 	bool getBuildInfiltrationBaseCloseToTheCountry() const { return _buildInfiltrationBaseCloseToTheCountry; }
+	/// Should alien infiltration pick countries in a region randomly (or in a pre-defined ruleset order)?
+	bool getInfiltrateRandomCountryInTheRegion() const { return _infiltrateRandomCountryInTheRegion; }
 	/// Should alien bases be allowed (in worst case) on invalid globe textures or not?
 	bool getAllowAlienBasesOnWrongTextures() const { return _allowAlienBasesOnWrongTextures; }
 	/// Gets the global kneel bonus (default = 115).

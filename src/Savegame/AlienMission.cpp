@@ -250,7 +250,12 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	}
 	if (_rule.getObjective() == OBJECTIVE_INFILTRATION && _nextWave == _rule.getWaveCount())
 	{
-		for (auto* c : *game.getCountries())
+		std::vector<Country*> countriesCopy = *game.getCountries();
+		if (mod.getInfiltrateRandomCountryInTheRegion())
+		{
+			RNG::shuffle(countriesCopy);
+		}
+		for (auto* c : countriesCopy)
 		{
 			RuleRegion *region = mod.getRegion(_region, true);
 			if (c->canBeInfiltrated() && region->insideRegion(c->getRules()->getLabelLongitude(), c->getRules()->getLabelLatitude()))
