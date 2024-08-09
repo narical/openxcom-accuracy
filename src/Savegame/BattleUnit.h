@@ -105,6 +105,7 @@ private:
 	UnitStats _exp, _expTmp;
 	int _motionPoints;
 	int _scannedTurn;
+	int _customMarker;
 	int _kills;
 	int _faceDirection; // used only during strafing moves
 	std::vector<int> _meleeAttackedBy;
@@ -528,6 +529,10 @@ public:
 	int getScannedTurn() const { return _scannedTurn; }
 	/// Set turn when unit was scanned by the motion scanner.
 	void setScannedTurn(int turn) { _scannedTurn = turn; }
+	/// Get unit custom marker.
+	int getCustomMarker() const { return _customMarker; }
+	/// Set unit custom marker.
+	void setCustomMarker(int customMarker) { _customMarker = customMarker; }
 	/// Gets the unit's armor.
 	const Armor *getArmor() const;
 	/// Sets the unit's name.

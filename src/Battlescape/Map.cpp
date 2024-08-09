@@ -105,11 +105,24 @@ namespace OpenXcom
  * @param visibleMapHeight Current visible map height.
  */
 Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) : InteractiveSurface(width, height, x, y),
-	_game(game), _arrow(0), _anyIndicator(false), _isAltPressed(false),
+	_game(game), _isTFTD(false), _arrow(0), _anyIndicator(false), _isAltPressed(false), _isCtrlPressed(false),
 	_selectorX(0), _selectorY(0), _mouseX(0), _mouseY(0), _cursorType(CT_NORMAL), _cursorSize(1), _animFrame(0),
 	_projectile(0), _followProjectile(true), _projectileInFOV(false), _explosionInFOV(false), _launch(false), _visibleMapHeight(visibleMapHeight),
 	_unitDying(false), _smoothingEngaged(false), _flashScreen(false), _bgColor(15), _projectileSet(0), _showObstacles(false)
 {
+	// TODO: extract to a better place later
+	for (const auto& pair : Options::mods)
+	{
+		if (pair.second)
+		{
+			if (pair.first == "xcom2")
+			{
+				_isTFTD = true;
+				break;
+			}
+		}
+	}
+
 	_iconHeight = _game->getMod()->getInterface("battlescape")->getElement("icons")->h;
 	_iconWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
 	_messageColor = _game->getMod()->getInterface("battlescape")->getElement("messageWindows")->color;
@@ -435,6 +448,9 @@ namespace
 
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
 
+static const int ArrowColorsUFO[4]  = { 6,  3, 14, 4 }; // white,    red, blue, green
+static const int ArrowColorsTFTD[4] = { 4, 11, 16, 6 }; // white, orange, blue, green
+
 int getArrowBobForFrame(int frame)
 {
 	return ArrowBobOffsets[frame % 8];
@@ -700,7 +716,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	{
 		shade = std::min(+NIGHT_VISION_SHADE, shade);
 	}
-	unitSprite.draw(bu, part, tileScreenPosition.x + offsets.ScreenOffset.x, tileScreenPosition.y + offsets.ScreenOffset.y, shade, mask, _isAltPressed);
+	unitSprite.draw(bu, part, tileScreenPosition.x + offsets.ScreenOffset.x, tileScreenPosition.y + offsets.ScreenOffset.y, shade, mask, _isAltPressed && _isCtrlPressed);
 }
 
 /**
@@ -711,6 +727,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 void Map::drawTerrain(Surface *surface)
 {
 	_isAltPressed = _game->isAltPressed(true);
+	_isCtrlPressed = _game->isCtrlPressed(true);
 	int frameNumber = 0;
 	SurfaceRaw<const Uint8> tmpSurface;
 	Tile *tile;
@@ -1345,9 +1362,8 @@ void Map::drawTerrain(Surface *surface)
 									int noLOSAccuracyPenalty = action->weapon->getRules()->getNoLOSAccuracyPenalty(_game->getMod());
 									if (noLOSAccuracyPenalty != -1)
 									{
-										bool isCtrlPressed = _game->isCtrlPressed(true);
 										bool hasLOS = false;
-										if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
+										if (Position(itX, itY, itZ) == _cacheCursorPosition && _isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
 										{
 											// use cached result
 											hasLOS = (_cacheHasLOS == 1);
@@ -1364,7 +1380,7 @@ void Map::drawTerrain(Surface *surface)
 												hasLOS = _save->getTileEngine()->isTileInLOS(action, tile, true);
 											}
 											// remember
-											_cacheIsCtrlPressed = isCtrlPressed;
+											_cacheIsCtrlPressed = _isCtrlPressed;
 											_cacheCursorPosition = Position(itX, itY, itZ);
 											_cacheHasLOS = hasLOS ? 1 : 0;
 										}
@@ -1675,7 +1691,9 @@ void Map::drawTerrain(Surface *surface)
 	{
 		for (auto* myUnit : *_save->getUnits())
 		{
-			if (myUnit->getScannedTurn() == _save->getTurn() && myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
+			bool motionScan = myUnit->getScannedTurn() == _save->getTurn() && myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut();
+			bool customMarker = myUnit->getCustomMarker() > 0 && myUnit->getFaction() == FACTION_PLAYER && !myUnit->isOut();
+			if (motionScan || customMarker)
 			{
 				Position temp = myUnit->getPosition();
 				temp.z = _camera->getViewLevel();
@@ -1687,16 +1705,37 @@ void Map::drawTerrain(Surface *surface)
 				{
 					offset.y += 4;
 				}
-				offset.y += 24 - /*myUnit->getHeight()*/ 21; // no spoilers
+				if (motionScan)
+				{
+					offset.y += Position::TileZ - /*myUnit->getHeight()*/ 21; // no spoilers
+				}
+				else if (customMarker)
+				{
+					offset.y += Position::TileZ - (myUnit->getHeight() + myUnit->getFloatHeight());
+				}
 				if (myUnit->isKneeled())
 				{
 					offset.y -= 2;
 				}
-				_arrow->blitNShade(
-					surface,
-					screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
-					screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
-					0);
+				if (motionScan)
+				{
+					_arrow->blitNShade(
+						surface,
+						screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+						screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+						0);
+				}
+				else if (customMarker)
+				{
+					Surface::blitRaw(
+						surface,
+						_arrow,
+						screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+						screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+						0,
+						false,
+						_isTFTD ? ArrowColorsTFTD[myUnit->getCustomMarker() % 4] : ArrowColorsUFO[myUnit->getCustomMarker() % 4]);
+				}
 			}
 		}
 	}

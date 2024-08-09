@@ -2697,6 +2697,25 @@ inline void BattlescapeState::handle(Action *action)
 					}
 					_game->pushState(new InfoboxState(ss.str()));
 				}
+				// "alt-c" - custom marker
+				else if (key == SDLK_c && altPressed)
+				{
+					BattleUnit* unitUnderTheCursor = nullptr;
+					{
+						Position newPos;
+						_map->getSelectorPosition(&newPos);
+						Tile* tile = _save->getTile(newPos);
+						if (tile)
+						{
+							unitUnderTheCursor = tile->getOverlappingUnit(_save);
+						}
+					}
+					// mark a friendly unit under the cursor
+					if (unitUnderTheCursor && unitUnderTheCursor->getFaction() == FACTION_PLAYER && !unitUnderTheCursor->isOut())
+					{
+						unitUnderTheCursor->setCustomMarker((unitUnderTheCursor->getCustomMarker() + 1) % 5); // rotate 4 colors + turned off
+					}
+				}
 				// "ctrl-m" - melee damage preview
 				else if (key == SDLK_m && ctrlPressed)
 				{

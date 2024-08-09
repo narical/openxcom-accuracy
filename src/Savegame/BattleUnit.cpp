@@ -67,7 +67,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
+	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
 	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
@@ -399,7 +399,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _walkPhase(0),
 	_fallPhase(0), _kneeled(false), _floating(false), _dontReselect(false), _fire(0), _currentAIState(0),
 	_visible(false), _exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
+	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
 	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT),
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
@@ -650,6 +650,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	}
 
 	_motionPoints = node["motionPoints"].as<int>(0);
+	_customMarker = node["customMarker"].as<int>(0);
 	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
 	_activeHand = node["activeHand"].as<std::string>(_activeHand);
 	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
@@ -767,6 +768,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	}
 
 	node["motionPoints"] = _motionPoints;
+	if (_customMarker > 0)
+		node["customMarker"] = _customMarker;
 	if (_alreadyRespawned)
 		node["alreadyRespawned"] = _alreadyRespawned;
 	node["activeHand"] = _activeHand;
