@@ -1016,7 +1016,7 @@ void GeoscapeState::time5Seconds()
 				if (Options::oxceUfoLandingAlert && ufo->getStatus() == Ufo::LANDED && ufo->getDetected() && ufo->getLandId() != 0)
 				{
 					std::string msg = tr("STR_UFO_HAS_LANDED").arg(ufo->getName(_game->getLanguage()));
-					popup(new CraftErrorState(this, msg));
+					popup(new CraftErrorState(this, msg, true, ufo));
 				}
 				if (detected != ufo->getDetected() && !ufo->getFollowers()->empty())
 				{
