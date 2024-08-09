@@ -260,7 +260,7 @@ void UnitSprite::draw(const BattleUnit* unit, int part, int x, int y, int shade,
 			tmpSurface->blitNShade(_dest, _x, _y- 30 + (22 - unit->getHeight()), shade, _mask);
 		}
 	}
-	if (drawFacingIndicator)
+	if (drawFacingIndicator && part == 0)
 	{
 		// draw unit facing indicator
 		auto* tmpSurface = _facingArrowSurface->getFrame(7 + ((unit->getDirection() + 1) % 8));
