@@ -256,6 +256,34 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	_corpseRecovered = node["corpseRecovered"].as<bool>(_corpseRecovered);
 	_previousTransformations = node["previousTransformations"].as<std::map<std::string, int > >(_previousTransformations);
 	_transformationBonuses = node["transformationBonuses"].as<std::map<std::string, int > >(_transformationBonuses);
+
+	if (const YAML::Node& spawnInfo = node["randomTransformationBonuses"])
+	{
+		WeightedOptions randomTransformationBonuses;
+		randomTransformationBonuses.load(spawnInfo);
+		int transformationBonusesCount = node["transformationBonusesCount"].as<int>(1); // if not provided, default is 1
+		while (transformationBonusesCount > 0 && !randomTransformationBonuses.empty())
+		{
+			transformationBonusesCount--;
+			std::string chosen = randomTransformationBonuses.choose();
+			randomTransformationBonuses.set(chosen, 0);
+
+			// Award a soldier bonus, if defined
+			if (!Mod::isEmptyRuleName(chosen))
+			{
+				auto it2 = _transformationBonuses.find(chosen);
+				if (it2 != _transformationBonuses.end())
+				{
+					it2->second += 1;
+				}
+				else
+				{
+					_transformationBonuses[chosen] = 1;
+				}
+			}
+		}
+	}
+
 	_scriptValues.load(node, shared);
 }
 
