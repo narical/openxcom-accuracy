@@ -726,7 +726,7 @@ public:
 		}
 		else if (getType() == TokenText)
 		{
-			return ScriptRefData{ *this, ArgText, };
+			return ScriptRefData{ *this, ArgText, static_cast<const ScriptRef&>(*this) };
 		}
 		return ScriptRefData{ *this, ArgInvalid };
 	}
@@ -3127,7 +3127,7 @@ bool ParserWriter::pushTextTry(const ScriptRefData& data)
 {
 	if (data && data.type == ArgText)
 	{
-		refTexts.pushPosition(*this, refTexts.addValue(data.name));
+		refTexts.pushPosition(*this, refTexts.addValue(data.getValue<ScriptRef>()));
 		return true;
 	}
 	return false;
