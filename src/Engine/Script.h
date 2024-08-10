@@ -894,12 +894,12 @@ protected:
 
 public:
 	/// Default constructor.
-	constexpr ScriptRange() : _begin{ nullptr }, _end{ nullptr }
+	constexpr ScriptRange() noexcept : _begin{ nullptr }, _end{ nullptr }
 	{
 
 	}
 	/// Constructor.
-	constexpr ScriptRange(ptr b, ptr e) : _begin{ b }, _end{ e }
+	constexpr ScriptRange(ptr b, ptr e) noexcept : _begin{ b }, _end{ e }
 	{
 
 	}
@@ -933,26 +933,26 @@ class ScriptRef : public ScriptRange<char>
 {
 public:
 	/// Default constructor.
-	constexpr ScriptRef() = default;
+	constexpr ScriptRef() noexcept = default;
 
 	/// Copy constructor.
-	constexpr ScriptRef(const ScriptRef&) = default;
+	constexpr ScriptRef(const ScriptRef&) noexcept = default;
 
 	/// Constructor from char array.
 	template<int I>
-	constexpr explicit ScriptRef(const char (&p)[I]) : ScriptRange{ p , p + I - 1 }
+	constexpr explicit ScriptRef(const char (&p)[I]) noexcept : ScriptRange{ p , p + I - 1 }
 	{
 
 	}
 
 	/// Constructor from range of pointers.
-	constexpr ScriptRef(ptr b, ptr e) : ScriptRange{ b, e }
+	constexpr ScriptRef(ptr b, ptr e) noexcept : ScriptRange{ b, e }
 	{
 
 	}
 
 	/// Copy assignment.
-	constexpr ScriptRef& operator=(const ScriptRef& r) = default;
+	constexpr ScriptRef& operator=(const ScriptRef& r) noexcept = default;
 
 
 
