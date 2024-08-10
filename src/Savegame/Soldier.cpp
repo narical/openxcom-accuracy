@@ -1706,6 +1706,23 @@ bool Soldier::isEligibleForTransformation(const RuleSoldierTransformation *trans
 		(currentStats.psiSkill < minStats.psiSkill && minStats.psiSkill != 0)) // The != 0 is required for the "psi training at any time" option, as it sets skill to negative in training
 		return false;
 
+	// Does this soldier meet the maximum stat requirements for the project?
+	currentStats = transformationRule->getIncludeBonusesForMaxStats() ? _tmpStatsWithSoldierBonuses : _currentStats;
+	UnitStats maxStats = transformationRule->getRequiredMaxStats();
+	if (currentStats.tu > maxStats.tu ||
+		currentStats.stamina > maxStats.stamina ||
+		currentStats.health > maxStats.health ||
+		currentStats.bravery > maxStats.bravery ||
+		currentStats.reactions > maxStats.reactions ||
+		currentStats.firing > maxStats.firing ||
+		currentStats.throwing > maxStats.throwing ||
+		currentStats.melee > maxStats.melee ||
+		currentStats.mana > maxStats.mana ||
+		currentStats.strength > maxStats.strength ||
+		currentStats.psiStrength > maxStats.psiStrength ||
+		currentStats.psiSkill > maxStats.psiSkill)
+		return false;
+
 	// Does the soldier have the required commendations?
 	for (const auto& reqd_comm : transformationRule->getRequiredCommendations())
 	{
