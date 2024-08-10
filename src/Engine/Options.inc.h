@@ -72,6 +72,7 @@ OPT bool oxceFatFingerLinks;
 OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
 
+OPT int oxceInterceptTableSize;
 OPT bool oxceEnableSlackingIndicator;
 OPT int oxceInterceptGuiMaintenanceTime;
 OPT int oxceShowETAMode;

@@ -322,6 +322,8 @@ en-US:
   STR_PEDIA_SHOW_CLIP_SIZE: "Show clip size in Ufopedia"
   STR_PEDIA_SHOW_CLIP_SIZE_DESC: "If enabled, ammo clip sizes will be displayed next to ammo icons in the Ufopedia."
 #==== Geoscape ===============
+  STR_INTERCEPT_TABLE_SIZE: "Intercept table size"
+  STR_INTERCEPT_TABLE_SIZE_DESC: "Size of the tables in the following dialog windows: Intercept, UFO Tracker."
   STR_SHOW_SLACKING_INDICATOR: "Show slacking indicator"
   STR_SHOW_SLACKING_INDICATOR_DESC: "If enabled, number of unassigned scientists and engineers will be displayed."
   STR_SHOW_MAINTENANCE_TIME: "Show craft maintenance time"

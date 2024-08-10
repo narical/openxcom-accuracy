@@ -354,6 +354,10 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		{
 			increment *= 5;
 		}
+		else if (i == &Options::oxceInterceptTableSize)
+		{
+			increment *= 4;
+		}
 		*i += increment;
 
 		int min = 0, max = 0;
@@ -395,6 +399,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		{
 			min = 0;
 			max = 2;
+		}
+		else if (i == &Options::oxceInterceptTableSize)
+		{
+			min = 8;
+			max = 80;
 		}
 		else if (i == &Options::oxceWoundedDefendBaseIf) {
 			min = 0;
