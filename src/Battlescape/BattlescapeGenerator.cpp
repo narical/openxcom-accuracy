@@ -2230,6 +2230,70 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 			}
 		}
 	}
+	// extended items
+	for (auto& extItemDef : *mapblock->getExtendedItems())
+	{
+		RuleItem* extRule = _game->getMod()->getItem(extItemDef.type, true);
+		if (extRule->getBattleType() == BT_CORPSE)
+		{
+			throw Exception("Placing corpse items (battleType: 11) on the map is not allowed. Item: " + extRule->getType() + ", map block: " + mapblock->getName());
+		}
+		for (auto& extPos : extItemDef.pos)
+		{
+			if (extPos.x >= mapblock->getSizeX() || extPos.y >= mapblock->getSizeY() || extPos.z >= mapblock->getSizeZ())
+			{
+				ss << "Extended item " << extRule->getType() << " is outside of map block " << mapblock->getName() << ", position: [";
+				ss << extPos.x << "," << extPos.y << "," << extPos.z << "], block size: [";
+				ss << mapblock->getSizeX() << "," << mapblock->getSizeY() << "," << mapblock->getSizeZ() << "]";
+				throw Exception(ss.str());
+			}
+			BattleItem* newExtItem = _save->createItemForTile(extRule, _save->getTile(extPos + Position(xoff, yoff, zoff)));
+			if (extItemDef.fuseTimerMin > -1 && extItemDef.fuseTimerMax > -1 && extItemDef.fuseTimerMin <= extItemDef.fuseTimerMax)
+			{
+				newExtItem->setFuseTimer(RNG::generate(extItemDef.fuseTimerMin, extItemDef.fuseTimerMax));
+			}
+			for (auto& extAmmoDef : extItemDef.ammoDef)
+			{
+				RuleItem* extAmmoRule = _game->getMod()->getItem(extAmmoDef.first, true);
+				if (extAmmoRule)
+				{
+					if (extAmmoRule->getBattleType() == BT_CORPSE)
+					{
+						throw Exception("Placing corpse items (battleType: 11) on the map is not allowed. Ammo item: " + extAmmoRule->getType() + ", map block: " + mapblock->getName());
+					}
+					BattleItem* newExtAmmoItem = _save->createItemForTile(extAmmoRule, _save->getTile(extPos + Position(xoff, yoff, zoff)));
+					if (extAmmoDef.second > 0 && extAmmoDef.second < newExtAmmoItem->getAmmoQuantity())
+					{
+						newExtAmmoItem->setAmmoQuantity(extAmmoDef.second);
+					}
+					if (newExtItem->isWeaponWithAmmo())
+					{
+						int slotAmmo = extRule->getSlotForAmmo(extAmmoRule);
+						if (slotAmmo == -1)
+						{
+							throw Exception("Ammo is not compatible. Weapon: " + extRule->getType() + ", ammo: " + extAmmoRule->getType() + ", map block: " + mapblock->getName());
+						}
+						else
+						{
+							if (newExtItem->getAmmoForSlot(slotAmmo) != 0)
+							{
+								throw Exception("Weapon is already loaded. Weapon: " + extRule->getType() + ", ammo: " + extAmmoRule->getType() + ", map block: " + mapblock->getName());
+							}
+							else
+							{
+								// Put ammo in weapon
+								newExtItem->setAmmoForSlot(slotAmmo, newExtAmmoItem);
+							}
+						}
+					}
+					else
+					{
+						// ammo is not needed, crash or ignore?
+					}
+				}
+			}
+		}
+	}
 
 	return sizez;
 }
