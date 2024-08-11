@@ -55,6 +55,7 @@ std::map<std::string, ModInfo> _modInfos;
 std::string _masterMod;
 int _passwordCheck = -1;
 bool _loadLastSave = false;
+std::string _loadThisSave = "";
 bool _loadLastSaveExpended = false;
 
 /**
@@ -655,6 +656,11 @@ static void loadArgs()
 				{
 					_masterMod = argv[i];
 				}
+				else if (argname == "load")
+				{
+					_loadLastSave = true;
+					_loadThisSave = argv[i];
+				}
 				else
 				{
 					//save this command line option for now, we will apply it later
@@ -691,6 +697,8 @@ static bool showHelp()
 	help << "        override option KEY with VALUE (eg. -displayWidth 640)" << std::endl << std::endl;
 	help << "-continue" << std::endl;
 	help << "        load last save" << std::endl << std::endl;
+	help << "-load FILENAME" << std::endl;
+	help << "        load the specified FILENAME (from the corresponding master mod subfolder)" << std::endl << std::endl;
 	help << "-version" << std::endl;
 	help << "        show version number" << std::endl << std::endl;
 	help << "-help" << std::endl;
@@ -1079,6 +1087,11 @@ const ModInfo* getActiveMasterInfo()
 bool getLoadLastSave()
 {
 	return _loadLastSave && !_loadLastSaveExpended;
+}
+
+const std::string& getLoadThisSave()
+{
+	return _loadThisSave;
 }
 
 void expendLoadLastSave()
