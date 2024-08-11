@@ -2400,7 +2400,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'end'";
+		Log(LOG_ERROR) << "Error in processing 'var'";
 		return false;
 	}
 }
