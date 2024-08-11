@@ -2052,7 +2052,14 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 			c &= !!r;
 			c &= loopArgs.tryPushBack(r);
 			c &= parseVariableImpl(ph, r);
-			return r;
+			if (c)
+			{
+				return r;
+			}
+			else
+			{
+				return {};
+			}
 		};
 
 
