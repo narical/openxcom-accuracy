@@ -771,7 +771,15 @@ void GeoscapeState::timeDisplay()
 {
 	if (Options::showFundsOnGeoscape)
 	{
-		_txtFunds->setText(Unicode::formatFunding(_game->getSavedGame()->getFunds()));
+		if (Options::oxceGeoShowScoreInsteadOfFunds)
+		{
+			// it's a cheat (you're not supposed to see this info in real time), for debugging only
+			_txtFunds->setText(std::to_string(_game->getSavedGame()->getCurrentScore(_game->getSavedGame()->getMonthsPassed() + 1)));
+		}
+		else
+		{
+			_txtFunds->setText(Unicode::formatFunding(_game->getSavedGame()->getFunds()));
+		}
 	}
 
 	std::ostringstream ss;

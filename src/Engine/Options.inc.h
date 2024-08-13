@@ -121,6 +121,7 @@ OPT int oxceStartUpTextMode;
 
 OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT int oxceGeoSlowdownFactor;
+OPT bool oxceGeoShowScoreInsteadOfFunds;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
 OPT int oxceBaseManufactureInfinityButton;
