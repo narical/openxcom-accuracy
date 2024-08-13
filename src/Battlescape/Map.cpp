@@ -1312,7 +1312,8 @@ void Map::drawTerrain(Surface *surface)
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
 
 							// UFO extender accuracy: display adjusted accuracy value on crosshair in real-time.
-							if ((_cursorType == CT_AIM || _cursorType == CT_PSI || _cursorType == CT_WAYPOINT) && Options::battleUFOExtenderAccuracy)
+							if ((_cursorType == CT_AIM || _cursorType == CT_PSI || _cursorType == CT_WAYPOINT) &&
+								((Options::oxceShowAccuracyOnCrosshair == 1 && Options::battleUFOExtenderAccuracy) || Options::oxceShowAccuracyOnCrosshair == 2))
 							{
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
@@ -1324,36 +1325,43 @@ void Map::drawTerrain(Surface *surface)
 								if (_cursorType == CT_AIM)
 								{
 									int accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
-									int upperLimit = 200;
-									int lowerLimit = weapon->getMinRange();
-									switch (action->type)
+									if (Options::battleUFOExtenderAccuracy)
 									{
-									case BA_AIMEDSHOT:
-										upperLimit = weapon->getAimRange();
-										break;
-									case BA_SNAPSHOT:
-										upperLimit = weapon->getSnapRange();
-										break;
-									case BA_AUTOSHOT:
-										upperLimit = weapon->getAutoRange();
-										break;
-									default:
-										break;
-									}
-									// at this point, let's assume the shot is adjusted and set the text amber.
-									_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::yellow - 1) - 1);
+										int upperLimit = 200;
+										int lowerLimit = weapon->getMinRange();
+										switch (action->type)
+										{
+										case BA_AIMEDSHOT:
+											upperLimit = weapon->getAimRange();
+											break;
+										case BA_SNAPSHOT:
+											upperLimit = weapon->getSnapRange();
+											break;
+										case BA_AUTOSHOT:
+											upperLimit = weapon->getAutoRange();
+											break;
+										default:
+											break;
+										}
+										// at this point, let's assume the shot is adjusted and set the text amber.
+										_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::yellow - 1) - 1);
 
-									if (distance > upperLimit)
-									{
-										accuracy -= (distance - upperLimit) * weapon->getDropoff();
-									}
-									else if (distance < lowerLimit)
-									{
-										accuracy -= (lowerLimit - distance) * weapon->getDropoff();
+										if (distance > upperLimit)
+										{
+											accuracy -= (distance - upperLimit) * weapon->getDropoff();
+										}
+										else if (distance < lowerLimit)
+										{
+											accuracy -= (lowerLimit - distance) * weapon->getDropoff();
+										}
+										else
+										{
+											// no adjustment made? set it to green.
+											_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::green - 1) - 1);
+										}
 									}
 									else
 									{
-										// no adjustment made? set it to green.
 										_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::green - 1) - 1);
 									}
 

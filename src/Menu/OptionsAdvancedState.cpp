@@ -395,7 +395,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 10;
 		}
-		else if (i == &Options::oxceInterceptGuiMaintenanceTime || i == &Options::oxceShowETAMode)
+		else if (i == &Options::oxceInterceptGuiMaintenanceTime || i == &Options::oxceShowETAMode || i == &Options::oxceShowAccuracyOnCrosshair)
 		{
 			min = 0;
 			max = 2;
