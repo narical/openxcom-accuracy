@@ -1308,7 +1308,7 @@ void BattlescapeState::selectNextPlayerUnit(bool checkReselect, bool setReselect
 	{
 		BattleUnit *unit = _save->selectNextPlayerUnit(checkReselect, setReselect, checkInventory);
 		updateSoldierInfo(checkFOV);
-		if (unit) _map->getCamera()->centerOnPosition(unit->getPosition());
+		if (unit && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(unit->getPosition());
 		_battleGame->cancelAllActions();
 		_battleGame->getCurrentAction()->actor = unit;
 		_battleGame->setupCursor();
@@ -1327,7 +1327,7 @@ void BattlescapeState::selectPreviousPlayerUnit(bool checkReselect, bool setRese
 	{
 		BattleUnit *unit = _save->selectPreviousPlayerUnit(checkReselect, setReselect, checkInventory);
 		updateSoldierInfo();
-		if (unit) _map->getCamera()->centerOnPosition(unit->getPosition());
+		if (unit && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(unit->getPosition());
 		_battleGame->cancelAllActions();
 		_battleGame->getCurrentAction()->actor = unit;
 		_battleGame->setupCursor();
@@ -2628,6 +2628,19 @@ inline void BattlescapeState::handle(Action *action)
 				bool ctrlPressed = _game->isCtrlPressed();
 				bool shiftPressed = _game->isShiftPressed();
 				bool altPressed = _game->isAltPressed();
+
+				// "shift-hotkey" - select without centering
+				if (shiftPressed)
+				{
+					if (key == Options::keyBattleNextUnit)
+					{
+						btnNextSoldierClick(action);
+					}
+					else if (key == Options::keyBattlePrevUnit)
+					{
+						btnPrevSoldierClick(action);
+					}
+				}
 
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)
