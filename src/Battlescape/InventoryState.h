@@ -146,6 +146,8 @@ public:
 	void handle(Action *action) override;
 	/// Runs state functionality every cycle.
 	void think() override;
+	/// Handler for showing tooltip with extra information (day/night indicator).
+	void txtTooltipInExtraOK(Action *action);
 	/// Handler for showing tooltip.
 	void txtTooltipIn(Action *action);
 	/// Handler for hiding tooltip.

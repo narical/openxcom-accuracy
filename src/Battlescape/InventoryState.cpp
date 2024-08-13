@@ -217,7 +217,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnApplyPersonalTemplateClick, Options::keyInvLoadPersonalEquipment);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnShowPersonalTemplateClick, Options::keyInvShowPersonalEquipment);
 	_btnOk->setTooltip("STR_OK");
-	_btnOk->onMouseIn((ActionHandler)&InventoryState::txtTooltipIn);
+	_btnOk->onMouseIn((ActionHandler)&InventoryState::txtTooltipInExtraOK);
 	_btnOk->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::invMouseOver, SDLK_LALT);
 	_btnOk->onKeyboardRelease((ActionHandler)&InventoryState::invMouseOver, SDLK_LALT);
@@ -2121,6 +2121,46 @@ void InventoryState::think()
 	}
 	State::think();
 }
+
+/**
+ * Shows a tooltip for the OK button.
+ * @param action Pointer to an action.
+ */
+void InventoryState::txtTooltipInExtraOK(Action *action)
+{
+	if (_inv->getSelectedItem() == 0 && Options::battleTooltips)
+	{
+		_currentTooltip = action->getSender()->getTooltip();
+
+		std::ostringstream ss;
+		ss << tr(_currentTooltip);
+
+		if (!_tu && !_base)
+		{
+			ss << " - ";
+
+			if (_battleGame->getGlobalShade() <= 0)
+			{
+				// day (0)
+				ss << tr("STR_DAY");
+			}
+			else if (_battleGame->getGlobalShade() > _game->getMod()->getMaxDarknessToSeeUnits())
+			{
+				// night (10-15); note: this is configurable in the ruleset (in OXCE only)
+				ss << tr("STR_NIGHT");
+			}
+			else
+			{
+				// dusk/dawn (1-9)
+				ss << tr("STR_DAY");
+				ss << "*";
+			}
+		}
+
+		_txtItem->setText(ss.str().c_str());
+	}
+}
+
 
 /**
  * Shows a tooltip for the appropriate button.
