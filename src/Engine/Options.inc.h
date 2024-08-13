@@ -140,6 +140,7 @@ OPT int oxceToggleBrightnessType;
 
 OPT bool oxceEnableUnitResponseSounds;
 OPT int oxceHiddenMovementBackgroundChangeFrequency;
+OPT bool oxceInventoryShowUnitSlot;
 
 OPT int oxceMaxEquipmentLayoutTemplates;
 

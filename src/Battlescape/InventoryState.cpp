@@ -107,6 +107,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	// Create objects
 	_bg = new Surface(320, 200, 0, 0);
 	_soldier = new Surface(320, 200, 0, 0);
+	_txtPosition = new Text(70, 9, 65, 95);
 	_txtName = new TextEdit(this, 210, 17, 28, 6);
 	_txtTus = new Text(40, 9, 245, 24);
 	_txtWeight = new Text(70, 9, 245, 24);
@@ -169,6 +170,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	add(_btnLinks, "buttonLinks", "inventory", _bg);
 	add(_selAmmo);
 	add(_inv);
+	add(_txtPosition, "textSlot", "inventory", _bg);
 
 	// move the TU display down to make room for the weight display
 	if (Options::showMoreStatsInInventoryView)
@@ -179,6 +181,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	centerAllSurfaces();
 
 
+	_txtPosition->setHighContrast(true);
 
 	_txtName->setBig();
 	_txtName->setHighContrast(true);
@@ -413,6 +416,17 @@ void InventoryState::init()
 
 	_soldier->clear();
 	_btnRank->clear();
+
+	if (Options::oxceInventoryShowUnitSlot)
+	{
+		int unitSlot = 1;
+		for (auto* tmpUnit : *_battleGame->getUnits())
+		{
+			if (tmpUnit == unit) break;
+			unitSlot += tmpUnit->getArmor()->getTotalSize();
+		}
+		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot));
+	}
 
 	_txtName->setBig();
 	_txtName->setText(unit->getName(_game->getLanguage()));
