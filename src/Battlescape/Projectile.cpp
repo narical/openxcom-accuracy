@@ -397,6 +397,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH && _action.type != BA_THROW && !isArcingShot)
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
+		bool isTargetObject = false;
 		int targetSize = 0;
 		double sizeMultiplier = 0;
 		double exposure = 0.0;
@@ -508,6 +509,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// Both for units and empty tiles
 		if (targetTile)
 		{
+			isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
+
 			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
 			bool belowBonusThreshold = upperLimit < AccuracyMod.bonusDistanceMin;
 			bool inBonusZone = upperLimit >= AccuracyMod.bonusDistanceMin && upperLimit <= AccuracyMod.bonusDistanceMax;
@@ -621,6 +624,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		if (hit_successful && !exposedVoxels.empty())
 		{
 			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
+		}
+		else if (hit_successful && isTargetObject) // "Hitting" a tile with an object
+		{
+			// just leave it "as is"
 		}
 		else if (hit_successful) // "Hitting" empty tile or fully covered target
 		{
