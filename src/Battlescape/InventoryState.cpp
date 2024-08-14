@@ -420,12 +420,24 @@ void InventoryState::init()
 	if (Options::oxceInventoryShowUnitSlot)
 	{
 		int unitSlot = 1;
+		int totalSlots = 99;
 		for (auto* tmpUnit : *_battleGame->getUnits())
 		{
-			if (tmpUnit == unit) break;
+			if (tmpUnit == unit)
+			{
+				if (!_noCraft && _battleGame->getMissionType() != "STR_BASE_DEFENSE")
+				{
+					auto* tmpCraft = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getCraft() : nullptr;
+					if (tmpCraft)
+					{
+						totalSlots = tmpCraft->getMaxUnitsClamped();
+					}
+				}
+				break;
+			}
 			unitSlot += tmpUnit->getArmor()->getTotalSize();
 		}
-		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot));
+		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot).arg(totalSlots));
 	}
 
 	_txtName->setBig();
