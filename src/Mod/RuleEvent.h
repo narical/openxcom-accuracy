@@ -33,7 +33,7 @@ namespace OpenXcom
 class RuleEvent
 {
 private:
-	std::string _name, _description, _background, _music;
+	std::string _name, _description, _background, _music, _cutscene;
 	std::vector<std::string> _regionList;
 	bool _alignBottom;
 	bool _city;
@@ -66,6 +66,8 @@ public:
 	const std::string &getBackground() const { return _background; }
 	/// Gets the event's music.
 	const std::string &getMusic() const { return _music; }
+	/// Gets the cutscene to play when the event dialog is closed.
+	const std::string &getCutscene() const { return _cutscene; }
 	/// Gets a list of regions where this event can occur.
 	const std::vector<std::string> &getRegionList() const { return _regionList; }
 	/// Is this event city specific?

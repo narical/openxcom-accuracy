@@ -42,6 +42,7 @@ void RuleEvent::load(const YAML::Node &node)
 	_alignBottom = node["alignBottom"].as<bool>(_alignBottom);
 	_background = node["background"].as<std::string>(_background);
 	_music = node["music"].as<std::string>(_music);
+	_cutscene = node["cutscene"].as<std::string>(_cutscene);
 	_regionList = node["regionList"].as<std::vector<std::string> >(_regionList);
 	_city = node["city"].as<bool>(_city);
 	_points = node["points"].as<int>(_points);
