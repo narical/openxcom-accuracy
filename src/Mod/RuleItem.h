@@ -334,6 +334,7 @@ private:
 	RuleItemFuseTrigger _fuseTriggerEvents;
 	bool _hiddenOnMinimap;
 	std::string _medikitActionName, _psiAttackName, _primeActionName, _unprimeActionName, _primeActionMessage, _unprimeActionMessage;
+	std::string _sellActionMessage;
 
 	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher;
 	bool _isExplodingInHands, _specialUseEmptyHand, _specialUseEmptyHandShow;
@@ -830,6 +831,8 @@ public:
 	const std::string &getUnprimeActionName() const { return _unprimeActionName; }
 	/// Get message for unprime action.
 	const std::string &getUnprimeActionMessage() const { return _unprimeActionMessage; }
+	/// Get message when trying to sell the item.
+	const std::string& getSellActionMessage() const { return _sellActionMessage; }
 	/// is this item a 2 handed weapon?
 	bool isRifle() const;
 	/// is this item a single handed weapon?

@@ -482,6 +482,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_primeActionMessage = node["primeActionMessage"].as<std::string>(_primeActionMessage);
 	_unprimeActionName = node["unprimeActionName"].as<std::string>(_unprimeActionName);
 	_unprimeActionMessage = node["unprimeActionMessage"].as<std::string>(_unprimeActionMessage);
+	_sellActionMessage = node["sellActionMessage"].as<std::string>(_sellActionMessage);
 	_fuseType = (BattleFuseType)node["fuseType"].as<int>(_fuseType);
 	_hiddenOnMinimap = node["hiddenOnMinimap"].as<bool>(_hiddenOnMinimap);
 	_clipSize = node["clipSize"].as<int>(_clipSize);
