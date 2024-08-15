@@ -324,8 +324,8 @@ void AllocateTrainingState::initList(size_t scrl)
 
 		bool isDone = soldier->isFullyTrained();
 		bool isWounded = soldier->isWounded();
-		bool isQueued = isWounded && soldier->getReturnToTrainingWhenHealed();
 		bool isTraining = soldier->isInTraining();
+		bool isQueued = !isTraining && soldier->getReturnToTrainingWhenHealed();
 
 		std::string status;
 		if (isDone)
@@ -508,6 +508,7 @@ void AllocateTrainingState::lstSoldiersClick(Action *action)
 				_space--;
 				_txtRemaining->setText(tr("STR_REMAINING_TRAINING_FACILITY_CAPACITY").arg(_space));
 				soldier->setTraining(true);
+				soldier->setReturnToTrainingWhenHealed(false);
 			}
 		}
 		else
@@ -517,6 +518,7 @@ void AllocateTrainingState::lstSoldiersClick(Action *action)
 			_space++;
 			_txtRemaining->setText(tr("STR_REMAINING_TRAINING_FACILITY_CAPACITY").arg(_space));
 			soldier->setTraining(false);
+			soldier->setReturnToTrainingWhenHealed(false);
 		}
 	}
 }
@@ -608,6 +610,7 @@ void AllocateTrainingState::btnAssignAllSoldiersClick(Action* action)
 			_lstSoldiers->setRowColor(row, _lstSoldiers->getSecondaryColor());
 			_space--;
 			soldier->setTraining(true);
+			soldier->setReturnToTrainingWhenHealed(false);
 		}
 		row++;
 	}

@@ -1786,9 +1786,6 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 	{
 		_recovery = transformationRule->getRecoveryTime();
 	}
-	_training = false;
-	_returnToTrainingWhenHealed = false;
-	_psiTraining = false;
 
 	// needed, because the armor size may change (also, it just makes sense)
 	sourceSoldier->setCraftAndMoveEquipment(0, base, false);
@@ -1856,6 +1853,19 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 					_nationality = 0;
 				}
 			}
+		}
+
+		// handle training (soldier type change rules)
+		if (sourceSoldierType != _rules && _rules->getTrainingStatCaps().psiSkill <= 0)
+		{
+			// transformed into a new soldier type, which doesn't support psi training
+			_psiTraining = false;
+		}
+		// handle training (recovery rules)
+		if (_training && isWounded())
+		{
+			_training = false;
+			_returnToTrainingWhenHealed = true;
 		}
 
 		// reset soldier rank, if needed
