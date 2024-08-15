@@ -373,7 +373,7 @@ public:
 	/// Calculate psi attack accuracy.
 	static int getPsiAccuracy(BattleActionAttack::ReadOnly attack);
 	/// Calculate firing accuracy.
-	static int getFiringAccuracy(BattleActionAttack::ReadOnly attack, Mod *mod);
+	static int getFiringAccuracy(BattleActionAttack::ReadOnly attack, const Mod *mod);
 	/// Calculate accuracy modifier.
 	int getAccuracyModifier(const BattleItem *item = 0) const;
 	/// Get the current reaction score.
@@ -438,7 +438,7 @@ public:
 	/// Gets the item in the main hand.
 	BattleItem *getMainHandWeapon(bool quickest = true, bool reactions = false) const;
 	/// Gets a grenade from the belt, if any.
-	BattleItem *getGrenadeFromBelt() const;
+	BattleItem *getGrenadeFromBelt(const SavedBattleGame* battle) const;
 	/// Gets the item from right hand.
 	BattleItem *getRightHandWeapon() const;
 	/// Gets the item from left hand.

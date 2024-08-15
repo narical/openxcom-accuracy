@@ -2428,7 +2428,7 @@ int BattleUnit::getPsiAccuracy(BattleActionAttack::ReadOnly attack)
  * @param item
  * @return firing Accuracy
  */
-int BattleUnit::getFiringAccuracy(BattleActionAttack::ReadOnly attack, Mod *mod)
+int BattleUnit::getFiringAccuracy(BattleActionAttack::ReadOnly attack, const Mod *mod)
 {
 	auto actionType = attack.type;
 	auto item = attack.weapon_item;
@@ -3536,13 +3536,16 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool reactions) const
  * Get a grenade from the belt (used for AI)
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getGrenadeFromBelt() const
+BattleItem *BattleUnit::getGrenadeFromBelt(const SavedBattleGame* battle) const
 {
 	for (auto* bi : _inventory)
 	{
 		if (bi->getRules()->getBattleType() == BT_GRENADE)
 		{
-			return bi;
+			if (battle->getTurn() >= bi->getRules()->getAIUseDelay(battle->getMod()))
+			{
+				return bi;
+			}
 		}
 	}
 	return 0;

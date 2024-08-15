@@ -1428,7 +1428,7 @@ int RuleItem::getAccuracyThrow() const
  * Gets the item's accuracy for close quarters combat.
  * @return The close quarters accuracy.
  */
-int RuleItem::getAccuracyCloseQuarters(Mod *mod) const
+int RuleItem::getAccuracyCloseQuarters(const Mod *mod) const
 {
 	return _accuracyCloseQuarters != -1 ? _accuracyCloseQuarters : mod->getCloseQuartersAccuracyGlobal();
 }
@@ -2629,7 +2629,7 @@ const std::vector<int> &RuleItem::getCustomItemPreviewIndex() const
 * Gets the kneel bonus (15% bonus is encoded as 100+15 = 115).
 * @return Kneel bonus.
 */
-int RuleItem::getKneelBonus(Mod *mod) const
+int RuleItem::getKneelBonus(const Mod *mod) const
 {
 	return _kneelBonus != -1 ? _kneelBonus : mod->getKneelBonusGlobal();
 }
@@ -2638,7 +2638,7 @@ int RuleItem::getKneelBonus(Mod *mod) const
 * Gets the one-handed penalty (20% penalty is encoded as 100-20 = 80).
 * @return One-handed penalty.
 */
-int RuleItem::getOneHandedPenalty(Mod *mod) const
+int RuleItem::getOneHandedPenalty(const Mod *mod) const
 {
 	return _oneHandedPenalty != -1 ? _oneHandedPenalty : mod->getOneHandedPenaltyGlobal();
 }

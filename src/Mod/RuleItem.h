@@ -640,7 +640,7 @@ public:
 	/// Gets the item's throw accuracy.
 	int getAccuracyThrow() const;
 	/// Gets the item's close quarters combat accuracy.
-	int getAccuracyCloseQuarters(Mod *mod) const;
+	int getAccuracyCloseQuarters(const Mod *mod) const;
 	/// Get penalty for firing this weapon on out-of-LOS targets
 	int getNoLOSAccuracyPenalty(Mod *mod) const;
 
@@ -908,9 +908,9 @@ public:
 	/// Gets the index of the sprite in the CustomItemPreview sprite set
 	const std::vector<int> &getCustomItemPreviewIndex() const;
 	/// Gets the kneel bonus.
-	int getKneelBonus(Mod *mod) const;
+	int getKneelBonus(const Mod *mod) const;
 	/// Gets the one-handed penalty.
-	int getOneHandedPenalty(Mod *mod) const;
+	int getOneHandedPenalty(const Mod *mod) const;
 	/// Gets the monthly salary.
 	int getMonthlySalary() const;
 	/// Gets the monthly maintenance.
