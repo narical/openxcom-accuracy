@@ -3540,7 +3540,7 @@ BattleItem *BattleUnit::getGrenadeFromBelt(const SavedBattleGame* battle) const
 {
 	for (auto* bi : _inventory)
 	{
-		if (bi->getRules()->getBattleType() == BT_GRENADE)
+		if (bi->getRules()->isGrenadeOrProxy())
 		{
 			if (battle->getTurn() >= bi->getRules()->getAIUseDelay(battle->getMod()))
 			{

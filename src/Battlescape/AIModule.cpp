@@ -448,7 +448,7 @@ void AIModule::think(BattleAction *action)
 		action->target = _attackAction.target;
 		// this may have changed to a grenade.
 		action->weapon = _attackAction.weapon;
-		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE)
+		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->isGrenadeOrProxy())
 		{
 			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
 			_unit->spendTimeUnits(4);
@@ -1791,7 +1791,9 @@ void AIModule::evaluateAIMode()
 	// enforce the validity of our decision, and try fallback behaviour according to priority.
 	if (_AIMode == AI_COMBAT)
 	{
-		if (_save->getTile(_attackAction.target) && _save->getTile(_attackAction.target)->getUnit())
+		auto* xtile = _save->getTile(_attackAction.target);
+		bool throwingGrenadeOrProxy = _attackAction.type == BA_THROW && _attackAction.weapon && _attackAction.weapon->getRules()->isGrenadeOrProxy();
+		if (xtile && (xtile->getUnit() || throwingGrenadeOrProxy)) // https://openxcom.org/forum/index.php?topic=12145.0
 		{
 			if (_attackAction.type != BA_RETHINK)
 			{
@@ -2446,16 +2448,40 @@ void AIModule::grenadeAction()
 		{
 			return;
 		}
-		Position originVoxel = _save->getTileEngine()->getOriginVoxel(action, 0);
-		Position targetVoxel = action.target.toVoxel() + Position (8,8, (2 + -_save->getTile(action.target)->getTerrainLevel()));
-		// are we within range?
-		if (_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
+		std::vector<std::pair<Position, int>> shifts;
+		if (grenade->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
-			_attackAction.weapon = grenade;
-			_attackAction.target = action.target;
-			_attackAction.type = BA_THROW;
-			_rifle = false;
-			_melee = false;
+			// let's try to not throw the proxy below xcom's feet, otherwise they'll just throw it straight back :)
+			if (action.target.x < _save->getMapSizeX() - 1) shifts.push_back(std::make_pair(Position(1, 0, 0), _unit->distance3dToPositionSq(action.target + Position(1, 0, 0))));
+			if (action.target.y < _save->getMapSizeY() - 1) shifts.push_back(std::make_pair(Position(0, 1, 0), _unit->distance3dToPositionSq(action.target + Position(0, 1, 0))));
+			if (action.target.x > 0) shifts.push_back(std::make_pair(Position(-1, 0, 0), _unit->distance3dToPositionSq(action.target + Position(-1, 0, 0))));
+			if (action.target.y > 0) shifts.push_back(std::make_pair(Position(0, -1, 0), _unit->distance3dToPositionSq(action.target + Position(0, -1, 0))));
+			//RNG::shuffle(shifts);
+			std::sort(shifts.begin(), shifts.end(), [](auto& left, auto& right) {
+				return left.second < right.second;
+			});
+			// PS: if someone wants to calculate a better target spot (based on multiple enemies, RNG, day of the week or position of the stars), be my guest
+		}
+		else
+		{
+			// normal grenade
+			shifts.push_back(std::make_pair(Position(0, 0, 0), 0));
+		}
+		Position originVoxel = _save->getTileEngine()->getOriginVoxel(action, 0);
+		for (auto& shift : shifts)
+		{
+			Position targetTile = action.target + shift.first;
+			Position targetVoxel = targetTile.toVoxel() + Position(8,8, (2 + -_save->getTile(targetTile)->getTerrainLevel()));
+			// are we within range?
+			if (_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
+			{
+				_attackAction.weapon = grenade;
+				_attackAction.target = targetTile;
+				_attackAction.type = BA_THROW;
+				_rifle = false;
+				_melee = false;
+				break;
+			}
 		}
 	}
 }

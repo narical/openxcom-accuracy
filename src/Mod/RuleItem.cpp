@@ -1679,6 +1679,14 @@ BattleType RuleItem::getBattleType() const
 }
 
 /**
+ * Is the item's type BT_GRENADE or BT_PROXIMITYGRENADE?
+ */
+bool RuleItem::isGrenadeOrProxy() const
+{
+	return _battleType == BT_GRENADE || _battleType == BT_PROXIMITYGRENADE;
+}
+
+/**
  * Gets the item's fuse timer type.
  * @return Fuse Timer Type.
  */
@@ -2091,8 +2099,10 @@ int RuleItem::getAIUseDelay(const Mod *mod) const
 		return mod->getAIUseDelayMelee();
 
 	case BT_GRENADE:
-	case BT_PROXIMITYGRENADE:
 		return mod->getAIUseDelayGrenade();
+
+	case BT_PROXIMITYGRENADE:
+		return mod->getAIUseDelayProxy();
 
 	case BT_PSIAMP:
 		return mod->getAIUseDelayPsionic();

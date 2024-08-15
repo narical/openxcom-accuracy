@@ -707,6 +707,8 @@ public:
 	bool isMeleeTypeSet() const { return _meleeTypeSet; }
 	/// Gets the item's type.
 	BattleType getBattleType() const;
+	/// Is the item's type BT_GRENADE or BT_PROXIMITYGRENADE?
+	bool isGrenadeOrProxy() const;
 	/// Gets the item's fuse type.
 	BattleFuseType getFuseTimerType() const;
 	/// Gets the item's default fuse value.
