@@ -3687,6 +3687,9 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 
 	sbg.add<&SavedBattleGame::getTurn>("getTurn", "Current turn, 0 - before battle, 1 - first turn, each stage reset this value.");
 	sbg.add<&SavedBattleGame::getAnimFrame>("getAnimFrame");
+	sbg.add<&SavedBattleGame::getMapSizeX>("getSize.getX", "Get size in x direction");
+	sbg.add<&SavedBattleGame::getMapSizeY>("getSize.getY", "Get size in y direction");
+	sbg.add<&SavedBattleGame::getMapSizeZ>("getSize.getZ", "Get size in z direction");
 	sbg.add<&getTileScript>("getTile", "Get tile on position x, y, z");
 	sbg.add<&getTileEditableScript>("getTile", "Get tile on position x, y, z");
 	sbg.addList<&filterUnitScript, &SavedBattleGame::_units>("getUnits", "Get list of all units");
