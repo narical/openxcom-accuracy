@@ -294,6 +294,7 @@ private:
 	std::vector<std::string> _categories;
 
 	Unit* _vehicleUnit;
+	int _vehicleFixedAmmoSlot;
 	double _size;
 	int _monthlyBuyLimit;
 	int _costBuy, _costSell, _transferTime, _weight;
@@ -449,6 +450,8 @@ public:
 	const RuleItemCategory* getFirstCategoryWithInvOrder(const Mod* mod) const;
 	/// Gets unit rule if the item is vehicle weapon.
 	Unit* getVehicleUnit() const;
+	/// Gets the fixed ammo slot of the primary vehicle weapon.
+	int getVehicleFixedAmmoSlot() const { return _vehicleFixedAmmoSlot; }
 	/// Gets the item's size.
 	double getSize() const;
 

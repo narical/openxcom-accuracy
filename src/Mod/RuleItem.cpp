@@ -147,7 +147,7 @@ const float TilesToVexels = 16.0f;
  * @param type String defining the type.
  */
 RuleItem::RuleItem(const std::string &type, int listOrder) :
-	_type(type), _name(type), _vehicleUnit(nullptr), _size(0.0),
+	_type(type), _name(type), _vehicleUnit(nullptr), _vehicleFixedAmmoSlot(0), _size(0.0),
 	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(0), _underwaterThrowRange(0),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
 	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
@@ -339,6 +339,8 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	mod->loadUnorderedNamesToInt(_type, _recoveryDividers, node["recoveryDividers"]);
 	_recoveryTransformationsName = node["recoveryTransformations"].as< std::map<std::string, std::vector<int> > >(_recoveryTransformationsName);
 	mod->loadUnorderedNames(_type, _categories, node["categories"]);
+
+	_vehicleFixedAmmoSlot = node["vehicleFixedAmmoSlot"].as<int>(_vehicleFixedAmmoSlot);
 	_size = node["size"].as<double>(_size);
 	_monthlyBuyLimit = node["monthlyBuyLimit"].as<int>(_monthlyBuyLimit);
 	_costBuy = node["costBuy"].as<int>(_costBuy);
@@ -768,18 +770,25 @@ void RuleItem::afterLoad(const Mod* mod)
 	}
 	if (_vehicleUnit)
 	{
-		if (_compatibleAmmo[0].size() > 1)
+		if (_vehicleFixedAmmoSlot != 0 && _vehicleFixedAmmoSlot != -1)
 		{
-			throw Exception("Vehicle weapons support only one ammo type");
+			throw Exception("Vehicle primary weapon fixed ammo slot can be only 0 or -1.");
 		}
-		if (_compatibleAmmo[0].size() == 1)
+		if (_vehicleFixedAmmoSlot > -1)
 		{
-			auto* ammo = _compatibleAmmo[0][0];
-			if (ammo->getClipSize() > 0 && getClipSize() > 0)
+			if (_compatibleAmmo[_vehicleFixedAmmoSlot].size() > 1)
 			{
-				if (getClipSize() % ammo->getClipSize())
+				throw Exception("Vehicle weapons support only one ammo type");
+			}
+			if (_compatibleAmmo[_vehicleFixedAmmoSlot].size() == 1)
+			{
+				auto* ammo = _compatibleAmmo[_vehicleFixedAmmoSlot].front();
+				if (ammo->getClipSize() > 0 && getClipSize() > 0)
 				{
-					throw Exception("Vehicle weapon clip size is not a multiple of '" + ammo->getType() +  "' clip size");
+					if (getClipSize() % ammo->getClipSize())
+					{
+						throw Exception("Vehicle weapon clip size is not a multiple of '" + ammo->getType() + "' clip size");
+					}
 				}
 			}
 		}
@@ -1571,7 +1580,11 @@ int RuleItem::getTUUnload(int slot) const
  */
 const RuleItem* RuleItem::getVehicleClipAmmo() const
 {
-	return _compatibleAmmo[0].empty() ? nullptr : _compatibleAmmo[0].front();
+	if (_vehicleFixedAmmoSlot > -1)
+	{
+		return _compatibleAmmo[_vehicleFixedAmmoSlot].empty() ? nullptr : _compatibleAmmo[_vehicleFixedAmmoSlot].front();
+	}
+	return nullptr;
 }
 
 /**

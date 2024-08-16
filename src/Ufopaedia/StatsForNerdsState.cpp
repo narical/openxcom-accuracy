@@ -2235,6 +2235,7 @@ void StatsForNerdsState::initItemList()
 		addBoolean(ss, itemRule->isAlien(), "liveAlien");
 		addInteger(ss, itemRule->getPrisonType(), "prisonType");
 		addSingleString(ss, itemRule->getSellActionMessage(), "sellActionMessage");
+		addInteger(ss, itemRule->getVehicleFixedAmmoSlot(), "vehicleFixedAmmoSlot");
 
 		addSection("{Explosives}", "", _white);
 		addInteger(ss, itemRule->getPowerForAnimation(), "powerForAnimation");
