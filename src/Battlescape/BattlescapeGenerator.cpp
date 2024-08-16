@@ -1707,8 +1707,10 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 			std::string alienName = dd.customUnitType.empty() ? race->getMember(dd.alienRank) : dd.customUnitType;
 
 			bool outside = RNG::generate(0,99) < dd.percentageOutsideUfo;
-			if (_ufo == 0)
+			if (_ufo == 0 && !deployment->getForcePercentageOutsideUfo())
+			{
 				outside = false;
+			}
 			Unit *rule = _game->getMod()->getUnit(alienName, true);
 			BattleUnit *unit = addAlien(rule, dd.alienRank, outside);
 			size_t itemLevel = (size_t)(_game->getMod()->getAlienItemLevels().at(_save->getAlienItemLevel()).at(RNG::generate(0,9)));
