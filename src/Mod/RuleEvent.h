@@ -49,6 +49,7 @@ private:
 	std::vector<std::string> _researchList;
 	std::string _interruptResearch;
 	int _timer, _timerRandom;
+	bool _invert;
 public:
 	/// Creates a blank RuleEvent.
 	RuleEvent(const std::string &name);
@@ -107,6 +108,8 @@ public:
 	int getTimer() const { return _timer; }
 	/// Gets value for calculation of random part of delay for this event.
 	int getTimerRandom() const { return _timerRandom; }
+	/// Should the event remove items instead of adding them?
+	bool getInvert() const { return _invert; }
 };
 
 }

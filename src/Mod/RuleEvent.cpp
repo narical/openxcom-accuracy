@@ -23,7 +23,7 @@ namespace OpenXcom
 
 RuleEvent::RuleEvent(const std::string &name) :
 	_name(name), _background("BACK13.SCR"), _alignBottom(false),
-	_city(false), _points(0), _funds(0), _spawnedPersons(0), _timer(30), _timerRandom(0)
+	_city(false), _points(0), _funds(0), _spawnedPersons(0), _timer(30), _timerRandom(0), _invert(false)
 {
 }
 
@@ -67,6 +67,7 @@ void RuleEvent::load(const YAML::Node &node)
 	_interruptResearch = node["interruptResearch"].as<std::string>(_interruptResearch);
 	_timer = node["timer"].as<int>(_timer);
 	_timerRandom = node["timerRandom"].as<int>(_timerRandom);
+	_invert = node["invert"].as<bool>(_invert);
 }
 
 }
