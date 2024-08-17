@@ -6559,10 +6559,12 @@ void commonBattleUnitAnimations(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getFloorAbove>("isFloorAbove", "check if floor is shown above unit");
 	bu.add<&BattleUnit::getBreathExhaleFrame>("getBreathExhaleFrame", "return animation frame of breath bubbles, -1 means no animation");
 	bu.add<&BattleUnit::getBreathInhaleFrame>("getBreathInhaleFrame", "return number of frames to next breath animation start, 0 means animation started, -1 no animation");
+
+	SavedBattleGame::ScriptRegisterUnitAnimations(parser);
 }
 
 
-}
+} // namespace
 
 /**
  * Constructor of recolor script parser.

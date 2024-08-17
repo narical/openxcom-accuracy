@@ -61,6 +61,8 @@ public:
 	static constexpr const char *ScriptName = "BattleGame";
 	/// Register all useful function used by script.
 	static void ScriptRegister(ScriptParserBase* parser);
+	/// Register useful function used by graphic scripts.
+	static void ScriptRegisterUnitAnimations(ScriptParserBase* parser);
 
 private:
 	bool _isPreview;

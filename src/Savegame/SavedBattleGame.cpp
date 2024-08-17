@@ -3651,6 +3651,44 @@ void tryConcealUnitScript(SavedBattleGame* sbg, BattleUnit* bu, int& val)
 	}
 }
 
+void isAltPressedScript(const SavedBattleGame* sbg, int& val)
+{
+	if (sbg)
+	{
+		val = sbg->isAltPressed(true);
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
+void isCtrlPressedScript(const SavedBattleGame* sbg, int& val)
+{
+	if (sbg)
+	{
+		val = sbg->isCtrlPressed(true);
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
+void isShiftPressedScript(const SavedBattleGame* sbg, int& val)
+{
+	if (sbg)
+	{
+		val = sbg->isShiftPressed(true);
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
+
+
 std::string debugDisplayScript(const SavedBattleGame* p)
 {
 	if (p)
@@ -3735,6 +3773,18 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.addCustomConst("DIFF_VETERAN", DIFF_VETERAN);
 	sbg.addCustomConst("DIFF_GENIUS", DIFF_GENIUS);
 	sbg.addCustomConst("DIFF_SUPERHUMAN", DIFF_SUPERHUMAN);
+}
+
+/**
+ * Register useful function used by graphic scripts.
+ */
+void SavedBattleGame::ScriptRegisterUnitAnimations(ScriptParserBase* parser)
+{
+	Bind<SavedBattleGame> sbg = { parser, BindBase::ExtensionBinding{} };
+
+	sbg.add<&isAltPressedScript>("isAltPressed");
+	sbg.add<&isCtrlPressedScript>("isCtrlPressed");
+	sbg.add<&isShiftPressedScript>("isShiftPressed");
 }
 
 }

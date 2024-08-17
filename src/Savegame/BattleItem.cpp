@@ -1495,6 +1495,13 @@ void setStimulantQuantityScript(BattleItem* bt, int i)
 	}
 }
 
+
+void commonBattleItemAnimations(ScriptParserBase* parser)
+{
+	SavedBattleGame::ScriptRegisterUnitAnimations(parser);
+}
+
+
 } // namespace
 
 /**
@@ -1600,6 +1607,7 @@ ModScript::RecolorItemParser::RecolorItemParser(ScriptGlobal* shared, const std:
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleItemAnimations(this);
 
 	setDefault("add_shade new_pixel shade; return new_pixel;");
 }
@@ -1616,6 +1624,7 @@ ModScript::SelectItemParser::SelectItemParser(ScriptGlobal* shared, const std::s
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleItemAnimations(this);
 
 	setDefault("add sprite_index sprite_offset; return sprite_index;");
 }
