@@ -720,6 +720,7 @@ void GeoscapeState::init()
 		!_game->getSavedGame()->getBases()->front()->getName().empty())
 	{
 		_game->getSavedGame()->addMonth();
+		_game->getSavedGame()->increaseDaysPassed();
 		determineAlienMissions();
 		_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() - (_game->getSavedGame()->getBaseMaintenance() - _game->getSavedGame()->getBases()->front()->getPersonnelMaintenance()));
 	}
@@ -2328,6 +2329,8 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
  */
 void GeoscapeState::time1Day()
 {
+	_game->getSavedGame()->increaseDaysPassed();
+
 	SavedGame *saveGame = _game->getSavedGame();
 	Mod *mod = _game->getMod();
 	bool psiStrengthEval = (Options::psiStrengthEval && saveGame->isResearched(mod->getPsiRequirements()));
@@ -2712,8 +2715,19 @@ void GeoscapeState::time1Day()
 	}
 
 	// Autosave 3 times a month
+	bool performGeoAutosave = false;
 	int day = saveGame->getTime()->getDay();
-	if (day == 10 || day == 20)
+	if (Options::oxceGeoAutosaveFrequency == 0 && (day == 10 || day == 20))
+	{
+		// OXC backwards-compatibility
+		performGeoAutosave = true;
+	}
+	else if (Options::oxceGeoAutosaveFrequency >= 1 && Options::oxceGeoAutosaveFrequency <= 10)
+	{
+		// every X-th day
+		performGeoAutosave = (saveGame->getDaysPassed() % Options::oxceGeoAutosaveFrequency == 0);
+	}
+	if (performGeoAutosave)
 	{
 		if (saveGame->isIronman())
 		{
@@ -2721,7 +2735,7 @@ void GeoscapeState::time1Day()
 		}
 		else if (Options::autosave)
 		{
-			popup(new SaveGameState(OPT_GEOSCAPE, SAVE_AUTO_GEOSCAPE, _palette));
+			popup(new SaveGameState(OPT_GEOSCAPE, SAVE_AUTO_GEOSCAPE, _palette, saveGame->getDaysPassed()));
 		}
 	}
 	else if (saveGame->getEnding() != END_NONE && saveGame->isIronman())

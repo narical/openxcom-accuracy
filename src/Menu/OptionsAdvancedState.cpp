@@ -390,7 +390,12 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 5;
 		}
-		else if (i == &Options::autosaveSlots || i == &Options::oxceResearchScrollSpeed || i == &Options::oxceManufactureScrollSpeed)
+		else if (i == &Options::oxceGeoAutosaveFrequency)
+		{
+			min = 0;
+			max = 10;
+		}
+		else if (i == &Options::autosaveSlots || i == &Options::oxceGeoAutosaveSlots || i == &Options::oxceResearchScrollSpeed || i == &Options::oxceManufactureScrollSpeed)
 		{
 			min = 1;
 			max = 10;
