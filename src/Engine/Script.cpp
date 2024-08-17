@@ -2363,6 +2363,16 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
 		return false;
 	}
+	if (ph.parser.getType(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing type";
+		return false;
+	}
+	if (ph.parser.getProc(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing function";
+		return false;
+	}
 
 	auto reg = ph.addReg(begin[0].name, ArgSpecAdd(type_curr->type, spec));
 	if (!reg)
@@ -2439,6 +2449,16 @@ bool parseConst(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 	if (begin[0].type != ArgUnknowSimple || !begin[0].name)
 	{
 		Log(LOG_ERROR) << "Invalid const name '" << begin[0].name.toString() << "'";
+		return false;
+	}
+	if (ph.parser.getType(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing type";
+		return false;
+	}
+	if (ph.parser.getProc(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing function";
 		return false;
 	}
 
