@@ -3649,6 +3649,10 @@ void tryConcealUnitScript(SavedBattleGame* sbg, BattleUnit* bu, int& val)
 	{
 		val = sbg->getTileEngine()->tryConcealUnit(bu);
 	}
+	else
+	{
+		val = 0;
+	}
 }
 
 void isAltPressedScript(const SavedBattleGame* sbg, int& val)
