@@ -204,6 +204,10 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 		_debugVisionMode = _save->getToggleBrightness();
 	}
 
+	_save->setToggleNightVisionTemp(false);
+	_save->setToggleNightVisionColorTemp(0);
+	_save->setToggleBrightnessTemp(_debugVisionMode);
+
 	_fadeShade = 16;
 	_nvColor = 0;
 	_fadeTimer = new Timer(FADE_INTERVAL);
@@ -1899,6 +1903,8 @@ void Map::persistToggles()
 		// persisted per battle
 		_save->setToggleBrightness(_debugVisionMode);
 	}
+
+	_save->setToggleBrightnessTemp(_debugVisionMode);
 }
 
 /**
@@ -2396,6 +2402,8 @@ void Map::fadeShade()
 	if ((_nightVisionOn && !hold) || (!_nightVisionOn && hold))
 	{
 		_nvColor = Options::oxceNightVisionColor;
+		_save->setToggleNightVisionTemp(true);
+		_save->setToggleNightVisionColorTemp(_nvColor);
 		if (_fadeShade > NIGHT_VISION_SHADE) // 0 = max brightness
 		{
 			--_fadeShade;
@@ -2414,6 +2422,8 @@ void Map::fadeShade()
 			{
 				// and at the end turn off night vision
 				_nvColor = 0;
+				_save->setToggleNightVisionTemp(false);
+				_save->setToggleNightVisionColorTemp(0);
 			}
 		}
 	}

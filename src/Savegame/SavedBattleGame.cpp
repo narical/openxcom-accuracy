@@ -3785,6 +3785,10 @@ void SavedBattleGame::ScriptRegisterUnitAnimations(ScriptParserBase* parser)
 	sbg.add<&isAltPressedScript>("isAltPressed");
 	sbg.add<&isCtrlPressedScript>("isCtrlPressed");
 	sbg.add<&isShiftPressedScript>("isShiftPressed");
+	sbg.addField<&SavedBattleGame::_toggleBrightnessTemp>("getDebugVisionMode");
+	sbg.addField<&SavedBattleGame::_toggleNightVisionTemp>("isNightVisionEnabled");
+	sbg.addField<&SavedBattleGame::_togglePersonalLightTemp>("isPersonalLightEnabled");
+	sbg.addField<&SavedBattleGame::_toggleNightVisionColorTemp>("getNightVisionColor");
 }
 
 }

@@ -124,6 +124,8 @@ private:
 	bool _beforeGame;
 	bool _togglePersonalLight, _toggleNightVision;
 	int _toggleBrightness;
+	bool _togglePersonalLightTemp = false, _toggleNightVisionTemp = false;
+	int _toggleBrightnessTemp = 0, _toggleNightVisionColorTemp = 0;
 	std::string _hiddenMovementBackground;
 	HitLog *_hitLog;
 	ScriptValues<SavedBattleGame> _scriptValues;
@@ -637,6 +639,15 @@ public:
 	int getToggleBrightness() const { return _toggleBrightness; }
 	/// sets brightness toggle
 	void setToggleBrightness(int toggleBrightness) { _toggleBrightness = toggleBrightness; }
+
+	/// sets final value for personal light toggle (for scripts)
+	void setTogglePersonalLightTemp(bool togglePersonalLight) { _togglePersonalLightTemp = togglePersonalLight; }
+	/// sets final value for night vision toggle (for scripts)
+	void setToggleNightVisionTemp(bool toggleNightVision) { _toggleNightVisionTemp = toggleNightVision; }
+	/// sets final value for night vision color toggle (for scripts)
+	void setToggleNightVisionColorTemp(int toggleNightColorVision) { _toggleNightVisionColorTemp = toggleNightColorVision; }
+	/// sets final value for brightness toggle (for scripts)
+	void setToggleBrightnessTemp(int toggleBrightness) { _toggleBrightnessTemp = toggleBrightness; }
 
 	/// Randomly chooses hidden movement background.
 	void setRandomHiddenMovementBackground(const Mod *mod);
