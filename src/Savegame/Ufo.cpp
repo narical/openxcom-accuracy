@@ -736,6 +736,7 @@ void Ufo::think()
 		// This gets handled in GeoscapeState::time30Minutes()
 		// Because the original game processes it every 30 minutes!
 	case DESTROYED:
+	case IGNORE_ME:
 		// Do nothing
 		break;
 	}

@@ -909,7 +909,6 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 		{
 			// Remove UFO, replace with MissionSite.
 			addScore(ufo.getLongitude(), ufo.getLatitude(), game);
-			ufo.setStatus(Ufo::DESTROYED);
 
 			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZoneArea);
 			if (wave.objectiveOnTheLandingSite)
@@ -921,6 +920,15 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 				area.latMax = ufo.getLatitude();
 			}
 			MissionSite *missionSite = spawnMissionSite(game, mod, area, &ufo);
+			if (missionSite && _rule.respawnUfoAfterSiteDespawn())
+			{
+				ufo.setStatus(Ufo::IGNORE_ME);
+				missionSite->setUfo(&ufo);
+			}
+			else
+			{
+				ufo.setStatus(Ufo::DESTROYED);
+			}
 			if (missionSite)
 			{
 				for (auto* follower : ufo.getCraftFollowers())
@@ -928,6 +936,10 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 					if (follower->getNumTotalUnits() > 0)
 					{
 						follower->setDestination(missionSite);
+					}
+					else if (ufo.getStatus() == Ufo::IGNORE_ME)
+					{
+						follower->returnToBase(); // no craft is allowed to follow an ignored UFO
 					}
 				}
 			}
@@ -1042,6 +1054,7 @@ void AlienMission::ufoLifting(Ufo &ufo, SavedGame &game)
 		assert(0 && "Ufo is already on the air!");
 		break;
 	case Ufo::LANDED:
+	case Ufo::IGNORE_ME:
 		{
 			// base missions only get points when they are completed.
 			if (_rule.getPoints() > 0 && _rule.getObjective() != OBJECTIVE_BASE)

@@ -557,6 +557,23 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 			MissionSite *m = new MissionSite(mod->getAlienMission(type), mod->getDeployment(deployment), mod->getDeployment(alienWeaponDeploy));
 			m->load(*i);
 			_missionSites.push_back(m);
+			// link with UFO
+			if (m->getUfoUniqueId() > 0)
+			{
+				Ufo* ufo = nullptr;
+				for (auto* u : _ufos)
+				{
+					if (u->getUniqueId() == m->getUfoUniqueId())
+					{
+						ufo = u;
+						break;
+					}
+				}
+				if (ufo)
+				{
+					m->setUfo(ufo);
+				}
+			}
 		}
 		else
 		{

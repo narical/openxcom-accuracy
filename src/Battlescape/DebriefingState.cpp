@@ -1216,11 +1216,17 @@ void DebriefingState::prepareDebriefing()
 	}
 
 	// mission site disappears (even when you abort)
+	Ufo* ignoredUfo = nullptr;
 	for (auto msIt = save->getMissionSites()->begin(); msIt != save->getMissionSites()->end(); ++msIt)
 	{
 		MissionSite* ms = (*msIt);
 		if (ms->isInBattlescape())
 		{
+			if (ms->getUfo())
+			{
+				ignoredUfo = ms->getUfo();
+				ms->setUfo(nullptr);
+			}
 			_missionStatistics->alienRace = ms->getAlienRace();
 			delete ms;
 			save->getMissionSites()->erase(msIt);
@@ -2162,6 +2168,20 @@ void DebriefingState::prepareDebriefing()
 
 		// Generate a failure event
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());
+	}
+
+	if (ignoredUfo)
+	{
+		if (!success || aborted || playersSurvived <= 0)
+		{
+			// either "reactivate" the corresponding Ufo
+			ignoredUfo->getMission()->ufoLifting(*ignoredUfo, *save);
+		}
+		else
+		{
+			// or finally destroy it
+			ignoredUfo->setStatus(Ufo::DESTROYED);
+		}
 	}
 
 	// remember the base for later use (of course only if it's not lost already (in that case base=0))

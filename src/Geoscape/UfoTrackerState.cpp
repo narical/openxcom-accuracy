@@ -135,7 +135,7 @@ UfoTrackerState::UfoTrackerState(GeoscapeState *state, Globe *globe) : _state(st
 
 	for (auto* ufo : *_game->getSavedGame()->getUfos())
 	{
-		if (!ufo->getDetected())
+		if (!ufo->getDetected() || ufo->getStatus() == Ufo::IGNORE_ME)
 			continue;
 
 		std::ostringstream ss1;

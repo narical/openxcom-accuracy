@@ -1103,6 +1103,7 @@ void GeoscapeState::time5Seconds()
 			}
 			break;
 		case Ufo::DESTROYED:
+		case Ufo::IGNORE_ME:
 			// Nothing to do
 			break;
 		}
@@ -1184,7 +1185,7 @@ void GeoscapeState::time5Seconds()
 					{
 						xcraft->setInDogfight(false);
 					}
-					else if (u->getStatus() == Ufo::DESTROYED)
+					else if (u->getStatus() == Ufo::DESTROYED || u->getStatus() == Ufo::IGNORE_ME)
 					{
 						xcraft->returnToBase();
 					}
@@ -1476,6 +1477,7 @@ bool DetectXCOMBase::operator()(const Ufo *ufo) const
 	if ((ufo->getMission()->getRules().getObjective() != OBJECTIVE_RETALIATION && !Options::aggressiveRetaliation) ||	// only UFOs on retaliation missions actively scan for bases
 		ufo->getTrajectory().getID() == UfoTrajectory::RETALIATION_ASSAULT_RUN || 										// UFOs attacking a base don't detect!
 		ufo->isCrashed() ||																								// Crashed UFOs don't detect!
+		ufo->getStatus() == Ufo::IGNORE_ME ||
 		_base.getDistance(ufo) >= Nautical(ufo->getCraftStats().sightRange))											// UFOs have a detection range of 80 XCOM units. - we use a great circle formula and nautical miles.
 	{
 		return false;
@@ -1816,6 +1818,14 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 		}
 	}
 
+	Ufo* ufo = site->getUfo();
+	if (removeSite && ufo)
+	{
+		// "reactivate" the corresponding Ufo
+		site->setUfo(nullptr);
+		ufo->getMission()->ufoLifting(*ufo, *_game->getSavedGame());
+	}
+
 	return removeSite;
 }
 
@@ -1969,6 +1979,7 @@ void GeoscapeState::time30Minutes()
 			break;
 		case Ufo::CRASHED:
 		case Ufo::DESTROYED:
+		case Ufo::IGNORE_ME:
 			break;
 		}
 	}
