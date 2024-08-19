@@ -458,6 +458,13 @@ void NewBattleState::load(const std::string &filename)
 			initSave();
 		}
 	}
+
+	const YAML::Node& starter = _game->getMod()->getDefaultStartingBase();
+	if (const YAML::Node& globalTemplates = starter["globalTemplates"])
+	{
+		_game->getSavedGame()->loadTemplates(globalTemplates, _game->getMod());
+	}
+
 }
 
 /**

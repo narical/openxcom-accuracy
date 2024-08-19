@@ -3786,6 +3786,10 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 	const YAML::Node &startingBaseByDiff = getStartingBase(diff);
 	Base *base = new Base(this);
 	base->load(startingBaseByDiff, save, true);
+	if (const YAML::Node& globalTemplates = startingBaseByDiff["globalTemplates"])
+	{
+		save->loadTemplates(globalTemplates, this);
+	}
 	save->getBases()->push_back(base);
 
 	// Correct IDs

@@ -692,6 +692,33 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 	}
 
+	for (YAML::const_iterator i = doc["missionStatistics"].begin(); i != doc["missionStatistics"].end(); ++i)
+	{
+		MissionStatistics *ms = new MissionStatistics();
+		ms->load(*i);
+		_missionStatistics.push_back(ms);
+	}
+
+	for (YAML::const_iterator it = doc["autoSales"].begin(); it != doc["autoSales"].end(); ++it)
+	{
+		std::string itype = it->as<std::string>();
+		if (mod->getItem(itype))
+		{
+			_autosales.insert(mod->getItem(itype));
+		}
+	}
+
+	if (const YAML::Node &battle = doc["battleGame"])
+	{
+		_battleGame = new SavedBattleGame(mod, lang);
+		_battleGame->load(battle, mod, this);
+	}
+
+	_scriptValues.load(doc, mod->getScriptGlobal());
+}
+
+void SavedGame::loadTemplates(const YAML::Node& doc, const Mod* mod)
+{
 	for (int j = 0; j < Options::oxceMaxEquipmentLayoutTemplates; ++j)
 	{
 		std::ostringstream oss;
@@ -744,30 +771,6 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 			_globalCraftLoadoutName[j] = doc[key2].as<std::string>();
 		}
 	}
-
-	for (YAML::const_iterator i = doc["missionStatistics"].begin(); i != doc["missionStatistics"].end(); ++i)
-	{
-		MissionStatistics *ms = new MissionStatistics();
-		ms->load(*i);
-		_missionStatistics.push_back(ms);
-	}
-
-	for (YAML::const_iterator it = doc["autoSales"].begin(); it != doc["autoSales"].end(); ++it)
-	{
-		std::string itype = it->as<std::string>();
-		if (mod->getItem(itype))
-		{
-			_autosales.insert(mod->getItem(itype));
-		}
-	}
-
-	if (const YAML::Node &battle = doc["battleGame"])
-	{
-		_battleGame = new SavedBattleGame(mod, lang);
-		_battleGame->load(battle, mod, this);
-	}
-
-	_scriptValues.load(doc, mod->getScriptGlobal());
 }
 
 /**
