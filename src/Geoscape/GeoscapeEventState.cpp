@@ -335,7 +335,7 @@ void GeoscapeEventState::eventLogic()
 			}
 
 			std::ostringstream ss;
-			ss << removed;
+			ss << -removed;
 			_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
 		}
 		else if (Options::oxceGeoscapeEventsInstantDelivery)
