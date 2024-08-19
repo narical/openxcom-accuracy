@@ -1360,6 +1360,7 @@ void Ufo::ScriptRegister(ScriptParserBase* parser)
 	u.addCustomConst("UFO_LANDED", LANDED);
 	u.addCustomConst("UFO_CRASHED", CRASHED);
 	u.addCustomConst("UFO_DESTROYED", DESTROYED);
+	u.addCustomConst("UFO_IGNORE_ME", IGNORE_ME);
 
 	u.addCustomConst("DETECTION_NONE", DETECTION_NONE);
 	u.addCustomConst("DETECTION_RADAR", DETECTION_RADAR);
