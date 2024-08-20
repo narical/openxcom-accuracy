@@ -710,6 +710,19 @@ public:
 			auto ref = ph.getReferece(*this);
 			if (ref)
 				return ref;
+
+			auto type = ArgUnknowSimple;
+
+			for (auto& c : *this)
+			{
+				if (c == '.')
+				{
+					// look like `abc.def`
+					type = std::max(type, ArgUnknowSegment);
+				}
+			}
+
+			return ScriptRefData{ *this, type };
 		}
 		else if (getType() == TokenText)
 		{
@@ -2345,7 +2358,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 
 	++begin;
-	if (begin[0].type != ArgInvalid || !begin[0].name || begin[0].name.find('.') != std::string::npos)
+	if (begin[0].type != ArgUnknowSimple || !begin[0].name)
 	{
 		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
 		return false;
@@ -3211,7 +3224,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
-	addSortHelper(_refList, { phName, (ArgEnum)(ArgInvalid + ArgSpecReg) });
+	addSortHelper(_refList, { phName, ArgPlaceholder });
 	addSortHelper(_refList, { seperatorName, ArgSep });
 	addSortHelper(_refList, { varName, ArgInvalid });
 
