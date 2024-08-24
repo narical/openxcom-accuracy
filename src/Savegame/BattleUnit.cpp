@@ -68,7 +68,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _hasPanickedLastTurn(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
+	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), 
+	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0),
 	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
 	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
@@ -402,16 +403,18 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_tile(0), _lastPos(Position()), _direction(0), _toDirection(0), _directionTurret(0),
 	_toDirectionTurret(0), _verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _hasPanickedLastTurn(false), _walkPhase(0),
 	_fallPhase(0), _kneeled(false), _floating(false), _dontReselect(false), _fire(0), _currentAIState(0),
-	_allowAutoCombat(true), _visible(false), _exp{ },
-	_expTmp{ }, _motionPoints(0), _scannedTurn(-1), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0),
-	_smokeMaxHit(0), _moraleRestored(0), _charging(0), _turnsSinceSpotted(255),
-	_turnsLeftSpottedForSnipers(0), _turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255),
-	_turnsSinceSeenByPlayer(255), _tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1),
-	_tileLastSpottedForBlindShotByPlayer(-1), _statistics(), _murdererId(0), _mindControllerID(0),
-	_fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(armor),  _geoscapeSoldier(0),
-	_unitRules(unit), _rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false),
-	_alreadyRespawned(false), _isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false),
-	_disableIndicators(false), _vip(false), _bannedInNextStage(false)
+	_allowAutoCombat(true), 
+	_visible(false), _exp{ }, _expTmp{ }, 
+	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0),	_smokeMaxHit(0), 
+	_moraleRestored(0), _charging(0), _turnsSinceSpotted(255), _turnsLeftSpottedForSnipers(0), 
+	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255),
+	_turnsSinceSeenByPlayer(255), _tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), 
+	_tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1),	_tileLastSpottedForBlindShotByPlayer(-1), 
+	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), 
+	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor),  _geoscapeSoldier(0),	_unitRules(unit), 
+	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false), 
+	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false),	_disableIndicators(false), 
+	_vip(false), _bannedInNextStage(false)
 {
 	if (enviro)
 	{
@@ -688,6 +691,7 @@ void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal
 	}
 
 	_motionPoints = node["motionPoints"].as<int>(0);
+	_customMarker = node["customMarker"].as<int>(0);
 	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
 	_activeHand = node["activeHand"].as<std::string>(_activeHand);
 	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
@@ -819,6 +823,8 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	}
 
 	node["motionPoints"] = _motionPoints;
+	if (_customMarker > 0)
+		node["customMarker"] = _customMarker;
 	if (_alreadyRespawned)
 		node["alreadyRespawned"] = _alreadyRespawned;
 	node["activeHand"] = _activeHand;
@@ -2652,7 +2658,7 @@ int BattleUnit::getPsiAccuracy(BattleActionAttack::ReadOnly attack)
  * @param item
  * @return firing Accuracy
  */
-int BattleUnit::getFiringAccuracy(BattleActionAttack::ReadOnly attack, Mod *mod)
+int BattleUnit::getFiringAccuracy(BattleActionAttack::ReadOnly attack, const Mod *mod)
 {
 	auto actionType = attack.type;
 	auto item = attack.weapon_item;
@@ -3821,15 +3827,18 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo, bool rea
  * Get a grenade from the belt (used for AI)
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getGrenadeFromBelt() const
+BattleItem *BattleUnit::getGrenadeFromBelt(const SavedBattleGame* battle) const
 {
 	for (auto* bi : _inventory)
 	{
 		if (isBrutal() && bi->getRules()->getDamageType()->RandomType == DRT_NONE)
 			continue;
-		if (bi->getRules()->getBattleType() == BT_GRENADE)
+		if (bi->getRules()->isGrenadeOrProxy())
 		{
-			return bi;
+			if (battle->getTurn() >= bi->getRules()->getAIUseDelay(battle->getMod()))
+			{
+				return bi;
+			}
 		}
 	}
 	return 0;
@@ -6810,6 +6819,10 @@ void getListSizeHackScript(BattleUnit* bu, int& i)
 	}
 }
 
+bool filterItemScript(BattleUnit* unit, BattleItem* item)
+{
+	return item;
+}
 
 std::string debugDisplayScript(const BattleUnit* bu)
 {
@@ -7007,8 +7020,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getInventoryItemScript2>("getInventoryItem");
 	bu.add<&getListSizeScript<&BattleUnit::_inventory>>("getInventoryItem.size");
 	bu.add<&getListScript<&BattleUnit::_inventory>>("getInventoryItem");
+	bu.addList<&filterItemScript, &BattleUnit::_inventory>("getInventoryItem");
 	bu.add<&getListSizeHackScript<&BattleUnit::_specWeapon>>("getSpecialItem.size");
 	bu.add<&getListScript<&BattleUnit::_specWeapon>>("getSpecialItem");
+	bu.addList<&filterItemScript, &BattleUnit::_specWeapon>("getSpecialItem");
 
 	bu.add<&getPositionXScript>("getPosition.getX");
 	bu.add<&getPositionYScript>("getPosition.getY");
@@ -7147,10 +7162,12 @@ void commonBattleUnitAnimations(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getFloorAbove>("isFloorAbove", "check if floor is shown above unit");
 	bu.add<&BattleUnit::getBreathExhaleFrame>("getBreathExhaleFrame", "return animation frame of breath bubbles, -1 means no animation");
 	bu.add<&BattleUnit::getBreathInhaleFrame>("getBreathInhaleFrame", "return number of frames to next breath animation start, 0 means animation started, -1 no animation");
+
+	SavedBattleGame::ScriptRegisterUnitAnimations(parser);
 }
 
 
-}
+} // namespace
 
 /**
  * Constructor of recolor script parser.

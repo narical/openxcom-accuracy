@@ -44,21 +44,21 @@ float stat0(const BattleUnit *unit)
 /**
  * Getter for one basic stat of unit.
  */
-template<UnitStats::Ptr field>
+template<UnitStats::Ptr field, int divisor>
 float stat1(const BattleUnit *unit)
 {
 	const UnitStats *stat = unit->getBaseStats();
-	return stat->*field;
+	return (stat->*field) * (1.0f / divisor);
 }
 
 /**
  * Getter for multiply of two basic stat of unit.
  */
-template<UnitStats::Ptr fieldA, UnitStats::Ptr fieldB>
+template<UnitStats::Ptr fieldA, UnitStats::Ptr fieldB, int divisor>
 float stat2(const BattleUnit *unit)
 {
 	const UnitStats *stat = unit->getBaseStats();
-	return (stat->*fieldA) * (stat->*fieldB);
+	return (stat->*fieldA) * (stat->*fieldB) * (1.0f / divisor);
 }
 
 float currentFatalWounds(const BattleUnit *unit)
@@ -209,19 +209,19 @@ BonusStatDataFunc create0()
 /**
  * Helper function creating BonusStatData with proper functions.
  */
-template<UnitStats::Ptr fieldA>
+template<UnitStats::Ptr fieldA, int divisor = 1>
 BonusStatDataFunc create1()
 {
-	return create<&stat1<fieldA> >();
+	return create<&stat1<fieldA, divisor> >();
 }
 
 /**
  * Helper function creating BonusStatData with proper functions.
  */
-template<UnitStats::Ptr fieldA, UnitStats::Ptr fieldB>
+template<UnitStats::Ptr fieldA, UnitStats::Ptr fieldB, int divisor = 1>
 BonusStatDataFunc create2()
 {
-	return create<&stat2<fieldA, fieldB> >();
+	return create<&stat2<fieldA, fieldB, divisor> >();
 }
 
 /**
@@ -231,6 +231,7 @@ BonusStatData statDataMap[] =
 {
 	{ "flatOne", create0<1>() },
 	{ "flatHundred", create0<100>() },
+
 	{ "strength", create1<&UnitStats::strength>() },
 	{ "psi", create2<&UnitStats::psiSkill, &UnitStats::psiStrength>() },
 	{ "psiSkill", create1<&UnitStats::psiSkill>() },
@@ -247,6 +248,23 @@ BonusStatData statDataMap[] =
 	{ "strengthMelee", create2<&UnitStats::strength, &UnitStats::melee>() },
 	{ "strengthThrowing", create2<&UnitStats::strength, &UnitStats::throwing>() },
 	{ "firingReactions", create2<&UnitStats::firing, &UnitStats::reactions>() },
+
+	{ "strengthNormalized", create1<&UnitStats::strength, 100>() },
+	{ "psiNormalized", create2<&UnitStats::psiSkill, &UnitStats::psiStrength, 10000>() },
+	{ "psiSkillNormalized", create1<&UnitStats::psiSkill, 100>() },
+	{ "psiStrengthNormalized", create1<&UnitStats::psiStrength, 100>() },
+	{ "throwingNormalized", create1<&UnitStats::throwing, 100>() },
+	{ "braveryNormalized", create1<&UnitStats::bravery, 100>() },
+	{ "firingNormalized", create1<&UnitStats::firing, 100>() },
+	{ "healthNormalized", create1<&UnitStats::health, 100>() },
+	{ "manaNormalized", create1<&UnitStats::mana, 100>() },
+	{ "tuNormalized", create1<&UnitStats::tu, 100>() },
+	{ "reactionsNormalized", create1<&UnitStats::reactions, 100>() },
+	{ "staminaNormalized", create1<&UnitStats::stamina, 100>() },
+	{ "meleeNormalized", create1<&UnitStats::melee, 100>() },
+	{ "strengthMeleeNormalized", create2<&UnitStats::strength, &UnitStats::melee, 10000>() },
+	{ "strengthThrowingNormalized", create2<&UnitStats::strength, &UnitStats::throwing, 10000>() },
+	{ "firingReactionsNormalized", create2<&UnitStats::firing, &UnitStats::reactions, 10000>() },
 
 	{ "rank", create<&currentRank>() },
 	{ "fatalWounds", create<&currentFatalWounds>() },

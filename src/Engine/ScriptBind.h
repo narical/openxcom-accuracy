@@ -251,6 +251,9 @@ struct ParserWriter
 	/// Add new reg arg.
 	ScriptRefData addReg(const ScriptRef& s, ArgEnum type);
 
+	/// Add new local const.
+	ScriptRefData addConst(const ScriptRef& s, ArgEnum type, ScriptValueData value);
+
 
 
 	/// Add new code scope.
@@ -991,16 +994,15 @@ struct BindMemberInvokeImpl //Work araound ICC 19.0.1 bug
 	template<typename T, typename... TRest>
 	static auto f(T&& a, TRest&&... b) -> decltype(auto)
 	{
-		using ReturnType = std::invoke_result_t<typename Ptr::Type, T, TRest...>;
-
-		ReturnType v = std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...);
 		if constexpr (sizeof...(Rest) > 0)
 		{
-			return BindMemberInvokeImpl<Rest...>::f(std::forward<ReturnType>(v));
+			return BindMemberInvokeImpl<Rest...>::f(
+				std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...)
+			);
 		}
 		else
 		{
-			return std::forward<ReturnType>(v);
+			return std::invoke(Ptr::val(), std::forward<T>(a), std::forward<TRest>(b)...);
 		}
 	}
 };
@@ -1689,6 +1691,11 @@ struct Bind : BindBase
 	void add(const std::string& func, const std::string& description = BindBase::functionWithoutDescription)
 	{
 		addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(X)>>(getName(func), description);
+	}
+	template<auto MemPtr0, auto MemPtr1, auto... MemPtrR>
+	void add(const std::string& func, const std::string& description = BindBase::functionWithoutDescription)
+	{
+		addCustomFunc<helper::BindPropGet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtr1), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(func), description);
 	}
 };
 

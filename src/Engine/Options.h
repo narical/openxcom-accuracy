@@ -129,6 +129,8 @@ namespace Options
 	std::vector<const ModInfo*> getActiveMods();
 	/// If we should skip the main menu and just load the last save
 	bool getLoadLastSave();
+	/// If we should skip the main menu and just load the specified save
+	const std::string& getLoadThisSave();
 	/// And do it only at startup
 	void expendLoadLastSave();
 }

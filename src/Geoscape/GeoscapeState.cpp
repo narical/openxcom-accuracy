@@ -722,6 +722,7 @@ void GeoscapeState::init()
 		!_game->getSavedGame()->getBases()->front()->getName().empty())
 	{
 		_game->getSavedGame()->addMonth();
+		_game->getSavedGame()->increaseDaysPassed();
 		determineAlienMissions();
 		_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() - (_game->getSavedGame()->getBaseMaintenance() - _game->getSavedGame()->getBases()->front()->getPersonnelMaintenance()));
 	}
@@ -773,7 +774,15 @@ void GeoscapeState::timeDisplay()
 {
 	if (Options::showFundsOnGeoscape)
 	{
-		_txtFunds->setText(Unicode::formatFunding(_game->getSavedGame()->getFunds()));
+		if (Options::oxceGeoShowScoreInsteadOfFunds)
+		{
+			// it's a cheat (you're not supposed to see this info in real time), for debugging only
+			_txtFunds->setText(std::to_string(_game->getSavedGame()->getCurrentScore(_game->getSavedGame()->getMonthsPassed() + 1)));
+		}
+		else
+		{
+			_txtFunds->setText(Unicode::formatFunding(_game->getSavedGame()->getFunds()));
+		}
 	}
 
 	std::ostringstream ss;
@@ -1018,7 +1027,7 @@ void GeoscapeState::time5Seconds()
 				if (Options::oxceUfoLandingAlert && ufo->getStatus() == Ufo::LANDED && ufo->getDetected() && ufo->getLandId() != 0)
 				{
 					std::string msg = tr("STR_UFO_HAS_LANDED").arg(ufo->getName(_game->getLanguage()));
-					popup(new CraftErrorState(this, msg));
+					popup(new CraftErrorState(this, msg, true, ufo));
 				}
 				if (detected != ufo->getDetected() && !ufo->getFollowers()->empty())
 				{
@@ -1096,6 +1105,7 @@ void GeoscapeState::time5Seconds()
 			}
 			break;
 		case Ufo::DESTROYED:
+		case Ufo::IGNORE_ME:
 			// Nothing to do
 			break;
 		}
@@ -1177,7 +1187,7 @@ void GeoscapeState::time5Seconds()
 					{
 						xcraft->setInDogfight(false);
 					}
-					else if (u->getStatus() == Ufo::DESTROYED)
+					else if (u->getStatus() == Ufo::DESTROYED || u->getStatus() == Ufo::IGNORE_ME)
 					{
 						xcraft->returnToBase();
 					}
@@ -1469,6 +1479,7 @@ bool DetectXCOMBase::operator()(const Ufo *ufo) const
 	if ((ufo->getMission()->getRules().getObjective() != OBJECTIVE_RETALIATION && !Options::aggressiveRetaliation) ||	// only UFOs on retaliation missions actively scan for bases
 		ufo->getTrajectory().getID() == UfoTrajectory::RETALIATION_ASSAULT_RUN || 										// UFOs attacking a base don't detect!
 		ufo->isCrashed() ||																								// Crashed UFOs don't detect!
+		ufo->getStatus() == Ufo::IGNORE_ME ||
 		_base.getDistance(ufo) >= Nautical(ufo->getCraftStats().sightRange))											// UFOs have a detection range of 80 XCOM units. - we use a great circle formula and nautical miles.
 	{
 		return false;
@@ -1809,6 +1820,14 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 		}
 	}
 
+	Ufo* ufo = site->getUfo();
+	if (removeSite && ufo)
+	{
+		// "reactivate" the corresponding Ufo
+		site->setUfo(nullptr);
+		ufo->getMission()->ufoLifting(*ufo, *_game->getSavedGame());
+	}
+
 	return removeSite;
 }
 
@@ -1992,6 +2011,7 @@ void GeoscapeState::time30Minutes()
 
 		case Ufo::CRASHED:
 		case Ufo::DESTROYED:
+		case Ufo::IGNORE_ME:
 			break;
 		}
 	}
@@ -2451,6 +2471,8 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
  */
 void GeoscapeState::time1Day()
 {
+	_game->getSavedGame()->increaseDaysPassed();
+
 	SavedGame *saveGame = _game->getSavedGame();
 	Mod *mod = _game->getMod();
 	bool psiStrengthEval = (Options::psiStrengthEval && saveGame->isResearched(mod->getPsiRequirements()));
@@ -2835,8 +2857,19 @@ void GeoscapeState::time1Day()
 	}
 
 	// Autosave 3 times a month
+	bool performGeoAutosave = false;
 	int day = saveGame->getTime()->getDay();
-	if (day == 10 || day == 20)
+	if (Options::oxceGeoAutosaveFrequency == 0 && (day == 10 || day == 20))
+	{
+		// OXC backwards-compatibility
+		performGeoAutosave = true;
+	}
+	else if (Options::oxceGeoAutosaveFrequency >= 1 && Options::oxceGeoAutosaveFrequency <= 10)
+	{
+		// every X-th day
+		performGeoAutosave = (saveGame->getDaysPassed() % Options::oxceGeoAutosaveFrequency == 0);
+	}
+	if (performGeoAutosave)
 	{
 		if (saveGame->isIronman())
 		{
@@ -2844,7 +2877,7 @@ void GeoscapeState::time1Day()
 		}
 		else if (Options::autosave)
 		{
-			popup(new SaveGameState(OPT_GEOSCAPE, SAVE_AUTO_GEOSCAPE, _palette));
+			popup(new SaveGameState(OPT_GEOSCAPE, SAVE_AUTO_GEOSCAPE, _palette, saveGame->getDaysPassed()));
 		}
 	}
 	else if (saveGame->getEnding() != END_NONE && saveGame->isIronman())

@@ -891,6 +891,8 @@ TileEngine::TileEngine(SavedBattleGame *save, Mod *mod) :
 		// persisted per battle
 		_personalLighting = _save->getTogglePersonalLight();
 	}
+
+	_save->setTogglePersonalLightTemp(_personalLighting);
 }
 
 /**
@@ -4977,6 +4979,7 @@ void TileEngine::togglePersonalLighting()
 		_save->setTogglePersonalLight(_personalLighting);
 	}
 
+	_save->setTogglePersonalLightTemp(_personalLighting);
 	calculateLighting(LL_UNITS);
 	recalculateFOV();
 }
