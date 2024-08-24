@@ -233,7 +233,7 @@ void UnitWalkBState::think()
 						continue;
 					if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
 						continue;
-					unit->checkForReactivation();
+					unit->checkForReactivation(_parent->getSave());
 				}
 			}
 
@@ -451,7 +451,7 @@ void UnitWalkBState::think()
 					continue;
 				if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
 					continue;
-				unit->checkForReactivation();
+				unit->checkForReactivation(_parent->getSave());
 			}
 		}
 

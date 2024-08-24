@@ -899,7 +899,7 @@ public:
 	/// Returns the targetting mode the unit is allowed to use
 	int aiTargetMode();
 	/// Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
-	void checkForReactivation();
+	void checkForReactivation(const SavedBattleGame* battle);
 	/// Cache inside the unit what positions it can reach for reference by AI
 	void setReachablePositions(std::map<Position, int, PositionComparator> reachable);
 	std::map<Position, int, PositionComparator> getReachablePositions();

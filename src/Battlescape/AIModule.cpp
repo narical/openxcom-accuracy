@@ -3450,9 +3450,9 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "Immobile enemies detected. Taking cover takes precedent over attacking.";
 	bool wantToPrime = false;
 	int primeCost = 0;
-	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt()->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt()->getRules()->isExplodingInHands())
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt(_save)->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt(_save)->getRules()->isExplodingInHands())
 	{
-		BattleItem* grenade = _unit->getGrenadeFromBelt();
+		BattleItem* grenade = _unit->getGrenadeFromBelt(_save);
 		
 		primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand());
 		if (saveDistance)
@@ -4088,7 +4088,7 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		if (wantToPrime)
 		{
-			BattleItem* grenade = _unit->getGrenadeFromBelt();
+			BattleItem* grenade = _unit->getGrenadeFromBelt(_save);
 			primeCost = _unit->getActionTUs(BA_PRIME, grenade).Time + grenade->getMoveToCost(_save->getMod()->getInventoryLeftHand());
 			if (primeCost <= _unit->getTimeUnits())
 			{
@@ -4231,7 +4231,7 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 	// We know we have a grenade, now we need to know if we have the TUs to throw it
 	costThrow.type = BA_THROW;
 	costThrow.actor = _attackAction.actor;
-	costThrow.weapon = _unit->getGrenadeFromBelt();
+	costThrow.weapon = _unit->getGrenadeFromBelt(_save);
 	costThrow.updateTU();
 	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
@@ -4248,8 +4248,8 @@ bool AIModule::brutalSelectSpottedUnitForSniper()
 		weapons.push_back(_attackAction.actor->getUtilityWeapon(BT_MELEE));
 	if (_attackAction.actor->getSpecialWeapon(BT_FIREARM))
 		weapons.push_back(_attackAction.actor->getSpecialWeapon(BT_FIREARM));
-	if (_grenade && _attackAction.actor->getGrenadeFromBelt())
-		weapons.push_back(_attackAction.actor->getGrenadeFromBelt());
+	if (_grenade && _attackAction.actor->getGrenadeFromBelt(_save))
+		weapons.push_back(_attackAction.actor->getGrenadeFromBelt(_save));
 
 	float bestScore = 0;
 	BattleAction chosenAction = _attackAction;
@@ -4952,16 +4952,16 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 		return 0;
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
-	if (action->type == BA_THROW && action->weapon == _unit->getGrenadeFromBelt())
+	if (action->type == BA_THROW && action->weapon == _unit->getGrenadeFromBelt(_save))
 	{
 		if (!_grenade)
 			return 0;
 		if (target->getTile()->getDangerous())
 			return 0;
-		if (!_unit->getGrenadeFromBelt()->isFuseEnabled())
+		if (!_unit->getGrenadeFromBelt(_save)->isFuseEnabled())
 		{
 			tuCost += action->weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand());
-			tuCost += _unit->getActionTUs(BA_PRIME, _unit->getGrenadeFromBelt()).Time;
+			tuCost += _unit->getActionTUs(BA_PRIME, _unit->getGrenadeFromBelt(_save)).Time;
 		}
 		// We don't have several shots but we can hit several targets at once
 		BattleItem *grenade = action->weapon;
@@ -4974,7 +4974,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	}
 	else
 	{
-		if (action->type == BA_THROW && action->weapon != _unit->getGrenadeFromBelt())
+		if (action->type == BA_THROW && action->weapon != _unit->getGrenadeFromBelt(_save))
 			return 0;
 		auto ammo = action->weapon->getAmmoForAction(action->type);
 		if (ammo)
@@ -5505,7 +5505,7 @@ void AIModule::brutalBlaster()
 void AIModule::brutalGrenadeAction()
 {
 	// do we have a grenade on our belt?
-	BattleItem *grenade = _unit->getGrenadeFromBelt();
+	BattleItem* grenade = _unit->getGrenadeFromBelt(_save);
 	BattleAction action;
 	action.weapon = grenade;
 	action.type = BA_THROW;
@@ -5638,7 +5638,7 @@ void AIModule::blindFire()
 	// We know we have a grenade, now we need to know if we have the TUs to throw it
 	costThrow.type = BA_THROW;
 	costThrow.actor = _attackAction.actor;
-	costThrow.weapon = _unit->getGrenadeFromBelt();
+	costThrow.weapon = _unit->getGrenadeFromBelt(_save);
 	costThrow.updateTU();
 	if (costThrow.weapon && !costThrow.weapon->isFuseEnabled())
 	{
@@ -5655,8 +5655,8 @@ void AIModule::blindFire()
 		weapons.push_back(_attackAction.actor->getUtilityWeapon(BT_MELEE));
 	if (_attackAction.actor->getSpecialWeapon(BT_FIREARM))
 		weapons.push_back(_attackAction.actor->getSpecialWeapon(BT_FIREARM));
-	if (_attackAction.actor->getGrenadeFromBelt())
-		weapons.push_back(_attackAction.actor->getGrenadeFromBelt());
+	if (_attackAction.actor->getGrenadeFromBelt(_save))
+		weapons.push_back(_attackAction.actor->getGrenadeFromBelt(_save));
 
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
@@ -6069,7 +6069,7 @@ bool AIModule::isArmed(BattleUnit *unit) const
 {
 	if (unit->getMainHandWeapon())
 		return true;
-	if (unit->getGrenadeFromBelt())
+	if (unit->getGrenadeFromBelt(_save))
 		return true;
 	if (unit->getUtilityWeapon(BT_PSIAMP))
 		return true;
@@ -6472,10 +6472,10 @@ std::vector<Position> AIModule::getPositionsOnPathTo(Position target, const std:
 
 float AIModule::grenadeRiddingUrgency()
 {
-	if (_grenade && _unit->getGrenadeFromBelt() && _unit->getGrenadeFromBelt()->isFuseEnabled())
+	if (_grenade && _unit->getGrenadeFromBelt(_save) && _unit->getGrenadeFromBelt(_save)->isFuseEnabled())
 	{
 		BattleAction action;
-		action.weapon = _unit->getGrenadeFromBelt();
+		action.weapon = _unit->getGrenadeFromBelt(_save);
 		action.type = BA_THROW;
 		action.actor = _unit;
 		int explosionRadius = action.weapon->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(action));
@@ -6646,7 +6646,7 @@ bool AIModule::improveItemization(float currentItemScore, BattleAction* action)
 
 BattleAction* AIModule::grenadeThrowAction(Position pos)
 {
-	BattleItem* grenade = _unit->getGrenadeFromBelt();
+	BattleItem* grenade = _unit->getGrenadeFromBelt(_save);
 	if (grenade == NULL || !grenade->isFuseEnabled())
 		return NULL;
 	BattleAction* action = new BattleAction();

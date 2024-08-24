@@ -6014,7 +6014,7 @@ int BattleUnit::aiTargetMode()
 /**
  * Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
  */
-void BattleUnit::checkForReactivation()
+void BattleUnit::checkForReactivation(const SavedBattleGame* battle)
 {
 	if (getBrutalIntelligence() < 5)
 		return;
@@ -6028,8 +6028,8 @@ void BattleUnit::checkForReactivation()
 		weapons.push_back(getUtilityWeapon(BT_MELEE));
 	if (getSpecialWeapon(BT_FIREARM))
 		weapons.push_back(getSpecialWeapon(BT_FIREARM));
-	if (getGrenadeFromBelt())
-		weapons.push_back(getGrenadeFromBelt());
+	if (getGrenadeFromBelt(battle))
+		weapons.push_back(getGrenadeFromBelt(battle));
 	for (BattleItem *weapon : weapons)
 	{
 		BattleActionCost costAuto(BA_AUTOSHOT, this, weapon);

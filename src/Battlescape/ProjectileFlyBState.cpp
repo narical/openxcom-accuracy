@@ -1017,7 +1017,7 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				continue;
 			if (!unit->getAIModule() || !unit->isBrutal())
 				continue;
-			unit->checkForReactivation();
+			unit->checkForReactivation(_parent->getSave());
 		}
 	}
 }
