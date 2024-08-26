@@ -1819,7 +1819,7 @@ bool parseConditionImpl(ParserWriter& ph, ScriptRefData truePos, ScriptRefData f
 		return false;
 	}
 
-	const auto proc = ph.parser.getProc(ScriptRef{ equalFunc ? "test_eq" : "test_le" });
+	const auto proc = ph.parser.getProc(equalFunc ? ScriptRef{ "test_eq" } : ScriptRef{ "test_le" });
 	if (parseOverloadProc(ph, proc, std::begin(conditionArgs), std::end(conditionArgs)) == false)
 	{
 		Log(LOG_ERROR) << "Unsupported operator: '" + begin[0].name.toString() + "'";

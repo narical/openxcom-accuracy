@@ -1348,6 +1348,8 @@ void GeoscapeState::time5Seconds()
 							xcraft->returnToBase();
 						}
 						break;
+					case Ufo::IGNORE_ME:
+						break;
 					}
 				}
 				else if (w != 0)

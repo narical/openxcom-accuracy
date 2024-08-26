@@ -1054,6 +1054,8 @@ void AlienMission::ufoShotDown(Ufo &ufo)
 			_spawnCountdown += 30 * (RNG::generate(0, 400) + 48);
 		}
 		break;
+	case Ufo::IGNORE_ME:
+		break;
 	}
 }
 
