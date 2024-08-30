@@ -631,9 +631,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		}
 		else if (hit_successful) // "Hitting" empty tile or fully covered target
 		{
-			target->x += RNG::generate(-3, 3); // Add some deviation
+			target->x += RNG::generate(-3, 3); // Add some deviation in XY plane - Z deviation leads to obvious misses
 			target->y += RNG::generate(-3, 3);
-			target->z += RNG::generate(-2, 2);
 		}
 		else if (targetTile) // We missed, time to find a line of fire to perform a miss with a realistic deviation
 		{
