@@ -112,6 +112,7 @@ OPT bool oxceRawScreenShots;
 OPT bool oxceFirstPersonViewFisheyeProjection;
 OPT bool oxceThumbButtons;
 OPT int oxceThrottleMouseMoveEvent;
+OPT bool oxceDisableThinkingProgressBar;
 
 OPT bool oxceEmbeddedOnly;
 OPT bool oxceListVFSContents;
