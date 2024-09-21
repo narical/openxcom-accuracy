@@ -185,6 +185,7 @@ void SoldierDiary::updateDiary(BattleUnitStatistics *unitStatistics, std::vector
 {
 	if (allMissionStatistics->empty()) return;
 	auto* missionStatistics = allMissionStatistics->back();
+	_missionIdList.push_back(missionStatistics->id);
 	auto& unitKills = unitStatistics->kills;
 	for (auto* buk : unitKills)
 	{
@@ -254,7 +255,6 @@ void SoldierDiary::updateDiary(BattleUnitStatistics *unitStatistics, std::vector
 	_revivedNeutralTotal += unitStatistics->revivedNeutral;
 	_revivedHostileTotal += unitStatistics->revivedHostile;
 	_wholeMedikitTotal += std::min( std::min(unitStatistics->woundsHealed, unitStatistics->appliedStimulant), unitStatistics->appliedPainKill);
-	_missionIdList.push_back(missionStatistics->id);
 }
 
 /**
