@@ -891,9 +891,21 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		node["geoscapeEvents"].push_back(ge->save());
 	}
-	for (const auto* research : _discovered)
+	if (Options::oxceSortDiscoveredVectorByName)
 	{
-		node["discovered"].push_back(research->getName());
+		auto discoveredCopy = _discovered;
+		std::sort(discoveredCopy.begin(), discoveredCopy.end(), [&](const RuleResearch* a, const RuleResearch* b) { return a->getName().compare(b->getName()) < 0; });
+		for (const auto* research : discoveredCopy)
+		{
+			node["discovered"].push_back(research->getName());
+		}
+	}
+	else
+	{
+		for (const auto* research : _discovered)
+		{
+			node["discovered"].push_back(research->getName());
+		}
 	}
 	for (const auto* research : _poppedResearch)
 	{
