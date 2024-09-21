@@ -2761,7 +2761,7 @@ void GeoscapeState::time1Day()
 	{
 		int month = _game->getSavedGame()->getMonthsPassed();
 		int currentScore = _game->getSavedGame()->getCurrentScore(month + 1);
-		int performanceBonus = currentScore * mod->getPerformanceBonusFactor();
+		int performanceBonus = mod->getPerformanceBonus(currentScore);
 		if (performanceBonus < 0)
 		{
 			performanceBonus = 0; // bonus only, no malus
@@ -3490,7 +3490,7 @@ void GeoscapeState::determineAlienMissions()
 	Mod *mod = _game->getMod();
 	int month = _game->getSavedGame()->getMonthsPassed();
 	int currentScore = save->getCurrentScore(month); // _monthsPassed was already increased by 1
-	int performanceBonus = currentScore * mod->getPerformanceBonusFactor();
+	int performanceBonus = mod->getPerformanceBonus(currentScore);
 	if (performanceBonus < 0)
 	{
 		performanceBonus = 0; // bonus only, no malus

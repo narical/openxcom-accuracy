@@ -248,7 +248,7 @@ private:
 	std::array<int, (size_t)(RANK_COMMANDER + 1)> _soldiersPerRank;
 	int _pilotAccuracyZeroPoint, _pilotAccuracyRange, _pilotReactionsZeroPoint, _pilotReactionsRange;
 	int _pilotBraveryThresholds[3];
-	int _performanceBonusFactor;
+	double _performanceBonusFactor;
 	bool _enableNewResearchSorting;
 	int _displayCustomCategories;
 	bool _shareAmmoCategories, _showDogfightDistanceInKm, _showFullNameInAlienInventory;
@@ -957,8 +957,8 @@ public:
 	int getPilotBraveryThresholdBold() const { return _pilotBraveryThresholds[1]; }
 	/// Gets the pilot's bravery needed for normal approach speed
 	int getPilotBraveryThresholdNormal() const { return _pilotBraveryThresholds[2]; }
-	/// Gets a performance bonus factor
-	int getPerformanceBonusFactor() const { return _performanceBonusFactor; }
+	/// Gets a performance bonus for a given score
+	int getPerformanceBonus(int score) const { return (int)(score * _performanceBonusFactor); }
 	/// Should the player have the option to sort the 'New Research' list?
 	bool getEnableNewResearchSorting() const { return _enableNewResearchSorting; }
 	/// Should custom categories be used in Buy/Sell/Transfer GUIs? 0=no, 1=yes, custom only, 2=both vanilla and custom.

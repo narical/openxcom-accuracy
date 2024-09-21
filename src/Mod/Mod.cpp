@@ -428,7 +428,7 @@ Mod::Mod() :
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
 	_soldiersPerRank({-1, -1, 5, 11, 23, 30}),
 	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60),
-	_performanceBonusFactor(0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
+	_performanceBonusFactor(0.0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
 	_alienInventoryOffsetX(80), _alienInventoryOffsetBigUnit(32),
 	_hidePediaInfoButton(false), _extraNerdyPediaInfoType(0),
 	_giveScoreAlsoForResearchedArtifacts(false), _statisticalBulletConservation(false), _stunningImprovesMorale(false),
@@ -3219,7 +3219,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			index++;
 		}
 	}
-	_performanceBonusFactor = doc["performanceBonusFactor"].as<int>(_performanceBonusFactor);
+	_performanceBonusFactor = doc["performanceBonusFactor"].as<double>(_performanceBonusFactor);
 	_enableNewResearchSorting = doc["enableNewResearchSorting"].as<bool>(_enableNewResearchSorting);
 	_displayCustomCategories = doc["displayCustomCategories"].as<int>(_displayCustomCategories);
 	_shareAmmoCategories = doc["shareAmmoCategories"].as<bool>(_shareAmmoCategories);
