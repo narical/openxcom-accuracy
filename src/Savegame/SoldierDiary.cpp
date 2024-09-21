@@ -228,7 +228,7 @@ void SoldierDiary::updateDiary(BattleUnitStatistics *unitStatistics, std::vector
 		_allUFOs = 1;
 	if ((getUFOTotal(allMissionStatistics).size() + getTypeTotal(allMissionStatistics).size()) == (rules->getUfosList().size() + rules->getDeploymentsList().size() - 2))
 		_allMissionTypes = 1;
-	if (getCountryTotal(allMissionStatistics).size() == rules->getCountriesList().size())
+	if (getCountryTotal(allMissionStatistics).size() == 1 + rules->getCountriesList().size())
 		_globeTrotter = true;
 	_martyrKillsTotal += unitStatistics->martyr;
 	_slaveKillsTotal += unitStatistics->slaveKills;
