@@ -198,6 +198,8 @@ int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
 bool Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
+extern std::string OXCE_CURRENCY_SYMBOL;
+
 constexpr size_t MaxDifficultyLevels = 5;
 
 
@@ -308,6 +310,8 @@ void Mod::resetGlobalStatics()
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = true; // FIXME: change default to false in OXCE v8.0+ ?
+
+	OXCE_CURRENCY_SYMBOL = "$";
 }
 
 /**
@@ -428,7 +432,7 @@ Mod::Mod() :
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
 	_soldiersPerRank({-1, -1, 5, 11, 23, 30}),
 	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60),
-	_performanceBonusFactor(0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
+	_performanceBonusFactor(0.0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
 	_alienInventoryOffsetX(80), _alienInventoryOffsetBigUnit(32),
 	_hidePediaInfoButton(false), _extraNerdyPediaInfoType(0),
 	_giveScoreAlsoForResearchedArtifacts(false), _statisticalBulletConservation(false), _stunningImprovesMorale(false),
@@ -2662,6 +2666,11 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
 	EXTENDED_UNDERWATER_THROW_FACTOR = node["extendedUnderwaterThrowFactor"].as<int>(EXTENDED_UNDERWATER_THROW_FACTOR);
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = node["extendedExperienceAwardSystem"].as<bool>(EXTENDED_EXPERIENCE_AWARD_SYSTEM);
+
+	if (node["extendedCurrencySymbol"])
+	{
+		OXCE_CURRENCY_SYMBOL = node["extendedCurrencySymbol"].as<std::string>(OXCE_CURRENCY_SYMBOL);
+	}
 }
 
 /**
@@ -3220,7 +3229,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			index++;
 		}
 	}
-	_performanceBonusFactor = doc["performanceBonusFactor"].as<int>(_performanceBonusFactor);
+	_performanceBonusFactor = doc["performanceBonusFactor"].as<double>(_performanceBonusFactor);
 	_enableNewResearchSorting = doc["enableNewResearchSorting"].as<bool>(_enableNewResearchSorting);
 	_displayCustomCategories = doc["displayCustomCategories"].as<int>(_displayCustomCategories);
 	_shareAmmoCategories = doc["shareAmmoCategories"].as<bool>(_shareAmmoCategories);
@@ -3790,6 +3799,10 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 	if (const YAML::Node& globalTemplates = startingBaseByDiff["globalTemplates"])
 	{
 		save->loadTemplates(globalTemplates, this);
+	}
+	if (const YAML::Node& ufopediaRuleStatus = startingBaseByDiff["ufopediaRuleStatus"])
+	{
+		save->loadUfopediaRuleStatus(ufopediaRuleStatus);
 	}
 	save->getBases()->push_back(base);
 
