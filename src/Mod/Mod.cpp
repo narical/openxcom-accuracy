@@ -198,6 +198,8 @@ int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
 bool Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
+extern std::string OXCE_CURRENCY_SYMBOL;
+
 constexpr size_t MaxDifficultyLevels = 5;
 
 
@@ -308,6 +310,8 @@ void Mod::resetGlobalStatics()
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = true; // FIXME: change default to false in OXCE v8.0+ ?
+
+	OXCE_CURRENCY_SYMBOL = "$";
 }
 
 /**
@@ -2661,6 +2665,11 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
 	EXTENDED_UNDERWATER_THROW_FACTOR = node["extendedUnderwaterThrowFactor"].as<int>(EXTENDED_UNDERWATER_THROW_FACTOR);
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = node["extendedExperienceAwardSystem"].as<bool>(EXTENDED_EXPERIENCE_AWARD_SYSTEM);
+
+	if (node["extendedCurrencySymbol"])
+	{
+		OXCE_CURRENCY_SYMBOL = node["extendedCurrencySymbol"].as<std::string>(OXCE_CURRENCY_SYMBOL);
+	}
 }
 
 /**
