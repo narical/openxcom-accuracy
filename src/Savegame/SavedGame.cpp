@@ -1633,7 +1633,7 @@ void SavedGame::addFinishedResearch(const RuleResearch * research, const Mod * m
 		const RuleResearch *currentQueueItem = queue.at(currentQueueIndex);
 
 		// 1. Find out and remember if the currentQueueItem has any undiscovered non-disabled "protected unlocks" or "getOneFree"
-		bool hasUndiscoveredProtectedUnlocks = hasUndiscoveredProtectedUnlock(currentQueueItem, mod);
+		bool hasUndiscoveredProtectedUnlocks = hasUndiscoveredProtectedUnlock(currentQueueItem);
 		bool hasAnyUndiscoveredGetOneFrees = hasUndiscoveredGetOneFree(currentQueueItem, false);
 
 		// 2. If the currentQueueItem was *not* already discovered before, add it to discovered research
@@ -1817,7 +1817,7 @@ void SavedGame::getAvailableResearchProjects(std::vector<RuleResearch *> &projec
 			{
 				// This research topic still has some more undiscovered non-disabled and *AVAILABLE* "getOneFree" topics, keep it!
 			}
-			else if (hasUndiscoveredProtectedUnlock(research, mod))
+			else if (hasUndiscoveredProtectedUnlock(research))
 			{
 				// This research topic still has one or more undiscovered non-disabled "protected unlocks", keep it!
 			}
@@ -2164,10 +2164,9 @@ bool SavedGame::hasUndiscoveredGetOneFree(const RuleResearch * r, bool checkOnly
 /**
  * Returns if a research still has undiscovered non-disabled "protected unlocks".
  * @param r Research to check.
- * @param mod the Game Mod
  * @return Whether it has any undiscovered non-disabled "protected unlocks" or not.
  */
-bool SavedGame::hasUndiscoveredProtectedUnlock(const RuleResearch * r, const Mod * mod) const
+bool SavedGame::hasUndiscoveredProtectedUnlock(const RuleResearch * r) const
 {
 	// Note: checking for not yet discovered unlocks protected by "requires" (which also implies cost = 0)
 	for (const auto* unlock : r->getUnlocked())
@@ -3385,7 +3384,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 					{
 						// This research topic still has some more undiscovered non-disabled and *AVAILABLE* "getOneFree" topics, keep it!
 					}
-					else if (hasUndiscoveredProtectedUnlock(myResearchRule, mod))
+					else if (hasUndiscoveredProtectedUnlock(myResearchRule))
 					{
 						// This research topic still has one or more undiscovered non-disabled "protected unlocks", keep it!
 					}
