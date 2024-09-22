@@ -340,7 +340,7 @@ public:
 	/// Gets if a certain list of research topics has been completed.
 	bool isResearched(const std::vector<const RuleResearch *> &research, bool considerDebugMode = true, bool skipDisabled = false) const;
 	/// Gets if a certain item has been obtained.
-	bool isItemObtained(const std::string &itemType) const;
+	bool isItemObtained(const std::string &itemType, const Mod* mod) const;
 	/// Gets if a certain facility has been built.
 	bool isFacilityBuilt(const std::string &facilityType) const;
 	/// Gets if a certain soldier type has been hired.

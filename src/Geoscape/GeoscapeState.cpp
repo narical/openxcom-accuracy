@@ -3575,7 +3575,7 @@ void GeoscapeState::determineAlienMissions()
 					// item requirements
 					for (auto& triggerItem : arcScript->getItemTriggers())
 					{
-						triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+						triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3749,7 +3749,7 @@ void GeoscapeState::determineAlienMissions()
 				// item requirements
 				for (auto& triggerItem : command->getItemTriggers())
 				{
-					triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+					triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 					if (!triggerHappy)
 						break;
 				}
@@ -3915,7 +3915,7 @@ void GeoscapeState::determineAlienMissions()
 					// item requirements
 					for (auto& triggerItem : eventScript->getItemTriggers())
 					{
-						triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+						triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 						if (!triggerHappy)
 							break;
 					}
