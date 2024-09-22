@@ -3799,6 +3799,10 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 	{
 		save->loadTemplates(globalTemplates, this);
 	}
+	if (const YAML::Node& ufopediaRuleStatus = startingBaseByDiff["ufopediaRuleStatus"])
+	{
+		save->loadUfopediaRuleStatus(ufopediaRuleStatus);
+	}
 	save->getBases()->push_back(base);
 
 	// Correct IDs

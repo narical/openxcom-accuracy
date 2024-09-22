@@ -597,7 +597,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	sortReserchVector(_discovered);
 
 	_generatedEvents = doc["generatedEvents"].as< std::map<std::string, int> >(_generatedEvents);
-	_ufopediaRuleStatus = doc["ufopediaRuleStatus"].as< std::map<std::string, int> >(_ufopediaRuleStatus);
+	loadUfopediaRuleStatus(doc["ufopediaRuleStatus"]);
 	_manufactureRuleStatus = doc["manufactureRuleStatus"].as< std::map<std::string, int> >(_manufactureRuleStatus);
 	_researchRuleStatus = doc["researchRuleStatus"].as< std::map<std::string, int> >(_researchRuleStatus);
 	_monthlyPurchaseLimitLog = doc["monthlyPurchaseLimitLog"].as< std::map<std::string, int> >(_monthlyPurchaseLimitLog);
@@ -773,6 +773,11 @@ void SavedGame::loadTemplates(const YAML::Node& doc, const Mod* mod)
 			_globalCraftLoadoutName[j] = doc[key2].as<std::string>();
 		}
 	}
+}
+
+void SavedGame::loadUfopediaRuleStatus(const YAML::Node& node)
+{
+	_ufopediaRuleStatus = node.as< std::map<std::string, int> >(_ufopediaRuleStatus);
 }
 
 /**
