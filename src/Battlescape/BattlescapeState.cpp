@@ -35,6 +35,7 @@
 #include "BattlescapeGame.h"
 #include "WarningMessage.h"
 #include "InfoboxState.h"
+#include "NoExperienceState.h"
 #include "TurnDiaryState.h"
 #include "DebriefingState.h"
 #include "MiniMapState.h"
@@ -2694,23 +2695,30 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-e" - experience log
 				else if (key == SDLK_e && ctrlPressed)
 				{
-					std::ostringstream ss;
-					ss << tr("STR_NO_EXPERIENCE_YET");
-					ss << "\n\n";
-					bool first = true;
-					for (auto* bu : *_save->getUnits())
+					if (altPressed)
 					{
-						if (bu->getOriginalFaction() == FACTION_PLAYER && !bu->isOut())
+						_game->pushState(new NoExperienceState());
+					}
+					else
+					{
+						std::ostringstream ss;
+						ss << tr("STR_NO_EXPERIENCE_YET");
+						ss << "\n\n";
+						bool first = true;
+						for (auto* bu : *_save->getUnits())
 						{
-							if (bu->getGeoscapeSoldier() && !bu->hasGainedAnyExperience())
+							if (bu->getOriginalFaction() == FACTION_PLAYER && !bu->isOut())
 							{
-								if (!first) ss << ", ";
-								ss << bu->getName(_game->getLanguage());
-								first = false;
+								if (bu->getGeoscapeSoldier() && !bu->hasGainedAnyExperience())
+								{
+									if (!first) ss << ", ";
+									ss << bu->getName(_game->getLanguage());
+									first = false;
+								}
 							}
 						}
+						_game->pushState(new InfoboxState(ss.str()));
 					}
-					_game->pushState(new InfoboxState(ss.str()));
 				}
 				// "alt-c" - custom marker
 				else if (key == SDLK_c && altPressed)
