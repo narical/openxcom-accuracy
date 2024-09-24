@@ -583,6 +583,7 @@ void createControlsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyHeavyGrenade", &keyReadyHeavyGrenade, SDLK_PERIOD, "STR_KEY_READY_HEAVY_GRENADE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyProximityGrenade", &keyReadyProximityGrenade, SDLK_SLASH, "STR_KEY_READY_PROXIMITY_GRENADE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadySmokeGrenade", &keyReadySmokeGrenade, SDLK_SEMICOLON, "STR_KEY_READY_SMOKE_GRENADE", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyStunGrenade", &keyReadyStunGrenade, SDLK_EQUALS, "STR_KEY_READY_STUN_GRENADE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyFlare", &keyReadyFlare, SDLK_QUOTE, "STR_KEY_READY_FLARE", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyScanner", &keyReadyScanner, SDLK_RIGHTBRACKET, "STR_KEY_READY_SCANNER", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "keyReadyMedikit", &keyReadyMedikit, SDLK_LEFTBRACKET, "STR_KEY_READY_MEDIKIT", "STR_BATTLESCAPE"));
