@@ -398,6 +398,7 @@ en-US:
   STR_ADD_SOLDIERS_TO_TRAINING: "Add Soldiers To Training"
   STR_INVENTORY_ARMOR: "Change Armor"
   STR_INVENTORY_AVATAR: "Change Avatar"
+  STR_INVENTORY_DIARY_LIGHT: "View Diary Light"
   STR_ACTION_ITEM_1: "Item Action 1 (Aim/Use)"
   STR_ACTION_ITEM_2: "Item Action 2 (Snap)"
   STR_ACTION_ITEM_3: "Item Action 3 (Auto)"

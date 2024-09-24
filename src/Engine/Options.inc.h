@@ -54,7 +54,7 @@ OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, k
 	keyRemoveEquipmentFromCraft,
 	keyRemoveArmorFromCraft, keyRemoveArmorFromAllCrafts,
 	keyRemoveSoldiersFromTraining, keyAddSoldiersToTraining,
-	keyInventoryArmor, keyInventoryAvatar, keyInventorySave, keyInventoryLoad,
+	keyInventoryArmor, keyInventoryAvatar, keyInventoryDiaryLight, keyInventorySave, keyInventoryLoad,
 	keyInvSavePersonalEquipment, keyInvLoadPersonalEquipment, keyInvShowPersonalEquipment,
 	keyBattleShowLayers,
 	keyBattleUseSpecial,

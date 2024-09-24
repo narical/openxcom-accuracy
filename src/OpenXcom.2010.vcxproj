@@ -369,6 +369,7 @@
     <ClCompile Include="Basescape\SellState.cpp" />
     <ClCompile Include="Basescape\SoldierArmorState.cpp" />
     <ClCompile Include="Basescape\SoldierBonusState.cpp" />
+    <ClCompile Include="Basescape\SoldierDiaryLightState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryMissionState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryOverviewState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryPerformanceState.cpp" />
@@ -751,6 +752,7 @@
     <ClInclude Include="Basescape\SellState.h" />
     <ClInclude Include="Basescape\SoldierArmorState.h" />
     <ClInclude Include="Basescape\SoldierBonusState.h" />
+    <ClInclude Include="Basescape\SoldierDiaryLightState.h" />
     <ClInclude Include="Basescape\SoldierDiaryMissionState.h" />
     <ClInclude Include="Basescape\SoldierDiaryOverviewState.h" />
     <ClInclude Include="Basescape\SoldierDiaryPerformanceState.h" />

@@ -44,6 +44,7 @@ set ( basescape_src
   Basescape/SoldierArmorState.cpp
   Basescape/SoldierAvatarState.cpp
   Basescape/SoldierBonusState.cpp
+  Basescape/SoldierDiaryLightState.cpp
   Basescape/SoldierDiaryMissionState.cpp
   Basescape/SoldierDiaryOverviewState.cpp
   Basescape/SoldierDiaryPerformanceState.cpp
