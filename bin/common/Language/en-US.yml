@@ -516,7 +516,7 @@ en-US:
   STR_KEY_READY_LIGHT_GRENADE: "Pick and prime light grenade"
   STR_KEY_READY_HEAVY_GRENADE: "Pick and prime heavy grenade"
   STR_KEY_READY_PROXIMITY_GRENADE: "Pick and prime proximity grenade"
-  STR_KEY_READY_SMOKE_GRENADE: "Pick and prime smoke/knockout grenade"
+  STR_KEY_READY_SMOKE_GRENADE: "Pick and prime smoke grenade"
   STR_KEY_READY_STUN_GRENADE: "Pick and prime stun grenade"
   STR_KEY_READY_FLARE: "Pick a flare"
   STR_KEY_READY_SCANNER: "Pick a scanner"
