@@ -439,7 +439,7 @@ Mod::Mod() :
 	_tuRecoveryWakeUpNewTurn(100), _shortRadarRange(0), _buildTimeReductionScaling(100),
 	_defeatScore(0), _defeatFunds(0), _difficultyDemigod(false), _startingTime(6, 1, 1, 1999, 12, 0, 0), _startingDifficulty(0),
 	_baseDefenseMapFromLocation(0), _disableUnderwaterSounds(false), _enableUnitResponseSounds(false), _pediaReplaceCraftFuelWithRangeType(-1),
-	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0),
+	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0), _armorListOrder(0), _alienRaceListOrder(0),
 	_researchListOrder(0),  _manufactureListOrder(0), _soldierBonusListOrder(0), _transformationListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _soldierListOrder(0),
 	_modCurrent(0), _statePalette(0)
 {
@@ -2825,7 +2825,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	for (YAML::const_iterator i : iterateRules("armors", "type"))
 	{
-		Armor *rule = loadRule(*i, &_armors, &_armorsIndex);
+		Armor *rule = loadRule(*i, &_armors, &_armorsIndex, "type", RuleListOrderedFactory<Armor>{ _armorListOrder, 100 });
 		if (rule != 0)
 		{
 			rule->load(*i, this, parsers);
@@ -2857,7 +2857,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	}
 	for (YAML::const_iterator i : iterateRules("alienRaces", "id"))
 	{
-		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id");
+		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id", RuleListOrderedFactory<AlienRace>{ _alienRaceListOrder, 100 });
 		if (rule != 0)
 		{
 			rule->load(*i, this);
@@ -4858,13 +4858,14 @@ struct compareRule<Armor>
 		const RuleItem *rule1 = armor1->getStoreItem();
 		const RuleItem *rule2 = armor2->getStoreItem();
 		if (!rule1 && !rule2)
-			return (armor1 < armor2); // tiebreaker, don't care about order, pointers are as good as any
+			return (armor1->getListOrder() < armor2->getListOrder()); // tiebreaker
 		else if (!rule1)
 			return true;
 		else if (!rule2)
 			return false;
 		else
-			return (rule1->getListOrder() < rule2->getListOrder());
+			return (rule1->getListOrder() < rule2->getListOrder() ||
+				   (rule1->getListOrder() == rule2->getListOrder() && armor1->getListOrder() < armor2->getListOrder()));
 	}
 };
 
@@ -4948,6 +4949,7 @@ void Mod::sortLists()
 	std::sort(_ufopaediaIndex.begin(), _ufopaediaIndex.end(), compareRule<ArticleDefinition>(this));
 	std::sort(_ufopaediaCatIndex.begin(), _ufopaediaCatIndex.end(), compareSection(this));
 	std::sort(_soldiersIndex.begin(), _soldiersIndex.end(), compareRule<RuleSoldier>(this, (compareRule<RuleSoldier>::RuleLookup) & Mod::getSoldier));
+	std::sort(_aliensIndex.begin(), _aliensIndex.end(), compareRule<AlienRace>(this, (compareRule<AlienRace>::RuleLookup) & Mod::getAlienRace));
 }
 
 /**

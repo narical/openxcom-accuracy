@@ -302,7 +302,7 @@ private:
 	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
 	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
-	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder;
+	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _armorListOrder, _alienRaceListOrder, _researchListOrder,  _manufactureListOrder;
 	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
 	std::vector<ModData> _modData;
 	ModData* _modCurrent;
