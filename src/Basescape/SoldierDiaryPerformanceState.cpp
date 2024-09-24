@@ -46,7 +46,7 @@ namespace OpenXcom
  * @param display Type of totals to display.
  */
 SoldierDiaryPerformanceState::SoldierDiaryPerformanceState(Base *base, size_t soldierId, SoldierDiaryOverviewState *soldierDiaryOverviewState, SoldierDiaryDisplay display) :
-	_base(base), _soldierId(soldierId), _soldierDiaryOverviewState(soldierDiaryOverviewState), _display(display), _lastScrollPos(0)
+	_base(base), _soldierId(soldierId), _soldierDiaryOverviewState(soldierDiaryOverviewState), _display(display), _lastScrollPos(0), _doNotReset(false)
 {
 	if (_base == 0)
 	{
@@ -202,6 +202,14 @@ SoldierDiaryPerformanceState::~SoldierDiaryPerformanceState()
 void SoldierDiaryPerformanceState::init()
 {
 	State::init();
+
+	// coming back from Ufopedia
+	if (_doNotReset)
+	{
+		_doNotReset = false;
+		return;
+	}
+
 	// Clear sprites
 	for (int i = 0; i != 10; ++i)
 	{
@@ -499,6 +507,7 @@ void SoldierDiaryPerformanceState::lstInfoMouseOut(Action *)
 */
 void SoldierDiaryPerformanceState::lstInfoMouseClick(Action *)
 {
+	_doNotReset = true;
 	Ufopaedia::openArticle(_game, _commendationsNames[_lstCommendations->getSelectedRow()]);
 }
 
