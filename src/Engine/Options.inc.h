@@ -102,7 +102,7 @@ OPT int oxceShowAccuracyOnCrosshair;
 OPT bool oxceAutoSell;
 OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
-OPT bool oxceCrashedOrLandedToggle;
+OPT int oxceCrashedOrLanded;
 
 // OXCE hidden, accessible only via options.cfg
 /**
