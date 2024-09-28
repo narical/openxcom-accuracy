@@ -916,6 +916,10 @@ void NewBattleState::cbxTerrainChange(Action *)
 		}
 	}
 	_cbxAlienRace->setOptions(_alienRaces, true);
+	if (_cbxAlienRace->getSelected() >= _alienRaces.size())
+	{
+		_cbxAlienRace->setSelected(0);
+	}
 }
 
 /**
