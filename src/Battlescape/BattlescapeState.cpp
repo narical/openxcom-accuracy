@@ -2684,6 +2684,22 @@ inline void BattlescapeState::handle(Action *action)
 				{
 					_map->toggleDebugVisionMode();
 				}
+				// "ctrl-s" - switch xcom unit speed to max and back
+				else if (key == SDLK_s && ctrlPressed)
+				{
+					if (Options::battleXcomSpeedOrig >= 1 && Options::battleXcomSpeedOrig <= 40)
+					{
+						Options::battleXcomSpeed = Options::battleXcomSpeedOrig;
+						Options::battleXcomSpeedOrig = -1;
+						warning("STR_QUICK_MODE_DEACTIVATED");
+					}
+					else
+					{
+						Options::battleXcomSpeedOrig = Options::battleXcomSpeed;
+						Options::battleXcomSpeed = 1;
+						warningLongRaw(tr("STR_QUICK_MODE_ACTIVATED"));
+					}
+				}
 				// "ctrl-x" - mute/unmute unit response sounds
 				else if (key == SDLK_x && ctrlPressed)
 				{
