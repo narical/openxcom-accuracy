@@ -272,6 +272,8 @@ en-GB:
   STR_VIPS_LOST: "VIPS LOST"
   STR_BOUNTY: "BOUNTY"
   STR_MANA_ABBREVIATION: "MAN"
+#ExperienceOverviewState.cpp
+  STR_EXPERIENCE_OVERVIEW: "Experience Overview"
 #Inventory.cpp
   STR_CANNOT_PLACE_ITEM_INTO_THIS_SECTION: "It's not allowed to place that item there.{NEWLINE}Don't ask why!"
   STR_ONE_HAND_MUST_BE_EMPTY: "At least one hand must be empty!"

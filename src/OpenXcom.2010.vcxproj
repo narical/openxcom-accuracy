@@ -409,6 +409,7 @@
     <ClCompile Include="Battlescape\CommendationState.cpp" />
     <ClCompile Include="Battlescape\ConfirmEndMissionState.cpp" />
     <ClCompile Include="Battlescape\DebriefingState.cpp" />
+    <ClCompile Include="Battlescape\ExperienceOverviewState.cpp" />
     <ClCompile Include="Battlescape\Explosion.cpp" />
     <ClCompile Include="Battlescape\ExplosionBState.cpp" />
     <ClCompile Include="Battlescape\ExtendedBattlescapeLinksState.cpp" />
@@ -794,6 +795,7 @@
     <ClInclude Include="Battlescape\CommendationState.h" />
     <ClInclude Include="Battlescape\ConfirmEndMissionState.h" />
     <ClInclude Include="Battlescape\DebriefingState.h" />
+    <ClInclude Include="Battlescape\ExperienceOverviewState.h" />
     <ClInclude Include="Battlescape\Explosion.h" />
     <ClInclude Include="Battlescape\ExplosionBState.h" />
     <ClInclude Include="Battlescape\ExtendedBattlescapeLinksState.h" />

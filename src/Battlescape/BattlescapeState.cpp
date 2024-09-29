@@ -36,6 +36,7 @@
 #include "WarningMessage.h"
 #include "InfoboxState.h"
 #include "NoExperienceState.h"
+#include "ExperienceOverviewState.h"
 #include "TurnDiaryState.h"
 #include "DebriefingState.h"
 #include "MiniMapState.h"
@@ -2714,6 +2715,10 @@ inline void BattlescapeState::handle(Action *action)
 					if (altPressed)
 					{
 						_game->pushState(new NoExperienceState());
+					}
+					else if (shiftPressed)
+					{
+						_game->pushState(new ExperienceOverviewState());
 					}
 					else
 					{

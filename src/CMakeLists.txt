@@ -86,6 +86,7 @@ set ( battlescape_src
   Battlescape/CommendationState.cpp
   Battlescape/ConfirmEndMissionState.cpp
   Battlescape/DebriefingState.cpp
+  Battlescape/ExperienceOverviewState.cpp
   Battlescape/Explosion.cpp
   Battlescape/ExplosionBState.cpp
   Battlescape/ExtendedBattlescapeLinksState.cpp
