@@ -615,6 +615,7 @@
     <ClCompile Include="Mod\ExtraSprites.cpp" />
     <ClCompile Include="Mod\ExtraStrings.cpp" />
     <ClCompile Include="Mod\RuleMissionScript.cpp" />
+    <ClCompile Include="Mod\RuleWeaponSet.cpp" />
     <ClCompile Include="Mod\Texture.cpp" />
     <ClCompile Include="Mod\MapScript.cpp" />
     <ClCompile Include="Mod\MCDPatch.cpp" />
@@ -1013,6 +1014,7 @@
     <ClInclude Include="Mod\RuleStatBonus.h" />
     <ClInclude Include="Mod\RuleCommendations.h" />
     <ClInclude Include="Mod\RuleConverter.h" />
+    <ClInclude Include="Mod\RuleWeaponSet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Mod\ArticleDefinition.h" />
     <ClInclude Include="Mod\City.h" />

@@ -1145,6 +1145,9 @@
     <ClCompile Include="Battlescape\NoExperienceState.cpp">
       <Filter>Battlescape</Filter>
     </ClCompile>
+    <ClCompile Include="Mod\RuleWeaponSet.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2353,6 +2356,9 @@
     </ClInclude>
     <ClInclude Include="Battlescape\NoExperienceState.h">
       <Filter>Battlescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Mod\RuleWeaponSet.h">
+      <Filter>Mod</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
