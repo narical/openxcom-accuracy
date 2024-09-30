@@ -510,6 +510,8 @@ en-GB:
 #ModConfirmExtendedState.cpp
   STR_MASTER_MOD_VERSION_REQUIRED_QUESTION: "This mod requires base game v{0} to run correctly. Enable this mod?"
   STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
+#ModListState.cpp
+  STR_OPEN_MODS_FOLDER: "Open"
 #NewBattleState.cpp
   STR_GLOBE_TEXTURE: "Globe Texture"
 #NotesState.cpp
