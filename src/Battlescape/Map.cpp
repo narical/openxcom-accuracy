@@ -1812,8 +1812,16 @@ void Map::drawTerrain(Surface *surface)
 										if (rule->getBattleType() != BT_PSIAMP || action->type == BA_USE)
 										{
 											int totalDamage = 0;
-											totalDamage += rule->getPowerBonus(attack);
-											totalDamage -= rule->getPowerRangeReduction(distanceTiles * 16);
+											if (weapon->getIgnoreAmmoPower())
+											{
+												totalDamage += weapon->getPowerBonus(attack);
+												totalDamage -= weapon->getPowerRangeReduction(distance * 16);
+											}
+											else
+											{
+												totalDamage += rule->getPowerBonus(attack);
+												totalDamage -= rule->getPowerRangeReduction(distance * 16);
+											}
 											if (totalDamage < 0) totalDamage = 0;
 											if (_cursorType != CT_WAYPOINT)
 												ss << "\n";

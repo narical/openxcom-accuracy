@@ -61,8 +61,9 @@ OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, k
 	keyRemoveEquipmentFromCraft,
 	keyRemoveArmorFromCraft, keyRemoveArmorFromAllCrafts,
 	keyRemoveSoldiersFromTraining, keyAddSoldiersToTraining,
-	keyInventoryArmor, keyInventoryAvatar, keyInventorySave, keyInventoryLoad,
+	keyInventoryArmor, keyInventoryAvatar, keyInventoryDiaryLight, keyInventorySave, keyInventoryLoad,
 	keyInvSavePersonalEquipment, keyInvLoadPersonalEquipment, keyInvShowPersonalEquipment,
+	keyBattleUnitUp, keyBattleUnitDown,
 	keyBattleShowLayers,
 	keyBattleUseSpecial,
 	keyBattleActionItem1, keyBattleActionItem2, keyBattleActionItem3, keyBattleActionItem4, keyBattleActionItem5,
@@ -116,6 +117,7 @@ OPT bool oxceHighlightNewTopicsHidden;
 OPT int oxceInterceptGuiMaintenanceTimeHidden;
 // 0 = not persisted; 1 = persisted per battle; 2 = persisted per campaign
 OPT int maxNumberOfBases;
+OPT int oxceCrashedOrLanded;
 
 /**
  * Verification level of mod data.
@@ -189,3 +191,4 @@ OPT SDLKey keyReadyScanner;
 OPT SDLKey keyReadyMedikit;
 OPT SDLKey keyClearLeftHand;
 
+OPT int battleXcomSpeedOrig;

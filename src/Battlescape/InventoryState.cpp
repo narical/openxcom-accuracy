@@ -24,6 +24,7 @@
 #include "Inventory.h"
 #include "../Basescape/SoldierArmorState.h"
 #include "../Basescape/SoldierAvatarState.h"
+#include "../Basescape/SoldierDiaryLightState.h"
 #include "../Engine/Game.h"
 #include "../Engine/FileMap.h"
 #include "../Mod/Mod.h"
@@ -216,6 +217,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnCreatePersonalTemplateClick, Options::keyInvSavePersonalEquipment);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnApplyPersonalTemplateClick, Options::keyInvLoadPersonalEquipment);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnShowPersonalTemplateClick, Options::keyInvShowPersonalEquipment);
+	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnDiaryLightClick, Options::keyInventoryDiaryLight);
 	_btnOk->setTooltip("STR_OK");
 	_btnOk->onMouseIn((ActionHandler)&InventoryState::txtTooltipInExtraOK);
 	_btnOk->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
@@ -826,6 +828,23 @@ void InventoryState::btnArmorClickRight(Action *action)
 
 		_game->pushState(new SoldierAvatarState(_base, soldierIndex));
 	}
+}
+
+/**
+ * Opens the Soldier Diary Light GUI
+ * @param action Pointer to an action.
+ */
+void InventoryState::btnDiaryLightClick(Action *action)
+{
+	// don't accept clicks when moving items
+	if (_inv->getSelectedItem() != 0)
+	{
+		return;
+	}
+
+	BattleUnit* unit = _battleGame->getSelectedUnit();
+	Soldier* s = unit->getGeoscapeSoldier();
+	_game->pushState(new SoldierDiaryLightState(s));
 }
 
 /**
@@ -1779,7 +1798,14 @@ void InventoryState::calculateCurrentDamageTooltip()
 		if (rule->getBattleType() != BT_CORPSE)
 		{
 			int totalDamage = 0;
-			totalDamage += rule->getPowerBonus({ BA_NONE, currentUnit, _currentDamageTooltipItem, damageItem }); //TODO: find what exactly attack we can do
+			if (weaponRule->getIgnoreAmmoPower())
+			{
+				totalDamage += weaponRule->getPowerBonus({ BA_NONE, currentUnit, _currentDamageTooltipItem, damageItem });
+			}
+			else
+			{
+				totalDamage += rule->getPowerBonus({ BA_NONE, currentUnit, _currentDamageTooltipItem, damageItem }); //TODO: find what exactly attack we can do
+			}
 			//totalDamage -= rule->getPowerRangeReduction(distance * 16);
 			if (totalDamage < 0) totalDamage = 0;
 			std::ostringstream ss;
