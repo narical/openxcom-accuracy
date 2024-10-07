@@ -1792,12 +1792,12 @@ void Map::drawTerrain(Surface *surface)
 									// step 3: calculate and draw
 									if (rule && _cacheActiveWeaponUfopediaArticleUnlocked == 1)
 									{
+										float dis = Position::distance(action->actor->getPosition().toVoxel(), Position(itX, itY, itZ).toVoxel());
 										if (rule->getBattleType() == BT_PSIAMP)
 										{
 											float attackStrength = BattleUnit::getPsiAccuracy(attack);
 											float defenseStrength = 30.0f; // indicator ignores: +victim->getArmor()->getPsiDefence(victim);
 
-											float dis = Position::distance(action->actor->getPosition().toVoxel(), Position(itX, itY, itZ).toVoxel());
 											int min = attackStrength - defenseStrength - rule->getPsiAccuracyRangeReduction(dis);
 											int max = min + 55;
 											if (max <= 0)
@@ -1815,12 +1815,12 @@ void Map::drawTerrain(Surface *surface)
 											if (weapon->getIgnoreAmmoPower())
 											{
 												totalDamage += weapon->getPowerBonus(attack);
-												totalDamage -= weapon->getPowerRangeReduction(distance * 16);
+												totalDamage -= weapon->getPowerRangeReduction(dis * 16);
 											}
 											else
 											{
 												totalDamage += rule->getPowerBonus(attack);
-												totalDamage -= rule->getPowerRangeReduction(distance * 16);
+												totalDamage -= rule->getPowerRangeReduction(dis * 16);
 											}
 											if (totalDamage < 0) totalDamage = 0;
 											if (_cursorType != CT_WAYPOINT)
