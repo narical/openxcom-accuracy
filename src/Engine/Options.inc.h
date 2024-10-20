@@ -72,6 +72,7 @@ OPT int oxceGeoAutosaveFrequency;
 OPT int oxceGeoAutosaveSlots;
 OPT bool oxceLinks;
 OPT bool oxceFatFingerLinks;
+OPT bool oxceQuickSearchButton;
 OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
 
