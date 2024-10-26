@@ -722,6 +722,7 @@ void Map::drawTerrain(Surface *surface)
 		_save->updateVisibleTiles();
 
 	_isAltPressed = _game->isAltPressed(true);
+	_isCtrlPressed = _game->isCtrlPressed(true);
 	int frameNumber = 0;
 	SurfaceRaw<const Uint8> tmpSurface;
 	Tile *tile;
