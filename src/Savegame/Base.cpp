@@ -2516,7 +2516,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 	// if we do not remove anything now then we can add new building even if we lack some functions.
 	if ((~provide & require & missed).any())
 	{
-		return BPE_Used;
+		return BPE_Used_Provides_Required;
 	}
 
 	// nothing removed, skip.

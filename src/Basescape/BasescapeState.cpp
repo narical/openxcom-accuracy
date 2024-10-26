@@ -453,6 +453,9 @@ void BasescapeState::viewLeftClick(Action *)
 				case BPE_Used_AlienContainment:
 					_game->pushState(new ErrorMessageState(tr("STR_FACILITY_IN_USE_PRISONS"), _palette, errorColor1, "BACK13.SCR", errorColor2));
 					break;
+				case BPE_Used_Provides_Required:
+					_game->pushState(new ErrorMessageState(tr("STR_FACILITY_IN_USE_PROVIDES_REQUIRED"), _palette, errorColor1, "BACK13.SCR", errorColor2));
+					break;
 				default:
 					_game->pushState(new ErrorMessageState(tr("STR_FACILITY_IN_USE"), _palette, errorColor1, "BACK13.SCR", errorColor2));
 				}
