@@ -1098,6 +1098,18 @@ const ModInfo* getActiveMasterInfo()
 	return &_modInfos.at(_masterMod);
 }
 
+/**
+ * Gets the xcom ruleset info.
+ */
+const ModInfo* getXcomRulesetInfo()
+{
+	if (_modInfos.find("xcom1") != _modInfos.end())
+		return &_modInfos.at("xcom1");
+	else if (_modInfos.find("xcom2") != _modInfos.end())
+		return &_modInfos.at("xcom2");
+	else return nullptr;
+}
+
 bool getLoadLastSave()
 {
 	return _loadLastSave && !_loadLastSaveExpended;
