@@ -719,6 +719,7 @@ BattlescapeState::BattlescapeState() :
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyHeavyGrenade, Options::keyReadyHeavyGrenade);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyProximityGrenade, Options::keyReadyProximityGrenade);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readySmokeGrenade, Options::keyReadySmokeGrenade);
+	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyStunGrenade, Options::keyReadyStunGrenade);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyFlare, Options::keyReadyFlare);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyScanner, Options::keyReadyScanner);
 	_btnStats->onKeyboardPress((ActionHandler)&BattlescapeState::readyMedikit, Options::keyReadyMedikit);
@@ -4130,6 +4131,13 @@ void BattlescapeState::readyProximityGrenade(Action* action)
 void BattlescapeState::readySmokeGrenade(Action* action)
 {
 	readyItem(BT_GRENADE, DT_SMOKE);
+}
+/**
+ * Readies stun grenade.
+ */
+void BattlescapeState::readyStunGrenade(Action* action)
+{
+	readyItem(BT_GRENADE, DT_STUN);
 }
 /**
  * Readies flare.

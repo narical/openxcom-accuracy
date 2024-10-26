@@ -298,6 +298,7 @@ public:
 	void readyHeavyGrenade(Action* action);
 	void readyProximityGrenade(Action* action);
 	void readySmokeGrenade(Action* action);
+	void readyStunGrenade(Action* action);
 	void readyFlare(Action* action);
 	void readyScanner(Action* action);
 	void readyMedikit(Action* action);

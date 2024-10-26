@@ -187,6 +187,7 @@ OPT SDLKey keyReadyLightGrenade;
 OPT SDLKey keyReadyHeavyGrenade;
 OPT SDLKey keyReadyProximityGrenade;
 OPT SDLKey keyReadySmokeGrenade;
+OPT SDLKey keyReadyStunGrenade;
 OPT SDLKey keyReadyFlare;
 OPT SDLKey keyReadyScanner;
 OPT SDLKey keyReadyMedikit;
