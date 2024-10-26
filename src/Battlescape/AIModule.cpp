@@ -3896,39 +3896,6 @@ void AIModule::brutalThink(BattleAction* action)
 				directPeakScore /= 10;
 				indirectPeakScore /= 10;
 			}
-			float intelligenceDeviation = 0.2f * _unit->getBrutalIntelligence();
-			if (intelligenceDeviation < 1.0)
-			{
-				float rngResult = RNG::generate(0.0, 1.0);
-				if (rngResult > intelligenceDeviation)
-				{
-					if (attackScore > 0)
-						attackScore = rngResult;
-					if (greatCoverScore > 0)
-						greatCoverScore = rngResult;
-					if (goodCoverScore > 0)
-						goodCoverScore = rngResult;
-					if (okayCoverScore > 0)
-						okayCoverScore = rngResult;
-					if (directPeakScore > 0)
-						directPeakScore = rngResult;
-					if (indirectPeakScore > 0)
-						indirectPeakScore = rngResult;
-					if (fallbackScore > 0)
-						fallbackScore = rngResult;
-				}
-				else
-				{
-					rngResult = RNG::generate(intelligenceDeviation, 1.0);
-					attackScore *= rngResult;
-					greatCoverScore *= rngResult;
-					goodCoverScore *= rngResult;
-					okayCoverScore *= rngResult;
-					directPeakScore *= rngResult;
-					indirectPeakScore *= rngResult;
-					fallbackScore *= rngResult;
-				}
-			}
 			if (attackScore > bestAttackScore)
 			{
 				bestAttackScore = attackScore;

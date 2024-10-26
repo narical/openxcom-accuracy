@@ -6016,8 +6016,6 @@ int BattleUnit::aiTargetMode()
  */
 void BattleUnit::checkForReactivation(const SavedBattleGame* battle)
 {
-	if (getBrutalIntelligence() < 5)
-		return;
 	bool haveTUtoAttack = false;
 	std::vector<BattleItem *> weapons;
 	if (getRightHandWeapon())
@@ -6101,20 +6099,6 @@ float BattleUnit::getAggressiveness() const
 	else
 		return Options::aggression;
 	return aggressiveness;
-}
-
-int BattleUnit::getBrutalIntelligence() const
-{
-	if (getFaction() != FACTION_PLAYER)
-	{
-		if (Options::intelligence == 6)
-			return getIntelligence();
-		if (Options::intelligence == 7 && getAIModule())
-			return getAIModule()->getSave()->getGeoscapeSave()->getDifficulty() + 1;
-		else
-			return Options::intelligence;
-	}
-	return 5;
 }
 
 ////////////////////////////////////////////////////////////

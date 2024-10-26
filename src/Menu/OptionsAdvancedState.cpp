@@ -366,11 +366,6 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 4;
 		}
-		else if (i == &Options::intelligence)
-		{
-			min = 0;
-			max = 7;
-		}
 		else if(i == &Options::aiTargetMode)
 		{
 			min = 1;
