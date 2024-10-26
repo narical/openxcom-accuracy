@@ -3938,7 +3938,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(_save->getTileEngine()->isNextToDoor(tile));
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
