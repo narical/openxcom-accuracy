@@ -3710,7 +3710,7 @@ void AIModule::brutalThink(BattleAction* action)
 								directPeakScore = remainingTimeUnits;
 						}
 					}
-					if (visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
+					if (!_unit->isCheatOnMovement() && visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
 						indirectPeakScore = visiblePath;
 				}
 			}
@@ -3986,11 +3986,17 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (moveTU <= _unit->getTimeUnits() - attackTU)
 		haveTUToAttack = true;
-	if (bestAttackScore > 0 && !haveTUToAttack)
+	if (bestAttackScore > 0 && !haveTUToAttack && bestGreatCoverScore + bestGoodCoverScore + bestOkayCoverScore > 0)
 	{
 		shouldHaveLofAfterMove = iHaveLof;
 		if (_traceAI)
 			Log(LOG_INFO) << "Attack dismissed due to lack of TU to go back to hiding-spot afterwards. Attack + Hide: " << attackTU << " move: " << moveTU << " current: " << _unit->getTimeUnits();
+	}
+	else if (bestAttackScore > 0)
+	{
+		haveTUToAttack = true;
+		_tuCostToReachClosestPositionToBreakLos = -1;
+		_energyCostToReachClosestPositionToBreakLos = -1;
 	}
 	int newVisibleTilesDirect = 0;
 	int newVisibleTilesInDirect = 0;
