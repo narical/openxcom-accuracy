@@ -115,6 +115,12 @@ public:
 	/// Returns a copy of the current mapping container with O(1) access to the children. O(n) is spent building the index.
 	YamlNodeReader useIndex() const;
 
+	/// Returns a string_view wrapping the key. No string construction or deserialization occurs.
+	std::string_view key() const;
+
+	/// Returns a string_view wrapping the value. No string construction or deserialization occurs.
+	std::string_view val() const;
+
 
 	/// Deserializes the value of the found child into the outputValue. Throws if the node is invalid or the key doesn't exist.
 	template <typename OutputType>

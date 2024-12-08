@@ -129,6 +129,22 @@ YamlNodeReader YamlNodeReader::useIndex() const
 	return YamlNodeReader(_root, _node, true);
 }
 
+std::string_view YamlNodeReader::key() const
+{
+	if (_invalid)
+		throw Exception("Tried getting key of an invalid node!");
+	const auto& key = _node.tree()->get(_node.m_id)->m_key.scalar;
+	return std::string_view(key.str, key.len);
+}
+
+std::string_view YamlNodeReader::val() const
+{
+	if (_invalid)
+		throw Exception("Tried getting value of an invalid node!");
+	const auto& val = _node.tree()->get(_node.m_id)->m_val.scalar;
+	return std::string_view(val.str, val.len);
+}
+
 std::vector<char> YamlNodeReader::readValBase64() const
 {
 	// first run figure out the decoded length
