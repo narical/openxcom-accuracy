@@ -1350,7 +1350,7 @@ void loadHelper(const std::string &parent, int& v, const YAML::YamlNodeReader& r
  */
 void loadHelper(const std::string &parent, std::string& v, const YAML::YamlNodeReader& reader)
 {
-	v = reader.readVal<std::string>();
+	reader.tryReadVal(v);
 	if (Mod::isEmptyRuleName(v))
 	{
 		throw LoadRuleException(parent, reader, "Invalid value for name");
