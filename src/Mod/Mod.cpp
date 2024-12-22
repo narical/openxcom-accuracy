@@ -2425,7 +2425,11 @@ void Mod::loadAll()
  */
 void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScript &parsers)
 {
-	for (const auto& filerec : rulesetFiles)
+	std::vector<FileMap::FileRecord> sortedRulesetFiles = rulesetFiles;
+	std::sort(sortedRulesetFiles.begin(), sortedRulesetFiles.end(),
+		[](const FileMap::FileRecord& a, const FileMap::FileRecord& b)
+		{ return a.fullpath > b.fullpath; });
+	for (const auto& filerec : sortedRulesetFiles)
 	{
 		Log(LOG_VERBOSE) << "- " << filerec.fullpath;
 		try

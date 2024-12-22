@@ -641,12 +641,6 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
 	}
 	closedir(dp);
 #endif
-	std::sort(files.begin(), files.end(),
-		[](const std::tuple<std::string,bool,time_t>& a,
-           const std::tuple<std::string,bool,time_t>& b) -> bool
-       {
-         return std::get<0>(a) > std::get<0>(b);
-       });
 	return files;
 }
 
