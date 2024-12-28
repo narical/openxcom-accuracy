@@ -551,16 +551,6 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 		}
 	}
 
-	if ((_battleType == BT_MELEE || _battleType == BT_FIREARM) && _clipSize == 0)
-	{
-		for (RuleItemAction* conf : { &_confAimed, &_confAuto, &_confSnap, &_confMelee, })
-		{
-			if (conf->ammoSlot != RuleItem::AmmoSlotSelfUse && _compatibleAmmoNames[conf->ammoSlot].empty())
-			{
-				throw Exception("Weapon " + _type + " has clip size 0 and no ammo defined. Please use 'clipSize: -1' for unlimited ammo, or allocate a compatibleAmmo item.");
-			}
-		}
-	}
 	reader.tryRead("specialChance", _specialChance);
 	reader.tryRead("twoHanded", _twoHanded);
 	reader.tryRead("blockBothHands", _blockBothHands);
@@ -689,6 +679,17 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
  */
 void RuleItem::afterLoad(const Mod* mod)
 {
+	if ((_battleType == BT_MELEE || _battleType == BT_FIREARM) && _clipSize == 0)
+	{
+		for (RuleItemAction* conf : { &_confAimed, &_confAuto, &_confSnap, &_confMelee, })
+		{
+			if (conf->ammoSlot != RuleItem::AmmoSlotSelfUse && _compatibleAmmoNames[conf->ammoSlot].empty())
+			{
+				throw Exception("Weapon " + _type + " has clip size 0 and no ammo defined. Please use 'clipSize: -1' for unlimited ammo, or allocate a compatibleAmmo item.");
+			}
+		}
+	}
+
 	mod->verifySpriteOffset(_type, _bigSprite, "BIGOBS.PCK");
 	mod->verifySpriteOffset(_type, _floorSprite, "FLOOROB.PCK");
 	mod->verifySpriteOffset(_type, _handSprite, "HANDOB.PCK");
