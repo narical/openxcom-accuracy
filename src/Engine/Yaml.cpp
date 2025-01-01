@@ -357,6 +357,9 @@ void YamlRootNodeReader::Parse(ryml::csubstr yaml, std::string fileNameForError,
 			_node = _node.first_child();
 		}
 	}
+	// if the yaml file is an empty document, it's parsed into a single node with type NOTYPE
+	if (_tree->size() == 1 && _node.type() == ryml::NOTYPE)
+		_node = ryml::ConstNodeRef(_tree.get(), ryml::NONE); // treat it as an invalid node
 
 	_root = this;
 	_invalid = _node.invalid();
