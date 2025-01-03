@@ -807,19 +807,11 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		auto discoveredWriter = writer["discovered"];
 		discoveredWriter.setAsSeq();
-		if (Options::oxceSortDiscoveredVectorByName)
 		{
 			auto discoveredCopy = _discovered;
 			std::sort(discoveredCopy.begin(), discoveredCopy.end(), [&](const RuleResearch* a, const RuleResearch* b)
 					  { return a->getName().compare(b->getName()) < 0; });
 			for (const auto* research : discoveredCopy)
-			{
-				discoveredWriter.write(research->getName());
-			}
-		}
-		else
-		{
-			for (const auto* research : _discovered)
 			{
 				discoveredWriter.write(research->getName());
 			}
