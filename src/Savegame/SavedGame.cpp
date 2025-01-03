@@ -853,8 +853,15 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		auto autoSales = writer["autoSales"];
 		autoSales.setAsSeq();
-		for (const auto* sale : _autosales)
-			autoSales.write(sale->getName());
+		{
+			std::vector<const RuleItem*> autosalesVector(_autosales.begin(), _autosales.end());
+			std::sort(autosalesVector.begin(), autosalesVector.end(), [&](const RuleItem* a, const RuleItem* b)
+				{ return a->getName().compare(b->getName()) < 0; });
+			for (const auto* sale : autosalesVector)
+			{
+				autoSales.write(sale->getName());
+			}
+		}
 	}
 	// snapshot of the user options (just for debugging purposes)
 	auto optionsWriter = writer["options"];
