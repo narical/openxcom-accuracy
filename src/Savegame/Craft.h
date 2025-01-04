@@ -120,15 +120,15 @@ public:
 	/// Cleans up the craft.
 	~Craft();
 	/// Loads the craft from YAML.
-	void load(const YAML::Node& node, const ScriptGlobal *shared, const Mod *mod, SavedGame *save);
+	void load(const YAML::YamlNodeReader& reader, const ScriptGlobal *shared, const Mod *mod, SavedGame *save);
 	/// Finishes loading the craft from YAML (called after all other XCOM craft are loaded too).
-	void finishLoading(const YAML::Node& node, SavedGame *save);
+	void finishLoading(const YAML::YamlNodeReader& reader, SavedGame *save);
 	/// Initializes fixed weapons.
 	void initFixedWeapons(const Mod* mod);
 	/// Saves the craft to YAML.
-	YAML::Node save(const ScriptGlobal *shared) const;
+	void save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) const;
 	/// Loads a craft ID from YAML.
-	static CraftId loadId(const YAML::Node &node);
+	static CraftId loadId(const YAML::YamlNodeReader& reader);
 	/// Gets the craft's type.
 	std::string getType() const override;
 	/// Gets the craft's ruleset.
@@ -380,5 +380,9 @@ public:
 	/// Get position assigned to Craft in BaseEscape
 	Position getBaseEscapePosition() const;		
 };
+
+// helper overloads for (de)serialization
+bool read(ryml::ConstNodeRef const& n, VehicleDeploymentData* val);
+void write(ryml::NodeRef* n, VehicleDeploymentData const& val);
 
 }
