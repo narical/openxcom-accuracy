@@ -856,10 +856,10 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 		{
 			std::vector<const RuleItem*> autosalesVector(_autosales.begin(), _autosales.end());
 			std::sort(autosalesVector.begin(), autosalesVector.end(), [&](const RuleItem* a, const RuleItem* b)
-				{ return a->getName().compare(b->getName()) < 0; });
+				{ return a->getType().compare(b->getType()) < 0; });
 			for (const auto* sale : autosalesVector)
 			{
-				autoSales.write(sale->getName());
+				autoSales.write(sale->getType());
 			}
 		}
 	}
