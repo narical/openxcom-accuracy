@@ -1490,12 +1490,15 @@ void SavedGame::removeDiscoveredResearch(const RuleResearch * research)
 }
 
 /**
- * Add a ResearchProject to the list of already discovered ResearchProject
- * @param research The newly found ResearchProject
+ * Make all research discovered (used in New Battle)
+ * @param mod the game Mod
  */
-void SavedGame::addFinishedResearchSimple(const RuleResearch * research)
+void SavedGame::makeAllResearchDiscovered(const Mod* mod)
 {
-	_discovered.push_back(research);
+	for (auto& pair : mod->getResearchMap())
+	{
+		_discovered.push_back(pair.second);
+	}
 	sortReserchVector(_discovered);
 }
 
