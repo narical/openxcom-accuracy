@@ -1530,8 +1530,11 @@ void SavedGame::addFinishedResearch(const RuleResearch * research, const Mod * m
 		bool checkRelatedZeroCostTopics = true;
 		if (!isResearched(currentQueueItem, false))
 		{
-			_discovered.push_back(currentQueueItem);
-			sortReserchVector(_discovered);
+			if (!research->isRepeatable())
+			{
+				_discovered.push_back(currentQueueItem);
+				sortReserchVector(_discovered);
+			}
 			if (!hasUndiscoveredProtectedUnlocks && !hasAnyUndiscoveredGetOneFrees)
 			{
 				// If the currentQueueItem can't tell you anything anymore, remove it from popped research

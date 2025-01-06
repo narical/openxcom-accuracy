@@ -2409,6 +2409,14 @@ void GeoscapeState::time1Day()
 		if (!finished.empty())
 		{
 			saveGame->getAvailableResearchProjects(before, mod, xbase);
+			for (auto* fp : finished)
+			{
+				if (fp->getRules()->isRepeatable())
+				{
+					RuleResearch* nonconst = mod->getResearch(fp->getRules()->getName());
+					before.push_back(nonconst);
+				}
+			}
 		}
 		// 3. add finished research, including lookups and getonefrees (up to 4x)
 		std::vector<const RuleResearch*> topicsToCheck;
