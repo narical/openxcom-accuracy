@@ -48,10 +48,7 @@
 
 #ifdef __GNUC__
 #if (__i386__ || __x86_64__)
-#ifndef __OXCE_MXE_WINXP
-// see https://github.com/pedroterzero/oxce-xp/issues/1
 #include <cpuid.h>
-#endif
 #endif
 #endif
 
