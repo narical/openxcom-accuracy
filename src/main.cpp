@@ -152,7 +152,7 @@ const char Version[] = "$VER: OpenXCom " OPENXCOM_VERSION_SHORT " (" __AMIGADATE
 
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 #include "Engine/Collections.h"
 #include "fmath.h"

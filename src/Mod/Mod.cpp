@@ -6533,7 +6533,7 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 }
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 static auto dummyParseDate = ([]
 {

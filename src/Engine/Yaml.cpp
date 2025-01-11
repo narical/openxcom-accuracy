@@ -532,7 +532,7 @@ void write(ryml::NodeRef* n, bool const& v)
 }
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 #include <cassert>
 

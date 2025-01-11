@@ -4675,7 +4675,7 @@ void ScriptGlobal::load(const YAML::YamlNodeReader& reader)
 
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 namespace
 {
