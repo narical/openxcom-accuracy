@@ -972,6 +972,43 @@ BattleUnit *SavedBattleGame::selectPlayerUnit(int dir, bool checkReselect, bool 
 }
 
 /**
+ * Selects the next closest player unit.
+ * @param checkReselect Whether to check if we should reselect a unit.
+ * @param setReselect Don't reselect a unit.
+ * @param checkInventory Whether to check if the unit has an inventory.
+ * @return Pointer to new selected BattleUnit, NULL if none can be selected.
+ */
+BattleUnit* SavedBattleGame::selectNextPlayerUnitByDistance(bool checkReselect, bool setReselect, bool checkInventory)
+{
+	BattleUnit* backup = _selectedUnit;
+	if (_selectedUnit != 0 && setReselect)
+	{
+		_selectedUnit->dontReselect();
+		_selectedUnit = 0;
+	}
+
+	std::vector< std::pair<int, BattleUnit*> > candidates;
+	for (auto* unit : _units)
+	{
+		if (unit != _selectedUnit && unit->isSelectable(_side, checkReselect, checkInventory))
+		{
+			int distance = backup ? backup->distance3dToUnitSq(unit) : 0;
+			candidates.push_back(std::make_pair(distance, unit));
+		}
+	}
+
+	if (!candidates.empty())
+	{
+		std::sort(candidates.begin(), candidates.end(),
+			[](const std::pair<int, BattleUnit*>& a, const std::pair<int, BattleUnit*>& b)
+			{ return a.first < b.first; });
+
+		_selectedUnit = candidates.front().second;
+	}
+	return _selectedUnit;
+}
+
+/**
  * Selects the unit at the given position on the map.
  * @param pos Position.
  * @return Pointer to a BattleUnit, or 0 when none is found.
