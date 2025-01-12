@@ -1654,10 +1654,18 @@ void GeoscapeState::ufoHuntingAndEscorting()
 					{
 						_game->getMod()->getSound("GEO.CAT", ufo->getRules()->getHuntAlertSound())->play();
 					}
-					std::string msg = tr("STR_UFO_STARTED_HUNTING")
-						.arg(ufo->getName(_game->getLanguage()))
-						.arg(newTarget->getName(_game->getLanguage()));
-					popup(new CraftErrorState(this, msg));
+					if (Options::oxceGeoSuppressRedundantHKAlert && newTarget->getDestination() == ufo)
+					{
+						// Empty by design
+						// If the player sent an interceptor after the HK, the alert is redundant
+					}
+					else
+					{
+						std::string msg = tr("STR_UFO_STARTED_HUNTING")
+							.arg(ufo->getName(_game->getLanguage()))
+							.arg(newTarget->getName(_game->getLanguage()));
+						popup(new CraftErrorState(this, msg));
+					}
 				}
 			}
 			else if (originalTarget)
