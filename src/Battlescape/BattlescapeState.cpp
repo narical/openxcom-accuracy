@@ -492,6 +492,7 @@ BattlescapeState::BattlescapeState() :
 	_btnNextSoldier->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 
 	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_LEFT);
+	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_RIGHT);
 	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_MIDDLE);
 	_btnNextStop->onKeyboardPress((ActionHandler)&BattlescapeState::btnNextStopClick, Options::keyBattleDeselectUnit);
 	_btnNextStop->setTooltip("STR_DESELECT_UNIT");
@@ -1286,14 +1287,35 @@ void BattlescapeState::btnNextStopClick(Action *action)
 		if (_game->isLeftClick(action, true))
 		{
 			// vanilla: next by ID + don't reselect
+			_save->setUndoUnit(_save->getSelectedUnit());
 			selectNextPlayerUnit(true, true);
 			_map->refreshSelectorPosition();
 		}
 		else if (_game->isMiddleClick(action, true))
 		{
 			// OXCE: next by distance + don't reselect
+			_save->setUndoUnit(_save->getSelectedUnit());
 			selectNextPlayerUnit(true, true, false, true, true);
 			_map->refreshSelectorPosition();
+		}
+		else if (_game->isRightClick(action, true))
+		{
+			// OXCE: previous unit (last marked as don't reselect)
+			BattleUnit* candidate = _save->getUndoUnit();
+			if (candidate && candidate->isSelectable(_save->getSide(), false, false))
+			{
+				candidate->allowReselect();
+				_save->setSelectedUnit(candidate);
+				_save->setUndoUnit(nullptr);
+
+				updateSoldierInfo();
+				if (candidate && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(candidate->getPosition());
+				_battleGame->cancelAllActions();
+				_battleGame->getCurrentAction()->actor = candidate;
+				_battleGame->setupCursor();
+
+				_map->refreshSelectorPosition();
+			}
 		}
 	}
 }

@@ -63,7 +63,7 @@ namespace OpenXcom
  */
 SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
 	_isPreview(isPreview), _craftPos(), _craftZ(0), _craftForPreview(nullptr),
-	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
+	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0), _undoUnit(nullptr),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0),
 	_reinforcementsItemLevel(0), _startingCondition(nullptr), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
 	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0), _nameDisplay(false),
@@ -175,6 +175,7 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 	reader.tryRead("depth", _depth);
 	reader.tryRead("animFrame", _animFrame);
 	int selectedUnitId = reader["selectedUnit"].readVal<int>();
+	int undoUnitId = reader["undoUnit"].readVal<int>(-1);
 
 	for (const auto& mdsReader : reader["mapdatasets"].children())
 	{
@@ -282,6 +283,8 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 		{
 			if ((unit->getId() == selectedUnitId) || (_selectedUnit == 0 && !unit->isOut()))
 				_selectedUnit = unit;
+			if (unit->getId() == undoUnitId)
+				_undoUnit = unit;
 		}
 		else if (unit->getStatus() != STATUS_DEAD && !unit->isIgnored())
 		{
@@ -534,6 +537,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("animFrame", _animFrame);
 	writer.write("bughuntMode", _bughuntMode);
 	writer.write("selectedUnit", (_selectedUnit ? _selectedUnit->getId() : -1));
+	writer.write("undoUnit", (_undoUnit ? _undoUnit->getId() : -1));
 
 	writer.write("mapdatasets", _mapDataSets,
 		[](YAML::YamlNodeWriter& w, MapDataSet* mds)
@@ -871,6 +875,10 @@ void SavedBattleGame::clearUnitSelection(BattleUnit *unit)
 	if (_selectedUnit == unit)
 	{
 		_selectedUnit = nullptr;
+	}
+	if (_undoUnit == unit)
+	{
+		_undoUnit = nullptr;
 	}
 	if (_lastSelectedUnit == unit)
 	{
@@ -1477,11 +1485,13 @@ void SavedBattleGame::endTurn()
 		else
 			_lastSelectedUnit = nullptr;
 		_selectedUnit =  0;
+		_undoUnit = nullptr;
 		_side = FACTION_HOSTILE;
 	}
 	else if (_side == FACTION_HOSTILE)
 	{
 		_selectedUnit =  0;
+		_undoUnit = nullptr;
 		_side = FACTION_NEUTRAL;
 		// if there is no neutral team, we skip this and instantly prepare the new turn for the player
 //		if (selectNextPlayerUnit() == 0)
@@ -1509,6 +1519,7 @@ void SavedBattleGame::endTurn()
 		while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
 			selectNextPlayerUnit();
 
+		_undoUnit = nullptr;
 		_lastSelectedUnit = nullptr;
 	}
 
