@@ -293,8 +293,8 @@ public:
 	void setFlowStyle();
 	/// Marks the current node to serialize as multi-line block-style
 	void setBlockStyle();
-	/// Marks the current node to serialize the scalar in double quotes
-	void setAsQuoted();
+	/// Marks the current node to serialize the scalar in double quotes. Escapes non-printable ASCII characters.
+	void setAsQuotedAndEscaped();
 
 	void unsetAsMap();
 	void unsetAsSeq();

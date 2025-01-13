@@ -507,7 +507,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("height", _mapsize_z);
 	writer.write("missionType", _missionType);
 	writer.write("strTarget", _strTarget);
-	writer.write("strCraftOrBase", _strCraftOrBase).setAsQuoted();
+	writer.write("strCraftOrBase", _strCraftOrBase).setAsQuotedAndEscaped();
 	if (_startingCondition)
 	{
 		writer.write("startingConditionType", _startingCondition->getType());
@@ -552,13 +552,13 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	}
 #else
 	// first, write out the field sizes we're going to use to write the tile data
-	writer.write("tileIndexSize", static_cast<char>(Tile::serializationKey.index)).setAsQuoted();
+	writer.write("tileIndexSize", static_cast<char>(Tile::serializationKey.index)).setAsQuotedAndEscaped();
 	writer.write("tileTotalBytesPer", Tile::serializationKey.totalBytes);
-	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuoted();
-	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuoted();
-	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuoted();
-	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuoted();
-	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuoted();
+	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuotedAndEscaped();
+	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuotedAndEscaped();
+	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuotedAndEscaped();
+	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuotedAndEscaped();
+	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuotedAndEscaped();
 
 	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);

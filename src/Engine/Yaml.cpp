@@ -456,9 +456,59 @@ void YamlNodeWriter::setBlockStyle()
 	_node |= ryml::BLOCK;
 }
 
-void YamlNodeWriter::setAsQuoted()
+bool isPrintable(uint8_t c)
 {
-	_node |= ryml::VAL_DQUO;
+	// TAB, LF, CR, and x20-x7E range; Any 2+ byte UTF-8 characters are assumed to be printable
+	return c == 0x09 || c == 0x0A || c == 0x0D || (c >= 0x20 && c <= 0x7E) || c >= 0x80;
+}
+
+void YamlNodeWriter::setAsQuotedAndEscaped()
+{
+	ryml::csubstr scalar = _node.val();
+	size_t pos, last = 0;
+	for (pos = 0; pos < scalar.len; pos++)
+		if (!isPrintable(scalar[pos]))
+			break;
+	if (pos == scalar.len) // didn't find a non-printable ASCII character;
+	{
+		_node |= ryml::VAL_DQUO;
+		return;
+	}
+	// manually create a double-quoted scalar; escape the non-printable AND special characters
+	_node |= ryml::VAL_PLAIN;
+	const char hexDigits[] = "0123456789ABCDEF";
+	std::string newScalar;
+	newScalar.reserve(scalar.len + 2 + 3); // 2 for quotes and 3 for one hex escape
+	newScalar.push_back('\"');
+	for (pos = 0; pos < scalar.len; pos++)
+	{
+		char toEscape = 0;
+		switch (scalar[pos])
+		{
+		case '"': toEscape = '\"'; break;
+		case '\\': toEscape = '\\'; break;
+		case '\n': toEscape = 'n'; break;
+		case '\r': toEscape = 'r'; break;
+		case '\b': toEscape = 'b'; break;
+		default: if (!isPrintable(scalar[pos])) toEscape = 'x'; break;
+		}
+		if (toEscape != 0)
+		{
+			newScalar.append(&scalar[last], pos - last); // copy from the last escaped to the current position
+			newScalar.push_back('\\');
+			newScalar.push_back(toEscape);
+			if (toEscape == 'x')
+			{
+				newScalar.push_back(hexDigits[(scalar[pos] >> 4) & 0xF]);
+				newScalar.push_back(hexDigits[scalar[pos] & 0xF]);
+			}
+			last = pos + 1;
+		}
+	}
+	if (pos != last)
+		newScalar.append(&scalar[last], pos - last); // copy from the last escaped to the end of string
+	newScalar.push_back('\"');
+	_node.set_val(_node.tree()->to_arena(newScalar));
 }
 
 void YamlNodeWriter::unsetAsMap()

@@ -742,7 +742,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		headerWriter.write("mission", _battleGame->getMissionType());
 		headerWriter.write("target", _battleGame->getMissionTarget());
-		headerWriter.write("craftOrBase", _battleGame->getMissionCraftOrBase()).setAsQuoted();
+		headerWriter.write("craftOrBase", _battleGame->getMissionCraftOrBase()).setAsQuotedAndEscaped();
 		headerWriter.write("turn", _battleGame->getTurn());
 	}
 
