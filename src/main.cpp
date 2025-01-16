@@ -45,7 +45,13 @@ using namespace OpenXcom;
 
 // Crash handling routines
 #ifdef _MSC_VER
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <windows.h>
+
 LONG WINAPI crashLogger(PEXCEPTION_POINTERS exception)
 {
 	CrossPlatform::crashDump(exception, "");
