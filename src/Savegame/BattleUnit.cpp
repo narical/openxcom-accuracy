@@ -6429,6 +6429,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getPosition>("getPosition");
 	bu.add<&BattleUnit::getTurnsSinceSpotted>("getTurnsSinceSpotted");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceSpotted, 0, 255>>("setTurnsSinceSpotted");
+	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipers>("getTurnsLeftSpottedForSnipers");
+	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsLeftSpottedForSnipers, 0, 255>>("setTurnsLeftSpottedForSnipers");
 	bu.addField<&BattleUnit::_turnsSinceStunned>("getTurnsSinceStunned");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceStunned, 0, 255>>("setTurnsSinceStunned");
 
