@@ -5659,6 +5659,21 @@ void getLookVariantScript(const BattleUnit *bu, int &ret)
 	ret = 0;
 }
 
+struct getRuleUnitScript
+{
+	static RetEnum func(const BattleUnit* bu, const Unit*& ret)
+	{
+		if (bu)
+		{
+			ret = bu->getUnitRules(); // Note: can be nullptr
+		}
+		else
+		{
+			ret = nullptr;
+		}
+		return RetContinue;
+	}
+};
 struct getRuleSoldierScript
 {
 	static RetEnum func(const BattleUnit *bu, const RuleSoldier* &ret)
@@ -6403,6 +6418,7 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getOverKillDamage>("getOverKillDamage");
 	bu.addRules<Armor, &BattleUnit::getArmor>("getRuleArmor");
+	bu.addFunc<getRuleUnitScript>("getRuleUnit");
 	bu.addFunc<getRuleSoldierScript>("getRuleSoldier");
 	bu.addFunc<getGeoscapeSoldierScript>("getGeoscapeSoldier");
 	bu.addFunc<getGeoscapeSoldierConstScript>("getGeoscapeSoldier");
