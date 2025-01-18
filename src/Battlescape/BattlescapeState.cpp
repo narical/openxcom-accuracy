@@ -2999,6 +2999,10 @@ inline void BattlescapeState::handle(Action *action)
 					{
 						_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_QUICK, _palette));
 					}
+					else if (key == Options::keyInstaSave)
+					{
+						_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_INSTA, _palette));
+					}
 					else if (key == Options::keyQuickLoad)
 					{
 						_game->pushState(new LoadGameState(OPT_BATTLESCAPE, SAVE_QUICK, _palette));

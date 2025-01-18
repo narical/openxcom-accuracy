@@ -412,6 +412,7 @@ en-GB:
   STR_ACTION_ITEM_3: "Item Action 3 (Auto)"
   STR_ACTION_ITEM_4: "Item Action 4 (Melee)"
   STR_ACTION_ITEM_5: "Item Action 5 (Throw)"
+  STR_INSTA_SAVE: "Insta-save"
   STR_TOGGLE_QUICK_SEARCH: "Toggle Quick Search Field"
   STR_TOGGLE_NIGHT_VISION: "Toggle Night Vision"
   STR_HOLD_NIGHT_VISION: "Short Night Vision"

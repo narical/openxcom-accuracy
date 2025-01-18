@@ -674,6 +674,10 @@ void GeoscapeState::handle(Action *action)
 			{
 				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_QUICK, _palette));
 			}
+			else if (action->getDetails()->key.keysym.sym == Options::keyInstaSave)
+			{
+				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_INSTA, _palette));
+			}
 			else if (action->getDetails()->key.keysym.sym == Options::keyQuickLoad)
 			{
 				popup(new LoadGameState(OPT_GEOSCAPE, SAVE_QUICK, _palette));
