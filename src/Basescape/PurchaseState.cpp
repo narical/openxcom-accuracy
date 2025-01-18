@@ -332,7 +332,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	_cbxCategory->setOptions(_cats, true);
 	if (!_missingItemsMap.empty())
 	{
-		_cbxCategory->setSelected(2); // STR_FILTER_MISSING
+		_cbxCategory->setSelected(3); // STR_FILTER_MISSING
 	}
 	_cbxCategory->onChange((ActionHandler)&PurchaseState::cbxCategoryChange);
 
