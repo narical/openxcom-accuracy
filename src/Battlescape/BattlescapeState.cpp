@@ -2720,6 +2720,18 @@ inline void BattlescapeState::handle(Action *action)
 				{
 					_map->toggleDebugVisionMode();
 				}
+				// "ctrl-shift-Del" - clear TUs for all allied units
+				else if (key == SDLK_DELETE && ctrlPressed && shiftPressed)
+				{
+					for (auto* bu : *_save->getUnits())
+					{
+						if (bu->getFaction() == _save->getSide() && !bu->isOut())
+						{
+							bu->clearTimeUnits();
+						}
+					}
+					updateSoldierInfo();
+				}
 				// "ctrl-s" - switch xcom unit speed to max and back
 				else if (key == SDLK_s && ctrlPressed)
 				{
