@@ -290,6 +290,7 @@ en-US:
   STR_SAVE_PERSONAL_EQUIPMENT: "Save Personal Equipment"
   STR_LOAD_PERSONAL_EQUIPMENT: "Load Personal Equipment"
   STR_PERSONAL_EQUIPMENT_SAVED: "Personal equipment saved."
+  STR_PERSONAL_EQUIPMENT_NOT_DEFINED: "Personal equipment is not defined yet."
   STR_SLOT: "Slot>{ALT}{0}"
 #Map.cpp
   STR_THINKING: "Thinking..."

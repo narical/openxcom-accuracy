@@ -1621,7 +1621,14 @@ void InventoryState::btnApplyPersonalTemplateClick(Action *)
 
 		auto& personalTemplate = *unit->getGeoscapeSoldier()->getPersonalEquipmentLayout();
 
-		_applyInventoryTemplate(personalTemplate);
+		if (personalTemplate.empty())
+		{
+			_inv->showWarning(tr("STR_PERSONAL_EQUIPMENT_NOT_DEFINED"));
+		}
+		else
+		{
+			_applyInventoryTemplate(personalTemplate);
+		}
 
 		// refresh ui
 		_inv->arrangeGround();
