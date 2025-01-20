@@ -557,14 +557,14 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	// first, write out the field sizes we're going to use to write the tile data
 	writer.write("tileIndexSize", static_cast<char>(Tile::serializationKey.index)).setAsQuotedAndEscaped();
 	writer.write("tileTotalBytesPer", Tile::serializationKey.totalBytes);
-	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuoted();
-	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuoted();
-	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuoted();
-	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuoted();
-	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuoted();
-	writer.write("lastExploredByPlayer", static_cast<char>(Tile::serializationKey._lastExploredByPlayer)).setAsQuoted();
-	writer.write("lastExploredByNeutral", static_cast<char>(Tile::serializationKey._lastExploredByNeutral)).setAsQuoted();
-	writer.write("lastExploredByHostile", static_cast<char>(Tile::serializationKey._lastExploredByHostile)).setAsQuoted();
+	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuotedAndEscaped();
+	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuotedAndEscaped();
+	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuotedAndEscaped();
+	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuotedAndEscaped();
+	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByPlayer", static_cast<char>(Tile::serializationKey._lastExploredByPlayer)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByNeutral", static_cast<char>(Tile::serializationKey._lastExploredByNeutral)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByHostile", static_cast<char>(Tile::serializationKey._lastExploredByHostile)).setAsQuotedAndEscaped();
 
 	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);
