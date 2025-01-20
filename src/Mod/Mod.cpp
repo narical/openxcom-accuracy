@@ -3702,7 +3702,7 @@ T *Mod::loadRule(const YAML::YamlNodeReader& reader, std::map<std::string, T*> *
 	}
 	else
 	{
-		checkForObsoleteErrorByYear("Mod", reader, "Missing main node", 2025);
+		throw LoadRuleException("Mod", reader, "Missing main node");
 	}
 
 	return rule;
