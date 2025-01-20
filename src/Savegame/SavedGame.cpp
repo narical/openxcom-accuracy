@@ -742,7 +742,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		headerWriter.write("mission", _battleGame->getMissionType());
 		headerWriter.write("target", _battleGame->getMissionTarget());
-		headerWriter.write("craftOrBase", _battleGame->getMissionCraftOrBase()).setAsQuoted();
+		headerWriter.write("craftOrBase", _battleGame->getMissionCraftOrBase()).setAsQuotedAndEscaped();
 		headerWriter.write("turn", _battleGame->getTurn());
 	}
 
@@ -856,10 +856,10 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 		{
 			std::vector<const RuleItem*> autosalesVector(_autosales.begin(), _autosales.end());
 			std::sort(autosalesVector.begin(), autosalesVector.end(), [&](const RuleItem* a, const RuleItem* b)
-				{ return a->getName().compare(b->getName()) < 0; });
+				{ return a->getType().compare(b->getType()) < 0; });
 			for (const auto* sale : autosalesVector)
 			{
-				autoSales.write(sale->getName());
+				autoSales.write(sale->getType());
 			}
 		}
 	}
@@ -1508,12 +1508,15 @@ void SavedGame::removeDiscoveredResearch(const RuleResearch * research)
 }
 
 /**
- * Add a ResearchProject to the list of already discovered ResearchProject
- * @param research The newly found ResearchProject
+ * Make all research discovered (used in New Battle)
+ * @param mod the game Mod
  */
-void SavedGame::addFinishedResearchSimple(const RuleResearch * research)
+void SavedGame::makeAllResearchDiscovered(const Mod* mod)
 {
-	_discovered.push_back(research);
+	for (auto& pair : mod->getResearchMap())
+	{
+		_discovered.push_back(pair.second);
+	}
 	sortReserchVector(_discovered);
 }
 
@@ -1548,8 +1551,11 @@ void SavedGame::addFinishedResearch(const RuleResearch * research, const Mod * m
 		bool checkRelatedZeroCostTopics = true;
 		if (!isResearched(currentQueueItem, false))
 		{
-			_discovered.push_back(currentQueueItem);
-			sortReserchVector(_discovered);
+			if (!research->isRepeatable())
+			{
+				_discovered.push_back(currentQueueItem);
+				sortReserchVector(_discovered);
+			}
 			if (!hasUndiscoveredProtectedUnlocks && !hasAnyUndiscoveredGetOneFrees)
 			{
 				// If the currentQueueItem can't tell you anything anymore, remove it from popped research
@@ -3582,6 +3588,8 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 	sgg.add<&getRandomScript>("getRandomState");
 
 	sgg.add<&difficultyLevelScript>("difficultyLevel", "Get difficulty level");
+	sgg.add<&SavedGame::getMonthsPassed>("getMonthsPassed", "Number of months passed from start");
+	sgg.add<&SavedGame::getDaysPassed>("getDaysPassed", "Number of days passed from start");
 
 	sgg.add<&isResearchedScript>("isResearched");
 

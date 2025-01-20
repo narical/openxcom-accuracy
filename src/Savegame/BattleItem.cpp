@@ -1420,8 +1420,8 @@ std::string debugDisplayScript(const BattleItem* bt)
 		auto rule = bt->getRules();
 		std::string s;
 		s += BattleItem::ScriptName;
-		s += "(name: \"";
-		s += rule->getName();
+		s += "(type: \"";
+		s += rule->getType();
 		s += "\" id: ";
 		s += std::to_string(bt->getId());
 

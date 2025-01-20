@@ -52,7 +52,7 @@ OPT bool autoCombatDefaultSoldier, autoCombatDefaultHWP, autoCombatDefaultMindCo
 // Extra hotkeys (OXCE)
 OPT SDLKey keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeViewer, keyGeoGlobalResearch, keyGeoGlobalProduction, keyGeoGlobalAlienContainment,
 	keyGraphsZoomIn, keyGraphsZoomOut,
-	keyToggleQuickSearch,
+	keyToggleQuickSearch, keyInstaSave,
 	keyCraftLoadoutSave, keyCraftLoadoutLoad,
 	keyMarkAllAsSeen,
 	keySellAll, keySellAllButOne,
@@ -143,6 +143,8 @@ OPT int oxceStartUpTextMode;
 OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT int oxceGeoSlowdownFactor;
 OPT bool oxceGeoShowScoreInsteadOfFunds;
+OPT bool oxceGeoSuppressRedundantHKAlert;
+OPT bool oxceGeoSuppressLandingWithoutEquipment;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
 OPT int oxceBaseManufactureInfinityButton;

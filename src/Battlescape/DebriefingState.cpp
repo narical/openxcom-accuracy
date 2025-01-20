@@ -1554,6 +1554,11 @@ void DebriefingState::prepareDebriefing()
 
 	// time to care for units.
 	bool psiStrengthEval = (Options::psiStrengthEval && save->isResearched(_game->getMod()->getPsiRequirements()));
+	bool ignoreLivingCivilians = false;
+	if (ruleDeploy)
+	{
+		ignoreLivingCivilians = ruleDeploy->getIgnoreLivingCivilians();
+	}
 	for (auto* bunit : *battle->getUnits())
 	{
 		UnitStatus status = bunit->getStatus();
@@ -1751,7 +1756,7 @@ void DebriefingState::prepareDebriefing()
 					}
 				}
 			}
-			else if (oldFaction == FACTION_NEUTRAL)
+			else if (oldFaction == FACTION_NEUTRAL && !ignoreLivingCivilians)
 			{
 				// if mission fails, all civilians die
 				if ((aborted && !success) || playersSurvived == 0)
