@@ -496,7 +496,7 @@ public:
 		if (check)
 		{
 			auto ex = LoadRuleException(parent, reader, error);
-			if (Options::oxceModValidationLevel < level)
+			if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
 			{
 				Log(level) << "Supressed " << ex.what();
 				return true;
@@ -515,7 +515,7 @@ public:
 		if (check)
 		{
 			auto ex = LoadRuleException(parent, error);
-			if (Options::oxceModValidationLevel < level)
+			if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
 			{
 				Log(level) << "Supressed " << ex.what();
 				return true;

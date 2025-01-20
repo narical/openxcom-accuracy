@@ -1100,13 +1100,9 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Yam
 		{
 			level = LOG_INFO;
 		}
-		else if (currYear.year == year)
-		{
-			level = LOG_WARNING;
-		}
 		else // after obsolete year functionality is disabled
 		{
-			level = LOG_ERROR;
+			level = LOG_FATAL;
 			r = false;
 		}
 	}
