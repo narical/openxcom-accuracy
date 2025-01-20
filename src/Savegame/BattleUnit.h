@@ -164,6 +164,9 @@ private:
 	bool _hidingForTurn, _floorAbove, _respawn, _alreadyRespawned;
 	bool _isLeeroyJenkins;	// always charges enemy, never retreats.
 	bool _isAggressive;
+	bool _isBrutal;
+	bool _isNotBrutal;
+	bool _isCheatOnMovement;
 	bool _summonedPlayerUnit, _resummonedFakeCivilian;
 	bool _pickUpWeaponsMoreActively;
 	bool _disableIndicators;

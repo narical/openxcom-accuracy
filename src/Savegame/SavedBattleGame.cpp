@@ -195,8 +195,6 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 	else
 	{
 		// load key to how the tile data was saved
-		const Tile::SerializationKey def = Tile::SerializationKey::defaultKey();
-
 		Tile::SerializationKey serKey;
 		size_t totalTiles = reader["totalTiles"].readVal<size_t>();
 
@@ -560,20 +558,11 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuoted();
 	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuoted();
 	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuoted();
+	writer.write("lastExploredByPlayer", static_cast<char>(Tile::serializationKey._lastExploredByPlayer)).setAsQuoted();
+	writer.write("lastExploredByNeutral", static_cast<char>(Tile::serializationKey._lastExploredByNeutral)).setAsQuoted();
+	writer.write("lastExploredByHostile", static_cast<char>(Tile::serializationKey._lastExploredByHostile)).setAsQuoted();
 
-	// first, write out the field sizes we're going to use to write the tile data
-	node["tileIndexSize"] = static_cast<char>(def.index);
-	node["tileTotalBytesPer"] = def.totalBytes;
-	node["tileFireSize"] = static_cast<char>(def._fire);
-	node["tileSmokeSize"] = static_cast<char>(def._smoke);
-	node["tileIDSize"] = static_cast<char>(def._mapDataID);
-	node["tileSetIDSize"] = static_cast<char>(def._mapDataSetID);
-	node["tileBoolFieldsSize"] = static_cast<char>(def.boolFields);
-	node["lastExploredByPlayer"] = static_cast<char>(def._lastExploredByPlayer);
-	node["lastExploredByNeutral"] = static_cast<char>(def._lastExploredByNeutral);
-	node["lastExploredByHostile"] = static_cast<char>(def._lastExploredByHostile);
-
-	size_t tileDataSize = def.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
+	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);
 	Uint8* ptr = tileData;
 
@@ -586,7 +575,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 		}
 		else
 		{
-			tileDataSize -= def.totalBytes;
+			tileDataSize -= Tile::serializationKey.totalBytes;
 		}
 	}
 	writer.write("totalTiles", tileDataSize / Tile::serializationKey.totalBytes); // not strictly necessary, just convenient

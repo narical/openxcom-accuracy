@@ -18,6 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <vector>
+#include <set>
 #include "Position.h"
 #include "BattlescapeGame.h"
 #include "../Mod/RuleItem.h"

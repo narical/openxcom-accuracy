@@ -2334,4 +2334,22 @@ void write(ryml::NodeRef* n, VehicleDeploymentData const& val)
 	// writer.write("used", val.used); // not needed
 }
 
+/**
+ * Changes the craft's position at baseEscape.
+ * @param position new position; [-1,-1,-1] if not at BaseEscape.
+ */
+void Craft::setBaseEscapePosition(Position position)
+{
+	_baseEscapePosition = position;
+}
+
+/**
+ * Gets he craft's position at baseEscape.
+ * @return Position at battleEscape [-1,-1,-1] means "not at BaseEscape".
+ */
+Position Craft::getBaseEscapePosition() const
+{
+	return _baseEscapePosition;
+}
+
 }
