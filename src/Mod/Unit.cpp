@@ -37,7 +37,7 @@ Unit::Unit(const std::string &type) :
 	_psiWeapon("ALIEN_PSI_WEAPON"), _capturable(true), _canSurrender(false), _autoSurrender(false),
 	_isLeeroyJenkins(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _avoidsFire(defBoolNullable),
 	_vip(false), _cosmetic(false), _ignoredByAI(false),
-	_canPanic(true), _canBeMindControlled(true), _berserkChance(33)
+	_canPanic(true), _canBeMindControlled(true), _berserkChance(-1)
 {
 }
 
