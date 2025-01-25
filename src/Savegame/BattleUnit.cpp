@@ -2643,7 +2643,7 @@ void BattleUnit::prepareMorale(int morale)
 	{
 		moraleChange(morale);
 		int chance = 100 - (2 * getMorale());
-		if (RNG::generate(1,100) <= chance)
+		if (RNG::percent(chance))
 		{
 			int type = RNG::generate(0,100);
 			int berserkChance = _unitRules ? _unitRules->getBerserkChance() : 33;
