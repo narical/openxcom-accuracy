@@ -1712,7 +1712,7 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 
 			std::string alienName = dd.customUnitType.empty() ? race->getMember(dd.alienRank) : dd.customUnitType;
 
-			bool outside = RNG::generate(0,99) < dd.percentageOutsideUfo;
+			bool outside = RNG::percent(dd.percentageOutsideUfo);
 			if (_ufo == 0 && !deployment->getForcePercentageOutsideUfo())
 			{
 				outside = false;
