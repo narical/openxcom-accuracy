@@ -209,7 +209,7 @@ size_t SoldierNamePool::genLook(size_t numLooks)
 		_lookWeights.pop_back();
 	}
 
-	int random = RNG::generate(0, _totalWeight);
+	int random = RNG::generate(1, _totalWeight);
 	for (int lw : _lookWeights)
 	{
 		if (random <= lw)
