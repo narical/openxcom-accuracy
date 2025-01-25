@@ -1562,10 +1562,10 @@ bool BattlescapeGame::handlePanickingUnit(BattleUnit *unit)
 	}
 
 
-	int flee = RNG::generate(0,100);
+	bool flee = RNG::percent(50);
 	BattleAction ba;
 	ba.actor = unit;
-	if (status == STATUS_PANICKING && flee <= 50) // 1/2 chance to freeze and 1/2 chance try to flee, STATUS_BERSERK is handled in the panic state.
+	if (status == STATUS_PANICKING && flee) // 1/2 chance to freeze and 1/2 chance try to flee, STATUS_BERSERK is handled in the panic state.
 	{
 		BattleItem *item = unit->getRightHandWeapon();
 		if (item)
