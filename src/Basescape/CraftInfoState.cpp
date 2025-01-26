@@ -172,6 +172,7 @@ CraftInfoState::CraftInfoState(Base *base, size_t craftId) : _base(base), _craft
 		_btnW[i]->setText(num);
 		_btnW[i]->onMouseClick((ActionHandler)&CraftInfoState::btnWClick);
 		_weapon[i]->onMouseClick((ActionHandler)&CraftInfoState::btnWIconClick);
+		_weapon[i]->onMouseClick((ActionHandler)&CraftInfoState::btnWIconMiddleClick, SDL_BUTTON_MIDDLE);
 	}
 
 	_sprite->onMouseClick((ActionHandler)&CraftInfoState::btnCraftIconClick);
@@ -623,6 +624,30 @@ void CraftInfoState::btnWIconClick(Action *action)
 				// Update the onscreen info.
 				// Note: This method is overkill, since we only need to update a few things. But at least this ensures we haven't missed anything.
 				init();
+			}
+		}
+	}
+}
+
+/**
+ * Opens the corresponding Ufopaedia craft weapon article.
+ * @param action Pointer to an action.
+ */
+void CraftInfoState::btnWIconMiddleClick(Action* action)
+{
+	for (int i = 0; i < _weaponNum; ++i)
+	{
+		if (action->getSender() == _weapon[i])
+		{
+			CraftWeapon* w1 = _craft->getWeapons()->at(i);
+			if (w1)
+			{
+				RuleCraftWeapon* rule = w1->getRules();
+				if (rule)
+				{
+					std::string articleId = rule->getType();
+					Ufopaedia::openArticle(_game, articleId);
+				}
 			}
 		}
 	}
