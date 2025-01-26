@@ -419,7 +419,18 @@ void CraftInfoState::init()
 			weaponLine << Unicode::TOK_COLOR_FLIP << tr(w1->getRules()->getType());
 			_txtWName[i]->setText(weaponLine.str());
 			weaponLine.str("");
-			if (w1->getRules()->getAmmoMax())
+			if (!w1->getRules()->getTooltip().empty())
+			{
+				weaponLine << (tr(w1->getRules()->getTooltip())
+					.arg(w1->getAmmo())                                    // {0}
+					.arg(w1->getRules()->getAmmoMax())                     // {1}
+					.arg(w1->getRules()->getBonusStats().fuelMax)          // {2}
+					.arg(w1->getRules()->getBonusStats().speedMax)         // {3}
+					.arg(w1->getRules()->getBonusStats().damageMax)        // {4}
+					.arg(w1->getRules()->getBonusStats().armor)            // {5}
+					.arg(w1->getRules()->getBonusStats().shieldCapacity)); // {6}
+			}
+			else if (w1->getRules()->getAmmoMax())
 			{
 				weaponLine << tr("STR_AMMO_").arg(w1->getAmmo()) << "\n" << Unicode::TOK_COLOR_FLIP;
 				weaponLine << tr("STR_MAX").arg(w1->getRules()->getAmmoMax());
