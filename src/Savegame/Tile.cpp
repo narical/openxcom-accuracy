@@ -368,6 +368,7 @@ int Tile::openDoor(TilePart part, BattleUnit *unit, BattleActionType reserve, bo
 	{
 		int tuCost = _objects[part]->getTUCost(unit->getMovementType());
 		cost = BattleActionCost(reserve, unit, unit->getMainHandWeapon(false));
+		cost.Time += (_save->getKneelReserved() && !unit->isKneeled() && unit->getArmor()->allowsKneeling(unit->getType() == "SOLDIER")) ? unit->getKneelDownCost() : 0;
 		cost.Time += tuCost;
 		if (!rClick)
 		{
