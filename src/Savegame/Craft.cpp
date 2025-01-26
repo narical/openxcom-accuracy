@@ -683,9 +683,9 @@ void Craft::calculateTotalSoldierEquipment()
 /**
  * Gets the total storage size of all items in the craft. Including vehicles+ammo and craft weapons+ammo.
  */
-double Craft::getTotalItemStorageSize(const Mod* mod) const
+double Craft::getTotalItemStorageSize() const
 {
-	double total = _items->getTotalSize(mod);
+	double total = _items->getTotalSize();
 
 	for (const auto* v : _vehicles)
 	{

@@ -178,7 +178,7 @@ public:
 	void calculateTotalSoldierEquipment();
 
 	/// Gets the total storage size of all items in the craft. Including vehicles+ammo and craft weapons+ammo.
-	double getTotalItemStorageSize(const Mod* mod) const;
+	double getTotalItemStorageSize() const;
 	/// Gets the total number of items of a given type in the craft. Including vehicles+ammo and craft weapons+ammo.
 	int getTotalItemCount(const RuleItem* item) const;
 
