@@ -35,7 +35,9 @@ Unit::Unit(const std::string &type) :
 	_moraleLossWhenKilled(100), _moveSound(-1), _intelligence(0), _aggression(0),
 	_spotter(0), _sniper(0), _energyRecovery(30), _specab(SPECAB_NONE), _livingWeapon(false), _aiTargetMode(0),
 	_psiWeapon("ALIEN_PSI_WEAPON"), _capturable(true), _canSurrender(false), _autoSurrender(false),
-	_isLeeroyJenkins(false), _isBrutal(false), _isNotBrutal(false), _isCheatOnMovement(false), _isAggressive(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _avoidsFire(defBoolNullable), _vip(false), _cosmetic(false), _ignoredByAI(false),
+	_isLeeroyJenkins(false), _waitIfOutsideWeaponRange(false), _pickUpWeaponsMoreActively(-1), _avoidsFire(defBoolNullable),
+	_isBrutal(false), _isNotBrutal(false), _isCheatOnMovement(false), _isAggressive(false),
+	_vip(false), _cosmetic(false), _ignoredByAI(false),
 	_canPanic(true), _canBeMindControlled(true), _berserkChance(33)
 {
 }

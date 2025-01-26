@@ -183,6 +183,10 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 
 	mod->loadNames(_type, _skillNames, reader["skills"]);
 
+	if (reader["spawnedSoldier"])
+	{
+		_spawnedSoldier = reader["spawnedSoldier"].emitDescendants(YAML::YamlRootNodeReader(_spawnedSoldier, "(spawned soldier template)"));
+	}
 	reader.tryRead("group", _group);
 	reader.tryRead("listOrder", _listOrder);
 

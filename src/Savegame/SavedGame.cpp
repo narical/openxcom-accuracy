@@ -2656,7 +2656,7 @@ int SavedGame::selectSoldierNationalityByLocation(const Mod* mod, const RuleSold
 			}
 
 			// select the nationality from the filtered pool, by weight
-			int tmp = RNG::generate(0, totalFilteredNamePoolWeight);
+			int tmp = RNG::generate(1, totalFilteredNamePoolWeight);
 			for (const auto& namepoolPair : filteredNames)
 			{
 				if (tmp <= namepoolPair.first->getGlobalWeight())

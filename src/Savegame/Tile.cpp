@@ -887,7 +887,7 @@ BattleItem* Tile::getTopItem()
 		return _inventory.front();
 	}
 
-	int biggestWeight = -1;
+	int biggestWeight = -999;
 	BattleItem* biggestItem = 0;
 	for (auto* bi : _inventory)
 	{

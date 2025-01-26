@@ -693,9 +693,9 @@ void Craft::calculateTotalSoldierEquipment()
 /**
  * Gets the total storage size of all items in the craft. Including vehicles+ammo and craft weapons+ammo.
  */
-double Craft::getTotalItemStorageSize(const Mod* mod) const
+double Craft::getTotalItemStorageSize() const
 {
-	double total = _items->getTotalSize(mod);
+	double total = _items->getTotalSize();
 
 	for (const auto* v : _vehicles)
 	{
@@ -1517,6 +1517,23 @@ void Craft::destroyRequiredItems(const std::map<std::string, int>& requiredItems
 	{
 		_items->removeItem(mapItem.first, mapItem.second);
 	}
+}
+
+/**
+ * Checks item limits.
+ * @return True if there are too many items onboard.
+ */
+bool Craft::areTooManyItemsOnboard()
+{
+	if (_items->getTotalQuantity() > getMaxItemsClamped())
+	{
+		return true;
+	}
+	if (_items->getTotalSize() > getMaxStorageSpaceClamped() + 0.05)
+	{
+		return true;
+	}
+	return false;
 }
 
 /**

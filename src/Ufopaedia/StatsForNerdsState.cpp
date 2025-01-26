@@ -2882,6 +2882,7 @@ void StatsForNerdsState::initArmorList()
 		addInteger(ss, armorRule->getStandHeight(), "standHeight", -1);
 		addInteger(ss, armorRule->getKneelHeight(), "kneelHeight", -1);
 		addInteger(ss, armorRule->getFloatHeight(), "floatHeight", -1);
+		addInteger(ss, armorRule->getMeleeOriginVoxelVerticalOffset(), "meleeOriginVoxelVerticalOffset");
 		addFloat(ss, armorRule->getOverKill(), "overKill", 0.5f);
 		addBoolean(ss, armorRule->isPilotArmor(), "isPilotArmor");
 		addBoolean(ss, armorRule->getAllowTwoMainWeapons(), "allowTwoMainWeapons");
