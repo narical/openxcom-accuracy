@@ -1510,6 +1510,23 @@ void Craft::destroyRequiredItems(const std::map<std::string, int>& requiredItems
 }
 
 /**
+ * Checks item limits.
+ * @return True if there are too many items onboard.
+ */
+bool Craft::areTooManyItemsOnboard()
+{
+	if (_items->getTotalQuantity() > getMaxItemsClamped())
+	{
+		return true;
+	}
+	if (_items->getTotalSize() > getMaxStorageSpaceClamped() + 0.05)
+	{
+		return true;
+	}
+	return false;
+}
+
+/**
 * Checks if there are enough pilots onboard.
 * @return True if the craft has enough pilots.
 */

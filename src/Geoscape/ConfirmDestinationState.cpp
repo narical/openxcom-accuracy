@@ -325,6 +325,18 @@ void ConfirmDestinationState::btnOkClick(Action *)
 
 	for (auto* craft : _crafts)
 	{
+		if (craft->areTooManyItemsOnboard())
+		{
+			_game->popState();
+			_game->popState();
+			std::string message2 = tr("STR_TOO_MANY_ITEMS_ONBOARD");
+			_game->pushState(new CraftErrorState(0, message2));
+			return;
+		}
+	}
+
+	for (auto* craft : _crafts)
+	{
 		if (!craft->arePilotsOnboard())
 		{
 			_game->popState();
