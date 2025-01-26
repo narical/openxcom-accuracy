@@ -1111,6 +1111,49 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Yam
 	return r;
 }
 
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, reader, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string &parent, const std::string &error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
+}
+
 /**
  * Verify if value have defined surface in given set.
  */
