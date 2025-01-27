@@ -96,8 +96,10 @@ protected:
 	const YamlRootNodeReader* _root;
 	bool _invalid;
 	std::optional<std::unordered_map<ryml::csubstr, ryml::id_type>> _index;
+	mutable ryml::id_type _nextChildId;
 
 	ryml::ConstNodeRef getChildNode(const ryml::csubstr& key) const;
+	ryml::ConstNodeRef findChildNode(const ryml::csubstr& key) const;
 	/// Throws an error when failed to parse a node's value into the expected type
 	void throwTypeError(const ryml::ConstNodeRef& node, const ryml::cspan<char>& type) const;
 	/// Throws an error when failed to find node
@@ -400,33 +402,18 @@ OutputType YamlNodeReader::readVal(const OutputType& defaultValue) const
 template <typename OutputType>
 bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 {
-	if (_invalid || !_node.is_map())
+	if (_invalid)
 		return false;
-	if (!_index)
-	{
-		const auto& child = _node.find_child(key);
-		if (child.invalid())
-			return false;
-		if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !child.has_val())
-			throwTypeError(child, "string");
-		if (std::is_integral_v<std::remove_reference_t<OutputType> > && !child.has_val())
-			throwTypeError(child, ryml::type_name<OutputType>());
-		if (!read(child, &outputValue))
-			throwTypeError(child, ryml::type_name<OutputType>());
-		return true;
-	}
-	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
-	{
-		const auto& child = _node.tree()->cref(keyNodeIdPair->second);
-		if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !child.has_val())
-			throwTypeError(child, "string");
-		if (std::is_integral_v<std::remove_reference_t<OutputType> > && !child.has_val())
-			throwTypeError(child, ryml::type_name<OutputType>());
-		if (!read(child, &outputValue))
-			throwTypeError(child, ryml::type_name<OutputType>());
-		return true;
-	}
-	return false;
+	const auto& child = getChildNode(key);
+	if (child.invalid())
+		return false;
+	if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !child.has_val())
+		throwTypeError(child, "string");
+	if (std::is_integral_v<std::remove_reference_t<OutputType> > && !child.has_val())
+		throwTypeError(child, ryml::type_name<OutputType>());
+	if (!read(child, &outputValue))
+		throwTypeError(child, ryml::type_name<OutputType>());
+	return true;
 }
 
 template <typename OutputType>

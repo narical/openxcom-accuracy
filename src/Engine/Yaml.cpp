@@ -71,17 +71,17 @@ void setGlobalErrorHandler()
 
 
 YamlNodeReader::YamlNodeReader()
-	: _node(ryml::ConstNodeRef(nullptr, ryml::NONE)), _root(nullptr), _invalid(true)
+	: _node(ryml::ConstNodeRef(nullptr, ryml::NONE)), _root(nullptr), _invalid(true), _nextChildId(ryml::NONE)
 {
 }
 
 YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node)
-	: _node(node), _root(root), _invalid(node.invalid())
+	: _node(node), _root(root), _invalid(node.invalid()), _nextChildId(ryml::NONE)
 {
 }
 
 YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node, bool useIndex)
-	: _node(node), _root(root), _invalid(node.invalid())
+	: _node(node), _root(root), _invalid(node.invalid()), _nextChildId(ryml::NONE)
 {
 	if (_invalid || !useIndex)
 		return;
@@ -171,11 +171,55 @@ ryml::ConstNodeRef YamlNodeReader::getChildNode(const ryml::csubstr& key) const
 	{
 		if (!_node.is_map())
 			return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
-		return _node.find_child(key);
+		return findChildNode(key);
 	}
 	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
 		return _node.tree()->cref(keyNodeIdPair->second);
 	return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
+}
+
+ryml::ConstNodeRef YamlNodeReader::findChildNode(const ryml::csubstr& key) const
+{
+	ryml::id_type firstChildId = _node.m_tree->get(_node.m_id)->m_first_child;
+	if (firstChildId == ryml::NONE)
+		return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
+	if (_nextChildId == ryml::NONE)
+	{ // do a normal search
+		for (ryml::id_type i = firstChildId; i != ryml::NONE;)
+		{
+			const ryml::NodeData* data = _node.m_tree->_p(i);
+			if (data->m_key.scalar == key)
+			{
+				_nextChildId = data->m_next_sibling;
+				return ryml::ConstNodeRef(_node.m_tree, i);
+			}
+			i = data->m_next_sibling;
+		}
+		return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
+	}
+	// search from saved iterator to the last child
+	for (ryml::id_type i = _nextChildId; i != ryml::NONE;)
+	{
+		const ryml::NodeData* data = _node.m_tree->_p(i);
+		if (data->m_key.scalar == key)
+		{
+			_nextChildId = data->m_next_sibling;
+			return ryml::ConstNodeRef(_node.m_tree, i);
+		}
+		i = data->m_next_sibling;
+	}
+	// search from the first child to the saved iterator
+	for (ryml::id_type i = firstChildId; i != _nextChildId;)
+	{
+		const ryml::NodeData* data = _node.m_tree->_p(i);
+		if (data->m_key.scalar == key)
+		{
+			_nextChildId = data->m_next_sibling;
+			return ryml::ConstNodeRef(_node.m_tree, i);
+		}
+		i = data->m_next_sibling;
+	}
+	return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
 }
 
 std::vector<YamlNodeReader> YamlNodeReader::children() const
