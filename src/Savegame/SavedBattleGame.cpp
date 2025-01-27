@@ -207,9 +207,9 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 		serKey._mapDataID = reader["tileIDSize"].readVal<char>(serKey._mapDataID);
 		serKey._mapDataSetID = reader["tileSetIDSize"].readVal<char>(serKey._mapDataSetID);
 		serKey.boolFields = reader["tileBoolFieldsSize"].readVal<char>(1); // boolean flags used to be stored in an unmentioned byte (Uint8) :|
-		serKey._lastExploredByPlayer = reader["lastExploredByPlayer"].readVal<Uint16>(serKey._lastExploredByPlayer);
-		serKey._lastExploredByHostile = reader["lastExploredByHostile"].readVal<Uint16>(serKey._lastExploredByHostile);
-		serKey._lastExploredByNeutral = reader["lastExploredByNeutral"].readVal<Uint16>(serKey._lastExploredByNeutral);
+		serKey._lastExploredByPlayer = reader["lastExploredByPlayer"].readVal<char>(serKey._lastExploredByPlayer);
+		serKey._lastExploredByHostile = reader["lastExploredByHostile"].readVal<char>(serKey._lastExploredByHostile);
+		serKey._lastExploredByNeutral = reader["lastExploredByNeutral"].readVal<char>(serKey._lastExploredByNeutral);
 		
 
 		// load binary tile data!
@@ -563,9 +563,9 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuotedAndEscaped();
 	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuotedAndEscaped();
 	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuotedAndEscaped();
-	writer.write("lastExploredByPlayer", static_cast<Uint16>(Tile::serializationKey._lastExploredByPlayer)).setAsQuotedAndEscaped();
-	writer.write("lastExploredByNeutral", static_cast<Uint16>(Tile::serializationKey._lastExploredByNeutral)).setAsQuotedAndEscaped();
-	writer.write("lastExploredByHostile", static_cast<Uint16>(Tile::serializationKey._lastExploredByHostile)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByPlayer", static_cast<char>(Tile::serializationKey._lastExploredByPlayer)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByNeutral", static_cast<char>(Tile::serializationKey._lastExploredByNeutral)).setAsQuotedAndEscaped();
+	writer.write("lastExploredByHostile", static_cast<char>(Tile::serializationKey._lastExploredByHostile)).setAsQuotedAndEscaped();
 
 	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);

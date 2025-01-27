@@ -68,9 +68,9 @@ public:
 		Uint8 _smoke;
 		Uint8 _fire;
 		Uint8 boolFields;
-		Uint16 _lastExploredByHostile;
-		Uint16 _lastExploredByNeutral;
-		Uint16 _lastExploredByPlayer;
+		Uint8 _lastExploredByHostile;
+		Uint8 _lastExploredByNeutral;
+		Uint8 _lastExploredByPlayer;
 		Uint32 totalBytes; // per structure, including any data not mentioned here and accounting for all array members!
 	} serializationKey;
 
