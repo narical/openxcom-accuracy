@@ -147,9 +147,12 @@ void Tile::loadBinary(Uint8 *buffer, Tile::SerializationKey& serKey)
 	_objectsCache[O_FLOOR].discovered = (boolFields & 4) ? 1 : 0;
 	_objectsCache[O_WESTWALL].currentFrame = (boolFields & 8) ? 7 : 0;
 	_objectsCache[O_NORTHWALL].currentFrame = (boolFields & 0x10) ? 7 : 0;
-	_lastExploredByHostile = unserializeInt(&buffer, serKey._lastExploredByHostile);
-	_lastExploredByNeutral = unserializeInt(&buffer, serKey._lastExploredByNeutral);
-	_lastExploredByPlayer = unserializeInt(&buffer, serKey._lastExploredByPlayer);
+	if (serKey._lastExploredByHostile != 0)
+		_lastExploredByHostile = unserializeInt(&buffer, serKey._lastExploredByHostile);
+	if (serKey._lastExploredByNeutral != 0)
+		_lastExploredByNeutral = unserializeInt(&buffer, serKey._lastExploredByNeutral);
+	if (serKey._lastExploredByPlayer != 0)
+		_lastExploredByPlayer = unserializeInt(&buffer, serKey._lastExploredByPlayer);
 	if (_fire || _smoke)
 	{
 		_animationOffset = RNG::seedless(0, 3);
