@@ -1186,6 +1186,7 @@
     <ClInclude Include="Savegame\Production.h" />
     <ClInclude Include="Savegame\RankCount.h" />
     <ClInclude Include="Savegame\Region.h" />
+    <ClInclude Include="Savegame\ResearchDiary.h" />
     <ClInclude Include="Savegame\ResearchProject.h" />
     <ClInclude Include="Savegame\SaveConverter.h" />
     <ClInclude Include="Savegame\SavedBattleGame.h" />

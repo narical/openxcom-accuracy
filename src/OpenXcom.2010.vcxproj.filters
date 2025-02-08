@@ -2666,6 +2666,9 @@
     <ClInclude Include="..\libs\rapidyaml\c4\yml\std\vector.hpp">
       <Filter>Engine\rapidyaml\c4\yml\std</Filter>
     </ClInclude>
+    <ClInclude Include="Savegame\ResearchDiary.h">
+      <Filter>Savegame</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Geoscape">
