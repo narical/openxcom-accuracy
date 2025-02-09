@@ -70,6 +70,7 @@ class RuleUfo
 {
 private:
 	std::string _type, _size;
+	int _radius;
 	int _sprite, _marker, _markerLand, _markerCrash;
 	int _power, _range, _score, _reload, _breakOffTime, _missionScore;
 	int _hunterKillerPercentage, _huntMode, _huntSpeed, _huntBehavior, _softlockThreshold;
