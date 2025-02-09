@@ -710,7 +710,17 @@ void Globe::center(double lon, double lat)
  */
 bool Globe::insideLand(double lon, double lat) const
 {
-	return (getPolygonFromLonLat(lon,lat))!=NULL;
+	auto* polygon = getPolygonFromLonLat(lon, lat);
+	if (!polygon)
+	{
+		return false;
+	}
+	auto* textureRule = _rules->getTexture(polygon->getTexture());
+	if (textureRule && textureRule->isCosmeticOcean())
+	{
+		return false;
+	}
+	return true;
 }
 
 /**
@@ -721,12 +731,12 @@ bool Globe::insideLand(double lon, double lat) const
  */
 bool Globe::insideFakeUnderwaterTexture(double lon, double lat) const
 {
-	auto polygon = getPolygonFromLonLat(lon, lat);
+	auto* polygon = getPolygonFromLonLat(lon, lat);
 	if (!polygon)
 	{
 		return false;
 	}
-	auto textureRule = _game->getMod()->getGlobe()->getTexture(polygon->getTexture());
+	auto* textureRule = _rules->getTexture(polygon->getTexture());
 	if (textureRule && textureRule->isFakeUnderwater())
 	{
 		return true;
