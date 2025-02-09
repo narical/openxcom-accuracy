@@ -110,7 +110,7 @@ public:
 	/// Gets the UFO's radius.
 	int getRadius() const;
 	/// Gets the UFO's default visibility.
-	int getDefaultVisibility() const { return _visibility; }
+	int getDefaultVisibility() const;
 	/// Gets the UFO's blob size.
 	int getBlobSize() const;
 	/// Gets the UFO's sprite.

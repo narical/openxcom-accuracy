@@ -189,6 +189,33 @@ int RuleUfo::getRadius() const
 }
 
 /**
+ * Gets the default visibility of this type of UFO,
+ * i.e. not considering the altitude.
+ * @return The default visibility.
+ */
+int RuleUfo::getDefaultVisibility() const
+{
+	if (_visibility != 0)
+	{
+		return _visibility;
+	}
+
+	// vanilla = 15*(3-ufosize);
+	if (_size == "STR_VERY_SMALL")
+		return -30;
+	else if (_size == "STR_SMALL")
+		return -15;
+	else if (_size == "STR_MEDIUM_UC")
+		return 0;
+	else if (_size == "STR_LARGE")
+		return 15;
+	else if (_size == "STR_VERY_LARGE")
+		return 30;
+
+	return 0;
+}
+
+/**
  * Gets the blob size of this type of UFO
  * on the dogfighting window.
  * @return The blob size.
