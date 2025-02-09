@@ -2378,7 +2378,11 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	}
 	if (hasPsiWeapon)
 	{
-		show(_btnPsi, 1);
+		bool canUsePsiWeapon = (psiWeapon->getRules()->getCostPanic().Time > 0) || (psiWeapon->getRules()->getCostUse().Time > 0);
+		if (canUsePsiWeapon)
+		{
+			show(_btnPsi, 1);
+		}
 	}
 }
 
