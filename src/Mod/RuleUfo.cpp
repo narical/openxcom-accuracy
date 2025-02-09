@@ -31,7 +31,7 @@ namespace OpenXcom
  */
 RuleUfo::RuleUfo(const std::string &type) :
 	_type(type), _size("STR_VERY_SMALL"),
-	_radius(-1),
+	_radius(-1), _visibility(0),
 	_sprite(-1), _marker(-1), _markerLand(-1), _markerCrash(-1),
 	_power(0), _range(0), _score(0), _reload(0), _breakOffTime(0), _missionScore(1),
 	_hunterKillerPercentage(0), _huntMode(0), _huntSpeed(100), _huntBehavior(2), _softlockThreshold(100),
@@ -73,6 +73,7 @@ void RuleUfo::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &
 		_size = "STR_MEDIUM_UC";
 	}
 	reader.tryRead("radius", _radius);
+	reader.tryRead("visibility", _visibility);
 	reader.tryRead("sprite", _sprite);
 	if (reader["marker"])
 	{
