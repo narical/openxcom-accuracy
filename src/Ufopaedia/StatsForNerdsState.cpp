@@ -3705,6 +3705,8 @@ void StatsForNerdsState::initUfoList()
 		addSection("{Visuals}", "", _white);
 		addInteger(ss, ufoRule->getRadius(), "radius", -1);
 		addInteger(ss, ufoRule->getDefaultVisibility(), "visibility");
+		addInteger(ss, ufoRule->getBlobSize(), "blobSize", -1);
+
 		addInteger(ss, ufoRule->getSprite(), "sprite", -1); // INTERWIN.DAT
 		addSingleString(ss, ufoRule->getModSprite(), "modSprite", "", false);
 		addInteger(ss, ufoRule->getMarker(), "marker", -1);

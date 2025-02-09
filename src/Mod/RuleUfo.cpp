@@ -31,7 +31,7 @@ namespace OpenXcom
  */
 RuleUfo::RuleUfo(const std::string &type) :
 	_type(type), _size("STR_VERY_SMALL"),
-	_radius(-1), _visibility(0),
+	_radius(-1), _visibility(0), _blobSize(-1),
 	_sprite(-1), _marker(-1), _markerLand(-1), _markerCrash(-1),
 	_power(0), _range(0), _score(0), _reload(0), _breakOffTime(0), _missionScore(1),
 	_hunterKillerPercentage(0), _huntMode(0), _huntSpeed(100), _huntBehavior(2), _softlockThreshold(100),
@@ -74,6 +74,11 @@ void RuleUfo::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &
 	}
 	reader.tryRead("radius", _radius);
 	reader.tryRead("visibility", _visibility);
+	reader.tryRead("blobSize", _blobSize);
+	if (_blobSize > 7)
+	{
+		_blobSize = 7; // maximum possible
+	}
 	reader.tryRead("sprite", _sprite);
 	if (reader["marker"])
 	{
@@ -181,6 +186,42 @@ int RuleUfo::getRadius() const
 		return 6;
 	}
 	return 0;
+}
+
+/**
+ * Gets the blob size of this type of UFO
+ * on the dogfighting window.
+ * @return The blob size.
+ */
+int RuleUfo::getBlobSize() const
+{
+	if (_blobSize > -1 && _blobSize < 8)
+	{
+		return _blobSize;
+	}
+
+	if (_size == "STR_VERY_SMALL")
+	{
+		return 0;
+	}
+	else if (_size == "STR_SMALL")
+	{
+		return 1;
+	}
+	else if (_size == "STR_MEDIUM_UC")
+	{
+		return 2;
+	}
+	else if (_size == "STR_LARGE")
+	{
+		return 3;
+	}
+	else if (_size == "STR_VERY_LARGE")
+	{
+		return 4;
+	}
+
+	return 4;
 }
 
 /**
