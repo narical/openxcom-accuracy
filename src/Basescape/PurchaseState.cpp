@@ -540,7 +540,7 @@ bool PurchaseState::isEquipped(int sel) const
 /**
  * Determines if a row item is in the map of missing items.
  * @param sel Selected row.
- * @returns Number of missing items.
+ * @returns Number of missing items that can be bought. -1 if not missing.
  */
 int PurchaseState::getMissingQty(int sel) const
 {
@@ -550,7 +550,7 @@ int PurchaseState::getMissingQty(int sel) const
 	case TRANSFER_SCIENTIST:
 	case TRANSFER_ENGINEER:
 	case TRANSFER_CRAFT:
-		return 0;
+		return -1;
 	case TRANSFER_ITEM:
 		RuleItem* rule = (RuleItem*)_items[sel].rule;
 		if (rule)
@@ -558,17 +558,24 @@ int PurchaseState::getMissingQty(int sel) const
 			auto iter = _missingItemsMap.find(rule);
 			if (iter != _missingItemsMap.end())
 			{
+				if (rule->getMonthlyBuyLimit() > 0)
+				{
+					auto& itemPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
+					int maxByLimit = std::max(0, rule->getMonthlyBuyLimit() - itemPurchaseLimitLog[rule->getType()]);
+					return std::min(maxByLimit, iter->second);
+				}
+
 				return iter->second;
 			}
 			else
 			{
 				// not found = not missing
-				return 0;
+				return -1;
 			}
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 /**
@@ -624,7 +631,7 @@ void PurchaseState::updateList()
 		if (categoryMissing)
 		{
 			int missingQty = getMissingQty(i);
-			if (missingQty > 0)
+			if (missingQty > -1)
 			{
 				if (!_autoBuyDone)
 				{

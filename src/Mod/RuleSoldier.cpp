@@ -203,6 +203,10 @@ void RuleSoldier::afterLoad(const Mod* mod)
 	{
 		_totalSoldierNamePoolWeight += namepool->getGlobalWeight();
 	}
+	if (_totalSoldierNamePoolWeight < 1)
+	{
+		Log(LOG_ERROR) << _type << ": total soldier name pool weight is invalid. Forgotten 'soldierNames:' ?";
+	}
 
 	mod->linkRule(_armor, _armorName);
 	mod->checkForSoftError(_armor == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);

@@ -131,6 +131,7 @@
 #include "../Mod/AlienRace.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
+#include "../Mod/Texture.h"
 #include "../fmath.h"
 #include "../fallthrough.h"
 
@@ -1391,8 +1392,15 @@ void GeoscapeState::time5Seconds()
 						int texture, shade;
 						_globe->getPolygonTextureAndShade(m->getLongitude(), m->getLatitude(), &texture, &shade);
 						timerReset();
-						auto globeTexture = _game->getMod()->getGlobe()->getTexture(texture);
-						auto missionTexture = _game->getMod()->getGlobe()->getTexture(m->getTexture());
+						Texture* globeTexture = _game->getMod()->getGlobe()->getTexture(texture);
+						if (globeTexture->isCosmeticOcean())
+						{
+							// Unlike xcom bases, alien bases and ufo crash/land sites, mission sites can actually happen on ocean (=non-polygon part of the globe)
+							// e.g. TFTD surface attacks
+							// For backwards-compatibility, let's use texture = -1 instead of any cosmetic ocean texture
+							globeTexture = _game->getMod()->getGlobe()->getTexture(-1);
+						}
+						Texture* missionTexture = _game->getMod()->getGlobe()->getTexture(m->getTexture());
 						if (!missionTexture)
 						{
 							missionTexture = globeTexture;
