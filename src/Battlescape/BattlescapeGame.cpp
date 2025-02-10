@@ -305,6 +305,13 @@ void BattlescapeGame::init()
 void BattlescapeGame::handleAI(BattleUnit *unit)
 {
 	std::ostringstream ss;
+	AIModule* ai = unit->getAIModule();
+	if (!ai)
+	{
+		// for some reason, e.g. the unit just woke up after being stunned, it has no AI routine assigned..
+		unit->setAIModule(new AIModule(_save, unit, 0));
+		ai = unit->getAIModule();
+	}
 
 	if ((unit->getTimeUnits() <= 5 && !unit->isBrutal()) || unit->getTimeUnits() < 1 || unit->getWantToEndTurn())
 	{
@@ -341,13 +348,6 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		// it should also hide units when they've killed the guy spotting them
 		// it's also for good luck
 
-	AIModule *ai = unit->getAIModule();
-	if (!ai)
-	{
-		// for some reason the unit had no AI routine assigned..
-		unit->setAIModule(new AIModule(_save, unit, 0));
-		ai = unit->getAIModule();
-	}
 	_AIActionCounter++;
 	if (_AIActionCounter == 1)
 	{
