@@ -132,6 +132,7 @@ OPT bool oxceGeoShowScoreInsteadOfFunds;
 OPT bool oxceGeoSuppressRedundantHKAlert;
 OPT bool oxceGeoSuppressLandingWithoutEquipment;
 OPT bool oxceGeoGoToNearestBase;
+OPT bool oxceGeoSortCraftByDistanceToTarget;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
 OPT bool oxceBaseManufactureInfinityButton;
