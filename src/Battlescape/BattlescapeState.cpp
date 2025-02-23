@@ -2783,7 +2783,7 @@ inline void BattlescapeState::handle(Action *action)
 					}
 					else if (shiftPressed)
 					{
-						_game->pushState(new ExperienceOverviewState());
+						_game->pushState(new ExperienceOverviewState(this));
 					}
 					else
 					{
