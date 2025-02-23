@@ -1266,9 +1266,10 @@ bool load(const std::string &filename)
  * @param filename YAML filename.
  * @return Was the saving successful?
  */
-bool save(const std::string &filename)
+bool save(bool reset, const std::string& filename)
 {
 	std::string yaml;
+	std::string filepath = _configFolder + filename + ".cfg";
 	try
 	{
 		YAML::YamlRootNodeWriter writer;
@@ -1290,6 +1291,16 @@ bool save(const std::string &filename)
 		{
 			optionInfo.save(optionsWriter);
 		}
+		if (!reset && CrossPlatform::fileExists(filepath))
+		{
+			// Preserve any undefined options, because they could be from a different fork
+			YAML::YamlRootNodeReader old(filepath);
+			const YAML::YamlNodeReader& currentOptions = optionsWriter.toReader();
+			std::string oldKey, oldVal;
+			for (const auto& oldOption : old["options"].children())
+				if (!currentOptions[oldOption.readKey<ryml::csubstr>()])
+					optionsWriter.write(optionsWriter.saveString(oldKey.assign(oldOption.key())), oldVal.assign(oldOption.val()));
+		}
 		yaml = writer.emit().yaml;
 	}
 	catch (YAML::Exception &e)
@@ -1297,7 +1308,6 @@ bool save(const std::string &filename)
 		Log(LOG_WARNING) << e.what();
 		return false;
 	}
-	std::string filepath = _configFolder + filename + ".cfg";
 	if (!CrossPlatform::writeFile(filepath, yaml + "\n"))
 	{
 		Log(LOG_WARNING) << "Failed to save " << filepath;
