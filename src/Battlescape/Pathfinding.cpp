@@ -1256,9 +1256,9 @@ void Pathfinding::refreshPath()
 		_save->getBattleGame()->setTUReserved(BA_AUTOSHOT);
 	}
 
-	const bool running = _ctrlUsed && _unit->getArmor()->allowsRunning(_unit->isSmallUnit()) && _path.size() > 1;
-	const bool strafing = _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->isSmallUnit()) && _path.size() == 1;
-	const bool sneaking = _altUsed && _unit->getArmor()->allowsSneaking(_unit->isSmallUnit());
+	const bool running = _ctrlUsed && _unit->getArmor()->allowsRunning(_unit->isSmallUnit()) && (_path.size() > 1 || _altUsed);
+	const bool strafing = !running && _ctrlUsed && _unit->getArmor()->allowsStrafing(_unit->isSmallUnit()) && _path.size() == 1;
+	const bool sneaking = !running && _altUsed && _unit->getArmor()->allowsSneaking(_unit->isSmallUnit());
 
 	const auto bam = strafing ? BAM_STRAFE : running ? BAM_RUN : sneaking ? BAM_SNEAK : BAM_NORMAL;
 	const auto movementType = getMovementType(_unit, nullptr, bam); //preview always for unit not missiles

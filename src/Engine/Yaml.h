@@ -93,8 +93,6 @@ class YamlNodeReader
 {
 protected:
 	ryml::ConstNodeRef _node;
-	const YamlRootNodeReader* _root;
-	bool _invalid;
 	std::optional<std::unordered_map<ryml::csubstr, ryml::id_type>> _index;
 	mutable ryml::id_type _nextChildId;
 
@@ -111,8 +109,8 @@ public:
 	YamlNodeReader(YamlNodeReader&& other) noexcept = default;
 	YamlNodeReader(const YamlRootNodeReader&) = delete; // no slicing allowed
 
-	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node);
-	YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node, bool useIndex);
+	YamlNodeReader(const ryml::ConstNodeRef& node);
+	YamlNodeReader(const ryml::ConstNodeRef& node, bool useIndex);
 
 	/// Returns a copy of the current mapping container with O(1) access to the children. O(n) is spent building the index.
 	YamlNodeReader useIndex() const;
@@ -252,11 +250,10 @@ public:
 class YamlNodeWriter
 {
 protected:
-	const YamlRootNodeWriter* _root;
 	ryml::NodeRef _node;
 
 public:
-	YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node);
+	YamlNodeWriter(ryml::NodeRef node);
 	YamlNodeWriter(const YamlNodeWriter& other) = default;
 	YamlNodeWriter(YamlNodeWriter&& other) noexcept = default;
 	YamlNodeWriter(YamlRootNodeWriter&&) = delete; // no slicing allowed
@@ -402,7 +399,7 @@ OutputType YamlNodeReader::readVal(const OutputType& defaultValue) const
 template <typename OutputType>
 bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 {
-	if (_invalid)
+	if (_node.invalid())
 		return false;
 	const auto& child = getChildNode(key);
 	if (child.invalid())
@@ -419,7 +416,7 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 template <typename OutputType>
 bool YamlNodeReader::tryReadKey(OutputType& outputValue) const
 {
-	if (_invalid || !_node.has_key())
+	if (_node.invalid() || !_node.has_key())
 		return false;
 	_node >> ryml::key(outputValue);
 	return true;
@@ -428,7 +425,7 @@ bool YamlNodeReader::tryReadKey(OutputType& outputValue) const
 template <typename OutputType>
 bool YamlNodeReader::tryReadVal(OutputType& outputValue) const
 {
-	if (_invalid)
+	if (_node.invalid())
 		return false;
 	if (std::is_same_v<std::remove_cv_t<std::remove_reference_t<OutputType> >, std::string> && !_node.has_val())
 		throwTypeError(_node, "string");
@@ -448,13 +445,13 @@ bool YamlNodeReader::tryReadVal(OutputType& outputValue) const
 template <typename InputType>
 inline YamlNodeWriter YamlNodeWriter::write(const InputType& inputValue)
 {
-	return YamlNodeWriter(_root, _node.append_child() << inputValue);
+	return YamlNodeWriter(_node.append_child() << inputValue);
 }
 
 template <typename InputType>
 YamlNodeWriter YamlNodeWriter::write(ryml::csubstr key, const InputType& inputValue)
 {
-	return YamlNodeWriter(_root, _node.append_child({ ryml::KEY, key }) << inputValue);
+	return YamlNodeWriter(_node.append_child({ ryml::KEY, key }) << inputValue);
 }
 
 template <typename InputType, typename Func>
@@ -462,7 +459,7 @@ void YamlNodeWriter::write(ryml::csubstr key, const std::vector<InputType>& inpu
 {
 	if (inputVector.empty())
 		return;
-	YamlNodeWriter sequenceWriter(_root, _node.append_child({ ryml::KEY, key }));
+	YamlNodeWriter sequenceWriter(_node.append_child({ ryml::KEY, key }));
 	sequenceWriter.setAsSeq();
 	for (const InputType& vectorElement : inputVector)
 	{

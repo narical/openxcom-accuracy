@@ -560,7 +560,7 @@ void StatAdjustment::ScriptRegister(ScriptParserBase* parser)
 // helper overloads for (de)serialization
 bool read(ryml::ConstNodeRef const& n, UnitStats* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("tu", val->tu);
 	reader.tryRead("stamina", val->stamina);
 	reader.tryRead("health", val->health);
@@ -578,7 +578,7 @@ bool read(ryml::ConstNodeRef const& n, UnitStats* val)
 
 void write(ryml::NodeRef* n, UnitStats const& val)
 {
-	YAML::YamlNodeWriter writer(nullptr, *n);
+	YAML::YamlNodeWriter writer(*n);
 	writer.setAsMap();
 	writer.write("tu", val.tu);
 	writer.write("stamina", val.stamina);

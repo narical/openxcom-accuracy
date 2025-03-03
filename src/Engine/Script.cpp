@@ -25,7 +25,6 @@
 #include <array>
 #include <numeric>
 #include <climits>
-#include <charconv>
 
 #include "Logger.h"
 #include "Options.h"
@@ -694,45 +693,12 @@ public:
 	{
 		if (getType() == TokenNumber)
 		{
-			auto s = begin();
-			auto e = end();
-			int value = 0;
-			int type = 10;
-			int sign = 1;
-
-			if (s[0] == '-')
-			{
-				sign = -1;
-				s += 1;
-			}
-			else if (s[0] == '+')
-			{
-				s += 1;
-			}
-
-			if (s != e && (s + 1) != e && s[0] == '0') // we have at least 2 characters and first is `0`
-			{
-				if (s[1] == 'x' || s[1] == 'X') // hex
-				{
-					type = 16;
-					s += 2;
-				}
-				else if (s[1] == 'b' || s[1] == 'B') // binary
-				{
-					type = 2;
-					s += 2;
-				}
-				else if (s[1] == 'o' || s[1] == 'O') // octal
-				{
-					type = 8;
-					s += 2;
-				}
-			}
-
-			auto result = std::from_chars(s, e, value, type);
-
-			if (result.ec == std::errc())
-				return ScriptRefData{ *this, ArgInt, value * sign };
+			c4::csubstr str(this->begin(), this->end());
+			if (str.begins_with('+'))
+				str = str.sub(1);
+			int val = 0;
+			if (c4::from_chars(str, &val))
+				return ScriptRefData{*this, ArgInt, val};
 		}
 		else if (getType() == TokenSymbol)
 		{
@@ -1088,7 +1054,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		CharClasses decode;
 
 		/// Is valid symbol
-		operator bool() const { return c; }
+		explicit operator bool() const { return c; }
 
 		/// Check type of symbol
 		bool is(CharClasses t) const { return decode & t; }
@@ -1256,7 +1222,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		{
 			const auto prefix = peekCharacter();
 			const auto havePrefix = firstDigit.c == '0' && prefix.is(CC_digitPrefix);
-			const auto hex = havePrefix && (prefix == 'x' || prefix == 'X');
+			const auto hex = havePrefix && (prefix.c == 'x' || prefix.c == 'X');
 
 			if (havePrefix)
 			{
@@ -4602,6 +4568,7 @@ void ScriptGlobal::endLoad()
 	}
 	_parserNames.clear();
 	_parserEvents.clear();
+	_currFile = "After-load validation";
 }
 
 /**
@@ -5091,7 +5058,7 @@ static auto dummyTestScriptRefTokens = ([]
 
 	{
 		TestEnv env;
-		ScriptRefTokens srt{"0x10 1234 0b100 0o10"};
+		ScriptRefTokens srt{"0x10 1234 0b100 0o10 0x0f 0xAb"};
 		{
 			SelectedToken next = srt.getNextToken();
 			assert(next == ScriptRef{"0x10"} && next.getType() == TokenNumber);
@@ -5123,6 +5090,22 @@ static auto dummyTestScriptRefTokens = ([]
 			auto r = next.parse(env.help);
 			assert(r.type == ArgInt);
 			assert(r.getValue<int>() == 8);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0x0f"} && next.getType() == TokenNumber);
+
+			auto r = next.parse(env.help);
+			assert(r.type == ArgInt);
+			assert(r.getValue<int>() == 15);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0xAb"} && next.getType() == TokenNumber);
+
+			auto r = next.parse(env.help);
+			assert(r.type == ArgInt);
+			assert(r.getValue<int>() == 0xAB);
 		}
 		{
 			SelectedToken next = srt.getNextToken();

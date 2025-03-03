@@ -192,7 +192,7 @@ std::string Texture::getRandomDeployment() const
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, TerrainCriteria* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("name", val->name);
 	reader.tryRead("weight", val->weight);
 	if (const auto& areaReader = reader["area"])

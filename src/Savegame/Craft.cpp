@@ -2330,7 +2330,7 @@ void Craft::ScriptRegister(ScriptParserBase* parser)
 // helper overloads for (de)serialization
 bool read(ryml::ConstNodeRef const& n, VehicleDeploymentData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	if (!reader.isMap())
 		return false;
 	reader.tryRead("type", val->type);
@@ -2342,7 +2342,7 @@ bool read(ryml::ConstNodeRef const& n, VehicleDeploymentData* val)
 
 void write(ryml::NodeRef* n, VehicleDeploymentData const& val)
 {
-	YAML::YamlNodeWriter writer(nullptr, *n);
+	YAML::YamlNodeWriter writer(*n);
 	writer.setAsMap();
 	writer.setFlowStyle();
 	writer.write("type", val.type);

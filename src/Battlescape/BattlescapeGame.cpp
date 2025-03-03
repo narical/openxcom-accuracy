@@ -2028,7 +2028,7 @@ void BattlescapeGame::primaryAction(Position pos)
 
 			if (isCtrlPressed)
 			{
-				if (_save->getPathfinding()->getPath().size() > 1)
+				if (_save->getPathfinding()->getPath().size() > 1 || isAltPressed)
 				{
 					_currentAction.run = _save->getSelectedUnit()->getArmor()->allowsRunning(_save->getSelectedUnit()->isSmallUnit());
 				}

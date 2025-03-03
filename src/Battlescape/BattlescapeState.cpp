@@ -627,6 +627,7 @@ BattlescapeState::BattlescapeState() :
 	{
 		std::ostringstream tooltip;
 		_btnVisibleUnit[i]->onMouseClick((ActionHandler)&BattlescapeState::btnVisibleUnitClick);
+		_btnVisibleUnit[i]->onMouseClick((ActionHandler)&BattlescapeState::btnVisibleUnitClick, SDL_BUTTON_RIGHT);
 		_btnVisibleUnit[i]->onKeyboardPress((ActionHandler)&BattlescapeState::btnVisibleUnitClick, buttons[i]);
 		tooltip << "STR_CENTER_ON_ENEMY_" << (i+1);
 		_txtVisibleUnitTooltip[i] = tooltip.str();
@@ -1639,7 +1640,37 @@ void BattlescapeState::btnVisibleUnitClick(Action *action)
 		}
 	}
 
-	if (btnID != -1)
+	if (btnID != -1 && _game->isRightClick(action, true))
+	{
+		if (allowButtons())
+		{
+			auto* targetUnit = _visibleUnit[btnID];
+			std::vector< std::pair<BattleUnit*, int> > sortSpotters;
+			for (auto* unit : *_save->getUnits())
+			{
+				if (unit->isSelectable(_save->getSide(), false, false) && unit->hasVisibleUnit(targetUnit))
+				{
+					int tuPercent = unit->getBaseStats()->tu > 0 ? (unit->getTimeUnits() * 100 / unit->getBaseStats()->tu) : 0;
+					sortSpotters.push_back(std::make_pair(unit, tuPercent));
+				}
+			}
+			if (!sortSpotters.empty())
+			{
+				std::stable_sort(sortSpotters.begin(), sortSpotters.end(),
+					[](const std::pair<BattleUnit*, int>& a, const std::pair<BattleUnit*, int>& b)
+					{
+						return a.second > b.second;
+					}
+				);
+				// select the first (= with most TU percent left)
+				_battleGame->cancelAllActions();
+				Position position = sortSpotters.front().first->getPosition();
+				_battleGame->primaryAction(position);
+				_map->getCamera()->centerOnPosition(position);
+			}
+		}
+	}
+	else if (btnID != -1)
 	{
 		auto position = _visibleUnit[btnID]->getPosition();
 		if (position == TileEngine::invalid)
@@ -2701,7 +2732,21 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)
 				{
-					_game->pushState(new BriefingState(0, 0, true));
+					Craft* ycraft = nullptr;
+					for (auto* xbase : *_game->getSavedGame()->getBases())
+					{
+						for (auto* xcraft : *xbase->getCrafts())
+						{
+							if (xcraft->isInBattlescape())
+							{
+								ycraft = xcraft;
+								break;
+							}
+						}
+						if (ycraft) break;
+					}
+
+					_game->pushState(new BriefingState(ycraft, 0, true));
 				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
@@ -2782,7 +2827,7 @@ inline void BattlescapeState::handle(Action *action)
 					}
 					else if (shiftPressed)
 					{
-						_game->pushState(new ExperienceOverviewState());
+						_game->pushState(new ExperienceOverviewState(this));
 					}
 					else
 					{

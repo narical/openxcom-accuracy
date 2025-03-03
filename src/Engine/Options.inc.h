@@ -145,9 +145,11 @@ OPT int oxceGeoSlowdownFactor;
 OPT bool oxceGeoShowScoreInsteadOfFunds;
 OPT bool oxceGeoSuppressRedundantHKAlert;
 OPT bool oxceGeoSuppressLandingWithoutEquipment;
+OPT bool oxceGeoGoToNearestBase;
+OPT bool oxceGeoSortCraftByDistanceToTarget;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
-OPT int oxceBaseManufactureInfinityButton;
+OPT bool oxceBaseManufactureInfinityButton;
 
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableHitLog;
