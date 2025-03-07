@@ -1825,7 +1825,7 @@ BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outs
 	else
 	{
 		// DEMIGOD DIFFICULTY: screw the player: spawn as many aliens as possible.
-		if (_game->getMod()->isDemigod() && placeUnitNearFriend(unit))
+		if ((_game->getMod()->isDemigod() || Mod::EXTENDED_FORCE_SPAWN) && placeUnitNearFriend(unit))
 		{
 			unit->setRankInt(alienRank);
 			int dir = _save->getTileEngine()->faceWindow(unit->getPosition());
