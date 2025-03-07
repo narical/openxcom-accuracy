@@ -1318,10 +1318,19 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 	// refresh list
 	tempItemList = *_craftInventoryTile->getInventory();
 
+	// sort it, so that ammo is loaded in a predictable and moddable manner
+	std::sort(tempItemList.begin(), tempItemList.end(),
+		[](const BattleItem* a, const BattleItem* b)
+		{
+			return a->getRules()->getLoadOrder() < b->getRules()->getLoadOrder();
+		}
+	);
+
 	// load weapons before loadouts take extra clips.
 	loadWeapons(tempItemList);
 
 	// refresh list
+	// (unsorts it again, which is not a problem)
 	tempItemList = *_craftInventoryTile->getInventory();
 
 	for (BattleItem* bi : tempItemList)
