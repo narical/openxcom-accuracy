@@ -571,9 +571,9 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	for (const auto& discovery : reader["discovered"].children())
 	{
 		std::string research = discovery.readVal<std::string>();
-		if (mod->getResearch(research))
+		if (RuleResearch* researchRule = mod->getResearch(research))
 		{
-			_discovered.push_back(mod->getResearch(research));
+			_discovered.push_back(researchRule);
 		}
 		else
 		{

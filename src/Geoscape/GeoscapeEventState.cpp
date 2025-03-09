@@ -396,12 +396,8 @@ void GeoscapeEventState::eventLogic()
 		size_t pickResearch = RNG::generate(0, possibilities.size() - 1);
 		const RuleResearch *eventResearch = possibilities.at(pickResearch);
 
-		bool alreadyResearched = false;
 		std::string name = eventResearch->getLookup().empty() ? eventResearch->getName() : eventResearch->getLookup();
-		if (save->isResearched(name, false))
-		{
-			alreadyResearched = true; // we have seen the pedia article already, don't show it again
-		}
+		bool alreadyResearched = save->isResearched(name, false); // we have seen the pedia article already, don't show it again
 
 		auto addResearchDiaryEntryForEvent = [&](const RuleResearch* discoveredResearch, DiscoverySourceType sourceType, const RuleEvent* sourceEvent, const RuleResearch* sourceResearch)
 		{
