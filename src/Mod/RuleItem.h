@@ -369,6 +369,7 @@ private:
 	bool _arcingShot;
 	ExperienceTrainingMode _experienceTrainingMode;
 	int _manaExperience;
+	int _loadOrder;
 	int _listOrder, _maxRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _shotgunPellets;
 	int _shotgunBehaviorType, _shotgunSpread, _shotgunChoke;
 
@@ -825,6 +826,8 @@ public:
 	int getManaExperience() const { return _manaExperience; }
 	/// How much do aliens want this thing?
 	int getAttraction() const;
+	/// Get the load order for this item.
+	int getLoadOrder() const { return _loadOrder; }
 	/// Get the list weight for this item.
 	int getListOrder() const;
 	/// How fast does a projectile fired from this weapon travel?
