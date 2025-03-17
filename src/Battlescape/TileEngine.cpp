@@ -6184,8 +6184,9 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 	bool isArcingTrajectory = action.type == BA_THROW;
 	if (action.weapon && action.weapon->getArcingShot(action.type)) isArcingTrajectory = true;
 
-	// If small unit goes either precise aiming or kneeling
-	if (Options::battleRealisticAccuracy && unitSize == 1 && (action.type == BA_AIMEDSHOT || action.actor->isKneeled()))
+    // If small unit goes either precise aiming or kneeling, or improved LoF enabled
+    bool improvedLof = (action.type == BA_AIMEDSHOT || action.actor->isKneeled() || Options::battleRealisticImprovedLof);
+    if (Options::battleRealisticAccuracy && unitSize == 1 && improvedLof)
 		weaponShift = 1; // ...move weapon to the eyes level
 
 	if (!tile)
