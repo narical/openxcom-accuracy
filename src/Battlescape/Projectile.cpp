@@ -47,6 +47,8 @@ AccuracyModConfig AccuracyMod = {
 	3,		// distanceDivider	Additional 1 voxel of deviation per this number of distance tiles
 	1.35,	// SizeMultiplier	Accuracy multiplier when targeting big units
 	50,		// suicideProtectionDistance	// Minimal distance missing shot should fly, in voxels
+	1.2,	// Horizontal spread coeff
+	0.65, 	// Vertical spread coeff
 	10,		// bonusDistanceMax	Improved accuracy distance - top threshold
 	6,		// bonusDistanceMin	Improved accuracy distance - bottom threshold
 	{0, 30, 50, 70, 100} // coverEfficiency Percentage of accuracy affected by target exposure
@@ -735,8 +737,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				ver_size_deviation = heightRange / 2;
 			}
 
-			int horizontal_deviation = hor_size_deviation + accuracy_deviation + distance_deviation;
-			int vertical_deviation = ver_size_deviation + accuracy_deviation + distance_deviation;
+			int horizontal_deviation = (hor_size_deviation + accuracy_deviation + distance_deviation) * AccuracyMod.horizontalSpreadCoeff;
+			int vertical_deviation = (ver_size_deviation + accuracy_deviation + distance_deviation) * AccuracyMod.verticalSpreadCoeff;
 
 			Position deviate;
 			std::vector<Position> trajectory;

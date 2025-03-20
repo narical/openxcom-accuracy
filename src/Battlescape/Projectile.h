@@ -43,6 +43,8 @@ struct AccuracyModConfig // Real Accuracy mod configuration
 	int distanceDivider;
 	double SizeMultiplier;
 	int suicideProtectionDistance;
+	float horizontalSpreadCoeff;
+	float verticalSpreadCoeff;
 	int bonusDistanceMax;
 	int bonusDistanceMin;
 	int coverEfficiency[5];
