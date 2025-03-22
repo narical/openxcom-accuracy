@@ -365,6 +365,7 @@
     <ClCompile Include="Basescape\DismantleFacilityState.cpp" />
     <ClCompile Include="Basescape\GlobalAlienContainmentState.cpp" />
     <ClCompile Include="Basescape\GlobalManufactureState.cpp" />
+    <ClCompile Include="Basescape\GlobalResearchDiaryState.cpp" />
     <ClCompile Include="Basescape\GlobalResearchState.cpp" />
     <ClCompile Include="Basescape\ManageAlienContainmentState.cpp" />
     <ClCompile Include="Basescape\ManufactureDependenciesTreeState.cpp" />
@@ -837,6 +838,7 @@
     <ClInclude Include="Basescape\DismantleFacilityState.h" />
     <ClInclude Include="Basescape\GlobalAlienContainmentState.h" />
     <ClInclude Include="Basescape\GlobalManufactureState.h" />
+    <ClInclude Include="Basescape\GlobalResearchDiaryState.h" />
     <ClInclude Include="Basescape\GlobalResearchState.h" />
     <ClInclude Include="Basescape\ManufactureDependenciesTreeState.h" />
     <ClInclude Include="Basescape\NewManufactureListState.h" />

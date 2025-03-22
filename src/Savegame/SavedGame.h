@@ -295,6 +295,8 @@ public:
 	void addFinishedResearch(const RuleResearch *research, const Mod *mod, Base *base, bool score = true);
 	/// Add a new record to the research diary
 	void addResearchDiaryEntry(ResearchDiaryEntry* entry);
+	/// Gets the research diary.
+	const std::vector<ResearchDiaryEntry*> & getResearchDiary() const { return _researchDiary; }
 	/// Get the list of already discovered research projects
 	const std::vector<const RuleResearch*> & getDiscoveredResearch() const;
 	/// Get the list of ResearchProject which can be researched in a Base

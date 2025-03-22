@@ -1340,6 +1340,23 @@ interfaces:
         border: 218  # blue
       - id: button
         color: 246   # purple
+  - type: globalResearchDiary
+    backgroundImage: BACK05.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 1     # burgundy
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 218   # blue
+        color2: 208  # white
+      - id: list
+        color: 246   # purple
+        color2: 208  # white
+        border: 218  # blue
+      - id: button
+        color: 246   # purple
   - type: selectNewResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu

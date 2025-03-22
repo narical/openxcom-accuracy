@@ -1208,6 +1208,9 @@
     <ClCompile Include="..\libs\rapidyaml\c4\yml\version.cpp">
       <Filter>Engine\rapidyaml\c4\yml</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\GlobalResearchDiaryState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2668,6 +2671,9 @@
     </ClInclude>
     <ClInclude Include="Savegame\ResearchDiary.h">
       <Filter>Savegame</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\GlobalResearchDiaryState.h">
+      <Filter>Basescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
