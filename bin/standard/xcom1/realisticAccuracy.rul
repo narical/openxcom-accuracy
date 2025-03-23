@@ -1,0 +1,34 @@
+realisticAccuracy:
+  minCap: 1
+  maxCap: 300
+  aimBonus: 3
+  kneelBonus: 2
+  aimedDivider: 4
+  snapDivider: 3
+  autoDivider: 3
+  twoHandsBonus: 1
+  distanceDivider: 3
+  sizeMultiplier: 1.35
+  suicideProtectionDistance: 50
+  horizontalSpreadCoeff: 1.2
+  verticalSpreadCoeff: 0.65
+  bonusDistanceMax: 10
+  bonusDistanceMin: 6
+
+# Default values in parenthesis
+# minCap       (1)    Minimum accuracy value
+# maxCap       (300)  Maximum accuracy value
+# aimBonus     (3)    Additional bonus for aimed shot, if total accuracy is 5% or less
+# kneelBonus   (2)    Additional bonus For kneeling if total accuracy is 5% or less
+# aimedDivider (4)
+# snapDivider  (3)
+# autoDivider  (3)               Dividers are used for adding roll-based deviation
+# twoHandsBonus(1)               Less shots dispersion for one weapon in both hands
+# distanceDivider (3)            Additional 1 voxel of deviation per this number of distance tiles
+# sizeMultiplier  (1.35)         Accuracy multiplier when targeting big units
+# suicideProtectionDistance (50) Minimal distance missing shot should fly, in voxels
+# horizontalSpreadCoeff (1.2)    Horizontal spread multiplier
+# verticalSpreadCoeff (0.65)     Vertical spread multiplier
+# bonusDistanceMax (10)          Improved accuracy distance - top threshold
+# bonusDistanceMin (6)	         Improved accuracy distance - bottom threshold
+

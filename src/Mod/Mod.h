@@ -152,6 +152,26 @@ public:
 	/// Number of opacity levels.
 	constexpr static int TransparenciesOpacityLevels = 4;
 
+    struct AccuracyModConfig // Real Accuracy mod configuration
+    {
+        int minCap = 1;
+        int maxCap = 300;
+        int aimBonus = 3;
+        int kneelBonus = 2;
+        int aimedDivider = 4;
+        int snapDivider = 3;
+        int autoDivider = 3;
+        int twoHandsBonus = 1;
+        int distanceDivider = 3;
+        double sizeMultiplier = 1.35;
+        int suicideProtectionDistance = 50;
+        float horizontalSpreadCoeff = 1.2;
+        float verticalSpreadCoeff = 0.65;
+        int bonusDistanceMax = 10;
+        int bonusDistanceMin = 6;
+        int coverEfficiency[5] = {0, 30, 50, 70, 100};
+    };
+
 private:
 	Music *_muteMusic;
 	Sound *_muteSound;
@@ -269,6 +289,8 @@ private:
 	std::string _fontName, _psiUnlockResearch, _fakeUnderwaterBaseUnlockResearch, _newBaseUnlockResearch;
 	std::string _hireScientistsUnlockResearch, _hireEngineersUnlockResearch;
 	RuleBaseFacilityFunctions _hireScientistsRequiresBaseFunc, _hireEngineersRequiresBaseFunc;
+
+    AccuracyModConfig _realisticAccuracyConfig;
 
 	std::string _destroyedFacility;
 	YAML::YamlString _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -486,6 +508,8 @@ public:
 	Sound *getSoundByDepth(unsigned int depth, unsigned int sound) const;
 	/// Gets list of LUT data.
 	const std::vector<std::vector<Uint8> > *getLUTs() const;
+	/// Gets parameters for Realistic Accuracy mod
+	const AccuracyModConfig *getAccuracyModConfig() const;
 
 
 	/// Check for obsolete error based on year.

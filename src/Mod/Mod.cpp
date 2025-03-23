@@ -1084,6 +1084,15 @@ const std::vector<std::vector<Uint8> > *Mod::getLUTs() const
 	return &_transparencyLUTs;
 }
 
+/**
+ * Returns the struct with Realistic Accuracy mod parameters
+ * @return Reference to the Realistic Accuracy mod parameters struct.
+ */
+const Mod::AccuracyModConfig *Mod::getAccuracyModConfig() const
+{
+    return &_realisticAccuracyConfig;
+}
+
 
 /**
  * Check for obsolete error based on year.
@@ -3227,6 +3236,24 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeHealth.tryRead("replenishAfterMission", _healthReplenishAfterMission);
 	}
 
+	if (const auto& nodeRA = loadDocInfoHelper("realisticAccuracy"))
+	{
+		nodeRA.tryRead("minCap", _realisticAccuracyConfig.minCap);
+        nodeRA.tryRead("maxCap", _realisticAccuracyConfig.maxCap);
+        nodeRA.tryRead("aimBonus", _realisticAccuracyConfig.aimBonus);
+        nodeRA.tryRead("kneelBonus", _realisticAccuracyConfig.kneelBonus);
+        nodeRA.tryRead("aimedDivider", _realisticAccuracyConfig.aimedDivider);
+        nodeRA.tryRead("snapDivider", _realisticAccuracyConfig.snapDivider);
+        nodeRA.tryRead("autoDivider", _realisticAccuracyConfig.autoDivider);
+        nodeRA.tryRead("twoHandsBonus", _realisticAccuracyConfig.twoHandsBonus);
+        nodeRA.tryRead("distanceDivider", _realisticAccuracyConfig.distanceDivider);
+        nodeRA.tryRead("sizeMultiplier", _realisticAccuracyConfig.sizeMultiplier);
+        nodeRA.tryRead("suicideProtectionDistance", _realisticAccuracyConfig.suicideProtectionDistance);
+        nodeRA.tryRead("horizontalSpreadCoeff", _realisticAccuracyConfig.horizontalSpreadCoeff);
+        nodeRA.tryRead("verticalSpreadCoeff", _realisticAccuracyConfig.verticalSpreadCoeff);
+        nodeRA.tryRead("bonusDistanceMax", _realisticAccuracyConfig.bonusDistanceMax);
+        nodeRA.tryRead("bonusDistanceMin", _realisticAccuracyConfig.bonusDistanceMin);
+	}
 
 	if (const auto& nodeGameOver = loadDocInfoHelper("gameOver"))
 	{
