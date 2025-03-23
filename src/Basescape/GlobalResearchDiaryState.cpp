@@ -47,13 +47,11 @@ struct compareItemName
 	}
 };
 
-struct compareItemSpaceUsed
+struct compareItemSortOrder
 {
 	bool operator()(const TranslatedResearchDiaryItem* a, const TranslatedResearchDiaryItem* b) const
 	{
-		return a->diaryEntry->year < b->diaryEntry->year ||
-			(a->diaryEntry->year == b->diaryEntry->year && a->diaryEntry->month < b->diaryEntry->month) ||
-			(a->diaryEntry->year == b->diaryEntry->year && a->diaryEntry->month == b->diaryEntry->month && a->diaryEntry->day < b->diaryEntry->day);
+		return a->sortOrder < b->sortOrder;
 	}
 };
 
@@ -137,13 +135,24 @@ GlobalResearchDiaryState::GlobalResearchDiaryState() : _doNotReset(false)
 
 	// translate only once
 	auto& vec = _game->getSavedGame()->getResearchDiary();
+	int sortOrder = vec.size();
 	for (auto it = vec.rbegin(); it != vec.rend(); ++it)
 	{
 		auto* researchDiaryEntry = (*it);
+
 		std::string translation = tr(researchDiaryEntry->research->getName());
 		std::string upper = translation;
 		Unicode::upperCase(upper);
-		_itemList.push_back(TranslatedResearchDiaryItem(researchDiaryEntry, translation, upper));
+
+		std::ostringstream ss3;
+		ss3 << researchDiaryEntry->year << "-";
+		if (researchDiaryEntry->month < 10) ss3 << "0";
+		ss3 << researchDiaryEntry->month << "-";
+		if (researchDiaryEntry->day < 10) ss3 << "0";
+		ss3 << researchDiaryEntry->day;
+
+		_itemList.push_back(TranslatedResearchDiaryItem(researchDiaryEntry, translation, upper, ss3.str(), sortOrder));
+		sortOrder--;
 	}
 
 	_txtTooltip->setVerticalAlign(ALIGN_MIDDLE);
@@ -210,7 +219,7 @@ void GlobalResearchDiaryState::initList()
 		// quick search
 		if (!searchString.empty())
 		{
-			if (origItem.upperName.find(searchString) == std::string::npos)
+			if (origItem.upperName.find(searchString) == std::string::npos && origItem.date.find(searchString) == std::string::npos)
 			{
 				continue;
 			}
@@ -286,10 +295,10 @@ void GlobalResearchDiaryState::sortList()
 		std::stable_sort(_filteredItemList.rbegin(), _filteredItemList.rend(), compareItemName());
 		break;
 	case RESEARCH_DIARY_SORT_DATE_ASC:
-		std::stable_sort(_filteredItemList.begin(), _filteredItemList.end(), compareItemSpaceUsed());
+		std::stable_sort(_filteredItemList.begin(), _filteredItemList.end(), compareItemSortOrder());
 		break;
 	case RESEARCH_DIARY_SORT_DATE_DESC:
-		std::stable_sort(_filteredItemList.rbegin(), _filteredItemList.rend(), compareItemSpaceUsed());
+		std::stable_sort(_filteredItemList.rbegin(), _filteredItemList.rend(), compareItemSortOrder());
 		break;
 	}
 
@@ -305,14 +314,9 @@ void GlobalResearchDiaryState::updateList()
 
 	for (const auto* item : _filteredItemList)
 	{
-		std::ostringstream ss2, ss3;
+		std::ostringstream ss2;
 		ss2 << (int)item->diaryEntry->source.type;
-		ss3 << item->diaryEntry->year << "-";
-		if (item->diaryEntry->month < 10) ss3 << "0";
-		ss3 << item->diaryEntry->month << "-";
-		if (item->diaryEntry->day < 10) ss3 << "0";
-		ss3 << item->diaryEntry->day;
-		_lstItems->addRow(3, item->name.c_str(), ss2.str().c_str(), ss3.str().c_str());
+		_lstItems->addRow(3, item->name.c_str(), ss2.str().c_str(), item->date.c_str());
 	}
 }
 

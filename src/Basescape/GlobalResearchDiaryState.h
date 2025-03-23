@@ -43,13 +43,15 @@ enum ReserachDiarySort
 
 struct TranslatedResearchDiaryItem
 {
-	TranslatedResearchDiaryItem(ResearchDiaryEntry* _diaryEntry, const std::string& _name, const std::string& _upperName)
-		: diaryEntry(_diaryEntry), name(_name), upperName(_upperName)
+	TranslatedResearchDiaryItem(ResearchDiaryEntry* _diaryEntry, const std::string& _name, const std::string& _upperName, const std::string& _date, int _sortOrder)
+		: diaryEntry(_diaryEntry), name(_name), upperName(_upperName), date(_date), sortOrder(_sortOrder)
 	{
 	}
 	ResearchDiaryEntry* diaryEntry;
 	std::string name;
 	std::string upperName;
+	std::string date;
+	int sortOrder;
 };
 
 /**
