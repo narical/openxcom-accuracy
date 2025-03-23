@@ -3811,6 +3811,12 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 		save->getId(craft->getRules()->getType());
 	}
 
+	// Correct soldier IDs
+	for (auto* soldier : *base->getSoldiers())
+	{
+		save->getId("STR_SOLDIER");
+	}
+
 	// Remove craft weapons if needed
 	for (auto* craft : *base->getCrafts())
 	{
