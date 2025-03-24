@@ -681,46 +681,43 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
 				visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
 
-			int accuracyDivider;
+			int idx = Options::battleRealisticShotDispersion;
+			int shotTypeDeviation;
 			switch (_action.type)
 			{
 			case BA_AIMEDSHOT:
-				accuracyDivider = AccuracyMod->aimedDivider;
+				shotTypeDeviation = AccuracyMod->aimedDeviation[idx];
 				break;
 			case BA_SNAPSHOT:
-				accuracyDivider = AccuracyMod->snapDivider;
+				shotTypeDeviation = AccuracyMod->snapDeviation[idx];
 				break;
 			case BA_AUTOSHOT:
-				accuracyDivider = AccuracyMod->autoDivider;
+				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
 				break;
 			default:
-				accuracyDivider = AccuracyMod->autoDivider;
+				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
 				break;
 			}
 
-			int distanceDivider = AccuracyMod->distanceDivider;
+			int distanceDeviation = AccuracyMod->distanceDeviation[idx];
 
-			if (Options::battleRealisticShotDispersion == 0)
-			{
-				++accuracyDivider;
-				distanceDivider = 5;
-			}
+			// Less dispersion with two-handers
+			int oneHandWeaponDeviation = 0;
+			if (!weapon->isTwoHanded()) oneHandWeaponDeviation = AccuracyMod->oneHandWeaponDeviation[idx];
+			// TODO: add check for penalty !
 
-			if (weapon->isTwoHanded()) accuracyDivider += AccuracyMod->twoHandsBonus; // Less dispersion with two-handers
+			int kneelDeviation = 0;
+			if (shooterUnit->isKneeled()) kneelDeviation = AccuracyMod->kneelDeviation[idx];
 
-			//  Highly accurate shots will land close to the target even if they miss
-			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider;
-			int distance_deviation = distanceTiles / distanceDivider; // 1 voxel of deviation per X tiles of distance
-			int hor_size_deviation = unitRadius;
-			int ver_size_deviation = unitRadius;
+			int accuracyDeviation = (50 - shooterUnit->getBaseStats()->firing) / 10;
 
-			if ( targetSize == 2 )
-			{
-				ver_size_deviation = heightRange / 2;
-			}
+			double distanceDeviationCoeff = (double)distanceVoxels / (10 * Position::TileXY);
 
-			int horizontal_deviation = (hor_size_deviation + accuracy_deviation + distance_deviation) * AccuracyMod->horizontalSpreadCoeff;
-			int vertical_deviation = (ver_size_deviation + accuracy_deviation + distance_deviation) * AccuracyMod->verticalSpreadCoeff;
+			int deviation = (distanceDeviation + oneHandWeaponDeviation + kneelDeviation
+                            + shotTypeDeviation + accuracyDeviation*2) * distanceDeviationCoeff;
+
+			int horizontal_deviation = deviation * AccuracyMod->horizontalSpreadCoeff[idx];
+			int vertical_deviation = deviation * AccuracyMod->verticalSpreadCoeff[idx];
 
 			Position deviate;
 			std::vector<Position> trajectory;

@@ -3236,23 +3236,28 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeHealth.tryRead("replenishAfterMission", _healthReplenishAfterMission);
 	}
 
+    // Override any settings if presented in realisticAccuracy.rul
 	if (const auto& nodeRA = loadDocInfoHelper("realisticAccuracy"))
 	{
 		nodeRA.tryRead("minCap", _realisticAccuracyConfig.minCap);
         nodeRA.tryRead("maxCap", _realisticAccuracyConfig.maxCap);
         nodeRA.tryRead("aimBonus", _realisticAccuracyConfig.aimBonus);
         nodeRA.tryRead("kneelBonus", _realisticAccuracyConfig.kneelBonus);
-        nodeRA.tryRead("aimedDivider", _realisticAccuracyConfig.aimedDivider);
-        nodeRA.tryRead("snapDivider", _realisticAccuracyConfig.snapDivider);
-        nodeRA.tryRead("autoDivider", _realisticAccuracyConfig.autoDivider);
-        nodeRA.tryRead("twoHandsBonus", _realisticAccuracyConfig.twoHandsBonus);
-        nodeRA.tryRead("distanceDivider", _realisticAccuracyConfig.distanceDivider);
         nodeRA.tryRead("sizeMultiplier", _realisticAccuracyConfig.sizeMultiplier);
         nodeRA.tryRead("suicideProtectionDistance", _realisticAccuracyConfig.suicideProtectionDistance);
-        nodeRA.tryRead("horizontalSpreadCoeff", _realisticAccuracyConfig.horizontalSpreadCoeff);
-        nodeRA.tryRead("verticalSpreadCoeff", _realisticAccuracyConfig.verticalSpreadCoeff);
         nodeRA.tryRead("bonusDistanceMax", _realisticAccuracyConfig.bonusDistanceMax);
         nodeRA.tryRead("bonusDistanceMin", _realisticAccuracyConfig.bonusDistanceMin);
+
+        // Override "Normal" fire spread option
+        nodeRA.tryRead("distanceDeviation", _realisticAccuracyConfig.distanceDeviation[1]);
+        nodeRA.tryRead("oneHandWeaponDeviation", _realisticAccuracyConfig.oneHandWeaponDeviation[1]);
+        nodeRA.tryRead("kneelDeviation", _realisticAccuracyConfig.kneelDeviation[1]);
+        nodeRA.tryRead("aimedDeviation", _realisticAccuracyConfig.aimedDeviation[1]);
+        nodeRA.tryRead("snapDeviation", _realisticAccuracyConfig.snapDeviation[1]);
+        nodeRA.tryRead("autoDeviation", _realisticAccuracyConfig.autoDeviation[1]);
+
+        nodeRA.tryRead("horizontalSpreadCoeff", _realisticAccuracyConfig.horizontalSpreadCoeff[1]);
+        nodeRA.tryRead("verticalSpreadCoeff", _realisticAccuracyConfig.verticalSpreadCoeff[1]);
 	}
 
 	if (const auto& nodeGameOver = loadDocInfoHelper("gameOver"))

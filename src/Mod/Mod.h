@@ -158,17 +158,23 @@ public:
         int maxCap = 300;
         int aimBonus = 3;
         int kneelBonus = 2;
-        int aimedDivider = 4;
-        int snapDivider = 3;
-        int autoDivider = 3;
-        int twoHandsBonus = 1;
-        int distanceDivider = 3;
         double sizeMultiplier = 1.35;
         int suicideProtectionDistance = 50;
-        float horizontalSpreadCoeff = 1.2;
-        float verticalSpreadCoeff = 0.65;
         int bonusDistanceMax = 10;
         int bonusDistanceMin = 6;
+
+        // Deviation in voxels per 10 tiles of shot trajectory
+        // first for "realistic", second for "normal"
+        int distanceDeviation[2]       = { 13, 13 };
+        int oneHandWeaponDeviation[2]  = { 3, 3 };
+        int kneelDeviation[2]          = { -2, -2};
+        int aimedDeviation[2]          = { 1, 1 };
+        int snapDeviation[2]           = { 4, 4 };
+        int autoDeviation[2]           = { 7, 7 };
+
+        float horizontalSpreadCoeff[2] = { 1.2, 1.6 };
+        float verticalSpreadCoeff[2]   = { 0.65, 0.65 };
+
         int coverEfficiency[5] = {0, 30, 50, 70, 100};
     };
 
