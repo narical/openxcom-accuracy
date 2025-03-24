@@ -123,7 +123,7 @@ en-US:
   STR_BATTLEREALISTICIMPAIMED: "RA - Improved aimed shots"
   STR_BATTLEREALISTICIMPAIMED_DESC: "Delta between total accuracy and unit's own accuracy added as sniping bonus after applying cover penalty"
   STR_BATTLEREALISTICIMPLOF: "RA - Improved line of fire"
-  STR_BATTLEREALISTICIMPLOFDESC: "Enable raising weapons for auto/snap shots, like for aimed or when kneeling. If you can see it - you can shoot it!"
+  STR_BATTLEREALISTICIMPLOF_DESC: "Enable raising weapons for auto/snap shots, like for aimed or when kneeling. If you can see it - you can shoot it!"
   STR_BATTLEREALISTICSHOTDISPERSION: "RA - Shot dispersion"
   STR_BATTLEREALISTICSHOTDISPERSION_DESC: "0> Realistic - tight spread, high chance to destroy target cover  1> Normal - tighter than vanilla, wider then 'Realistic'"
   STR_BATTLEREALISTICCOVEREFFICIENCY: "RA - Cover efficiency"
