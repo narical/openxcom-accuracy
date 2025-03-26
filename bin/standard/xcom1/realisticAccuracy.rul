@@ -1,0 +1,56 @@
+realisticAccuracy:
+  minCap: 1
+  maxCap: 300
+  aimBonus: 3
+  kneelBonus: 2
+  sizeMultiplier: 1.35
+  suicideProtectionDistance: 50
+  bonusDistanceMax: 10
+  bonusDistanceMin: 6
+  distanceDeviation: 13
+  oneHandWeaponDeviation: 3
+  kneelDeviation: -2
+  aimedDeviation: 1
+  snapDeviation: 4
+  autoDeviation: 7
+  horizontalSpreadCoeff: 1.6
+  verticalSpreadCoeff: 0.65
+
+# Default values in parenthesis
+#
+# minCap       (1)    Minimum accuracy value
+# maxCap       (300)  Maximum accuracy value
+# aimBonus     (3)    Additional bonus for aimed shot, if total accuracy is 5% or less
+# kneelBonus   (2)    Additional bonus for kneeling, if total accuracy is 5% or less
+# sizeMultiplier  (1.35)         Accuracy multiplier when targeting big units
+# suicideProtectionDistance (50) Minimal distance missing shot should fly, in voxels
+# bonusDistanceMax (10)          Improved accuracy distance - top threshold
+# bonusDistanceMin (6)	         Improved accuracy distance - bottom threshold
+#
+# Deviation parameters override "Normal" shot dispersion option!
+#
+# distanceDeviation (13)      - deviation per 10 tiles (160 voxels) of distance
+# oneHandWeaponDeviation (3)  - for 1-handed weapons or 2-handed with penalty for item in second hand
+# kneelDeviation (-2)         - bonus for kneeling
+# aimedDeviation (1)          - deviation for aimed shots
+# snapDeviation (4)           - deviation for snap shots
+# autoDeviation (7)           - deviation for auto shots
+# horizontalSpreadCoeff (1.6) - horizontal spread multiplier
+# verticalSpreadCoeff (0.65)  - vertical spread multiplier
+#
+# For every 10 tiles of distance, shots deviate (in voxels) by sum of deviation parameters.
+# One big weapon in both hands gives less deviation. On top of that, for every 10 own accuracy
+# above 50, units get -1 deviation (up to -5 bonus), and +1 penalty for every 10 accuracy below.
+# Accuracy-based deviation counts TWICE, and could affect spread significantly.
+#
+# Calculation example:
+#
+# * aimed shot
+# * with one-hand weapon
+# * from kneeling position
+# * distance 20 tiles
+# * unit has 85 accuracy
+#
+# Accuracy bonus = (50 - 85) / 10 = -3 (result is rounded)
+# Deviation = (13 + 3 - 2 - 3*2 ) * 2 = 16
+# Full shots spread is a circle with radius of 16, then affected by spread coefficients.

@@ -1084,6 +1084,15 @@ const std::vector<std::vector<Uint8> > *Mod::getLUTs() const
 	return &_transparencyLUTs;
 }
 
+/**
+ * Returns the struct with Realistic Accuracy mod parameters
+ * @return Reference to the Realistic Accuracy mod parameters struct.
+ */
+const Mod::AccuracyModConfig *Mod::getAccuracyModConfig() const
+{
+    return &_realisticAccuracyConfig;
+}
+
 
 /**
  * Check for obsolete error based on year.
@@ -3227,6 +3236,29 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeHealth.tryRead("replenishAfterMission", _healthReplenishAfterMission);
 	}
 
+    // Override any settings if presented in realisticAccuracy.rul
+	if (const auto& nodeRA = loadDocInfoHelper("realisticAccuracy"))
+	{
+		nodeRA.tryRead("minCap", _realisticAccuracyConfig.minCap);
+        nodeRA.tryRead("maxCap", _realisticAccuracyConfig.maxCap);
+        nodeRA.tryRead("aimBonus", _realisticAccuracyConfig.aimBonus);
+        nodeRA.tryRead("kneelBonus", _realisticAccuracyConfig.kneelBonus);
+        nodeRA.tryRead("sizeMultiplier", _realisticAccuracyConfig.sizeMultiplier);
+        nodeRA.tryRead("suicideProtectionDistance", _realisticAccuracyConfig.suicideProtectionDistance);
+        nodeRA.tryRead("bonusDistanceMax", _realisticAccuracyConfig.bonusDistanceMax);
+        nodeRA.tryRead("bonusDistanceMin", _realisticAccuracyConfig.bonusDistanceMin);
+
+        // Override "Normal" fire spread option
+        nodeRA.tryRead("distanceDeviation", _realisticAccuracyConfig.distanceDeviation[1]);
+        nodeRA.tryRead("oneHandWeaponDeviation", _realisticAccuracyConfig.oneHandWeaponDeviation[1]);
+        nodeRA.tryRead("kneelDeviation", _realisticAccuracyConfig.kneelDeviation[1]);
+        nodeRA.tryRead("aimedDeviation", _realisticAccuracyConfig.aimedDeviation[1]);
+        nodeRA.tryRead("snapDeviation", _realisticAccuracyConfig.snapDeviation[1]);
+        nodeRA.tryRead("autoDeviation", _realisticAccuracyConfig.autoDeviation[1]);
+
+        nodeRA.tryRead("horizontalSpreadCoeff", _realisticAccuracyConfig.horizontalSpreadCoeff[1]);
+        nodeRA.tryRead("verticalSpreadCoeff", _realisticAccuracyConfig.verticalSpreadCoeff[1]);
+	}
 
 	if (const auto& nodeGameOver = loadDocInfoHelper("gameOver"))
 	{

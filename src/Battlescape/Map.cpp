@@ -1374,8 +1374,9 @@ void Map::drawTerrain(Surface *surface)
 								int maxVoxels = 0;
 								int snipingBonus = 0;
 								double maxExposure = 0.0;
-								bool coverHasEffect = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
-								double coverEffciencyCoeff = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
+								const Mod::AccuracyModConfig *AccuracyMod = _game->getMod()->getAccuracyModConfig();
+								bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
+								double coverEffciencyCoeff = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
 								bool isArcingShot = action->weapon->getArcingShot(action->type);
@@ -1470,7 +1471,7 @@ void Map::drawTerrain(Surface *surface)
 									if (unit && unit->getVisible()) // If we are targeting unit
 									{
 										targetSize = unit->getArmor()->getSize();
-										sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod.SizeMultiplier);
+										sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod->sizeMultiplier);
 										targetTile = unit->getTile();
 
 										exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 );
@@ -1565,10 +1566,10 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
-									bool belowBonusThreshold = upperLimit < AccuracyMod.bonusDistanceMin;
-									bool inBonusZone = upperLimit >= AccuracyMod.bonusDistanceMin && upperLimit <= AccuracyMod.bonusDistanceMax;
-									bool aboveBonusThreshold = upperLimit > AccuracyMod.bonusDistanceMax;
-									bool maxRangeAllowsBonus = maxRange > AccuracyMod.bonusDistanceMax;
+									bool belowBonusThreshold = upperLimit < AccuracyMod->bonusDistanceMin;
+									bool inBonusZone = upperLimit >= AccuracyMod->bonusDistanceMin && upperLimit <= AccuracyMod->bonusDistanceMax;
+									bool aboveBonusThreshold = upperLimit > AccuracyMod->bonusDistanceMax;
+									bool maxRangeAllowsBonus = maxRange > AccuracyMod->bonusDistanceMax;
 									bool noMinRange = weapon->getMinRange() == 0;
 									bool improvedSnapBonusEnabled = inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled;
 
@@ -1580,10 +1581,10 @@ void Map::drawTerrain(Surface *surface)
 										maxDistanceVoxels = upperLimitVoxels;
 
 									else if (improvedSnapBonusEnabled)
-										maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
+										maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
 
 									else if (aboveBonusThreshold)
-										maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
+										maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
 
 									else
 										maxDistanceVoxels = upperLimitVoxels;
@@ -1629,23 +1630,23 @@ void Map::drawTerrain(Surface *surface)
 									}
 
 									// Apply additional rules for low-accuracy shots
-									if (accuracy <= AccuracyMod.MinCap)
+									if (accuracy <= AccuracyMod->minCap)
 									{
-										accuracy = AccuracyMod.MinCap;
+										accuracy = AccuracyMod->minCap;
 
 										// Check if target exposure is less than 5% (or 2.5% for big units)
 										// That's a particulary hard shot
 										int hardShotAccuracy = (int)(maxExposure / targetSize * 100);
-										if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod.MinCap)
+										if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod->minCap)
 											accuracy = hardShotAccuracy;
 
-										if (isKneeled) accuracy += AccuracyMod.KneelBonus; // And let's make kneeling more meaningful for such shots
-										if (action->type == BA_AIMEDSHOT) accuracy += AccuracyMod.AimBonus; // Same for aiming
+										if (isKneeled) accuracy += AccuracyMod->kneelBonus; // And let's make kneeling more meaningful for such shots
+										if (action->type == BA_AIMEDSHOT) accuracy += AccuracyMod->aimBonus; // Same for aiming
 										_txtAccuracy->setColor( TXT_RED );
 									}
-									else if (accuracy > AccuracyMod.MaxCap)
+									else if (accuracy > AccuracyMod->maxCap)
 									{
-										accuracy = AccuracyMod.MaxCap;
+										accuracy = AccuracyMod->maxCap;
 									}
 
 									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));

@@ -35,23 +35,6 @@
 
 namespace OpenXcom
 {
-AccuracyModConfig AccuracyMod = {
-	1,		// MinCap			Minimum accuracy value
-	300,	// MaxCap			Maximum accuracy value
-	3,		// AimBonus			For aimed shot if total accuracy is 5% or less
-	2,		// KneelBonus		For kneeling if total accuracy is 5% or less
-	4,		// aimedDivider
-	3,		// snapDivider
-	3,		// autoDivider		Dividers are used for adding roll-based deviation
-	1,		// twoHandsBonus	Less shots dispersion for one weapon in both hands
-	3,		// distanceDivider	Additional 1 voxel of deviation per this number of distance tiles
-	1.35,	// SizeMultiplier	Accuracy multiplier when targeting big units
-	50,		// suicideProtectionDistance	// Minimal distance missing shot should fly, in voxels
-	10,		// bonusDistanceMax	Improved accuracy distance - top threshold
-	6,		// bonusDistanceMin	Improved accuracy distance - bottom threshold
-	{0, 30, 50, 70, 100} // coverEfficiency Percentage of accuracy affected by target exposure
-};
-
 /**
  * Sets up a UnitSprite with the specified size and position.
  * @param mod Pointer to mod.
@@ -401,8 +384,9 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		int targetSize = 0;
 		double sizeMultiplier = 0;
 		double exposure = 0.0;
-		bool coverHasEffect = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
-		double coverEfficiencyCoeff = AccuracyMod.coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
+		const Mod::AccuracyModConfig* AccuracyMod = _mod->getAccuracyModConfig();
+		bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
+		double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
 
 		int real_accuracy = ceil( accuracy * 100 ); // separate variable for realistic accuracy, just in case
 
@@ -431,7 +415,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
-			sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod.SizeMultiplier);
+			sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod->sizeMultiplier);
 
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
@@ -512,10 +496,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
 
 			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
-			bool belowBonusThreshold = upperLimit < AccuracyMod.bonusDistanceMin;
-			bool inBonusZone = upperLimit >= AccuracyMod.bonusDistanceMin && upperLimit <= AccuracyMod.bonusDistanceMax;
-			bool aboveBonusThreshold = upperLimit > AccuracyMod.bonusDistanceMax;
-			bool maxRangeAllowsBonus = maxRange > AccuracyMod.bonusDistanceMax;
+			bool belowBonusThreshold = upperLimit < AccuracyMod->bonusDistanceMin;
+			bool inBonusZone = upperLimit >= AccuracyMod->bonusDistanceMin && upperLimit <= AccuracyMod->bonusDistanceMax;
+			bool aboveBonusThreshold = upperLimit > AccuracyMod->bonusDistanceMax;
+			bool maxRangeAllowsBonus = maxRange > AccuracyMod->bonusDistanceMax;
 			bool noMinRange = weapon->getMinRange() == 0;
 
 			int maxDistanceVoxels = 0;
@@ -526,10 +510,10 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				maxDistanceVoxels = upperLimitVoxels;
 
 			else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
-				maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
+				maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
 
 			else if (aboveBonusThreshold)
-				maxDistanceVoxels = AccuracyMod.bonusDistanceMax * Position::TileXY;
+				maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
 
 			else
 				maxDistanceVoxels = upperLimitVoxels;
@@ -574,23 +558,23 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 
 			// Apply additional rules for low-accuracy shots
-			if (real_accuracy <= AccuracyMod.MinCap)
+			if (real_accuracy <= AccuracyMod->minCap)
 			{
-				real_accuracy = AccuracyMod.MinCap;
+				real_accuracy = AccuracyMod->minCap;
 
 				// Check if target exposure is less than 5% (or 2.5% for big units)
 				// That's a particulary hard shot where final accuracy can drop below its min cap
 				int hardShotAccuracy = (int)(exposure / targetSize * 100);
-				if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod.MinCap)
+				if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod->minCap)
 					real_accuracy = hardShotAccuracy;
 
 				// And let's make kneeling more meaningful for such shots
-				if (shooterUnit->isKneeled()) real_accuracy += AccuracyMod.KneelBonus;
-				if (_action.type == BA_AIMEDSHOT) real_accuracy += AccuracyMod.AimBonus; // Same for aiming
+				if (shooterUnit->isKneeled()) real_accuracy += AccuracyMod->kneelBonus;
+				if (_action.type == BA_AIMEDSHOT) real_accuracy += AccuracyMod->aimBonus; // Same for aiming
 			}
-			else if (real_accuracy > AccuracyMod.MaxCap)
+			else if (real_accuracy > AccuracyMod->maxCap)
 			{
-				real_accuracy = AccuracyMod.MaxCap;
+				real_accuracy = AccuracyMod->maxCap;
 			}
 		}
 
@@ -697,46 +681,43 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
 				visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
 
-			int accuracyDivider;
+			int idx = Options::battleRealisticShotDispersion;
+			int shotTypeDeviation;
 			switch (_action.type)
 			{
 			case BA_AIMEDSHOT:
-				accuracyDivider = AccuracyMod.aimedDivider;
+				shotTypeDeviation = AccuracyMod->aimedDeviation[idx];
 				break;
 			case BA_SNAPSHOT:
-				accuracyDivider = AccuracyMod.snapDivider;
+				shotTypeDeviation = AccuracyMod->snapDeviation[idx];
 				break;
 			case BA_AUTOSHOT:
-				accuracyDivider = AccuracyMod.autoDivider;
+				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
 				break;
 			default:
-				accuracyDivider = AccuracyMod.autoDivider;
+				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
 				break;
 			}
 
-			int distanceDivider = AccuracyMod.distanceDivider;
+			int distanceDeviation = AccuracyMod->distanceDeviation[idx];
 
-			if (Options::battleRealisticShotDispersion == 0)
-			{
-				++accuracyDivider;
-				distanceDivider = 5;
-			}
+			// Less dispersion with two-handers
+			int oneHandWeaponDeviation = 0;
+			if (!weapon->isTwoHanded()) oneHandWeaponDeviation = AccuracyMod->oneHandWeaponDeviation[idx];
+			// TODO: add check for penalty !
 
-			if (weapon->isTwoHanded()) accuracyDivider += AccuracyMod.twoHandsBonus; // Less dispersion with two-handers
+			int kneelDeviation = 0;
+			if (shooterUnit->isKneeled()) kneelDeviation = AccuracyMod->kneelDeviation[idx];
 
-			//  Highly accurate shots will land close to the target even if they miss
-			int accuracy_deviation = (accuracy_check - real_accuracy) / accuracyDivider;
-			int distance_deviation = distanceTiles / distanceDivider; // 1 voxel of deviation per X tiles of distance
-			int hor_size_deviation = unitRadius;
-			int ver_size_deviation = unitRadius;
+			int accuracyDeviation = (50 - shooterUnit->getBaseStats()->firing) / 10;
 
-			if ( targetSize == 2 )
-			{
-				ver_size_deviation = heightRange / 2;
-			}
+			double distanceDeviationCoeff = (double)distanceVoxels / (10 * Position::TileXY);
 
-			int horizontal_deviation = hor_size_deviation + accuracy_deviation + distance_deviation;
-			int vertical_deviation = ver_size_deviation + accuracy_deviation + distance_deviation;
+			int deviation = (distanceDeviation + oneHandWeaponDeviation + kneelDeviation
+                            + shotTypeDeviation + accuracyDeviation*2) * distanceDeviationCoeff;
+
+			int horizontal_deviation = deviation * AccuracyMod->horizontalSpreadCoeff[idx];
+			int vertical_deviation = deviation * AccuracyMod->verticalSpreadCoeff[idx];
 
 			Position deviate;
 			std::vector<Position> trajectory;
@@ -768,7 +749,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 					if (isPlayer && !isCtrlPressed && !trajectory.empty() && distanceTiles > 1)
 					{
 						if (Position::distanceSq( origin, trajectory.at(0)) <
-							AccuracyMod.suicideProtectionDistance * AccuracyMod.suicideProtectionDistance)
+							AccuracyMod->suicideProtectionDistance * AccuracyMod->suicideProtectionDistance)
 						{
 							continue; // No accidental hits please!
 						}

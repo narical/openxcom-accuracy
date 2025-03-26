@@ -152,6 +152,32 @@ public:
 	/// Number of opacity levels.
 	constexpr static int TransparenciesOpacityLevels = 4;
 
+    struct AccuracyModConfig // Real Accuracy mod configuration
+    {
+        int minCap = 1;
+        int maxCap = 300;
+        int aimBonus = 3;
+        int kneelBonus = 2;
+        double sizeMultiplier = 1.35;
+        int suicideProtectionDistance = 50;
+        int bonusDistanceMax = 10;
+        int bonusDistanceMin = 6;
+
+        // Deviation in voxels per 10 tiles of shot trajectory
+        // first for "realistic", second for "normal"
+        int distanceDeviation[2]       = { 13, 13 };
+        int oneHandWeaponDeviation[2]  = { 3, 3 };
+        int kneelDeviation[2]          = { -2, -2};
+        int aimedDeviation[2]          = { 1, 1 };
+        int snapDeviation[2]           = { 4, 4 };
+        int autoDeviation[2]           = { 7, 7 };
+
+        float horizontalSpreadCoeff[2] = { 1.2, 1.6 };
+        float verticalSpreadCoeff[2]   = { 0.65, 0.65 };
+
+        int coverEfficiency[5] = {0, 30, 50, 70, 100};
+    };
+
 private:
 	Music *_muteMusic;
 	Sound *_muteSound;
@@ -269,6 +295,8 @@ private:
 	std::string _fontName, _psiUnlockResearch, _fakeUnderwaterBaseUnlockResearch, _newBaseUnlockResearch;
 	std::string _hireScientistsUnlockResearch, _hireEngineersUnlockResearch;
 	RuleBaseFacilityFunctions _hireScientistsRequiresBaseFunc, _hireEngineersRequiresBaseFunc;
+
+    AccuracyModConfig _realisticAccuracyConfig;
 
 	std::string _destroyedFacility;
 	YAML::YamlString _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -486,6 +514,8 @@ public:
 	Sound *getSoundByDepth(unsigned int depth, unsigned int sound) const;
 	/// Gets list of LUT data.
 	const std::vector<std::vector<Uint8> > *getLUTs() const;
+	/// Gets parameters for Realistic Accuracy mod
+	const AccuracyModConfig *getAccuracyModConfig() const;
 
 
 	/// Check for obsolete error based on year.
