@@ -515,7 +515,7 @@ interfaces: #done
         color: 1
   - type: baseDefense
     backgroundImage: BACK04.SCR
-    palette: PAL_BASESCAPE
+#    palette: PAL_BASESCAPE
     elements:
       - id: palette
         color: 2     # red/orange
