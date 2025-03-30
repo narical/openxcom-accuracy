@@ -734,7 +734,8 @@ void Map::drawTerrain(Surface *surface)
 	int dummy;
 	BattleUnit *movingUnit = _save->getTileEngine()->getMovingUnit();
 	int tileShade, tileColor, obstacleShade;
-	UnitSprite unitSprite(surface, _game->getMod(), _save, _animFrame, _save->getDepth() != 0);
+	UnitSprite unitSprite(surface, _game->getMod(), _save, _animFrame, _save->getDepth() != 0,
+		_isTFTD ? ArrowColorsTFTD[1] : ArrowColorsUFO[1], _isTFTD ? ArrowColorsTFTD[2] : ArrowColorsUFO[2]);
 	ItemSprite itemSprite(surface, _game->getMod(), _save, _animFrame);
 	int colorBeforeFoW = _nvColor;
 

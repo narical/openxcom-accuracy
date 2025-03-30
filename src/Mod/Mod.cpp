@@ -435,6 +435,7 @@ Mod::Mod() :
 	_ufoGlancingHitThreshold(0), _ufoBeamWidthParameter(1000),
 	_escortRange(20), _drawEnemyRadarCircles(1), _escortsJoinFightAgainstHK(true), _hunterKillerFastRetarget(true),
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
+	_showUfoPreviewInBaseDefense(false),
 	_soldiersPerRank({-1, -1, 5, 11, 23, 30}),
 	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60),
 	_performanceBonusFactor(0.0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
@@ -3279,6 +3280,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	reader.tryRead("hunterKillerFastRetarget", _hunterKillerFastRetarget);
 	reader.tryRead("crewEmergencyEvacuationSurvivalChance", _crewEmergencyEvacuationSurvivalChance);
 	reader.tryRead("pilotsEmergencyEvacuationSurvivalChance", _pilotsEmergencyEvacuationSurvivalChance);
+	reader.tryRead("showUfoPreviewInBaseDefense", _showUfoPreviewInBaseDefense);
 	reader.tryRead("soldiersPerSergeant", _soldiersPerRank[RANK_SERGEANT]);
 	reader.tryRead("soldiersPerCaptain", _soldiersPerRank[RANK_CAPTAIN]);
 	reader.tryRead("soldiersPerColonel", _soldiersPerRank[RANK_COLONEL]);
