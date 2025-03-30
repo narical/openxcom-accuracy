@@ -1225,6 +1225,10 @@ bool Inventory::unload(bool quickUnload)
 		{
 			return false;
 		}
+		if (_selItem->getRules()->getCostUnprime().Time == 0 /* || _selItem->getRules()->getUnprimeActionName().empty() */ )
+		{
+			return false;
+		}
 	}
 	else if (weapon)
 	{
