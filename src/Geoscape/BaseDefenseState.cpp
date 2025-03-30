@@ -149,7 +149,19 @@ BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state) :
 		crop.blit(_preview);
 
 		// extra info
-		if (ufo->getHyperDetected())
+		bool extraInfo = ufo->getHyperDetected();
+		if (!extraInfo && ufo->getRules()->isInstaHyper())
+		{
+			for (auto* fac : *_base->getFacilities())
+			{
+				if (fac->getBuildTime() == 0 && fac->getRules()->isHyperwave())
+				{
+					extraInfo = true;
+					break;
+				}
+			}
+		}
+		if (extraInfo)
 		{
 			std::ostringstream ss;
 			ss << Unicode::TOK_COLOR_FLIP << tr(_ufo->getRules()->getType());
