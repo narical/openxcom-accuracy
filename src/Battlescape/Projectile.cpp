@@ -609,11 +609,20 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 		}
+
+		else if (hit_successful && targetUnit) // "Hitting" hidden unit
+		{
+			target->x -= target->x % Position::TileXY - Position::TileXY / 2;
+			target->y -= target->y % Position::TileXY - Position::TileXY / 2;
+			target->z -= target->z % Position::TileZ - Position::TileZ / 2;
+        }
+
 		else if (hit_successful && isTargetObject) // "Hitting" a tile with an object
 		{
 			// just leave it "as is"
 		}
-		else if (hit_successful) // "Hitting" empty tile or fully covered target
+
+		else if (hit_successful) // "Hitting" empty tile
 		{
 			target->x += RNG::generate(-3, 3); // Add some deviation in XY plane - Z deviation leads to obvious misses
 			target->y += RNG::generate(-3, 3);
@@ -622,7 +631,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
 			int unitRadius = 4; // and this radius
-			int targetMinHeight = target->z - target->z%24 - targetTile->getTerrainLevel();
+			int targetMinHeight = target->z - target->z % Position::TileZ - targetTile->getTerrainLevel();
 			int unitMin_X{ target->x - unitRadius - 1 };
 			int unitMin_Y{ target->y - unitRadius - 1 };
 			int unitMax_X{ target->x + unitRadius + 1 };
