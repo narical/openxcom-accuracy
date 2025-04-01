@@ -442,6 +442,8 @@ static const int TXT_BROWN	= Palette::blockOffset(Pathfinding::brown - 1) - 1;
 static const int TXT_WHITE	= Palette::blockOffset(Pathfinding::white - 1) - 1;
 
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
+static const int ArrowColorsUFO[4] = {6, 3, 14, 4};   // white,    red, blue, green
+static const int ArrowColorsTFTD[4] = {4, 11, 16, 6}; // white, orange, blue, green
 
 int getArrowBobForFrame(int frame)
 {
