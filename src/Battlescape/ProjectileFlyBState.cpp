@@ -290,6 +290,9 @@ void ProjectileFlyBState::init()
 	{
 		// target nothing, targets the middle of the tile
 		_targetVoxel = _action.target.toVoxel() + TileEngine::voxelTileCenter;
+
+        _originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
+
 		if (_action.type == BA_LAUNCH)
 		{
 			if (_targetFloor)

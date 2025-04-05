@@ -441,6 +441,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 				tempVoxels.clear();
 				_action.relativeOrigin = relPos;
 				Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
+				if (selectedOrigin == TileEngine::invalid) selectedOrigin = tempOrigin;
+
 				double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true, &tempVoxels, false);
 
 				if ((int)tempVoxels.size() > exposedVoxelsCount)
