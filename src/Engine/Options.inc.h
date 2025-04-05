@@ -164,6 +164,7 @@ OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
 
+OPT bool oxceSwapDontReselectActions;
 OPT bool oxceEnableUnitResponseSounds;
 OPT int oxceHiddenMovementBackgroundChangeFrequency;
 OPT bool oxceInventoryShowUnitSlot;
