@@ -33,6 +33,7 @@ class ToggleTextButton;
 class TouchState : public State
 {
 protected:
+	bool _hideGroup100;
 	Text *_txtTitlePtr;
 	TextButton *_btnTouch;
 	TextButton *_btn1, *_btn10, *_btn100, *_owner100;
@@ -41,7 +42,7 @@ protected:
 public:
 	/// Creates a new state.
 	TouchState() = default;
-	void touchComponentsCreate(Text* txtTitlePtr);
+	void touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100 = false);
 	void touchComponentsAdd(const std::string& id, const std::string& category, Surface* parent);
 	void touchComponentsConfigure();
 	/// Cleans up the state.

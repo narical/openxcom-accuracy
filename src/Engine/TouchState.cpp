@@ -28,11 +28,12 @@
 namespace OpenXcom
 {
 
-void TouchState::touchComponentsCreate(Text* txtTitlePtr)
+void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100)
 {
 	if (!Options::oxceBaseTouchButtons)
 		return;
 
+	_hideGroup100 = hideGroup100;
 	_txtTitlePtr = txtTitlePtr;
 
 	// Reset touch flags
@@ -145,9 +146,12 @@ void TouchState::btnTouchClick(Action* action)
 	}
 	_btnTouch->setVisible(false);
 
-	_btn1->setVisible(true);
-	_btn10->setVisible(true);
-	_btn100->setVisible(true);
+	if (!_hideGroup100)
+	{
+		_btn1->setVisible(true);
+		_btn10->setVisible(true);
+		_btn100->setVisible(true);
+	}
 	_btnCtrl->setVisible(true);
 	_btnAlt->setVisible(true);
 	_btnShift->setVisible(true);
