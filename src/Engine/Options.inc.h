@@ -137,6 +137,7 @@ OPT bool oxceGeoSortCraftByDistanceToTarget;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
 OPT bool oxceBaseManufactureInfinityButton;
+OPT bool oxceBaseTouchButtons;
 
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableHitLog;
