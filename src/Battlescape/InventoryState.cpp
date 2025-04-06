@@ -781,6 +781,23 @@ void InventoryState::btnArmorClick(Action *action)
 	// don't accept clicks when moving items
 	if (_inv->getSelectedItem() != 0)
 	{
+		// but we can reuse this for quickly dropping an item (as a Ctrl+L-click alternative)
+		if (Options::oxceInventoryDropItemOverPaperdoll)
+		{
+			if (_inv->quickDrop())
+			{
+				// hide selected item info
+				invMouseOut(action);
+
+				// refresh ui
+				_inv->arrangeGround();
+				updateStats();
+				refreshMouse();
+
+				// give audio feedback
+				_game->getMod()->getSoundByDepth(_battleGame->getDepth(), Mod::ITEM_DROP)->play();
+			}
+		}
 		return;
 	}
 
