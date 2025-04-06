@@ -1246,7 +1246,18 @@ void InventoryState::btnQuickSearchApply(Action *)
  */
 void InventoryState::btnGroundClickForward(Action *action)
 {
-	if (_game->isShiftPressed())
+	bool scrollBackwards = _game->isShiftPressed();
+	if (Options::oxceInventorySplitScrollButton)
+	{
+		double mx = action->getAbsoluteXMouse();
+		if (mx <= _btnGround->getX() + (_btnGround->getWidth() / 2.0))
+		{
+			// clicked on the left half of the button
+			scrollBackwards = true;
+		}
+	}
+
+	if (scrollBackwards)
 	{
 		// scroll backwards
 		_inv->arrangeGround(-1);

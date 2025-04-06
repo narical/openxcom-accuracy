@@ -154,6 +154,7 @@ OPT bool oxceSwapDontReselectActions;
 OPT bool oxceEnableUnitResponseSounds;
 OPT int oxceHiddenMovementBackgroundChangeFrequency;
 OPT bool oxceInventoryShowUnitSlot;
+OPT bool oxceInventorySplitScrollButton;
 
 OPT int oxceMaxEquipmentLayoutTemplates;
 
