@@ -1774,6 +1774,10 @@ interfaces:
         color2: 208  # white
       - id: button
         color: 241   # pink
+      - id: button2
+        color: 218   # blue
+      - id: touchButton
+        color: 218   # blue
       - id: list
         color: 218   # blue
         color2: 208  # white
