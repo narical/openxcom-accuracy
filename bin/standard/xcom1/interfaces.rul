@@ -1084,6 +1084,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: errorPalette
         color: 0     # brown
       - id: errorMessage
@@ -1163,6 +1167,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 246   # purple
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: errorPalette
         color: 0     # brown
       - id: errorMessage
