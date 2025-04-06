@@ -1046,6 +1046,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
   - type: dependencyTree
     backgroundImage: BACK13.SCR
     palette: PAL_BASESCAPE

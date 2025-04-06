@@ -1076,6 +1076,10 @@ interfaces: #done
         color: 1
       - id: button
         color: 1
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
   - type: dependencyTree
     backgroundImage: BACK13.SCR
     palette: PAL_GEOSCAPE
