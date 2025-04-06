@@ -1303,6 +1303,10 @@ interfaces:
         color2: 213  # gold
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 213   # gold
+      - id: touchButton
+        color: 213   # gold
       - id: catBox
         color: 241   # pink
   - type: allocateManufacture
@@ -1402,6 +1406,10 @@ interfaces:
         color2: 213  # gold
       - id: button
         color: 246   # purple
+      - id: button2
+        color: 213   # gold
+      - id: touchButton
+        color: 213   # gold
   - type: allocateResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu

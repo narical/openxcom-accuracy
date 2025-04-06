@@ -1328,6 +1328,10 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1   # blue
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: catBox
         color: 1   # pink
   - type: allocateManufacture
@@ -1424,6 +1428,10 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1   # purple
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
   - type: allocateResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu

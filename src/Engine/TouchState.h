@@ -42,7 +42,7 @@ protected:
 public:
 	/// Creates a new state.
 	TouchState() = default;
-	void touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100 = false);
+	void touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100 = false, int horizontalOffset = 0, int verticalOffset = 0);
 	void touchComponentsAdd(const std::string& id, const std::string& category, Surface* parent);
 	void touchComponentsConfigure();
 	/// Cleans up the state.

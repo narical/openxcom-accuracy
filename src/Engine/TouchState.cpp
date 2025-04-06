@@ -28,7 +28,7 @@
 namespace OpenXcom
 {
 
-void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100)
+void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100, int horizontalOffset, int verticalOffset)
 {
 	if (!Options::oxceBaseTouchButtons)
 		return;
@@ -39,21 +39,21 @@ void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100)
 	// Reset touch flags
 	_game->resetTouchButtonFlags();
 
-	_btnTouch = new TextButton(40, 16, 273, 7);
+	_btnTouch = new TextButton(40, 16, horizontalOffset + 273, 7 + verticalOffset);
 
-	_btn1     = new       TextButton(25, 16, 61 + 0 * 26, 7);
-	_btn10    = new       TextButton(25, 16, 61 + 1 * 26, 7);
-	_btn100   = new       TextButton(25, 16, 61 + 2 * 26, 7);
+	_btn1     = new       TextButton(25, 16, horizontalOffset + 61 + 0 * 26, 7 + verticalOffset);
+	_btn10    = new       TextButton(25, 16, horizontalOffset + 61 + 1 * 26, 7 + verticalOffset);
+	_btn100   = new       TextButton(25, 16, horizontalOffset + 61 + 2 * 26, 7 + verticalOffset);
 	_owner100 = _btn1;
 
-	_btnLMB   = new       TextButton(25, 16, 65 + 3 * 26, 7);
-	_btnRMB   = new       TextButton(25, 16, 65 + 4 * 26, 7);
-	_btnMMB   = new       TextButton(25, 16, 65 + 5 * 26, 7);
+	_btnLMB   = new       TextButton(25, 16, horizontalOffset + 65 + 3 * 26, 7 + verticalOffset);
+	_btnRMB   = new       TextButton(25, 16, horizontalOffset + 65 + 4 * 26, 7 + verticalOffset);
+	_btnMMB   = new       TextButton(25, 16, horizontalOffset + 65 + 5 * 26, 7 + verticalOffset);
 	_ownerLRM = _btnLMB;
 
-	_btnCtrl  = new ToggleTextButton(27, 16, 69 + 6 * 26, 7);
-	_btnAlt   = new ToggleTextButton(27, 16, 71 + 7 * 26, 7);
-	_btnShift = new ToggleTextButton(32, 16, 73 + 8 * 26, 7);
+	_btnCtrl  = new ToggleTextButton(27, 16, horizontalOffset + 69 + 6 * 26, 7 + verticalOffset);
+	_btnAlt   = new ToggleTextButton(27, 16, horizontalOffset + 71 + 7 * 26, 7 + verticalOffset);
+	_btnShift = new ToggleTextButton(32, 16, horizontalOffset + 73 + 8 * 26, 7 + verticalOffset);
 }
 
 void TouchState::touchComponentsAdd(const std::string& id, const std::string& category, Surface* parent)
