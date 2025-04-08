@@ -136,6 +136,7 @@ OPT bool oxceGeoGoToNearestBase;
 OPT bool oxceGeoSortCraftByDistanceToTarget;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
+OPT bool oxceBaseSoldierTransformationShowOnlyEligible;
 OPT bool oxceBaseManufactureInfinityButton;
 OPT bool oxceBaseTouchButtons;
 
