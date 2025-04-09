@@ -3240,6 +3240,39 @@ AIModule *BattleUnit::getAIModule() const
 }
 
 /**
+ * Gets weight value as hostile unit.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsHostile(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsHostile().getValueOr(mod->getAITargetWeightAsHostile());
+}
+
+/**
+ * Gets weight value as civilian unit when consider by aliens.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsHostileCivilians(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsHostileCivilians().getValueOr(mod->getAITargetWeightAsHostileCivilians());
+}
+
+/**
+ * Gets weight value as same faction unit.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsFriendly(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsFriendly().getValueOr(mod->getAITargetWeightAsFriendly());
+}
+
+/**
+ * Gets weight value as neutral unit (xcom to civ or vice versa).
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsNeutral(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsNeutral().getValueOr(mod->getAITargetWeightAsNeutral());
+}
+
+
+/**
  * Set whether this unit is visible.
  * @param flag
  */

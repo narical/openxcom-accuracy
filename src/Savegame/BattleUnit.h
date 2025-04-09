@@ -417,10 +417,19 @@ public:
 	AIModule *getAIModule() const;
 	/// Set AI Module.
 	void setAIModule(AIModule *ai);
+	/// Gets weight value as hostile unit.
+	AIAttackWeight getAITargetWeightAsHostile(const Mod *mod) const;
+	/// Gets weight value as civilian unit when consider by aliens.
+	AIAttackWeight getAITargetWeightAsHostileCivilians(const Mod *mod) const;
+	/// Gets weight value as same faction unit.
+	AIAttackWeight getAITargetWeightAsFriendly(const Mod *mod) const;
+	/// Gets weight value as neutral unit (xcom to civ or vice versa).
+	AIAttackWeight getAITargetWeightAsNeutral(const Mod *mod) const;
 	/// Set whether this unit is visible
 	void setVisible(bool flag);
 	/// Get whether this unit is visible
 	bool getVisible() const;
+
 
 	/// Check if unit can fall down.
 	void updateTileFloorState(SavedBattleGame *saveBattleGame);

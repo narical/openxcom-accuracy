@@ -2710,7 +2710,7 @@ AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
 	if (target->getFaction() == _unit->getFaction())
 	{
 		// friendly target have negative weight, used for AoE attacks.
-		weight = AIAttackWeight{ -200 };
+		weight = target->getAITargetWeightAsFriendly(_save->getMod());
 	}
 	else if (
 		_intelligence < target->getTurnsSinceSpottedByFaction(_unit->getFaction()) &&
@@ -2725,18 +2725,18 @@ AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
 		if (target->getFaction() == _targetFaction)
 		{
 			// enemy unit, full weight
-			weight = AIAttackWeight{ 100 };
+			weight = target->getAITargetWeightAsHostile(_save->getMod());
 		}
 		else
 		{
 			// if its not xcom unit then its civilian, less value that xcom
-			weight = AIAttackWeight{ 50 };
+			weight = target->getAITargetWeightAsHostileCivilians(_save->getMod());
 		}
 	}
 	else if (target->getFaction() == FACTION_NEUTRAL || _unit->getFaction() == FACTION_NEUTRAL)
 	{
 		// if its not alien then its xcom or civilian, humans do not shoot each other, usually...
-		weight = AIAttackWeight{ -100 };
+		weight = target->getAITargetWeightAsNeutral(_save->getMod());
 	}
 
 	return weight;
@@ -2768,7 +2768,7 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 	}
 	else
 	{
-		return  getTargetAttackWeight(target) > AIAttackWeight{ AIW_SCALE / 2 };
+		return  getTargetAttackWeight(target) > _save->getMod()->getAITargetWeightThreatThreshold();
 	}
 }
 
