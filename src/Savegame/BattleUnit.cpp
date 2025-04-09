@@ -2130,7 +2130,7 @@ RuleItemUseCost BattleUnit::getActionTUs(BattleActionType actionType, const Rule
 	RuleItemUseCost cost;
 	if (item != 0)
 	{
-		RuleItemUseCost flat = item->getFlatUse();
+		RuleItemUseFlat flat = item->getFlatUse();
 		switch (actionType)
 		{
 			case BA_PRIME:
@@ -2180,7 +2180,7 @@ RuleItemUseCost BattleUnit::getActionTUs(BattleActionType actionType, const Rule
 	return cost;
 }
 
-void BattleUnit::applyPercentages(RuleItemUseCost &cost, const RuleItemUseCost &flat) const
+void BattleUnit::applyPercentages(RuleItemUseCost &cost, const RuleItemUseFlat &flat) const
 {
 	{
 		// if it's a percentage, apply it to unit TUs

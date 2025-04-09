@@ -199,7 +199,7 @@ private:
 	/// Helper function preparing the banned flag.
 	void prepareBannedFlag(const RuleStartingCondition* sc);
 	/// Applies percentual and/or flat adjustments to the use costs.
-	void applyPercentages(RuleItemUseCost &cost, const RuleItemUseCost &flat) const;
+	void applyPercentages(RuleItemUseCost &cost, const RuleItemUseFlat &flat) const;
 public:
 	static const int MAX_SOLDIER_ID = 1000000;
 	static const int BUBBLES_FIRST_FRAME = 3;

@@ -1409,7 +1409,8 @@ void StatsForNerdsState::addPercentageSignOrNothing(std::ostringstream &ss, cons
 /**
  * Adds a full RuleItemUseCost to the table.
  */
-void StatsForNerdsState::addRuleItemUseCostFull(std::ostringstream &ss, const RuleItemUseCost &value, const std::string &propertyName, const RuleItemUseCost &defaultvalue, bool smartFormat, const RuleItemUseCost &formatBy)
+template<typename T>
+void StatsForNerdsState::addRuleItemUseCostFull(std::ostringstream &ss, const RuleItemUseRuleBase<T> &value, const std::string &propertyName, const RuleItemUseRuleBase<T> &defaultvalue, bool smartFormat, const RuleItemUseFlat &formatBy)
 {
 	bool isDefault = false;
 	if (value.Time == defaultvalue.Time &&
@@ -2421,14 +2422,14 @@ void StatsForNerdsState::initItemList()
 
 		// flatRate*
 
-		addRuleItemUseCostFull(ss, itemRule->getFlatAimed(), "flatAimed", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatAuto(), "flatAuto", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatSnap(), "flatSnap", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatMelee(), "flatMelee", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatUse(), "flatUse", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatThrow(), "flatThrow", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatPrime(), "flatPrime", RuleItemUseCost(0, 1));
-		addRuleItemUseCostFull(ss, itemRule->getFlatUnprime(), "flatUnprime", RuleItemUseCost(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatAimed(), "flatAimed", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatAuto(), "flatAuto", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatSnap(), "flatSnap", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatMelee(), "flatMelee", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatUse(), "flatUse", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatThrow(), "flatThrow", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatPrime(), "flatPrime", RuleItemUseFlat(0, 1));
+		addRuleItemUseCostFull(ss, itemRule->getFlatUnprime(), "flatUnprime", RuleItemUseFlat(0, 1));
 
 		addSection("{Script tags}", "", _white, true);
 		{
