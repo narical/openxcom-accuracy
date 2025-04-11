@@ -1782,6 +1782,8 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		constexpr int arg_selfDestructChance = 3;
 		constexpr int arg_moraleLoss = 4;
 		constexpr int arg_fire = 5;
+		constexpr int arg_attackerTurnsSinceSpotted = 6;
+		constexpr int arg_attackerTurnsLeftSpottedForSnipers = 7;
 
 		ModScript::DamageSpecialUnit::Output args { };
 
@@ -1838,12 +1840,12 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		}
 
 		// AI direct hit tracking
-		auto newTurnsSinceSpotted = 255;
-		auto newTurnsLeftSpottedForSnipers = 0;
+		std::get<arg_attackerTurnsSinceSpotted>(args.data) = 255;
+		std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = 0;
 		if (attack.attacker)
 		{
-			newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpottedByFaction(getFaction());
-			newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipersByFaction(getFaction());
+			std::get<arg_attackerTurnsSinceSpotted>(args.data) = attack.attacker->getTurnsSinceSpottedByFaction(getFaction());
+			std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = attack.attacker->getTurnsLeftSpottedForSnipersByFaction(getFaction());
 
 			if (getFaction() != attack.attacker->getFaction() &&
 				(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
@@ -1856,7 +1858,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 					ai->setWasHitBy(attack.attacker);
 				}
 
-				newTurnsSinceSpotted = 0;
+				std::get<arg_attackerTurnsSinceSpotted>(args.data) = 0;
 				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
 				{
 					// 0 = don't spot
@@ -1864,7 +1866,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 					// 2 = always spot
 					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
 					{
-						newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
+						std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = std::max(std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data), getSpotterDuration());
 					}
 				}
 			}
@@ -1930,8 +1932,8 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (attack.attacker)
 		{
-			attack.attacker->setTurnsSinceSpottedByFaction(getFaction(), newTurnsSinceSpotted);
-			attack.attacker->setTurnsLeftSpottedForSnipersByFaction(getFaction(), newTurnsLeftSpottedForSnipers);
+			attack.attacker->setTurnsSinceSpottedByFaction(getFaction(), std::get<arg_attackerTurnsSinceSpotted>(args.data));
+			attack.attacker->setTurnsLeftSpottedForSnipersByFaction(getFaction(), std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data));
 		}
 	}
 
@@ -6900,6 +6902,8 @@ ModScript::DamageSpecialUnitParser::DamageSpecialUnitParser(ScriptGlobal* shared
 	"self_destruct_chance",
 	"morale_loss",
 	"fire",
+	"attacker_turns_since_spotted",
+	"attacker_turns_left_spotted_for_snipers",
 
 	"unit", "damaging_item", "weapon_item", "attacker",
 	"battle_game", "skill", "health_damage", "orig_power", "part", "side", "damaging_type", "battle_action", }

@@ -133,7 +133,7 @@ class ModScript
 	{
 		DamageUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct DamageSpecialUnitParser : ScriptParserEvents<ScriptOutputArgs<int, int&, int, int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, const RuleSkill*, int, int, int, int, int, int>
+	struct DamageSpecialUnitParser : ScriptParserEvents<ScriptOutputArgs<int, int&, int, int&, int&, int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, const RuleSkill*, int, int, int, int, int, int>
 	{
 		DamageSpecialUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
