@@ -3099,15 +3099,6 @@ void SavedBattleGame::playRandomAmbientSound()
 }
 
 /**
- * get ruleset.
- * @return the ruleset of game.
- */
-const Mod *SavedBattleGame::getMod() const
-{
-	return _rule;
-}
-
-/**
  * get the list of items we're guaranteed to take with us (ie: items that were in the skyranger)
  * @return the list of items we're guaranteed.
  */
