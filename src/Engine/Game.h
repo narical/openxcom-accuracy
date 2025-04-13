@@ -57,6 +57,7 @@ private:
 	unsigned int _timeOfLastFrame;
 	int _timeUntilNextFrame;
 	bool _ctrl, _alt, _shift, _rmb, _mmb;
+	int _scrollStep;
 	static const double VOLUME_GRADIENT;
 
 public:
@@ -161,6 +162,12 @@ public:
 
 	/// Gets the geoScapeState
 	GeoscapeState *getGeoscapeState() const;
+
+	/// Sets the scroll step value.
+	void setScrollStep(int newValue) { _scrollStep = newValue; }
+
+	/// Gets the scroll step value.
+	int getScrollStep() const { return _scrollStep; }
 };
 
 }

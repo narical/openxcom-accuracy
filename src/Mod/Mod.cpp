@@ -3193,6 +3193,12 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeAI.tryRead("destroyBaseFacilities", _aiDestroyBaseFacilities);
 		nodeAI.tryRead("pickUpWeaponsMoreActively", _aiPickUpWeaponsMoreActively);
 		nodeAI.tryRead("pickUpWeaponsMoreActivelyCiv", _aiPickUpWeaponsMoreActivelyCiv);
+
+		nodeAI.tryRead("targetWeightThreatThreshold", _aiTargetWeightThreatThreshold);
+		nodeAI.tryRead("targetWeightAsHostile", _aiTargetWeightAsHostile);
+		nodeAI.tryRead("targetWeightAsHostileCivilians", _aiTargetWeightAsHostileCivilians);
+		nodeAI.tryRead("targetWeightAsFriendly", _aiTargetWeightAsFriendly);
+		nodeAI.tryRead("targetWeightAsNeutral", _aiTargetWeightAsNeutral);
 	}
 	reader.tryRead("maxLookVariant", _maxLookVariant);
 	reader.tryRead("tooMuchSmokeThreshold", _tooMuchSmokeThreshold);

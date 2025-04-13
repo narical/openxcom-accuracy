@@ -584,18 +584,6 @@ bool ProjectileFlyBState::createNewProjectile()
 void ProjectileFlyBState::deinit()
 {
 	_parent->getMap()->setFollowProjectile(true); // turn back on when done shooting
-
-	if (!_victims.empty())
-	{
-		for (auto* victim : _victims)
-		{
-			// is the spotter still standing after ALL shots?
-			if (!victim->isOut() && !victim->isOutThresholdExceed())
-			{
-				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
-			}
-		}
-	}
 }
 
 /**

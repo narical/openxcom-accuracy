@@ -1215,6 +1215,9 @@
     <ClCompile Include="Basescape\GlobalResearchDiaryState.cpp">
       <Filter>Basescape</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\TouchState.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2680,6 +2683,9 @@
     </ClInclude>
     <ClInclude Include="Basescape\GlobalResearchDiaryState.h">
       <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\TouchState.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

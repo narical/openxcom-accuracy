@@ -157,7 +157,7 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_damageTypeSet(false), _meleeTypeSet(false),
 	_accuracyUse(0), _accuracyMind(0), _accuracyPanic(20), _accuracyThrow(100), _accuracyCloseQuarters(-1),
 	_noLOSAccuracyPenalty(-1),
-	_costUse(25), _costMind(-1, -1), _costPanic(-1, -1), _costThrow(25), _costPrime(50), _costUnprime(25),
+	_costUse(25), _costMind({}, {}), _costPanic({}, {}), _costThrow(25), _costPrime(50), _costUnprime(25),
 	_clipSize(0), _specialChance(100), _tuLoad{ }, _tuUnload{ },
 	_battleType(BT_NONE), _fuseType(BFT_NONE), _fuseTriggerEvents{ }, _hiddenOnMinimap(false),
 	_medikitActionName("STR_USE_MEDI_KIT"), _psiAttackName(), _primeActionName("STR_PRIME_GRENADE"), _unprimeActionName(), _primeActionMessage("STR_GRENADE_IS_ACTIVATED"), _unprimeActionMessage("STR_GRENADE_IS_DEACTIVATED"),
@@ -199,15 +199,15 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_confSnap.range = 15;
 	_confAuto.range = 7;
 
-	_confAimed.cost = RuleItemUseCost(0);
-	_confSnap.cost = RuleItemUseCost(0, -1);
-	_confAuto.cost = RuleItemUseCost(0, -1);
-	_confMelee.cost = RuleItemUseCost(0);
+	_confAimed.cost = { 0 };
+	_confSnap.cost = { 0, {} };
+	_confAuto.cost = { 0, {} };
+	_confMelee.cost = { 0 };
 
-	_confAimed.flat = RuleItemUseCost(-1, -1);
-	_confSnap.flat = RuleItemUseCost(-1, -1);
-	_confAuto.flat = RuleItemUseCost(-1, -1);
-	_confMelee.flat = RuleItemUseCost(-1, -1);
+	_confAimed.flat = { {}, {} };
+	_confSnap.flat = { {}, {} };
+	_confAuto.flat = { {}, {} };
+	_confMelee.flat = { {}, {} };
 
 	_confAimed.name = "STR_AIMED_SHOT";
 	_confSnap.name = "STR_SNAP_SHOT";
@@ -223,24 +223,6 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
  */
 RuleItem::~RuleItem()
 {
-}
-
-/**
- * Get optional value (not equal -1) or default one.
- * @param a Optional cost value.
- * @param b Default cost value.
- * @return Final cost.
- */
-RuleItemUseCost RuleItem::getDefault(const RuleItemUseCost& a, const RuleItemUseCost& b) const
-{
-	RuleItemUseCost n;
-	n.Time = a.Time >= 0 ? a.Time : b.Time;
-	n.Energy = a.Energy >= 0 ? a.Energy : b.Energy;
-	n.Morale = a.Morale >= 0 ? a.Morale : b.Morale;
-	n.Health = a.Health >= 0 ? a.Health : b.Health;
-	n.Stun = a.Stun >= 0 ? a.Stun : b.Stun;
-	n.Mana = a.Mana >= 0 ? a.Mana : b.Mana;
-	return n;
 }
 
 /**
@@ -519,16 +501,16 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	_costPrime.loadCost(reader, "Prime");
 	_costUnprime.loadCost(reader, "Unprime");
 
-	loadBoolNullable(_flatUse.Time, reader["flatRate"]);
+	reader.tryRead("flatRate", _flatUse.Time);
 
-	_confAimed.flat.loadPercent(reader, "Aimed");
-	_confAuto.flat.loadPercent(reader, "Auto");
-	_confSnap.flat.loadPercent(reader, "Snap");
-	_confMelee.flat.loadPercent(reader, "Melee");
-	_flatUse.loadPercent(reader, "Use");
-	_flatThrow.loadPercent(reader, "Throw");
-	_flatPrime.loadPercent(reader, "Prime");
-	_flatUnprime.loadPercent(reader, "Unprime");
+	_confAimed.flat.loadFlat(reader, "Aimed");
+	_confAuto.flat.loadFlat(reader, "Auto");
+	_confSnap.flat.loadFlat(reader, "Snap");
+	_confMelee.flat.loadFlat(reader, "Melee");
+	_flatUse.loadFlat(reader, "Use");
+	_flatThrow.loadFlat(reader, "Throw");
+	_flatPrime.loadFlat(reader, "Prime");
+	_flatUnprime.loadFlat(reader, "Unprime");
 
 	loadConfAction(_confAimed, reader, "Aimed");
 	loadConfAction(_confAuto, reader, "Auto");
@@ -1465,7 +1447,7 @@ int RuleItem::getNoLOSAccuracyPenalty(const Mod *mod) const
  */
 RuleItemUseCost RuleItem::getCostAimed() const
 {
-	return _confAimed.cost;
+	return getDefault(_confAimed.cost);
 }
 
 /**
@@ -1492,7 +1474,7 @@ RuleItemUseCost RuleItem::getCostSnap() const
  */
 RuleItemUseCost RuleItem::getCostMelee() const
 {
-	return _confMelee.cost;
+	return getDefault(_confMelee.cost);
 }
 
 /**
@@ -1503,11 +1485,11 @@ RuleItemUseCost RuleItem::getCostUse() const
 {
 	if (_battleType != BT_PSIAMP || !_psiAttackName.empty())
 	{
-		return _costUse;
+		return getDefault(_costUse);
 	}
 	else
 	{
-		return RuleItemUseCost();
+		return {};
 	}
 }
 
@@ -1535,7 +1517,7 @@ RuleItemUseCost RuleItem::getCostPanic() const
  */
 RuleItemUseCost RuleItem::getCostThrow() const
 {
-	return _costThrow;
+	return getDefault(_costThrow);
 }
 
 /**
@@ -1546,7 +1528,7 @@ RuleItemUseCost RuleItem::getCostPrime() const
 {
 	if (!_primeActionName.empty())
 	{
-		return _costPrime;
+		return getDefault(_costPrime);
 	}
 	else
 	{
@@ -1560,7 +1542,7 @@ RuleItemUseCost RuleItem::getCostPrime() const
  */
 RuleItemUseCost RuleItem::getCostUnprime() const
 {
-		return _costUnprime;
+	return getDefault(_costUnprime);
 }
 
 /**
@@ -2169,7 +2151,7 @@ int RuleItem::getPrisonType() const
  * Returns whether this item charges a flat rate for costAimed.
  * @return True if this item charges a flat rate for costAimed.
  */
-RuleItemUseCost RuleItem::getFlatAimed() const
+RuleItemUseFlat RuleItem::getFlatAimed() const
 {
 	return getDefault(_confAimed.flat, _flatUse);
 }
@@ -2178,25 +2160,25 @@ RuleItemUseCost RuleItem::getFlatAimed() const
  * Returns whether this item charges a flat rate for costAuto.
  * @return True if this item charges a flat rate for costAuto.
  */
-RuleItemUseCost RuleItem::getFlatAuto() const
+RuleItemUseFlat RuleItem::getFlatAuto() const
 {
-	return getDefault(_confAuto.flat, getDefault(_confAimed.flat, _flatUse));
+	return getDefault(_confAuto.flat, _confAimed.flat, _flatUse);
 }
 
 /**
  * Returns whether this item charges a flat rate for costSnap.
  * @return True if this item charges a flat rate for costSnap.
  */
-RuleItemUseCost RuleItem::getFlatSnap() const
+RuleItemUseFlat RuleItem::getFlatSnap() const
 {
-	return getDefault(_confSnap.flat, getDefault(_confAimed.flat, _flatUse));
+	return getDefault(_confSnap.flat, _confAimed.flat, _flatUse);
 }
 
 /**
  * Returns whether this item charges a flat rate for costMelee.
  * @return True if this item charges a flat rate for costMelee.
  */
-RuleItemUseCost RuleItem::getFlatMelee() const
+RuleItemUseFlat RuleItem::getFlatMelee() const
 {
 	return getDefault(_confMelee.flat, _flatUse);
 }
@@ -2205,36 +2187,36 @@ RuleItemUseCost RuleItem::getFlatMelee() const
  * Returns whether this item charges a flat rate of use and attack cost.
  * @return True if this item charges a flat rate of use and attack cost.
  */
-RuleItemUseCost RuleItem::getFlatUse() const
+RuleItemUseFlat RuleItem::getFlatUse() const
 {
-	return _flatUse;
+	return getDefault(_flatUse);
 }
 
 /**
  * Returns whether this item charges a flat rate for costThrow.
  * @return True if this item charges a flat rate for costThrow.
  */
-RuleItemUseCost RuleItem::getFlatThrow() const
+RuleItemUseFlat RuleItem::getFlatThrow() const
 {
-	return _flatThrow;
+	return getDefault(_flatThrow);
 }
 
 /**
  * Returns whether this item charges a flat rate for costPrime.
  * @return True if this item charges a flat rate for costPrime.
  */
-RuleItemUseCost RuleItem::getFlatPrime() const
+RuleItemUseFlat RuleItem::getFlatPrime() const
 {
-	return _flatPrime;
+	return getDefault(_flatPrime);
 }
 
 /**
  * Returns whether this item charges a flat rate for costUnprime.
  * @return True if this item charges a flat rate for costUnprime.
  */
-RuleItemUseCost RuleItem::getFlatUnprime() const
+RuleItemUseFlat RuleItem::getFlatUnprime() const
 {
-	return _flatUnprime;
+	return getDefault(_flatUnprime);
 }
 
 /**

@@ -1544,10 +1544,12 @@ void SavedBattleGame::endTurn()
 		// update the "number of turns since last spotted" and the number of turns left sniper AI knows about player units
 		for (auto* bu : _units)
 		{
-			if (bu->getTurnsSinceSpotted() < 255)
+			if (bu->isIgnored())
 			{
-				bu->setTurnsSinceSpotted(bu->getTurnsSinceSpotted() +	1);
+				continue;
 			}
+
+			bu->updateTurnsSince();
 			if (_cheating && bu->getFaction() == FACTION_PLAYER && !bu->isOut())
 			{
 				bu->setTurnsSinceSpotted(0);
@@ -1555,11 +1557,6 @@ void SavedBattleGame::endTurn()
 			if (bu->getAIModule())
 			{
 				bu->getAIModule()->reset(); // clean up AI state
-			}
-
-			if (bu->getTurnsLeftSpottedForSnipers() != 0)
-			{
-				bu->setTurnsLeftSpottedForSnipers(bu->getTurnsLeftSpottedForSnipers() - 1);
 			}
 		}
 	}
@@ -3121,15 +3118,6 @@ void SavedBattleGame::playRandomAmbientSound()
 		int soundIndex = RNG::seedless(0, _ambienceRandom.size() - 1);
 		getMod()->getSoundByDepth(_depth, _ambienceRandom.at(soundIndex))->play(3); // use fixed ambience channel; don't check if previous sound is still playing or not
 	}
-}
-
-/**
- * get ruleset.
- * @return the ruleset of game.
- */
-const Mod *SavedBattleGame::getMod() const
-{
-	return _rule;
 }
 
 /**

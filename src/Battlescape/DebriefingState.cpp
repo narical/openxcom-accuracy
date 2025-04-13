@@ -303,8 +303,9 @@ DebriefingState::DebriefingState() :
 	_lstSoldierStats->setDot(true);
 
 	// Third page
-	_lstRecoveredItems->setColumns(2, 238, 50);
-	_lstRecoveredItems->setAlign(ALIGN_RIGHT, 1);
+	int firstColumnWidth = Clamp(_game->getMod()->getInterface("debriefing")->getElement("list")->custom, 90, 254);
+	_lstRecoveredItems->setColumns(2, firstColumnWidth, 18);
+	_lstRecoveredItems->setAlign(ALIGN_LEFT);
 	_lstRecoveredItems->setDot(true);
 }
 

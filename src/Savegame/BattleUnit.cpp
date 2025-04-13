@@ -647,9 +647,15 @@ void BattleUnit::load(const YAML::YamlNodeReader& node, const Mod *mod, const Sc
 	reader.tryRead("currStats", _stats);
 	reader.tryRead("turretType", _turretType);
 	reader.tryRead("visible", _visible);
-	reader.tryRead("turnsSinceSpotted", _turnsSinceSpotted);
-	reader.tryRead("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers);
-	reader.tryRead("turnsSinceStunned", _turnsSinceStunned);
+
+	reader.tryReadAs<int>("turnsSinceSpotted", _turnsSinceSpotted[FACTION_HOSTILE]);
+	reader.tryReadAs<int>("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers[FACTION_HOSTILE]);
+	reader.tryReadAs<int>("turnsSinceSpottedByXcom", _turnsSinceSpotted[FACTION_PLAYER]);
+	reader.tryReadAs<int>("turnsLeftSpottedForSnipersByXcom", _turnsLeftSpottedForSnipers[FACTION_PLAYER]);
+	reader.tryReadAs<int>("turnsSinceSpottedByCivilian", _turnsSinceSpotted[FACTION_NEUTRAL]);
+	reader.tryReadAs<int>("turnsLeftSpottedForSnipersByCivilian", _turnsLeftSpottedForSnipers[FACTION_NEUTRAL]);
+	reader.tryReadAs<int>("turnsSinceStunned", _turnsSinceStunned);
+
 	reader.tryRead("rankInt", _rankInt);
 	reader.tryRead("rankIntUnified", _rankIntUnified);
 	reader.tryRead("moraleRestored", _moraleRestored);
@@ -778,6 +784,15 @@ void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 	writer.write("tileLastSpottedForBlindShotByHostile", _tileLastSpottedForBlindShotByHostile);
 	writer.write("tileLastSpottedForBlindShotByNeutral", _tileLastSpottedForBlindShotByNeutral);
 	writer.write("tileLastSpottedForBlindShotByPlayer", _tileLastSpottedForBlindShotByPlayer);
+
+	writer.writeAs<int>("turnsSinceSpotted", _turnsSinceSpotted[FACTION_HOSTILE]);
+	writer.writeAs<int>("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers[FACTION_HOSTILE]);
+	writer.tryWriteAs<int>("turnsSinceSpottedByXcom", _turnsSinceSpotted[FACTION_PLAYER], 255);
+	writer.tryWriteAs<int>("turnsLeftSpottedForSnipersByXcom", _turnsLeftSpottedForSnipers[FACTION_PLAYER], 0);
+	writer.tryWriteAs<int>("turnsSinceSpottedByCivilian", _turnsSinceSpotted[FACTION_NEUTRAL], 255);
+	writer.tryWriteAs<int>("turnsLeftSpottedForSnipersByCivilian", _turnsLeftSpottedForSnipers[FACTION_NEUTRAL], 0);
+	writer.writeAs<int>("turnsSinceStunned", _turnsSinceStunned);
+
 	writer.write("rankInt", _rankInt);
 	writer.write("rankIntUnified", _rankIntUnified);
 	writer.write("moraleRestored", _moraleRestored);
@@ -1705,7 +1720,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 	if (!type->IgnoreDirection)
 	{
-		if (relative == Position(0, 0, 0))
+		if (relative.x == 0 && relative.y == 0 && relative.z <= 0)
 		{
 			side = SIDE_UNDER;
 		}
@@ -1940,6 +1955,8 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		constexpr int arg_selfDestructChance = 3;
 		constexpr int arg_moraleLoss = 4;
 		constexpr int arg_fire = 5;
+		constexpr int arg_attackerTurnsSinceSpotted = 6;
+		constexpr int arg_attackerTurnsLeftSpottedForSnipers = 7;
 
 		ModScript::DamageSpecialUnit::Output args { };
 
@@ -1992,6 +2009,39 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			{
 				// bullet/ammo
 				std::get<arg_fire>(args.data) = 0;
+			}
+		}
+
+		// AI direct hit tracking
+		std::get<arg_attackerTurnsSinceSpotted>(args.data) = 255;
+		std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = 0;
+		if (attack.attacker)
+		{
+			std::get<arg_attackerTurnsSinceSpotted>(args.data) = attack.attacker->getTurnsSinceSpottedByFaction(getFaction());
+			std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = attack.attacker->getTurnsLeftSpottedForSnipersByFaction(getFaction());
+
+			if (getFaction() != attack.attacker->getFaction() &&
+				(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
+				attack.damage_item != nullptr &&
+				(relative == Position(0,0,0) || (attack.damage_item->getRules()->getExplosionRadius(attack) == 0)))
+			{
+				AIModule *ai = getAIModule();
+				if (ai != 0)
+				{
+					ai->setWasHitBy(attack.attacker);
+				}
+
+				std::get<arg_attackerTurnsSinceSpotted>(args.data) = 0;
+				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+				{
+					// 0 = don't spot
+					// 1 = spot only if the victim doesn't die or pass out
+					// 2 = always spot
+					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
+					{
+						std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data) = std::max(std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data), getSpotterDuration());
+					}
+				}
 			}
 		}
 
@@ -2051,6 +2101,12 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			setAlreadyExploded(true);
 			Position p = getPosition().toVoxel();
 			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, selfDestructItem, selfDestructItem }, 0));
+		}
+
+		if (attack.attacker)
+		{
+			attack.attacker->setTurnsSinceSpottedByFaction(getFaction(), std::get<arg_attackerTurnsSinceSpotted>(args.data));
+			attack.attacker->setTurnsLeftSpottedForSnipersByFaction(getFaction(), std::get<arg_attackerTurnsLeftSpottedForSnipers>(args.data));
 		}
 	}
 
@@ -2249,7 +2305,7 @@ RuleItemUseCost BattleUnit::getActionTUs(BattleActionType actionType, const Rule
 	RuleItemUseCost cost;
 	if (item != 0)
 	{
-		RuleItemUseCost flat = item->getFlatUse();
+		RuleItemUseFlat flat = item->getFlatUse();
 		switch (actionType)
 		{
 			case BA_PRIME:
@@ -2299,7 +2355,7 @@ RuleItemUseCost BattleUnit::getActionTUs(BattleActionType actionType, const Rule
 	return cost;
 }
 
-void BattleUnit::applyPercentages(RuleItemUseCost &cost, const RuleItemUseCost &flat) const
+void BattleUnit::applyPercentages(RuleItemUseCost &cost, const RuleItemUseFlat &flat) const
 {
 	{
 		// if it's a percentage, apply it to unit TUs
@@ -3478,6 +3534,39 @@ AIModule *BattleUnit::getAIModule() const
 {
 	return _currentAIState;
 }
+
+/**
+ * Gets weight value as hostile unit.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsHostile(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsHostile().getValueOr(mod->getAITargetWeightAsHostile());
+}
+
+/**
+ * Gets weight value as civilian unit when consider by aliens.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsHostileCivilians(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsHostileCivilians().getValueOr(mod->getAITargetWeightAsHostileCivilians());
+}
+
+/**
+ * Gets weight value as same faction unit.
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsFriendly(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsFriendly().getValueOr(mod->getAITargetWeightAsFriendly());
+}
+
+/**
+ * Gets weight value as neutral unit (xcom to civ or vice versa).
+ */
+AIAttackWeight BattleUnit::getAITargetWeightAsNeutral(const Mod *mod) const
+{
+	return _armor->getAITargetWeightAsNeutral().getValueOr(mod->getAITargetWeightAsNeutral());
+}
+
 
 /**
  * Set whether this unit is visible.
@@ -4968,13 +5057,86 @@ int BattleUnit::getCarriedWeight(BattleItem *draggingItem) const
 	return std::max(0,weight);
 }
 
+
+
+/**
+ * Set default state on unit.
+ */
+void BattleUnit::resetTurnsSince()
+{
+	for (auto& since : _turnsSinceSpotted)
+	{
+		since = 255;
+	}
+	for (auto& left : _turnsLeftSpottedForSnipers)
+	{
+		left = 0;
+	}
+	_turnsSinceStunned = 255;
+}
+
+
+/**
+ * Update counters on unit.
+ */
+void BattleUnit::updateTurnsSince()
+{
+	for (auto& since : _turnsSinceSpotted)
+	{
+		since = Clamp(since + 1, 0, 255);
+	}
+	for (auto& left : _turnsLeftSpottedForSnipers)
+	{
+		left = Clamp(left - 1, 0, 255);
+	}
+	//_turnsSinceStunned is updated elsewhere
+}
+
+
+
+namespace
+{
+
+/// safe setter of value in array
+template<int I>
+void setUint8Array(Uint8 (&arr)[I], int offset, int value)
+{
+	if (0 <= offset && offset < I)
+	{
+		arr[offset] = Clamp(value, 0, 255);
+	}
+}
+
+/// safe getter of value in array
+template<int I>
+int getUint8Array(const Uint8 (&arr)[I], int offset)
+{
+	if (0 <= offset && offset < I)
+	{
+		return arr[offset];
+	}
+
+	return 0;
+}
+
+} // namespace
+
+
 /**
  * Set how long since this unit was last exposed.
  * @param turns number of turns
  */
 void BattleUnit::setTurnsSinceSpotted (int turns)
 {
-	_turnsSinceSpotted = turns;
+	_turnsSinceSpotted[FACTION_HOSTILE] = turns;
+}
+
+/**
+ * Set how many turns this unit will be exposed for. For specific faction.
+ */
+void BattleUnit::setTurnsSinceSpottedByFaction(UnitFaction faction, int turns)
+{
+	setUint8Array(_turnsSinceSpotted, faction, turns);
 }
 
 /**
@@ -4983,7 +5145,15 @@ void BattleUnit::setTurnsSinceSpotted (int turns)
  */
 int BattleUnit::getTurnsSinceSpotted() const
 {
-	return _turnsSinceSpotted;
+	return _turnsSinceSpotted[FACTION_HOSTILE];
+}
+
+/**
+ * Set how many turns this unit will be exposed for. For specific faction.
+ */
+int BattleUnit::getTurnsSinceSpottedByFaction(UnitFaction faction) const
+{
+	return getUint8Array(_turnsSinceSpotted, faction);
 }
 
 /**
@@ -4992,7 +5162,15 @@ int BattleUnit::getTurnsSinceSpotted() const
  */
 void BattleUnit::setTurnsLeftSpottedForSnipers (int turns)
 {
-	_turnsLeftSpottedForSnipers = turns;
+	_turnsLeftSpottedForSnipers[FACTION_HOSTILE] = turns;
+}
+
+/**
+ * Set how many turns left snipers know about this target. For specific faction.
+ */
+void BattleUnit::setTurnsLeftSpottedForSnipersByFaction (UnitFaction faction, int turns)
+{
+	setUint8Array(_turnsLeftSpottedForSnipers, faction, turns);
 }
 
 /**
@@ -5001,7 +5179,15 @@ void BattleUnit::setTurnsLeftSpottedForSnipers (int turns)
  */
 int BattleUnit::getTurnsLeftSpottedForSnipers() const
 {
-	return _turnsLeftSpottedForSnipers;
+	return _turnsLeftSpottedForSnipers[FACTION_HOSTILE];
+}
+
+/**
+ * Get how many turns left snipers know about this target. For specific faction.
+ */
+int BattleUnit::getTurnsLeftSpottedForSnipersByFaction(UnitFaction faction) const
+{
+	return getUint8Array(_turnsLeftSpottedForSnipers, faction);
 }
 
 /**
@@ -6586,7 +6772,7 @@ void addStunScript(BattleUnit *bu, int val)
 	}
 }
 
-template<int BattleUnit::*StatCurr, int Min, int Max>
+template<auto StatCurr, int Min, int Max>
 void setBaseStatRangeScript(BattleUnit *bu, int val)
 {
 	if (bu)
@@ -6594,6 +6780,16 @@ void setBaseStatRangeScript(BattleUnit *bu, int val)
 		(bu->*StatCurr) = Clamp(val, Min, Max);
 	}
 }
+
+template<auto StatCurr, int Offset, int Min, int Max>
+void setBaseStatRangeArrayScript(BattleUnit *bu, int val)
+{
+	if (bu)
+	{
+		(bu->*StatCurr)[Offset] = Clamp(val, Min, Max);
+	}
+}
+
 
 template<int BattleUnit::*StatCurr, int Min, int Max>
 void addBaseStatRangeScript(BattleUnit *bu, int val)
@@ -7039,12 +7235,23 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getPositionYScript>("getPosition.getY");
 	bu.add<&getPositionZScript>("getPosition.getZ");
 	bu.add<&BattleUnit::getPosition>("getPosition");
+
+
 	bu.add<&BattleUnit::getTurnsSinceSpotted>("getTurnsSinceSpotted");
-	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceSpotted, 0, 255>>("setTurnsSinceSpotted");
+	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsSinceSpotted, FACTION_HOSTILE, 0, 255>>("setTurnsSinceSpotted");
+
+	bu.add<&BattleUnit::getTurnsSinceSpottedByFaction>("getTurnsSinceSpottedByFaction");
+	bu.add<&BattleUnit::setTurnsSinceSpottedByFaction>("setTurnsSinceSpottedByFaction");
+
 	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipers>("getTurnsLeftSpottedForSnipers");
-	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsLeftSpottedForSnipers, 0, 255>>("setTurnsLeftSpottedForSnipers");
+	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsLeftSpottedForSnipers, FACTION_HOSTILE, 0, 255>>("setTurnsLeftSpottedForSnipers");
+
+	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipersByFaction>("getTurnsLeftSpottedForSnipersByFaction");
+	bu.add<&BattleUnit::setTurnsLeftSpottedForSnipersByFaction>("setTTurnsLeftSpottedForSnipersByFaction");
+
 	bu.addField<&BattleUnit::_turnsSinceStunned>("getTurnsSinceStunned");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceStunned, 0, 255>>("setTurnsSinceStunned");
+
 
 	bu.addScriptValue<BindBase::OnlyGet, &BattleUnit::_armor, &Armor::getScriptValuesRaw>();
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
@@ -7320,6 +7527,8 @@ ModScript::DamageSpecialUnitParser::DamageSpecialUnitParser(ScriptGlobal* shared
 	"self_destruct_chance",
 	"morale_loss",
 	"fire",
+	"attacker_turns_since_spotted",
+	"attacker_turns_left_spotted_for_snipers",
 
 	"unit", "damaging_item", "weapon_item", "attacker",
 	"battle_game", "skill", "health_damage", "orig_power", "part", "side", "damaging_type", "battle_action", }
