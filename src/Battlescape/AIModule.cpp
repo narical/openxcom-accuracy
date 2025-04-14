@@ -3548,7 +3548,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (Options::aiPerformanceOptimization && tile->hasNoFloor() && !inDoors && tileBelow && tileBelow->hasNoFloor())
 				continue;
 			isPathToPositionSave(pos, saveForProxies);
-			if (!sweepMode && !saveForProxies)
+			if (_unit->getAggressiveness() >= 3 && !saveForProxies)
 				continue;
 			float closestEnemyDistValid = FLT_MAX;
 			float closestEnemyDistAssumed = FLT_MAX;
