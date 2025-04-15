@@ -3687,6 +3687,16 @@ void GeoscapeState::determineAlienMissions()
 				}
 				if (triggerHappy)
 				{
+					// soldier type requirements
+					for (auto& triggerSoldierType : arcScript->getSoldierTypeTriggers())
+					{
+						triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
 					// xcom base requirements
 					for (auto& triggerXcomBase : arcScript->getXcomBaseInRegionTriggers())
 					{
@@ -3855,6 +3865,16 @@ void GeoscapeState::determineAlienMissions()
 				for (auto& triggerFacility : command->getFacilityTriggers())
 				{
 					triggerHappy = (save->isFacilityBuilt(triggerFacility.first) == triggerFacility.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
+			if (triggerHappy)
+			{
+				// soldier type requirements
+				for (auto& triggerSoldierType : command->getSoldierTypeTriggers())
+				{
+					triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
 					if (!triggerHappy)
 						break;
 				}
