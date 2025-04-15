@@ -6894,6 +6894,20 @@ ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, cons
 }
 
 /**
+ * Constructor of visibility script parser.
+ */
+ModScript::AiCalculateTargetWeightParser::AiCalculateTargetWeightParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"current_target_weight",
+	"default_target_weight",
+
+	"ai_unit", "target_unit", "battle_game" }
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
+}
+
+/**
  * Init all required data in script using object data.
  */
 void BattleUnit::ScriptFill(ScriptWorkerBlit* w, const BattleUnit* unit, const SavedBattleGame* save, int body_part, int anim_frame, int shade, int burn)
