@@ -3597,6 +3597,7 @@ void GeoscapeState::determineAlienMissions()
 
 	std::unordered_set<std::string> xcomBaseRegions;
 	std::unordered_set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> pactCountries;
 	for (auto* xcomBase : *save->getBases())
 	{
 		auto* region = save->locateRegion(*xcomBase);
@@ -3608,6 +3609,13 @@ void GeoscapeState::determineAlienMissions()
 		if (country)
 		{
 			xcomBaseCountries.insert(country->getRules()->getType());
+		}
+	}
+	for (auto* country : *save->getCountries())
+	{
+		if (country->getPact())
+		{
+			pactCountries.insert(country->getRules()->getType());
 		}
 	}
 
@@ -3713,6 +3721,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 						triggerHappy = (found == triggerXcomBase2.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : arcScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3901,6 +3920,17 @@ void GeoscapeState::determineAlienMissions()
 						break;
 				}
 			}
+			if (triggerHappy)
+			{
+				// country with pact
+				for (auto& triggerPact : command->getPactCountryTriggers())
+				{
+					bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+					triggerHappy = (found == triggerPact.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
 			// levels one and two passed: insert this command into the array.
 			if (triggerHappy)
 			{
@@ -4073,6 +4103,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 						triggerHappy = (found == triggerXcomBase2.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : eventScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
 						if (!triggerHappy)
 							break;
 					}
