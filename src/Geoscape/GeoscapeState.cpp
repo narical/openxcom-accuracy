@@ -3593,10 +3593,10 @@ void GeoscapeState::determineAlienMissions()
 	int64_t currentFunds = save->getFunds();
 	currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
 	std::vector<RuleMissionScript*> availableMissions;
-	std::map<int, bool> conditions;
+	std::unordered_map<int, bool> conditions;
 
-	std::set<std::string> xcomBaseRegions;
-	std::set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> xcomBaseRegions;
+	std::unordered_set<std::string> xcomBaseCountries;
 	for (auto* xcomBase : *save->getBases())
 	{
 		auto* region = save->locateRegion(*xcomBase);
