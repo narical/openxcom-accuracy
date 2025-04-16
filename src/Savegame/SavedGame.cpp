@@ -3576,7 +3576,12 @@ void isResearchedScript(const SavedGame* sg, int& val, const RuleResearch* name)
 	val = 0;
 }
 
-bool filterCountryScript(const SavedGame*, const Country*)
+bool filterCountryConstScript(const SavedGame*, const Country*)
+{
+	return true;
+}
+
+bool filterCountryScript(SavedGame*, Country*)
 {
 	return true;
 }
@@ -3648,6 +3653,7 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 	sgg.add<&SavedGame::getMonthsPassed>("getMonthsPassed", "Number of months passed from start");
 	sgg.add<&SavedGame::getDaysPassed>("getDaysPassed", "Number of days passed from start");
 
+	sgg.addList<&filterCountryConstScript, &SavedGame::_countries>("getCountries");
 	sgg.addList<&filterCountryScript, &SavedGame::_countries>("getCountries");
 
 	sgg.add<&isResearchedScript>("isResearched");
