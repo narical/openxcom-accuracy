@@ -4747,7 +4747,7 @@ void BattleUnit::resetTurnsSince()
 	{
 		left = 0;
 	}
-	_turnsSinceStunned = 255;
+	//_turnsSinceStunned is reset elsewhere
 }
 
 
