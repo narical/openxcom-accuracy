@@ -98,7 +98,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  */
 BattlescapeState::BattlescapeState() :
-	_reserve(0), _touchButtonsEnabled(false), _touchButtonsEnabledLastTurn(false), _manaBarVisible(false),
+	_reserve(0), _touchButtonsEnabled(false), _manaBarVisible(false),
 	_firstInit(true), _paletteResetNeeded(false), _paletteResetRequested(false),
 	_isMouseScrolling(false), _isMouseScrolled(false),
 	_xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0),
@@ -1799,17 +1799,17 @@ void BattlescapeState::toggleTouchButtons(bool deactivate, bool tryToReactivate)
 
 	if (tryToReactivate)
 	{
-		_touchButtonsEnabled = _touchButtonsEnabledLastTurn;
-		_touchButtonsEnabledLastTurn = false;
+		_touchButtonsEnabled = Options::oxceBattleTouchButtonsEnabled; // restore
 	}
 	else if (deactivate)
 	{
-		_touchButtonsEnabledLastTurn = _touchButtonsEnabled;
+		Options::oxceBattleTouchButtonsEnabled = _touchButtonsEnabled; // backup
 		_touchButtonsEnabled = false;
 	}
 	else
 	{
 		_touchButtonsEnabled = !_touchButtonsEnabled;
+		Options::oxceBattleTouchButtonsEnabled = _touchButtonsEnabled; // backup
 	}
 
 	_btnCtrl->setVisible(_touchButtonsEnabled);
