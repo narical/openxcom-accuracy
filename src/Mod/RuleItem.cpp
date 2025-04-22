@@ -490,7 +490,6 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("accuracyThrow", _accuracyThrow);
 	reader.tryRead("accuracyCloseQuarters", _accuracyCloseQuarters);
 	reader.tryRead("noLOSAccuracyPenalty", _noLOSAccuracyPenalty);
-	reader.tryRead("explodeInventory", _explodeInventory);
 	if (reader["isExplodingInHands"])
 	{
 		// FIXME: backwards-compatibility only, remove in 2026
@@ -498,6 +497,7 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 		reader.tryRead("isExplodingInHands", tmpBool);
 		_explodeInventory = tmpBool ? 2 : 0;
 	}
+	reader.tryRead("explodeInventory", _explodeInventory);
 
 	_confAimed.cost.loadCost(reader, "Aimed");
 	_confAuto.cost.loadCost(reader, "Auto");
