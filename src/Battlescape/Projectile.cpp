@@ -874,10 +874,28 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		int xyShift, zShift;
 
-		if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
-			xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
-		else
-			xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+		if (Options::shootingSpreadMode == 1) // Uniform shooting spread
+		{
+			if (xDist <= yDist)
+				xyShift = xDist / 4 + yDist;
+			else
+				xyShift = xDist + yDist / 4;
+
+			xyShift *= 0.839; // Constant to match average xyShift to vanilla
+		}
+
+		else if (Options::shootingSpreadMode == 2) // Tightened uniform shooting spread
+		{
+			xyShift = (xDist + yDist) / 2;	//Uniform part of spreading from vanilla
+		}
+
+		else // if Options::shootingSpreadMode == 0 - Vanilla shooting spread
+		{
+			if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
+				xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+			else
+				xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+		}
 
 		if (xyShift <= zDist)				//slight z deviation
 			zShift = xyShift / 2 + zDist;
@@ -917,8 +935,40 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 		deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
-		target->x += RNG::generate(0, deviation) - deviation / 2;
-		target->y += RNG::generate(0, deviation) - deviation / 2;
+		if (Options::shootingSpreadMode == 1 || Options::shootingSpreadMode == 2) // Make spread round instead of square
+		{
+			const double SECONDARY_SPREAD_COEFF = 1.1; // Increasing spread radius to compensate additional hits
+
+			bool resultShifted = false;
+			int dX, dY;
+
+			for (int i = 0; i < 15; ++i) // Break from this cycle when proper target is found
+			{
+				dX = RNG::generate(0, deviation) - deviation / 2;
+				dY = RNG::generate(0, deviation) - deviation / 2;
+
+				int radiusSq = dX*dX + dY*dY;
+				int deviateRadius = deviation / 2;
+				int deviateRadiusSq = deviateRadius * deviateRadius;
+
+				if (radiusSq <= deviateRadiusSq) break;  // If we inside of the spread circle - we're done!
+
+				if (!resultShifted)
+				{
+					resultShifted = true;
+					deviation *= SECONDARY_SPREAD_COEFF; // Change spread radius for second+ attempts
+				}
+			}
+			target->x += dX;
+			target->y += dY;
+		}
+
+		else // Classic shooting spread
+		{
+			target->x += RNG::generate(0, deviation) - deviation / 2;
+			target->y += RNG::generate(0, deviation) - deviation / 2;
+		}
+
 		target->z += RNG::generate(0, deviation / 2) / 2 - deviation / 8;
 	}
 

@@ -116,6 +116,8 @@ en-US:
   STR_BATTLEINSTANTGRENADE_DESC: "Grenades primed to go off in 0 turns will explode immediately when thrown, instead of at the end of the turn."
   STR_BATTLEUFOEXTENDERACCURACY: "UFO Extender accuracy"
   STR_BATTLEUFOEXTENDERACCURACY_DESC: "Accuracy of shots drops off after a certain distance, according to shot type. Adjusted accuracy will be displayed on the cursor."
+  STR_SHOOTING_SPREAD_MODE: "Shooting spread mode"
+  STR_SHOOTING_SPREAD_MODE_DESC: "0> Original game 1> Uniform (same chance to hit) 2> Uniform tight (increased chance to hit)"
   STR_BATTLEREALISTICACCURACY: "Realistic Accuracy & Cover"
   STR_BATTLEREALISTICACCURACY_DESC: "Chance to hit depends on how much cover target has. Accuracy number represents precise chance to hit. Kneel and take cover!"
   STR_BATTLEREALISTICIMPSNAP: "RA - Improved snap/auto"
