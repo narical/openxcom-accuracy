@@ -752,6 +752,8 @@ public:
 	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Get how many turns left snipers know about this target. For specific faction.
 	int  getTurnsLeftSpottedForSnipersByFaction(UnitFaction faction) const;
+	/// Reset how many turns passed since stunned last time.
+	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Increase how many turns passed since stunned last time.
 	void incTurnsSinceStunned() { _turnsSinceStunned = std::min(255, _turnsSinceStunned + 1); }
 	/// Return how many turns passed since stunned last time.

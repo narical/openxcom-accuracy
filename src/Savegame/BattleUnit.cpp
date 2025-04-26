@@ -5072,7 +5072,7 @@ void BattleUnit::resetTurnsSince()
 	{
 		left = 0;
 	}
-	_turnsSinceStunned = 255;
+	//_turnsSinceStunned is reset elsewhere
 }
 
 
@@ -7479,6 +7479,20 @@ ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, cons
 	"distance", "distance_max", "distance_target_max",
 	"smoke_density", "fire_density",
 	"smoke_density_near_observer", "fire_density_near_observer" }
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
+}
+
+/**
+ * Constructor of visibility script parser.
+ */
+ModScript::AiCalculateTargetWeightParser::AiCalculateTargetWeightParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"current_target_weight",
+	"default_target_weight",
+
+	"ai_unit", "target_unit", "battle_game" }
 {
 	BindBase b { this };
 

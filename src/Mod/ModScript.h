@@ -113,6 +113,12 @@ class ModScript
 	{
 		VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
+
+	struct AiCalculateTargetWeightParser : ScriptParserEvents<Output, const BattleUnit*, const BattleUnit*, const SavedBattleGame*>
+	{
+		AiCalculateTargetWeightParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+
 	struct HitUnitParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, const RuleSkill*, int, int, int>
 	{
 		HitUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -347,6 +353,8 @@ public:
 
 	using VisibilityUnit = MACRO_NAMED_SCRIPT("visibilityUnit", VisibilityUnitParser);
 
+	using AiCalculateTargetWeight = MACRO_NAMED_SCRIPT("aiCalculateTargetWeight", AiCalculateTargetWeightParser);
+
 	using StatsForNerdsArmor = MACRO_NAMED_SCRIPT("statsForNerdsArmor", StatsForNerdsArmorParser);
 
 	////////////////////////////////////////////////////////////
@@ -461,6 +469,8 @@ public:
 		AwardExperience,
 
 		VisibilityUnit,
+
+		AiCalculateTargetWeight,
 
 		StatsForNerdsArmor
 	>;

@@ -157,12 +157,13 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_damageTypeSet(false), _meleeTypeSet(false),
 	_accuracyUse(0), _accuracyMind(0), _accuracyPanic(20), _accuracyThrow(100), _accuracyCloseQuarters(-1),
 	_noLOSAccuracyPenalty(-1),
+	_explodeInventory(-1),
 	_costUse(25), _costMind({}, {}), _costPanic({}, {}), _costThrow(25), _costPrime(50), _costUnprime(25),
 	_clipSize(0), _specialChance(100), _tuLoad{ }, _tuUnload{ },
 	_battleType(BT_NONE), _fuseType(BFT_NONE), _fuseTriggerEvents{ }, _hiddenOnMinimap(false),
 	_medikitActionName("STR_USE_MEDI_KIT"), _psiAttackName(), _primeActionName("STR_PRIME_GRENADE"), _unprimeActionName(), _primeActionMessage("STR_GRENADE_IS_ACTIVATED"), _unprimeActionMessage("STR_GRENADE_IS_DEACTIVATED"),
 	_twoHanded(false), _blockBothHands(false), _fixedWeapon(false), _fixedWeaponShow(false), _isConsumable(false), _isFireExtinguisher(false),
-	_isExplodingInHands(false), _specialUseEmptyHand(false), _specialUseEmptyHandShow(false),
+	_specialUseEmptyHand(false), _specialUseEmptyHandShow(false),
 	_defaultInvSlotX(0), _defaultInvSlotY(0), _waypoints(0), _invWidth(1), _invHeight(1),
 	_painKiller(0), _heal(0), _stimulant(0), _medikitType(BMT_NORMAL), _medikitTargetSelf(false), _medikitTargetImmune(false), _medikitTargetMatrix(63),
 	_woundRecovery(0), _healthRecovery(0), _stunRecovery(0), _energyRecovery(0), _manaRecovery(0), _moraleRecovery(0), _painKillerRecovery(1.0f),
@@ -489,6 +490,14 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("accuracyThrow", _accuracyThrow);
 	reader.tryRead("accuracyCloseQuarters", _accuracyCloseQuarters);
 	reader.tryRead("noLOSAccuracyPenalty", _noLOSAccuracyPenalty);
+	if (reader["isExplodingInHands"])
+	{
+		// FIXME: backwards-compatibility only, remove in 2026
+		bool tmpBool = false;
+		reader.tryRead("isExplodingInHands", tmpBool);
+		_explodeInventory = tmpBool ? 2 : 0;
+	}
+	reader.tryRead("explodeInventory", _explodeInventory);
 
 	_confAimed.cost.loadCost(reader, "Aimed");
 	_confAuto.cost.loadCost(reader, "Auto");
@@ -549,7 +558,6 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	mod->loadUnorderedNames(_type, _supportedInventorySectionsNames, reader["supportedInventorySections"]);
 	reader.tryRead("isConsumable", _isConsumable);
 	reader.tryRead("isFireExtinguisher", _isFireExtinguisher);
-	reader.tryRead("isExplodingInHands", _isExplodingInHands);
 	reader.tryRead("specialUseEmptyHand", _specialUseEmptyHand);
 	reader.tryRead("specialUseEmptyHandShow", _specialUseEmptyHandShow);
 	reader.tryRead("invWidth", _invWidth);
@@ -1442,6 +1450,15 @@ int RuleItem::getNoLOSAccuracyPenalty(const Mod *mod) const
 }
 
 /**
+ * Gets the setting for primed explosives exploding in the inventory.
+ * @return The setting (0 = no, 1 = yes, except when in hands, 2 = always).
+ */
+int RuleItem::getExplodeInventory(const Mod* mod) const
+{
+	return _explodeInventory != -1 ? _explodeInventory : (_battleType == BT_GRENADE ? mod->getExplodeInventoryGlobal() : 0);
+}
+
+/**
  * Gets the item's time unit percentage for aimed shots.
  * @return The aimed shot TU percentage.
  */
@@ -1914,15 +1931,6 @@ bool RuleItem::isConsumable() const
 bool RuleItem::isFireExtinguisher() const
 {
 	return _isFireExtinguisher;
-}
-
-/**
- * Is this item explode in hands?
- * @return True if the item can explode in hand.
- */
-bool RuleItem::isExplodingInHands() const
-{
-	return _isExplodingInHands;
 }
 
 /**

@@ -1855,7 +1855,6 @@ void StatsForNerdsState::initItemList()
 	addInteger(ss, itemRule->getManaExperience(), "manaExperience");
 	addBoolean(ss, itemRule->getArcingShot(), "arcingShot");
 	addBoolean(ss, itemRule->isFireExtinguisher(), "isFireExtinguisher");
-	addBoolean(ss, itemRule->isExplodingInHands(), "isExplodingInHands");
 	addInteger(ss, itemRule->getWaypoints(), "waypoints");
 	addInteger(ss, itemRule->getSprayWaypoints(), "sprayWaypoints");
 
@@ -1874,6 +1873,10 @@ void StatsForNerdsState::initItemList()
 	addBoolean(ss, itemRule->convertToCivilian(), "convertToCivilian");
 	addBoolean(ss, itemRule->isLOSRequired(), "LOSRequired");
 
+	if (itemBattleType == BT_GRENADE || _showDebug)
+	{
+		addInteger(ss, itemRule->getExplodeInventory(mod), "explodeInventory", 0); // not raw!
+	}
 	if (itemBattleType == BT_FIREARM
 		|| itemBattleType == BT_GRENADE
 		|| itemBattleType == BT_PROXIMITYGRENADE

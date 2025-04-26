@@ -3724,10 +3724,11 @@ void GeoscapeState::determineAlienMissions()
 	int64_t currentFunds = save->getFunds();
 	currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
 	std::vector<RuleMissionScript*> availableMissions;
-	std::map<int, bool> conditions;
+	std::unordered_map<int, bool> conditions;
 
-	std::set<std::string> xcomBaseRegions;
-	std::set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> xcomBaseRegions;
+	std::unordered_set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> pactCountries;
 	for (auto* xcomBase : *save->getBases())
 	{
 		auto region = save->locateRegion(*xcomBase);
@@ -3739,6 +3740,13 @@ void GeoscapeState::determineAlienMissions()
 		if (country)
 		{
 			xcomBaseCountries.insert(country->getRules()->getType());
+		}
+	}
+	for (auto* country : *save->getCountries())
+	{
+		if (country->getPact())
+		{
+			pactCountries.insert(country->getRules()->getType());
 		}
 	}
 
@@ -3818,6 +3826,16 @@ void GeoscapeState::determineAlienMissions()
 				}
 				if (triggerHappy)
 				{
+					// soldier type requirements
+					for (auto& triggerSoldierType : arcScript->getSoldierTypeTriggers())
+					{
+						triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
 					// xcom base requirements
 					for (auto& triggerXcomBase : arcScript->getXcomBaseInRegionTriggers())
 					{
@@ -3834,6 +3852,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 						triggerHappy = (found == triggerXcomBase2.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : arcScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3992,6 +4021,16 @@ void GeoscapeState::determineAlienMissions()
 			}
 			if (triggerHappy)
 			{
+				// soldier type requirements
+				for (auto& triggerSoldierType : command->getSoldierTypeTriggers())
+				{
+					triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
+			if (triggerHappy)
+			{
 				// xcom base requirements
 				for (auto& triggerXcomBase : command->getXcomBaseInRegionTriggers())
 				{
@@ -4008,6 +4047,17 @@ void GeoscapeState::determineAlienMissions()
 				{
 					bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 					triggerHappy = (found == triggerXcomBase2.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
+			if (triggerHappy)
+			{
+				// country with pact
+				for (auto& triggerPact : command->getPactCountryTriggers())
+				{
+					bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+					triggerHappy = (found == triggerPact.second);
 					if (!triggerHappy)
 						break;
 				}
@@ -4184,6 +4234,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 						triggerHappy = (found == triggerXcomBase2.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : eventScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
 						if (!triggerHappy)
 							break;
 					}

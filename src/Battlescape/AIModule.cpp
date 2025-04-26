@@ -2763,6 +2763,12 @@ AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
 		weight = target->getAITargetWeightAsNeutral(_save->getMod());
 	}
 
+	weight = (AIAttackWeight)ModScript::scriptFunc2<ModScript::AiCalculateTargetWeight>(
+		_unit->getArmor(),
+		weight, weight,
+		_unit, target, _save
+	);
+
 	return weight;
 }
 
