@@ -5331,7 +5331,7 @@ void AIModule::brutalBlaster()
 	float highestScore = 0;
 	for (std::vector<BattleUnit *>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _aggroTarget == 0; ++i)
 	{
-		if ((*i)->isOut() || !brutalValidTarget(*i, true))
+		if ((*i)->isOut() || !brutalValidTarget(*i, true, true))
 			continue;
 		bool dummy = false;
 		std::vector<PathfindingNode *> path = _save->getPathfinding()->findReachablePathFindingNodes(_unit, BattleActionCost(), dummy, true, *i);
@@ -5367,7 +5367,7 @@ void AIModule::brutalBlaster()
 		{
 			if ((*i)->getTileLastSpotted(_unit->getFaction(), true) == -1)
 				continue;
-			if (!(*i)->isOut() && isEnemy((*i), true) && !brutalValidTarget(*i, true) && (*i)->getTurnsSinceSeen(_unit->getFaction()) < 2)
+			if (!(*i)->isOut() && isEnemy((*i), true) && !brutalValidTarget(*i, true, true) && (*i)->getTurnsSinceSeen(_unit->getFaction()) < 2)
 			{
 				Position targetPos = _save->getTileCoords((*i)->getTileLastSpotted(_unit->getFaction(), true));
 				bool dummy = false;
@@ -5811,19 +5811,22 @@ bool AIModule::brutalValidTarget(BattleUnit *unit, bool moveMode, bool psiMode) 
 	{
 		return false;
 	}
+	int targetMode = _unit->aiTargetMode();
+	if (psiMode)
+		targetMode = std::max(targetMode, 2);
 	bool iAmMindControlled = false;
 	if (_unit->getOriginalFaction() != _unit->getFaction())
 		iAmMindControlled = true;
-	if (_unit->aiTargetMode() < 2 && !moveMode)
+	if (targetMode < 2 && !moveMode)
 	{
 		if (_unit->hasVisibleUnit(unit))
 			return isEnemy(unit, iAmMindControlled);
 		else
 			return false;
 	}
-	else if (_unit->aiTargetMode() < 4 || moveMode)
+	else if (targetMode < 4 || moveMode)
 	{
-		if (visibleToAnyFriend(unit) || _unit->aiTargetMode() >= 4)
+		if (visibleToAnyFriend(unit) || targetMode >= 4)
 			return isEnemy(unit, iAmMindControlled);
 		else
 			return false;
