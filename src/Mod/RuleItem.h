@@ -736,7 +736,7 @@ public:
 	/// Gets the item's close quarters combat accuracy.
 	int getAccuracyCloseQuarters(const Mod *mod) const;
 	/// Get penalty for firing this weapon on out-of-LOS targets
-	int getNoLOSAccuracyPenalty(Mod *mod) const;
+	int getNoLOSAccuracyPenalty(const Mod *mod) const;
 	/// Get setting for primed explosives exploding in the inventory.
 	int getExplodeInventory(const Mod* mod) const;
 

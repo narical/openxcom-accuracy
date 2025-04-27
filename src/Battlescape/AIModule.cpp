@@ -3481,7 +3481,7 @@ void AIModule::brutalThink(BattleAction* action)
 		Log(LOG_INFO) << "Immobile enemies detected. Taking cover takes precedent over attacking.";
 	bool wantToPrime = false;
 	int primeCost = 0;
-	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt(_save)->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt(_save)->getRules()->isExplodingInHands())
+	if (Options::allowPreprime && _grenade && !_unit->getGrenadeFromBelt(_save)->isFuseEnabled() && !IAmMindControlled && !_unit->getGrenadeFromBelt(_save)->getRules()->getExplodeInventory(_save->getMod()))
 	{
 		BattleItem* grenade = _unit->getGrenadeFromBelt(_save);
 		

@@ -748,8 +748,6 @@ public:
 	void updateEnemyKnowledge(int index, bool clue = false);
 	/// Get the tile where the unit was last spotted
 	int getTileLastSpotted(UnitFaction faction, bool forBlindShot = false) const;
-	/// Reset how many turns passed since stunned last time.
-	void resetTurnsSinceStunned() { _turnsSinceStunned = 255; }
 	/// Get how many turns left snipers know about this target. For specific faction.
 	int  getTurnsLeftSpottedForSnipersByFaction(UnitFaction faction) const;
 	/// Reset how many turns passed since stunned last time.
