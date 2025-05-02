@@ -120,7 +120,6 @@ OPT bool oxceHighlightNewTopicsHidden;
 OPT int oxceInterceptGuiMaintenanceTimeHidden;
 // 0 = not persisted; 1 = persisted per battle; 2 = persisted per campaign
 OPT int maxNumberOfBases;
-OPT bool oxceUniformShootingSpread;
 OPT int oxceCrashedOrLanded;
 
 /**
