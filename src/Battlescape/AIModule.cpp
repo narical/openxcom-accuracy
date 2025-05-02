@@ -3722,7 +3722,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (hasTileSight(pos, pathPos))
 					visiblePath += 1;
 			}
-			if (!sweepMode && !wantToPrime && !contact)
+			if (!sweepMode && !wantToPrime)
 			{
 				if (enoughTUToPeak && !outOfRangeForShortRangeWeapon && unitToWalkTo && !brutalValidTarget(unitToWalkTo))
 				{
