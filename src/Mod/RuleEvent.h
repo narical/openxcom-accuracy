@@ -47,6 +47,7 @@ private:
 	std::vector<std::map<std::string, int> > _randomMultiItemList;
 	WeightedOptions _weightedItemList;
 	std::vector<std::string> _researchList;
+	std::vector<std::string> _adhocScriptTags;
 	std::string _interruptResearch;
 	int _timer, _timerRandom;
 	bool _invert;
@@ -102,6 +103,8 @@ public:
 	const WeightedOptions &getWeightedItemList() const { return _weightedItemList; }
 	/// Gets a list of research projects; one of them will be randomly discovered when this event pops up.
 	const std::vector<std::string> &getResearchList() const { return _researchList; }
+	/// Gets a list of adhoc script tags; used for adhoc alien mission generation.
+	const std::vector<std::string> &getAdhocScriptTags() const { return _adhocScriptTags; }
 	/// Gets the research project that will interrupt/terminate an already generated (but not yet popped up) event.
 	const std::string &getInterruptResearch() const { return _interruptResearch; }
 	/// Gets the timer of delay for this event, for it occurring after being spawned with eventScripts ruleset.
