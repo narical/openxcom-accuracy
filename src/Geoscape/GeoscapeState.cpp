@@ -3830,9 +3830,9 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 		if (!isNewMonth && eventRules)
 		{
 			bool matchFound = false;
-			for (auto& atag : eventRules->getAdhocScriptTags())
+			for (auto& atag : eventRules->getAdhocMissionScriptTags())
 			{
-				for (auto& btag : command->getTags())
+				for (auto& btag : command->getAdhocMissionScriptTags())
 				{
 					if (atag == btag) matchFound = true;
 					break;

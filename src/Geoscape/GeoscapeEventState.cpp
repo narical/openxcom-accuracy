@@ -136,7 +136,7 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
  */
 void GeoscapeEventState::eventLogic()
 {
-	if (!_eventRule.getAdhocScriptTags().empty())
+	if (!_eventRule.getAdhocMissionScriptTags().empty())
 	{
 		auto* geo = _game->getGeoscapeState();
 		geo->determineAlienMissions(false, &_eventRule);

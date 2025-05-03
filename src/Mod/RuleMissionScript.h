@@ -39,7 +39,7 @@ private:
 	std::string _missionVarName, _missionMarkerName;
 	int _counterMin, _counterMax;
 	std::vector<int> _conditionals;
-	std::vector<std::string> _tags;
+	std::vector<std::string> _adhocMissionScriptTags;
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights, _missionWeights, _raceWeights;
 
 	std::map<std::string, bool> _researchTriggers;
@@ -108,7 +108,7 @@ public:
 	/// Gets the list of conditions this command requires in order to run.
 	const std::vector<int> &getConditionals() const;
 	/// Gets the list of tags for this command.
-	const std::vector<std::string> &getTags() const { return _tags; }
+	const std::vector<std::string> &getAdhocMissionScriptTags() const { return _adhocMissionScriptTags; }
 	/// Does this command have raceWeights?
 	bool hasRaceWeights() const;
 	/// Does this command have mission weights?
