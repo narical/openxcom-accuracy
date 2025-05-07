@@ -711,6 +711,8 @@ interfaces:
         color: 89
       - id: distance
         color: 89
+      - id: oceanIndicator
+        color: 80
       - id: minimizedNumber
         color: 80
       - id: radarDetail

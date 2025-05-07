@@ -738,6 +738,9 @@ interfaces: #done
       - id: distance
         color: 244
         pos: [123, 73]
+      - id: oceanIndicator
+        color: 239
+        pos: [151, 73]
       - id: minimizedNumber
         color: 80
       - id: radarDetail
