@@ -2623,15 +2623,18 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 							int distanceSq = unit->distance3dToUnitSq(bu);
 							int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-							int upperLimit = weapon->getRules()->getSnapRange();
-							int lowerLimit = weapon->getRules()->getMinRange();
-							if (distance > upperLimit)
 							{
-								accuracy -= (distance - upperLimit) * weapon->getRules()->getDropoff();
-							}
-							else if (distance < lowerLimit)
-							{
-								accuracy -= (lowerLimit - distance) * weapon->getRules()->getDropoff();
+								int upperLimit, lowerLimit;
+								int dropoff = weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), rs.attackType);
+
+								if (distance > upperLimit)
+								{
+									accuracy -= (distance - upperLimit) * dropoff;
+								}
+								else if (distance < lowerLimit)
+								{
+									accuracy -= (lowerLimit - distance) * dropoff;
+								}
 							}
 
 							bool outOfRange = weapon->getRules()->isOutOfRange(distanceSq);
