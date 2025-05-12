@@ -588,7 +588,6 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "avoidCuddle", &avoidCuddle, true, "STR_AVOIDCUDDLE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aggression", &aggression, 1, "STR_AGGRESSIONMODE", "STR_AI"));

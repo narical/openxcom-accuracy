@@ -3581,7 +3581,7 @@ void AIModule::brutalThink(BattleAction* action)
 				if (!_unit->isCheatOnMovement() && unit->getFaction() != _unit->getFaction())
 					unitPosition = _save->getTileCoords(unit->getTileLastSpotted(_unit->getFaction()));
 				float unitDist = Position::distance(pos, unitPosition);
-				if (Options::avoidCuddle && isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
+				if (isAlly(unit) && unit != _unit && unitPosition.z == pos.z && !IAmMindControlled)
 				{
 					if (unitDist < 5)
 					{
@@ -3839,13 +3839,10 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			fallbackScore = 100 / walkToDist;
-			if (Options::avoidCuddle)
-			{
-				greatCoverScore /= cuddleAvoidModifier;
-				goodCoverScore /= cuddleAvoidModifier;
-				okayCoverScore /= cuddleAvoidModifier;
-				fallbackScore /= cuddleAvoidModifier;
-			}
+			greatCoverScore /= cuddleAvoidModifier;
+			goodCoverScore /= cuddleAvoidModifier;
+			okayCoverScore /= cuddleAvoidModifier;
+			fallbackScore /= cuddleAvoidModifier;
 			if (tile->getDangerous() || (tile->getFire() && _unit->avoidsFire()))
 			{
 				if (IAmMindControlled && !(tile->getFloorSpecialTileType() == START_POINT && _unit->getOriginalFaction() == FACTION_PLAYER))
