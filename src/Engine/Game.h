@@ -162,9 +162,6 @@ public:
 	/// Gets the _mmb flag.
 	bool getMMBFlag() const { return _mmb; }
 
-	/// Gets the geoScapeState
-	GeoscapeState *getGeoscapeState() const;
-
 	/// Sets the scroll step value.
 	void setScrollStep(int newValue) { _scrollStep = newValue; }
 

@@ -810,21 +810,4 @@ void Game::resetTouchButtonFlags()
 	_scrollStep = 1;
 }
 
-/**
- * Returns the GeoscapeState
- * @return the GeoscapeState
-*/
-GeoscapeState* Game::getGeoscapeState() const
-{
-	for (auto *state : _states)
-	{
-		auto *geo = dynamic_cast<GeoscapeState *>(state);
-		if (geo)
-		{
-			return geo;
-		}
-	}
-	return NULL;
-}
-
 }
