@@ -591,14 +591,14 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aggression", &aggression, 1, "STR_AGGRESSIONMODE", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachTurn", &autoCombatEachTurn, true, "STR_AUTOCOMBAT_EACH_TURN", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatControlPerUnit", &autoCombatControlPerUnit, true, "STR_AUTOCOMBAT_PER_UNIT", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultSoldier",     &autoCombatDefaultSoldier,     true, "STR_AUTOCOMBAT_DEFAULT_SOLDIER",     "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultHWP",         &autoCombatDefaultHWP,         true, "STR_AUTOCOMBAT_DEFAULT_HWP",         "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultMindControl", &autoCombatDefaultMindControl, true, "STR_AUTOCOMBAT_DEFAULT_MINDCONTROL", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultRemain",      &autoCombatDefaultRemain,      true, "STR_AUTOCOMBAT_DEFAULT_REMAIN",      "STR_AI"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachTurn", &autoCombatEachTurn, true, "STR_AUTOCOMBAT_EACH_TURN", "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatControlPerUnit", &autoCombatControlPerUnit, true, "STR_AUTOCOMBAT_PER_UNIT", "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultSoldier",     &autoCombatDefaultSoldier,     true, "STR_AUTOCOMBAT_DEFAULT_SOLDIER",     "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultHWP",         &autoCombatDefaultHWP,         true, "STR_AUTOCOMBAT_DEFAULT_HWP",         "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultMindControl", &autoCombatDefaultMindControl, true, "STR_AUTOCOMBAT_DEFAULT_MINDCONTROL", "STR_AUTO"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatDefaultRemain",      &autoCombatDefaultRemain,      true, "STR_AUTOCOMBAT_DEFAULT_REMAIN",      "STR_AUTO"));
 }
 
 void createControlsOTHER()

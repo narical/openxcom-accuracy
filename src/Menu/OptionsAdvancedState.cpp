@@ -140,6 +140,10 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 			{
 				_settingsAI[optionInfo.owner()].push_back(optionInfo);
 			}
+			else if (optionInfo.category() == "STR_AUTO")
+			{
+				_settingsAuto[optionInfo.owner()].push_back(optionInfo);
+			}
 		}
 	}
 }
@@ -179,6 +183,8 @@ void OptionsAdvancedState::updateList()
 	_offsetBattleMax = -1;
 	_offsetAIMin = -1;
 	_offsetAIMax = -1;
+	_offsetAutoMin = -1;
+	_offsetAutoMax = -1;
 
 	_lstOptions->clearList();
 
@@ -237,6 +243,21 @@ void OptionsAdvancedState::updateList()
 		addSettings(_settingsAI[idx]);
 		row += _settingsAI[idx].size();
 		_offsetAIMax = row;
+	}
+	if (_settingsAuto[idx].size() > 0)
+	{
+		if (row > -1)
+		{
+			_lstOptions->addRow(2, "", "");
+			row++;
+		}
+		_lstOptions->addRow(2, tr("STR_AUTO").c_str(), "");
+		row++;
+		_offsetAutoMin = row;
+		_lstOptions->setCellColor(_offsetAutoMin, 0, _colorGroup);
+		addSettings(_settingsAuto[idx]);
+		row += _settingsAuto[idx].size();
+		_offsetAutoMax = row;
 	}
 }
 
@@ -300,6 +321,10 @@ OptionInfo *OptionsAdvancedState::getSetting(size_t sel)
 	else if (selInt > _offsetAIMin && selInt <= _offsetAIMax)
 	{
 		return &_settingsAI[idx][selInt - 1 - _offsetAIMin];
+	}
+	else if (selInt > _offsetAutoMin && selInt <= _offsetAutoMax)
+	{
+		return &_settingsAuto[idx][selInt - 1 - _offsetAutoMin];
 	}
 	else
 	{
