@@ -108,7 +108,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_game(game), _arrow(0), _anyIndicator(false), _isAltPressed(false),
 	_selectorX(0), _selectorY(0), _mouseX(0), _mouseY(0), _cursorType(CT_NORMAL), _cursorSize(1), _animFrame(0),
 	_projectile(0), _followProjectile(true), _projectileInFOV(false), _explosionInFOV(false), _launch(false), _visibleMapHeight(visibleMapHeight),
-	_unitDying(false), _smoothingEngaged(false), _flashScreen(false), _bgColor(15), _projectileSet(0), _showObstacles(false)
+	_unitDying(false), _smoothingEngaged(false), _flashScreen(false), _bgColor(15), _projectileSet(0), _showObstacles(false), _showInfoOnCursor(false)
 {
 	_iconHeight = _game->getMod()->getInterface("battlescape")->getElement("icons")->h;
 	_iconWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
@@ -157,6 +157,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_obstacleTimer->stop();
 	_obstacleTimer->onTimer((SurfaceHandler)&Map::disableObstacles);
 
+	_showInfoOnCursor = ((Options::battleUFOExtenderAccuracy || Options::battleRealisticAccuracy) && Options::oxceShowAccuracyOnCrosshair == 1) || Options::oxceShowAccuracyOnCrosshair == 2;
 	_txtAccuracy = new Text(44, 18, 0, 0);
 	_txtAccuracy->setSmall();
 	_txtAccuracy->setPalette(_game->getScreen()->getPalette());
@@ -1368,9 +1369,8 @@ void Map::drawTerrain(Surface *surface)
 							tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frameNumber);
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
 
-							// UFO extender / Realistic accuracy: display adjusted accuracy value on crosshair in real-time.
-							if ((_cursorType == CT_AIM || _cursorType == CT_PSI || _cursorType == CT_WAYPOINT)
-								&& ((Options::battleUFOExtenderAccuracy || Options::battleRealisticAccuracy) && Options::oxceShowAccuracyOnCrosshair == 1 || Options::oxceShowAccuracyOnCrosshair == 2))
+							// UFO extender accuracy: display adjusted accuracy value on crosshair in real-time.
+							if (_cursorType >= CT_AIM && _showInfoOnCursor) // CT_AIM, CT_PSI, CT_WAYPOINT, CT_THROW
 							{
 								bool targetSelf = false;
 								int accuracy = 0;
@@ -1699,7 +1699,10 @@ void Map::drawTerrain(Surface *surface)
 										_txtAccuracy->setColor( TXT_YELLOW );
 									}
 
-									bool outOfRange = weapon->isOutOfRange(distanceSq);
+									bool outOfRange = action->type == BA_THROW
+										? weapon->isOutOfThrowRange(distanceSq, _save->getDepth())
+										: weapon->isOutOfRange(distanceSq);
+
 									// zero accuracy or out of range: set it red.
 									if (accuracy <= 0 || outOfRange)
 									{

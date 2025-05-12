@@ -802,6 +802,10 @@ Mod::~Mod()
 	{
 		delete pair.second;
 	}
+	for (auto& pair : _adhocScripts)
+	{
+		delete pair.second;
+	}
 	for (auto& pair : _soundDefs)
 	{
 		delete pair.second;
@@ -2512,7 +2516,8 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 	// short of knowing the results of calls to the RNG before they're determined.
 	// the best solution i can come up with is to disallow it, as there are other ways to achieve what this would amount to anyway,
 	// and they don't require time travel. - Warboy
-	for (auto& pair : _missionScripts)
+	for (auto& map : { _missionScripts, _adhocScripts })
+	for (auto& pair : map)
 	{
 		RuleMissionScript *rule = pair.second;
 		std::set<std::string> missions = rule->getAllMissionTypes();
@@ -3034,6 +3039,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	for (const auto& ruleReader : iterateRules("missionScripts", "type"))
 	{
 		RuleMissionScript *rule = loadRule(ruleReader, &_missionScripts, &_missionScriptIndex, "type");
+		if (rule != 0)
+		{
+			rule->load(ruleReader);
+		}
+	}
+	for (const auto& ruleReader : iterateRules("adhocScripts", "type"))
+	{
+		RuleMissionScript* rule = loadRule(ruleReader, &_adhocScripts, &_adhocScriptIndex, "type");
 		if (rule != 0)
 		{
 			rule->load(ruleReader);
@@ -5231,10 +5244,21 @@ const std::vector<std::string> *Mod::getMissionScriptList() const
 	return &_missionScriptIndex;
 }
 
+const std::vector<std::string> *Mod::getAdhocScriptList() const
+{
+	return &_adhocScriptIndex;
+}
+
 RuleMissionScript *Mod::getMissionScript(const std::string &name, bool error) const
 {
 	return getRule(name, "Mission Script", _missionScripts, error);
 }
+
+RuleMissionScript *Mod::getAdhocScript(const std::string &name, bool error) const
+{
+	return getRule(name, "Adhoc Script", _adhocScripts, error);
+}
+
 /// Get global script data.
 ScriptGlobal *Mod::getScriptGlobal() const
 {

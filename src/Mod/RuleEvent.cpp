@@ -65,6 +65,7 @@ void RuleEvent::load(const YAML::YamlNodeReader& node)
 		_weightedItemList.load(reader["weightedItemList"]);
 	}
 	reader.tryRead("researchList", _researchList);
+	reader.tryRead("adhocMissionScriptTags", _adhocMissionScriptTags);
 	reader.tryRead("interruptResearch", _interruptResearch);
 	reader.tryRead("timer", _timer);
 	reader.tryRead("timerRandom", _timerRandom);

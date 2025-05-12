@@ -103,6 +103,8 @@ public:
 	bool containsUfopaediaStartState() const;
 	/// Returns whether a NotesState is in the background.
 	bool containsNotesState() const;
+	/// Returns the GeoscapeState from the background (if available).
+	GeoscapeState* getGeoscapeState() const;
 	/// Returns whether the game is shutting down.
 	bool isQuitting() const;
 	/// Loads the default and current language.

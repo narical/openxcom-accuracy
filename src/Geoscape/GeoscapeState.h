@@ -38,6 +38,7 @@ class Ufo;
 class MissionSite;
 class Base;
 class RuleMissionScript;
+class RuleEvent;
 
 /**
  * Geoscape screen which shows an overview of
@@ -196,9 +197,9 @@ public:
 	void handleBaseDefense(Base *base, Ufo *ufo);
 	/// Update the resolution settings, we just resized the window.
 	void resize(int &dX, int &dY) override;
-private:
 	/// Handle alien mission generation.
-	void determineAlienMissions();
+	void determineAlienMissions(bool isNewMonth = true, const RuleEvent* eventRules = nullptr);
+private:
 	/// Process each individual mission script command.
 	bool processCommand(RuleMissionScript *command);
 	bool buttonsDisabled();
