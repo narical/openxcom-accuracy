@@ -228,13 +228,14 @@ private:
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
 	bool _aiPickUpWeaponsMoreActively, _aiPickUpWeaponsMoreActivelyCiv;
+	int _aiReactionFireThreshold, _aiReactionFireThresholdCiv;
 	AIAttackWeight _aiTargetWeightThreatThreshold = AIAttackWeight{ 50 };
 	AIAttackWeight _aiTargetWeightAsHostile = AIAttackWeight{ 100 };
 	AIAttackWeight _aiTargetWeightAsHostileCivilians = AIAttackWeight{ 50 };
 	AIAttackWeight _aiTargetWeightAsFriendly = AIAttackWeight{ -200 };
 	AIAttackWeight _aiTargetWeightAsNeutral = AIAttackWeight{ -100 };
 
-	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
+	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor;
 	int _chanceToStopRetaliation;
 	bool _lessAliensDuringBaseDefense;
 	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry, _infiltrateRandomCountryInTheRegion;
@@ -826,6 +827,8 @@ public:
 	bool getAIPickUpWeaponsMoreActively() const { return _aiPickUpWeaponsMoreActively; }
 	/// Gets whether or not the civilian AI should pick up weapons more actively.
 	bool getAIPickUpWeaponsMoreActivelyCiv() const { return _aiPickUpWeaponsMoreActivelyCiv; }
+	/// Gets the reaction fire threshold (default = 0).
+	int getReactionFireThreshold(UnitFaction faction) const;
 	/// Gets weight value that AI use to determine if target is dangerous.
 	AIAttackWeight getAITargetWeightThreatThreshold() const { return _aiTargetWeightThreatThreshold; }
 	/// Gets default weight value of hostile unit.
@@ -843,8 +846,6 @@ public:
 	int getTooMuchSmokeThreshold() const  {return _tooMuchSmokeThreshold;}
 	/// Gets the custom physical training factor in percent (default = 100).
 	int getCustomTrainingFactor() const { return _customTrainingFactor; }
-	/// Gets the minimum firing accuracy for reaction fire (default = 0).
-	int getMinReactionAccuracy() const { return _minReactionAccuracy; }
 	/// Gets the chance to stop retaliation after unsuccessful xcom base attack (default = 0).
 	int getChanceToStopRetaliation() const { return _chanceToStopRetaliation; }
 	/// Should a damaged UFO deploy less aliens during the base defense?

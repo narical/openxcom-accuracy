@@ -401,6 +401,8 @@ en-GB:
   STR_AUTO_NIGHT_VISION_THRESHOLD_DESC: "If darker than this threshold, toggle Night Vision on automatically."
   STR_SHOW_ACCURACY_ON_CROSSHAIR: "Show accuracy on crosshair"
   STR_SHOW_ACCURACY_ON_CROSSHAIR_DESC: "{ALT}0>{ALT}Never {ALT}1>{ALT}Only if UFO Extender accuracy is enabled {ALT}2>{ALT}Always"
+  STR_REACTION_FIRE_THRESHOLD: "Reaction fire threshold"
+  STR_REACTION_FIRE_THRESHOLD_DESC: "Xcom-controlled units will not reaction fire, if their accuracy (for a given target) is below this threshold."
   STR_AUTO_SELL: "Auto-Sell Manager"
   STR_AUTO_SELL_DESC: "In the battle debriefing sell screen, any item types you sold in previous battles will be automatically marked for selling."
   STR_AUTOMATICPROMOTIONS: "Automatic promotions"
