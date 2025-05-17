@@ -52,6 +52,7 @@ en-US:
   STR_BOLD: "Bold (+50%)"
   STR_VERY_BOLD: "Very bold (+100%)"
 #CraftSoldiersState.cpp
+  STR_ARMOR_GROUP_NOT_ALLOWED: "This armor type is not allowed onboard."
   STR_SOLDIER_GROUP_NOT_ALLOWED: "This soldier type is not allowed onboard."
   STR_SOLDIER_GROUP_NOT_SAME: "This soldier type is not compatible with other soldiers onboard."
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
@@ -471,6 +472,7 @@ en-US:
   STR_STARTING_CONDITION_ITEM: "This mission requires specific item(s):{NEWLINE}{NEWLINE}{0}"
   STR_NOT_ENOUGH_FUEL_TO_REACH_TARGET: "NOT ENOUGH FUEL!{SMALLLINE}The destination is too far for the range of the craft."
   STR_TOO_MANY_ITEMS_ONBOARD: "TOO MANY ITEMS!{SMALLLINE}This craft cannot carry so many items."
+  STR_ARMOR_NOT_ALLOWED_ONBOARD: "ARMOR NOT ALLOWED!{SMALLLINE}Some soldiers are wearing forbidden armor."
   STR_FOLLOW_WING_LEADER_QUESTION: "Follow wing leader?"
 #CraftNotEnoughPilotsState.cpp
   STR_ASSIGN_PILOTS: "Assign pilots..."
