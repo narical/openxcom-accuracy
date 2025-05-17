@@ -388,9 +388,8 @@ void GeoscapeEventState::eventLogic()
 	// 4. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 
-	for (auto& rName : rule.getResearchList())
+	for (auto* rRule : rule.getResearchList())
 	{
-		const RuleResearch *rRule = mod->getResearch(rName, true);
 		if (!save->isResearched(rRule, false) || save->hasUndiscoveredGetOneFree(rRule, true))
 		{
 			possibilities.push_back(rRule);
