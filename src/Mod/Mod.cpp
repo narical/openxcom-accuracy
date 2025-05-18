@@ -423,7 +423,9 @@ Mod::Mod() :
 	_aiUseDelayBlaster(3), _aiUseDelayFirearm(0), _aiUseDelayGrenade(3), _aiUseDelayProxy(999), _aiUseDelayMelee(0), _aiUseDelayPsionic(0),
 	_aiFireChoiceIntelCoeff(5), _aiFireChoiceAggroCoeff(5), _aiExtendedFireModeChoice(false), _aiRespectMaxRange(false), _aiDestroyBaseFacilities(false),
 	_aiPickUpWeaponsMoreActively(false), _aiPickUpWeaponsMoreActivelyCiv(false),
-	_maxLookVariant(0), _tooMuchSmokeThreshold(10), _customTrainingFactor(100), _minReactionAccuracy(0), _chanceToStopRetaliation(0), _lessAliensDuringBaseDefense(false),
+	_aiReactionFireThreshold(0), _aiReactionFireThresholdCiv(0),
+	_maxLookVariant(0), _tooMuchSmokeThreshold(10), _customTrainingFactor(100),
+	_chanceToStopRetaliation(0), _chanceToDetectAlienBaseEachMonth(20), _lessAliensDuringBaseDefense(false),
 	_allowCountriesToCancelAlienPact(false), _buildInfiltrationBaseCloseToTheCountry(false), _infiltrateRandomCountryInTheRegion(false), _allowAlienBasesOnWrongTextures(true),
 	_kneelBonusGlobal(115), _oneHandedPenaltyGlobal(80),
 	_enableCloseQuartersCombat(0), _closeQuartersAccuracyGlobal(100), _closeQuartersTuCostGlobal(12), _closeQuartersEnergyCostGlobal(8), _closeQuartersSneakUpGlobal(0),
@@ -2324,6 +2326,7 @@ void Mod::loadAll()
 	afterLoadHelper("craftWeapons", this, _craftWeapons, &RuleCraftWeapon::afterLoad);
 	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
 	afterLoadHelper("crafts", this, _crafts, &RuleCraft::afterLoad);
+	afterLoadHelper("events", this, _events, &RuleEvent::afterLoad);
 
 	for (auto& a : _armors)
 	{
@@ -3207,6 +3210,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeAI.tryRead("destroyBaseFacilities", _aiDestroyBaseFacilities);
 		nodeAI.tryRead("pickUpWeaponsMoreActively", _aiPickUpWeaponsMoreActively);
 		nodeAI.tryRead("pickUpWeaponsMoreActivelyCiv", _aiPickUpWeaponsMoreActivelyCiv);
+		nodeAI.tryRead("reactionFireThreshold", _aiReactionFireThreshold);
+		nodeAI.tryRead("reactionFireThresholdCiv", _aiReactionFireThresholdCiv);
 
 		nodeAI.tryRead("targetWeightThreatThreshold", _aiTargetWeightThreatThreshold);
 		nodeAI.tryRead("targetWeightAsHostile", _aiTargetWeightAsHostile);
@@ -3217,8 +3222,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	reader.tryRead("maxLookVariant", _maxLookVariant);
 	reader.tryRead("tooMuchSmokeThreshold", _tooMuchSmokeThreshold);
 	reader.tryRead("customTrainingFactor", _customTrainingFactor);
-	reader.tryRead("minReactionAccuracy", _minReactionAccuracy);
 	reader.tryRead("chanceToStopRetaliation", _chanceToStopRetaliation);
+	reader.tryRead("chanceToDetectAlienBaseEachMonth", _chanceToDetectAlienBaseEachMonth);
 	reader.tryRead("lessAliensDuringBaseDefense", _lessAliensDuringBaseDefense);
 	reader.tryRead("allowCountriesToCancelAlienPact", _allowCountriesToCancelAlienPact);
 	reader.tryRead("buildInfiltrationBaseCloseToTheCountry", _buildInfiltrationBaseCloseToTheCountry);
@@ -4473,6 +4478,27 @@ int Mod::getScientistCost() const
 int Mod::getPersonnelTime() const
 {
 	return _timePersonnel;
+}
+
+/**
+ * Returns the reaction fire threshold (default = 0).
+ * @return The threshold for a given faction.
+ */
+int Mod::getReactionFireThreshold(UnitFaction faction) const
+{
+	switch (faction)
+	{
+	case FACTION_PLAYER:
+		return Options::oxceReactionFireThreshold;
+	case FACTION_HOSTILE:
+		return _aiReactionFireThreshold;
+	case FACTION_NEUTRAL:
+		return _aiReactionFireThresholdCiv;
+	default:
+		break;
+	}
+
+	return 0;
 }
 
 /**
