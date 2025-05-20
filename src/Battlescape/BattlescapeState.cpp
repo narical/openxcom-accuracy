@@ -4297,7 +4297,35 @@ void BattlescapeState::readyItem(BattleType battleType, ItemDamageType itemDamag
 	bool picked = false;
 	bool primed = false;
 
-	for (BattleItem* battleItem : *unit->getInventory())
+		// --- Create a combined list of items to search ---
+	std::vector<BattleItem*> itemsToSearch;
+
+	// 1. Add items from unit's inventory
+	if (unit->getInventory()) // Check if inventory pointer is valid
+	{
+		for (BattleItem* battleItem : *unit->getInventory())
+		{
+			if (battleItem) // Check if item pointer is valid
+			{
+				itemsToSearch.push_back(battleItem);
+			}
+		}
+	}
+
+	// 2. Add items from the tile the unit is standing on
+	OpenXcom::Tile* unitTile = unit->getTile();
+	if (unitTile && unitTile->getInventory()) // Check if tile and its inventory are valid
+	{
+		for (BattleItem* battleItem : *unitTile->getInventory())
+		{
+			if (battleItem) // Check if item pointer is valid
+			{
+				itemsToSearch.push_back(battleItem);
+			}
+		}
+	}
+
+	for (BattleItem* battleItem : itemsToSearch)
 	{
 		const RuleItem* ruleItem = battleItem->getRules();
 
