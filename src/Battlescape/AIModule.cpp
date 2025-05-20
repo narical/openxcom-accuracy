@@ -62,6 +62,9 @@ AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
 	_psiAction = BattleAction();
 	_targetFaction = FACTION_PLAYER;
 	_myFaction = _unit->getOriginalFaction();
+	_energyCostToReachClosestPositionToBreakLos = -1;
+	_tuCostToReachClosestPositionToBreakLos = -1;
+	_tuWhenChecking = _unit->getTimeUnits();
 	if (_unit->getOriginalFaction() == FACTION_NEUTRAL || _unit->getOriginalFaction() == FACTION_PLAYER)
 	{
 		_targetFaction = FACTION_HOSTILE;
@@ -3529,7 +3532,7 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (hasTileSight(myPos, pathPos))
 				visiblePathFromMyPos += 1;
-			if (_save->getTile(pathPos)->hasNoFloor() && !_unit->isFloating())
+			if (_save->getTile(pathPos)->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 				pathInvolvesFalling = true;
 		}
 		for (auto pu : _allPathFindingNodes)
