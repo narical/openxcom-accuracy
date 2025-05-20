@@ -3739,7 +3739,20 @@ void AIModule::brutalThink(BattleAction* action)
 						}
 					}
 					if (!pathInvolvesFalling && !_unit->isCheatOnMovement() && visiblePathFromMyPos < visiblePath && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
-						indirectPeakScore = visiblePath;
+					{
+						if (Options::aiPerformanceOptimization)
+							indirectPeakScore = visiblePathFromMyPos;
+						else
+						{
+							int visibleTilesFrom = 0;
+							for (int i = 0; i < 8; i++)
+							{
+								visibleTilesFrom += _save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true).size();
+							}
+							indirectPeakScore = visibleTilesFrom;
+						}
+						indirectPeakScore *= remainingTimeUnits;
+					}
 				}
 			}
 			float discoverThreat = 0;
