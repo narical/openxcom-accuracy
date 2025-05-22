@@ -5274,18 +5274,22 @@ void BattleUnit::setTileLastSpotted(int index, UnitFaction faction, bool forBlin
 	}
 }
 
-void BattleUnit::updateEnemyKnowledge(int index, bool clue)
+void BattleUnit::updateEnemyKnowledge(int index, bool clue, bool door)
 {
 	setTileLastSpotted(index, FACTION_HOSTILE);
 	setTileLastSpotted(index, FACTION_HOSTILE, true);
-	setTileLastSpotted(index, FACTION_PLAYER);
-	setTileLastSpotted(index, FACTION_PLAYER, true);
+	if (!door)
+	{
+		setTileLastSpotted(index, FACTION_PLAYER);
+		setTileLastSpotted(index, FACTION_PLAYER, true);
+	}
 	setTileLastSpotted(index, FACTION_NEUTRAL);
 	setTileLastSpotted(index, FACTION_NEUTRAL, true);
 	if (!clue || Options::updateTurnsSinceSeenByClue)
 	{
 		setTurnsSinceSeen(0, FACTION_HOSTILE);
-		setTurnsSinceSeen(0, FACTION_PLAYER);
+		if (!door)
+			setTurnsSinceSeen(0, FACTION_PLAYER);
 		setTurnsSinceSeen(0, FACTION_NEUTRAL);
 	}
 }

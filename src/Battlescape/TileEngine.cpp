@@ -4558,6 +4558,7 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 				// Update FOV through the doorway.
 				calculateFOV(doorCentre, doorsOpened, true, true);
 				resetVisibilityCache();
+				unit->updateEnemyKnowledge(_save->getTileIndex(unit->getPosition()), true, true);
 			}
 			else return 4;
 		}

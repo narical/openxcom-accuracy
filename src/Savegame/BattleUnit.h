@@ -746,7 +746,7 @@ public:
 	/// Set where the unit has last been spotted
 	void setTileLastSpotted(int index, UnitFaction faction, bool forBlindShot = false);
 	/// Updates when an enemy gains knowledge about a units whereabout
-	void updateEnemyKnowledge(int index, bool clue = false);
+	void updateEnemyKnowledge(int index, bool clue = false, bool door = false);
 	/// Get the tile where the unit was last spotted
 	int getTileLastSpotted(UnitFaction faction, bool forBlindShot = false) const;
 	/// Get how many turns left snipers know about this target. For specific faction.
