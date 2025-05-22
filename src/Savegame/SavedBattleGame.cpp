@@ -3777,4 +3777,25 @@ void SavedBattleGame::ScriptRegisterUnitAnimations(ScriptParserBase* parser)
 	sbg.addField<&SavedBattleGame::_togglePersonalLightTemp>("isPersonalLightEnabled");
 	sbg.addField<&SavedBattleGame::_toggleNightVisionColorTemp>("getNightVisionColor");
 }
+
+bool SavedBattleGame::hasObjectives()
+{
+	return _objectivesNeeded > 0;
+}
+
+bool SavedBattleGame::hasExitZone()
+{
+	bool hasExitZone = false;
+	for (int i = 0; i < getMapSizeXYZ(); ++i)
+	{
+		Tile* tile = getTile(i);
+		if (tile && tile->getFloorSpecialTileType() == END_POINT)
+		{
+			hasExitZone = true;
+			break;
+		}
+	}
+	return hasExitZone;
+}
+
 }

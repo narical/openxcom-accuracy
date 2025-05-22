@@ -675,6 +675,10 @@ public:
 	void updateVisibleTiles();
 	/// Returns if tile is visible to player
 	bool isTileVisible(Tile* sometile);
+	/// Returns if the map has objectives that need to be destroyed
+	bool hasObjectives();
+	/// Returns if the map has an exit-zone
+	bool hasExitZone();
 };
 
 }
