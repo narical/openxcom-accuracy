@@ -3231,8 +3231,6 @@ void AIModule::brutalThink(BattleAction* action)
 		if (panicked / total == 1)
 			myAggressiveness++;
 	}
-	if (_save->hasObjectives() || _save->getMissionType() == "STR_BASE_DEFENSE" || _save->hasExitZone())
-		myAggressiveness += 3;
 	int weaponRange = maxExtenderRangeWith(_unit, getMaxTU(_unit));
 	bool sweepMode = _unit->isLeeroyJenkins() || immobile || myAggressiveness >= 3;
 	_unit->setCharging(nullptr);
