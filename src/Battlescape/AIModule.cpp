@@ -3757,11 +3757,14 @@ void AIModule::brutalThink(BattleAction* action)
 								bestPeakDirectionFromPos = i;
 							}
 						}
-						indirectPeakScore = highestVisibleTiles;
-						if (inDoors)
-							indirectPeakScore *= getMaxTU(_unit);
-						else
-							indirectPeakScore *= remainingTimeUnits;
+						if (!(bestPeakDirectionFromPos == _unit->getDirection() || pos == myPos))
+						{
+							indirectPeakScore = highestVisibleTiles;
+							if (inDoors)
+								indirectPeakScore *= getMaxTU(_unit);
+							else
+								indirectPeakScore *= remainingTimeUnits;
+						}
 					}
 				}
 			}
@@ -3990,7 +3993,7 @@ void AIModule::brutalThink(BattleAction* action)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(greatCoverScore);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -6410,7 +6413,7 @@ bool AIModule::hasTileSight(Position from, Position to)
 		return false;
 	if (tile->getTerrainLevel() * -1 + _unit->getHeight() - 24 > 0)
 		to.z += 1;
-	if (_save->getTileEngine()->calculateLineTile(from, to, trajectory) > 0)
+	if (_save->getTileEngine()->calculateLineTile(from, to, trajectory, 10) > 0)
 		result = false;
 	_save->getTileEngine()->setVisibilityCache(from, to, result);
 	// Set visibility cache for each position in the trajectory
