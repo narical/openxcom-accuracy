@@ -89,6 +89,8 @@ public:
 	void setFlags(bool isUfoDoor, bool stopLOS, bool isNoFloor, int bigWall, bool isGravLift, bool isDoor, bool blockFire, bool blockSmoke, bool baseModule);
 	/// Gets the amount of blockage of a certain type.
 	int getBlock(ItemDamageType type) const;
+	/// Gets how much light is blocked.
+	int getLightBlock() const;
 	/// Sets the amount of blockage for all types.
 	void setBlockValue(int lightBlock, int visionBlock, int HEBlock, int smokeBlock, int fireBlock, int gasBlock);
 	/// Sets the amount of HE blockage.

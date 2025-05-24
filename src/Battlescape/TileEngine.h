@@ -199,7 +199,7 @@ public:
 	/// Closes ufo doors.
 	int closeUfoDoors();
 	/// Calculates a line trajectory in tile space.
-	int calculateLineTile(Position origin, Position target, std::vector<Position> &trajectory);
+	int calculateLineTile(Position origin, Position target, std::vector<Position> &trajectory, int minLightBlock = 0);
 	/// Calculates a line trajectory in voxel space.
 	VoxelType calculateLineVoxel(Position origin, Position target, bool storeTrajectory, std::vector<Position> *trajectory, BattleUnit *excludeUnit, BattleUnit *excludeAllBut = 0, bool onlyVisible = false);
 	/// Calculates a parabola trajectory.

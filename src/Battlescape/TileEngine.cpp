@@ -4651,7 +4651,7 @@ int TileEngine::closeUfoDoors()
  * @param trajectory A vector of positions in which the trajectory is stored.
  * @return 0 or some value greater than .
  */
-int TileEngine::calculateLineTile(Position origin, Position target, std::vector<Position> &trajectory)
+int TileEngine::calculateLineTile(Position origin, Position target, std::vector<Position> &trajectory, int minLightBlock)
 {
 	Position lastPoint = origin;
 	int steps = 0;
@@ -4673,7 +4673,22 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 					result = false;
 				}
 			}
-
+			if (minLightBlock > 0 && result)
+			{
+				MapData* objectMapData = _save->getTile(lastPoint)->getMapData(O_OBJECT);
+				if (objectMapData && objectMapData->getLightBlock() < minLightBlock)
+				{
+					result = false;
+				}
+				else
+				{
+					MapData* objectMapData = _save->getTile(point)->getMapData(O_OBJECT);
+					if (objectMapData && objectMapData->getLightBlock() < minLightBlock)
+					{
+						result = false;
+					}
+				}
+			}
 			steps++;
 			lastPoint = point;
 			return result;
