@@ -3719,6 +3719,15 @@ void AIModule::brutalThink(BattleAction* action)
 			float tuDistFromTarget = tuCostToReachPosition(pos, targetNodes, NULL, true);
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			bool pathInvolvesFalling = false;
+			float visiblePath = 0;
+			if (Options::aiPerformanceOptimization)
+			{
+				for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
+				{
+					if (hasTileSight(pos, pathPos))
+						visiblePath += 1;
+				}
+			}
 			for (auto pathPos : getPositionsOnPathTo(pos, _allPathFindingNodes))
 			{
 				if (_save->getTile(pathPos)->hasNoFloor() && _unit->getMovementType() != MT_FLY)
@@ -3749,22 +3758,30 @@ void AIModule::brutalThink(BattleAction* action)
 					if (!pathInvolvesFalling && !_unit->isCheatOnMovement() && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
 					{
 						int highestVisibleTiles = 0;
-						for (int i = 0; i < 8; i++)
+						if (!Options::aiPerformanceOptimization)
 						{
-							int currentVisibleTiles = _save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true).size();
-							if (currentVisibleTiles > highestVisibleTiles)
+							for (int i = 0; i < 8; i++)
 							{
-								highestVisibleTiles = currentVisibleTiles;
-								bestPeakDirectionFromPos = i;
+								int currentVisibleTiles = _save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true).size();
+								if (currentVisibleTiles > highestVisibleTiles)
+								{
+									highestVisibleTiles = currentVisibleTiles;
+									bestPeakDirectionFromPos = i;
+								}
 							}
 						}
 						if (!(bestPeakDirectionFromPos == _unit->getDirection() || pos == myPos))
 						{
-							indirectPeakScore = highestVisibleTiles;
-							if (inDoors && !(myAggressiveness == 0))
-								indirectPeakScore *= getMaxTU(_unit);
+							if (Options::aiPerformanceOptimization)
+								indirectPeakScore = visiblePath;
 							else
-								indirectPeakScore *= remainingTimeUnits;
+							{
+								indirectPeakScore = highestVisibleTiles;
+								if (inDoors && !(myAggressiveness == 0))
+									indirectPeakScore *= getMaxTU(_unit);
+								else
+									indirectPeakScore *= remainingTimeUnits;
+							}
 						}
 					}
 				}
