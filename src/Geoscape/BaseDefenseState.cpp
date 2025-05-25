@@ -208,6 +208,71 @@ void BaseDefenseState::think()
 	_timer->think(this, 0);
 }
 
+bool BaseDefenseState::applyDamage(const RuleBaseFacility* rule)
+{
+	bool shieldDown = false;
+
+	int power = rule->getDefenseValue();
+
+	if (rule->unifiedDamageFormula() && rule->getAmmoItem())
+	{
+		// unified damage formula
+		int damage = rule->getAmmoItem()->getDamageType()->getRandomDamage(power);
+
+		if (_ufo->getShield() != 0)
+		{
+			int shieldDamage = damage * rule->getShieldDamageModifier() / 100;
+			if (rule->getShieldDamageModifier() == 0)
+			{
+				damage = 0;
+			}
+			else
+			{
+				// scale down by bleed-through factor and scale up by shield-effectiveness factor
+				damage = std::max(0, shieldDamage - _ufo->getShield()) * _ufo->getCraftStats().shieldBleedThrough / rule->getShieldDamageModifier();
+			}
+			_ufo->setShield(_ufo->getShield() - shieldDamage);
+
+			if (_ufo->getShield() == 0)
+			{
+				shieldDown = true;
+			}
+		}
+
+		damage = std::max(0, damage - _ufo->getCraftStats().armor);
+		_ufo->setDamage(_ufo->getDamage() + damage, _game->getMod());
+	}
+	else
+	{
+		// vanilla dmg formula: 50-150%
+		int dmg = power / 2 + RNG::generate(0, power);
+
+		if (_ufo->getShield() > 0)
+		{
+			int shieldDmg = dmg * rule->getShieldDamageModifier() / 100;
+			if (rule->getShieldDamageModifier() == 0)
+			{
+				dmg = 0;
+			}
+			else
+			{
+				// scale down by bleed-through factor NOT performed for backwards-compatibility
+				// only scale up by shield-effectiveness factor
+				dmg = std::max(0, shieldDmg - _ufo->getShield()) * 100 / rule->getShieldDamageModifier();
+			}
+			_ufo->setShield(_ufo->getShield() - shieldDmg);
+
+			if (_ufo->getShield() == 0)
+			{
+				shieldDown = true;
+			}
+		}
+		_ufo->setDamage(_ufo->getDamage() + dmg, _game->getMod());
+	}
+
+	return shieldDown;
+}
+
 void BaseDefenseState::nextStep()
 {
 	if (_thinkcycles == -1)
@@ -274,6 +339,9 @@ void BaseDefenseState::nextStep()
 		bool hasOwnAmmo = def->getRules()->getAmmoMax() > 0;
 		bool spendAmmo = false;
 
+		int chanceToHit = def->getRules()->getHitRatio(); // vanilla xcom
+		chanceToHit -= _ufo->getCraftStats().avoidBonus2;
+
 		switch (_action)
 		{
 		case  BDA_NONE:
@@ -311,7 +379,7 @@ void BaseDefenseState::nextStep()
 			{
 				//_lstDefenses->setCellText(_row, 2, tr("STR_NO_AMMO"));
 			}
-			else if (!RNG::percent((def)->getRules()->getHitRatio()))
+			else if (!RNG::percent(chanceToHit))
 			{
 				spendAmmo = true;
 				_lstDefenses->setCellText(_row, 2, tr("STR_MISSED"));
@@ -321,15 +389,18 @@ void BaseDefenseState::nextStep()
 				spendAmmo = true;
 				_lstDefenses->setCellText(_row, 2, tr("STR_HIT"));
 				_game->getMod()->getSound("GEO.CAT", (def)->getRules()->getHitSound())->play();
-				int dmg = (def)->getRules()->getDefenseValue();
-				dmg = dmg / 2 + RNG::generate(0, dmg);
-				if (_ufo->getShield() > 0)
+
+				bool shieldDown = applyDamage(def->getRules());
+
+				if (shieldDown)
 				{
-					int shieldDamage = dmg;
-					dmg = std::max(0, dmg - _ufo->getShield());
-					_ufo->setShield(_ufo->getShield() - shieldDamage);
+					_lstDefenses->addRow(3, tr("STR_UFO_SHIELD_DOWN").c_str(), " ", " ");
+					++_row;
+					if (_row > 14)
+					{
+						_lstDefenses->scrollDown(true);
+					}
 				}
-				_ufo->setDamage(_ufo->getDamage() + dmg, _game->getMod());
 			}
 			if (spendAmmo && ammoNeeded > 0)
 			{
