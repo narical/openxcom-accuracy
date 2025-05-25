@@ -1228,8 +1228,18 @@ void DogfightState::update()
 						// Formula delivered by Volutar, altered by Extended version.
 						int power = p->getDamage() * (_craft->getCraftStats().powerBonus + 100) / 100;
 
+						int damage = 0;
+						if (p->getDamageItem())
+						{
+							// unified damage formula
+							damage = p->getDamageItem()->getDamageType()->getRandomDamage(power);
+						}
+						else
+						{
+							// vanilla dmg formula: 50-100%
+							damage = RNG::generate(power / 2, power);
+						}
 						// Handle UFO shields
-						int damage = RNG::generate(power / 2, power);
 						int shieldDamage = 0;
 						if (_ufo->getShield() != 0)
 						{
@@ -1890,7 +1900,7 @@ void DogfightState::ufoFireWeapon()
 	_ufo->setFireCountdown(RNG::generate(0, fireCountdown) + fireCountdown);
 
 	setStatus("STR_UFO_RETURN_FIRE");
-	CraftWeaponProjectile *p = new CraftWeaponProjectile();
+	CraftWeaponProjectile *p = new CraftWeaponProjectile(nullptr);
 	p->setType(CWPT_PLASMA_BEAM);
 	p->setAccuracy(60);
 	p->setDamage(_ufo->getRules()->getWeaponPower());
