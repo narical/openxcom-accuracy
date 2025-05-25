@@ -3409,6 +3409,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		action->type = BA_TURN;
 		action->target = posToLookAt;
+		_reposition = true;
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Want to look at position: " << posToLookAt;
@@ -3530,7 +3531,7 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		float myTuDistFromTarget = tuCostToReachPosition(_positionAtStartOfTurn, targetNodes, NULL, true);
 		float myWalkToDist = myMaxTU + myTuDistFromTarget;
-		std::vector<Tile*> doorTiles = getDoorTiles(_allPathFindingNodes);
+		std::vector<Tile*> corpseTiles = getCorpseTiles(_allPathFindingNodes);
 		float visiblePathFromMyPos = 0;
 		for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
 		{
@@ -3570,7 +3571,7 @@ void AIModule::brutalThink(BattleAction* action)
 			int currLastStepCost = 0;
 			Position ref;
 			float viewDistance = _save->getMod()->getMaxViewDistance();
-			float avgSmoke = myTile->getSmoke();
+			int maxSmoke = myTile->getSmoke();
 			int remainingTimeUnits = _unit->getTimeUnits() - pu->getTUCost(false).time;
 			int bestPeakDirectionFromPos = _unit->getDirection();
 			if (unitToWalkTo)
@@ -3578,9 +3579,9 @@ void AIModule::brutalThink(BattleAction* action)
 				viewDistance = _unit->getMaxViewDistanceAtDay(unitToWalkTo);
 				if (tile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && tile->getFire() == 0)
 					viewDistance = _unit->getMaxViewDistanceAtDark(unitToWalkTo);
-				avgSmoke = (unitToWalkTo->getTile()->getSmoke() + avgSmoke + tile->getSmoke()) / 3.0;
+				maxSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), std::max(maxSmoke, tile->getSmoke()));
 			}
-			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + avgSmoke / 3.0)));
+			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + maxSmoke / 3.0)));
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
 				Position unitPosition = unit->getPosition();
@@ -3760,7 +3761,7 @@ void AIModule::brutalThink(BattleAction* action)
 						if (!(bestPeakDirectionFromPos == _unit->getDirection() || pos == myPos))
 						{
 							indirectPeakScore = highestVisibleTiles;
-							if (inDoors)
+							if (inDoors && !(myAggressiveness == 0))
 								indirectPeakScore *= getMaxTU(_unit);
 							else
 								indirectPeakScore *= remainingTimeUnits;
@@ -3902,15 +3903,19 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			float doorDivider = 1.0f;
-			for (auto doorTile : doorTiles)
+			float avoidDivider = 1.0f;
+			for (auto corpseTile : corpseTiles)
 			{
-				if (hasTileSight(pos, doorTile->getPosition()))
-					doorDivider += 0.2f;
+				if (hasTileSight(pos, corpseTile->getPosition()))
+					avoidDivider += 1.0f;
 			}
-			greatCoverScore /= doorDivider;
-			goodCoverScore /= doorDivider;
-			okayCoverScore /= doorDivider;
+			if (tile->getMapData(O_FLOOR) && tile->getMapData(O_FLOOR)->isGravLift())
+			{
+				avoidDivider += 1.0f;
+			}
+			greatCoverScore /= avoidDivider;
+			goodCoverScore /= avoidDivider;
+			okayCoverScore /= avoidDivider;
 
 			float bonus = 100;
 			if (inDoors)
@@ -3989,11 +3994,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && !lineOfFireBeforeFriendCheck)
+			//if (_traceAI && cuddleAvoidModifier > 1)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(cuddleAvoidModifier * 10);
 			//}
 		}
 		if (_traceAI)
@@ -6573,16 +6578,12 @@ float AIModule::getUnitPower(BattleUnit* unit)
 	return getMaxTU(unit);
 }
 
-std::vector<Tile*> AIModule::getDoorTiles(const std::vector<PathfindingNode*> nodeVector)
+std::vector<Tile*> AIModule::getCorpseTiles(const std::vector<PathfindingNode*> nodeVector)
 {
 	std::vector<Tile*> doorVector;
 	for (auto node : nodeVector)
 	{
 		Tile* tile = _save->getTile(node->getPosition());
-		//if (_save->getTileEngine()->isNextToDoor(tile) && !_save->getTileEngine()->isNextToDoor(tile, true))
-		//{
-		//	doorVector.push_back(tile);
-		//}
 		for (auto item : *(tile->getInventory()))
 		{
 			if (item->getUnit())
