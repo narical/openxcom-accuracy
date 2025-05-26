@@ -3473,7 +3473,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool saveDistance = true;
 	for (auto& reachable : enemyReachable)
 	{
-		if (hasTileSight(myPos, reachable.first))
+		if (reachable.second > 0 && hasTileSight(myPos, reachable.first))
 		{
 			saveDistance = false;
 			break;
@@ -3858,24 +3858,29 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						okayCoverScore = 100 / walkToDist;
 					}
-
-					float highestPickupScore = 0;
-					for (BattleItem* item : *tile->getInventory())
+					if (discoverThreat == 0)
 					{
-						float pickUpScore = getItemPickUpScore(item);
-						if (pickUpScore > myWeaponScore && pickUpScore > highestPickupScore)
+						float highestPickupScore = 0;
+						if (!tile->getInventory()->empty())
 						{
-							highestPickupScore = pickUpScore;
+							for (BattleItem* item : *tile->getInventory())
+							{
+								float pickUpScore = getItemPickUpScore(item);
+								if (pickUpScore > myWeaponScore && pickUpScore > highestPickupScore)
+								{
+									highestPickupScore = pickUpScore;
+								}
+							}
 						}
-					}
-					if (highestPickupScore > 0)
-					{
-						if (greatCoverScore > 0)
-							greatCoverScore += highestPickupScore - myWeaponScore;
-						if (goodCoverScore > 0)
-							goodCoverScore += highestPickupScore - myWeaponScore;
-						if (okayCoverScore > 0)
-							okayCoverScore += highestPickupScore - myWeaponScore;
+						if (highestPickupScore > 0)
+						{
+							if (greatCoverScore > 0)
+								greatCoverScore += highestPickupScore - myWeaponScore;
+							if (goodCoverScore > 0)
+								goodCoverScore += highestPickupScore - myWeaponScore;
+							if (okayCoverScore > 0)
+								okayCoverScore += highestPickupScore - myWeaponScore;
+						}
 					}
 				}
 				if ((discoverThreat == 0 || immobileEnemies) && !contact && !IAmPureMelee && !tile->getDangerous() && !tile->getFire() && !(pu->getTUCost(false).time > getMaxTU(_unit) * tuToSaveForHide) && !_save->getTileEngine()->isNextToDoor(tile) && (pu->getTUCost(false).time < _tuCostToReachClosestPositionToBreakLos || _tuWhenChecking != _unit->getTimeUnits()))
@@ -4012,11 +4017,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && cuddleAvoidModifier > 1)
+			//if (_traceAI)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(cuddleAvoidModifier * 10);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
