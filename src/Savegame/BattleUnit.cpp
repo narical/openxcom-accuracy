@@ -6313,15 +6313,20 @@ bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
 		return false;
 }
 
-float BattleUnit::getAggressiveness() const
+float BattleUnit::getAggressiveness(std::string missionType) const
 {
 	if (getFaction() == FACTION_PLAYER)
 		return getAggression();
+	int aggressionSettingToUse = Options::aggression;
+	if (missionType == "STR_BASE_DEFENSE")
+	{
+		aggressionSettingToUse = Options::baseDefenseAggression;
+	}
 	float aggressiveness = 0;
-	if (Options::aggression == 4)
+	if (aggressionSettingToUse == 4)
 		aggressiveness = getAggression();
 	else
-		return Options::aggression;
+		return aggressionSettingToUse;
 	return aggressiveness;
 }
 

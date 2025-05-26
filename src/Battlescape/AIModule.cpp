@@ -3089,7 +3089,7 @@ void AIModule::brutalThink(BattleAction* action)
 	std::map<Position, int, PositionComparator> enemyReachable;
 	std::map<Position, int, PositionComparator> friendReachable;
 	bool immobileEnemies = false;
-	int myAggressiveness = _unit->getAggressiveness();
+	int myAggressiveness = _unit->getAggressiveness(_save->getMissionType());
 	if (_myFaction == FACTION_HOSTILE)
 	{
 		AlienDeployment* deployment = _save->getMod()->getDeployment(_save->getReinforcementsDeployment());
@@ -3438,6 +3438,7 @@ void AIModule::brutalThink(BattleAction* action)
 	// When I'm mind-controlled I should definitely be reckless
 	if (IAmMindControlled)
 	{
+		myAggressiveness = 3;
 		sweepMode = true;
 		if (_traceAI)
 			Log(LOG_INFO) << "I'm mind-controlled.";
@@ -3512,7 +3513,7 @@ void AIModule::brutalThink(BattleAction* action)
 	if (saveDistance)
 		improveItemization(myWeaponScore, action);
 	if (_traceAI)
-		Log(LOG_INFO) << "iHaveLof : " << iHaveLof << " sweep - mode : " << sweepMode << " could be found : " << amInLoSToFurthestReachable << " energy - recovery : " << getEnergyRecovery(_unit) << " myAggressiveness : " << myAggressiveness << " base - aggressiveness : " << _unit->getAggressiveness() << " wantToPrime: " << wantToPrime << " saveDistance: " << saveDistance << " contact: " << contact;
+		Log(LOG_INFO) << "iHaveLof : " << iHaveLof << " sweep - mode : " << sweepMode << " could be found : " << amInLoSToFurthestReachable << " energy - recovery : " << getEnergyRecovery(_unit) << " myAggressiveness : " << myAggressiveness << " base - aggressiveness : " << _unit->getAggressiveness(_save->getMissionType()) << " wantToPrime: " << wantToPrime << " saveDistance: " << saveDistance << " contact: " << contact;
 	bool winnerWasSpecialDoorCase = false;
 	bool shouldHaveLofAfterMove = false;
 	bool shouldEndTurnAfterMove = false;
@@ -3557,7 +3558,7 @@ void AIModule::brutalThink(BattleAction* action)
 			if (Options::aiPerformanceOptimization && tile->hasNoFloor() && !inDoors && tileBelow && tileBelow->hasNoFloor())
 				continue;
 			isPathToPositionSave(pos, saveForProxies);
-			if (_unit->getAggressiveness() < 3 && !saveForProxies)
+			if (_unit->getAggressiveness(_save->getMissionType()) < 3 && !saveForProxies)
 				continue;
 			float closestEnemyDistValid = FLT_MAX;
 			float closestEnemyDistAssumed = FLT_MAX;

@@ -158,6 +158,8 @@ en-GB:
   STR_INTELLIGENCEMODE_DESC: "0-5> Static intelligence. 6> Inherit intelligence from unit-intelligence. 7> Inherit intelligence from difficulty-level."
   STR_AGGRESSIONMODE: "Aggressiveness"
   STR_AGGRESSIONMODE_DESC: "0> Camper 1> Ambusher 2> Skirmisher 3> Zealot 4> Inherit aggressiveness from unit-aggression."
+  STR_BASE_DEFENSE_AGGRESSIONMODE: "Base-Defense Aggressiveness"
+  STR_BASE_DEFENSE_AGGRESSIONMODE_DESC: "Values work the same as for Aggressivness but specifically for base-defense-missions."
   STR_BRUTALCIVILIANS: "Brutal AI for neutral forces"
   STR_BRUTALCIVILIANS_DESC: "Neutral forces will be controlled by Brutal AI."
   STR_AUTOCOMBAT: "Automated combat"
