@@ -5650,6 +5650,7 @@ void TileEngine::itemMoveInventory(Tile *t, BattleUnit *unit, BattleItem *item, 
 						_save->getTileEngine()->setDangerZone(p, radius, dropper);
 					}
 				}
+				dropper->updateEnemyKnowledge(_save->getTileIndex(p), true, false);
 			}
 			item->moveToOwner(nullptr);
 			t->addItem(item, slot);
