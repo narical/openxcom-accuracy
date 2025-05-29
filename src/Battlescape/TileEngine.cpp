@@ -6564,7 +6564,7 @@ bool TileEngine::isNearDoor(Tile* tile)
 	return false;
 }
 
-std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew)
+std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew, bool ignoreAirTiles)
 {
 	std::set<Tile*> visibleFrom;
 
@@ -6625,6 +6625,12 @@ std::set<Tile*> TileEngine::visibleTilesFrom(BattleUnit* unit, Position pos, int
 
 					if (_save->getTile(posTest)) // inside map?
 					{
+						if (ignoreAirTiles)
+						{
+							// skip air tiles
+							if (_save->getTile(posTest)->hasNoFloor())
+								continue;
+						}
 						// this sets tiles to discovered if they are in LOS - tile visibility is not calculated in voxelspace but in tilespace
 						// large units have "4 pair of eyes"
 						int size = unit->getArmor()->getSize();

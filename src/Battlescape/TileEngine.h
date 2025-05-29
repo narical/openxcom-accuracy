@@ -300,7 +300,7 @@ public:
 	/// Checks if any tiles around this tile are next to a door
 	bool isNearDoor(Tile* tile);
 	/// Returns a vector of tiles that would be visible from a specific location
-	std::set<Tile*> visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew = false);
+	std::set<Tile*> visibleTilesFrom(BattleUnit* unit, Position pos, int direction, bool onlyNew = false, bool ignoreAirTiles = true);
 	/// remember how the visibility from a specific position to another would be
 	void setVisibilityCache(Position from, Position to, bool visible);
 	/// recall how the visibility from a specific position to another was
