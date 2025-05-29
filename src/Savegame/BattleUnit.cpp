@@ -740,6 +740,8 @@ void BattleUnit::load(const YAML::YamlNodeReader& node, const Mod *mod, const Sc
 	reader.tryRead("allowAutoCombat", _allowAutoCombat);
 	reader.tryRead("aggression", _aggression);
 
+	reader.tryRead("hasPanickedLastTurn", _hasPanickedLastTurn);
+
 	_scriptValues.load(reader, shared);
 }
 
@@ -911,6 +913,8 @@ void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 	// Adding missing entries from HEAD using new style
 	writer.write("allowAutoCombat", _allowAutoCombat);
 	writer.write("aggression", _aggression);
+
+	writer.write("hasPanickedLastTurn", _hasPanickedLastTurn);
 
 	// Save script values using the new writer method
 	_scriptValues.save(writer, shared);
