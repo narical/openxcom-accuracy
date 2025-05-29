@@ -3289,8 +3289,6 @@ void AIModule::brutalThink(BattleAction* action)
 					Log(LOG_INFO) << "Should reposition to " << action->target
 								  << " in order to then attack with " << action->weapon->getRules()->getName();
 			}
-			else
-				_reposition = false;
 			if (_traceAI)
 			{
 				if (action->type != BA_WALK)
@@ -3834,14 +3832,14 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						if (myAggressiveness == 0)
 						{
-							if (!_save->getTileEngine()->isNextToDoor(tile))
+							if (!_save->getTileEngine()->isNextToDoor(tile) || contact)
 								greatCoverScore = remainingTimeUnits;
 							else
 								goodCoverScore = remainingTimeUnits;
 						}
 						else
 						{
-							if (!_save->getTileEngine()->isNextToDoor(tile))
+							if (!_save->getTileEngine()->isNextToDoor(tile) || contact)
 								greatCoverScore = 100 / walkToDist;
 							else
 								goodCoverScore = 100 / walkToDist;
@@ -3849,7 +3847,7 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 					else if ((contact || myAggressiveness < 2) && discoverThreat > 0)
 					{
-						if (!_save->getTileEngine()->isNextToDoor(tile))
+						if (!_save->getTileEngine()->isNextToDoor(tile) || contact)
 							goodCoverScore = 100 / discoverThreat;
 						else
 							okayCoverScore = 100 / discoverThreat;
