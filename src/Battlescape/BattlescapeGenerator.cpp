@@ -1456,6 +1456,8 @@ void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, s
 				{
 					continue;
 				}
+				if (candidateItem->getRules()->getBattleType() == BT_FLARE && worldShade <= mod->getMaxDarknessToSeeUnits())
+					continue;
 
 				// Filter: only items on the ground (as per your original logic)
 				// and not "hidden" items (e.g., internal components)
