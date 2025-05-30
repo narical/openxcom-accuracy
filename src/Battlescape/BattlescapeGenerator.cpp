@@ -1438,28 +1438,70 @@ void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, s
 	do
 	{
 		someoneGotSomething = false;
-		for (auto* bu : units)
+		for (BattleUnit* bu : units) // Iterate through each unit
 		{
-			for (BattleItem* bi : (*craftInv))
+			// Basic eligibility check for the unit (from your original code)
+			if (!bu->hasInventory() || !bu->getGeoscapeSoldier() || (!overrideEquipmentLayout && !bu->getGeoscapeSoldier()->getEquipmentLayout()->empty()))
 			{
-				if (bi->getRules()->getInventoryHeight() == 0 || bi->getRules()->getInventoryWidth() == 0)
+				continue; // Skip to the next unit
+			}
+
+			BattleItem* bestItemToGiveToBu = nullptr;
+			double highestScoreForBu = -1.0; // Scores will be in (0, 1], so -1.0 is a safe initial minimum
+
+			// Iterate through all available items in craftInv to find the best one for this unit
+			for (BattleItem* candidateItem : (*craftInv))
+			{
+				if (!candidateItem || !candidateItem->getRules()) // Basic sanity check
 				{
-					// don't autoequip hidden items, whatever they are
 					continue;
 				}
-				if (bi->getSlot() == groundRuleInv)
+
+				// Filter: only items on the ground (as per your original logic)
+				// and not "hidden" items (e.g., internal components)
+				if (candidateItem->getRules()->getInventoryHeight() == 0 || candidateItem->getRules()->getInventoryWidth() == 0)
 				{
-					if (!bu->hasInventory() || !bu->getGeoscapeSoldier() || (!overrideEquipmentLayout && !bu->getGeoscapeSoldier()->getEquipmentLayout()->empty()))
-						continue;
-					if (bu->addItem(bi, mod, true, allowAutoLoadout, false, true))
+					continue; // Skip hidden/unplaceable items
+				}
+				if (candidateItem->getSlot() != groundRuleInv)
+				{
+					continue; // Skip items not on the designated 'ground' slot for distribution
+				}
+
+				// 1. Calculate how many items of this type the unit 'bu' currently has.
+				int countOnUnit = 0;
+				std::string candidateItemName = candidateItem->getRules()->getName(); // Get the type of the item we're considering
+
+				// Iterate over all inventory slots of the unit 'bu' to count existing items of this type
+				for (const auto& unitItem : *bu->getInventory())
+				{
+					if (unitItem->getRules()->getName() == candidateItemName)
+						countOnUnit++;
+				}
+
+				double currentItemScore = 1.0 / (1.0 + static_cast<double>(countOnUnit));
+				if (bu->addItem(candidateItem, mod, true, allowAutoLoadout, false, true, true))
+				{
+					if (currentItemScore > highestScoreForBu)
 					{
-						someoneGotSomething = true;
-						break;
+						highestScoreForBu = currentItemScore;
+						bestItemToGiveToBu = candidateItem;
 					}
 				}
 			}
-		}
-	} while (someoneGotSomething);
+
+			// 4. If a best item was found for unit 'bu' among all available items, attempt to give it.
+			if (bestItemToGiveToBu != nullptr)
+			{
+				if (bu->addItem(bestItemToGiveToBu, mod, true, allowAutoLoadout, false, true))
+				{
+					someoneGotSomething = true;
+					// This unit has received its one (best) item for this pass.
+					// The main loop will then proceed to the next unit.
+				}
+			}
+		} // End of loop iterating through units
+	} while (someoneGotSomething); // Continue distributing as long as items are being successfully given.
 }
 
 /**

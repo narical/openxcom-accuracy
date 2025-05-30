@@ -3247,7 +3247,7 @@ bool BattleUnit::fitItemToInventory(const RuleInventory *slot, BattleItem *item,
  * @param allowUnloadedWeapons allow equip of weapons without ammo.
  * @return if the item was placed or not.
  */
-bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons, bool allowInfinite)
+bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons, bool allowInfinite, bool testMode)
 {
 	RuleInventory *rightHand = mod->getInventoryRightHand();
 	RuleInventory *leftHand = mod->getInventoryLeftHand();
@@ -3316,7 +3316,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 			}
 		}
 		// or in the left/right hand
-		if (!placed && (fitItemToInventory(rightHand, item) || fitItemToInventory(leftHand, item)))
+		if (!placed && (fitItemToInventory(rightHand, item, testMode) || fitItemToInventory(leftHand, item, testMode)))
 		{
 			placed = true;
 			item->setXCOMProperty(getFaction() == FACTION_PLAYER && !isSummonedPlayerUnit());
@@ -3355,12 +3355,12 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 			if (getBaseStats()->strength * 0.66 >= weight) // weight is always considered 0 for aliens
 			{
 				// C1 - vanilla right-hand main weapon (and OXCE left-hand second main weapon)
-				if (fitItemToInventory(rightHand, item))
+				if (fitItemToInventory(rightHand, item, testMode))
 				{
 					placed = true;
 				}
 				bool allowTwoMainWeapons = (getFaction() != FACTION_PLAYER) || _armor->getAllowTwoMainWeapons();
-				if (!placed && allowTwoMainWeapons && fitItemToInventory(leftHand, item))
+				if (!placed && allowTwoMainWeapons && fitItemToInventory(leftHand, item, testMode))
 				{
 					placed = true;
 				}
@@ -3411,7 +3411,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		if (rule->getBattleType() == BT_PSIAMP && getFaction() == FACTION_HOSTILE)
 		{
 			// C2 - vanilla left-hand psi-amp for hostiles
-			if (fitItemToInventory(rightHand, item) || fitItemToInventory(leftHand, item))
+			if (fitItemToInventory(rightHand, item, testMode) || fitItemToInventory(leftHand, item, testMode))
 			{
 				placed = true;
 			}
@@ -3428,7 +3428,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 						const RuleInventory* slot = item->getRules()->getDefaultInventorySlot();
 						if (slot->getType() != INV_GROUND)
 						{
-							placed = fitItemToInventory(slot, item);
+							placed = fitItemToInventory(slot, item, testMode);
 							if (placed)
 							{
 								break;
@@ -3447,7 +3447,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 							RuleInventory* slot = mod->getInventory(s);
 							if (slot->getType() != INV_GROUND)
 							{
-								placed = fitItemToInventory(slot, item);
+								placed = fitItemToInventory(slot, item, testMode);
 								if (placed)
 								{
 									break;
@@ -3481,7 +3481,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 					{
 						if (cheapestInventoryToMoveToHand->getType() == INV_SLOT)
 						{
-							placed = fitItemToInventory(cheapestInventoryToMoveToHand, item);
+							placed = fitItemToInventory(cheapestInventoryToMoveToHand, item, testMode);
 						}
 					}
 				}
@@ -3494,7 +3494,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 						RuleInventory* slot = mod->getInventory(s);
 						if (slot->getType() == INV_SLOT)
 						{
-							placed = fitItemToInventory(slot, item);
+							placed = fitItemToInventory(slot, item, testMode);
 							if (placed)
 							{
 								break;
