@@ -3359,7 +3359,7 @@ void AIModule::brutalThink(BattleAction* action)
 		int highestVisibleTiles = 0;
 		for (int i = 0; i < 8; i++)
 		{
-			int newVisibleTiles = _save->getTileEngine()->visibleTilesFrom(_unit, myPos, i, true).size();
+			int newVisibleTiles = scoreVisibleTiles(_save->getTileEngine()->visibleTilesFrom(_unit, myPos, i, true));
 			if (newVisibleTiles > highestVisibleTiles)
 			{
 				highestVisibleTiles = newVisibleTiles;
@@ -3762,7 +3762,7 @@ void AIModule::brutalThink(BattleAction* action)
 						{
 							for (int i = 0; i < 8; i++)
 							{
-								int currentVisibleTiles = _save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true).size();
+								int currentVisibleTiles = scoreVisibleTiles(_save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true));
 								if (currentVisibleTiles > highestVisibleTiles)
 								{
 									highestVisibleTiles = currentVisibleTiles;
@@ -4089,8 +4089,8 @@ void AIModule::brutalThink(BattleAction* action)
 	bool indirectPeek = false;
 	for (int i = 0; i < 8; i++)
 	{
-		newVisibleTilesDirect += _save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, i, true).size();
-		newVisibleTilesInDirect += _save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, i, true).size();
+		newVisibleTilesDirect += scoreVisibleTiles(_save->getTileEngine()->visibleTilesFrom(_unit, bestDirectPeakPosition, i, true));
+		newVisibleTilesInDirect += scoreVisibleTiles(_save->getTileEngine()->visibleTilesFrom(_unit, bestIndirectPeakPosition, i, true));
 	}
 	if (_traceAI)
 	{
@@ -6696,6 +6696,16 @@ bool AIModule::improveItemization(float currentItemScore, BattleAction* action)
 		} while (additionalPickup);
 	}
 	return pickedSomethingUp;
+}
+
+int AIModule::scoreVisibleTiles(const std::set<Tile*>& tileSet)
+{
+	int totalScore = 0;
+	for (Tile* tile : tileSet)
+	{
+		totalScore += _save->getTurn() - tile->getLastExplored(_unit->getFaction());
+	}
+	return totalScore;
 }
 
 BattleAction* AIModule::grenadeThrowAction(Position pos)
