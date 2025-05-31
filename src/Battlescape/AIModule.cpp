@@ -3515,6 +3515,7 @@ void AIModule::brutalThink(BattleAction* action)
 	bool winnerWasSpecialDoorCase = false;
 	bool shouldHaveLofAfterMove = false;
 	bool shouldEndTurnAfterMove = false;
+	bool skipIndirectPeek = false;
 	int peakDirection = _unit->getDirection();
 	int myMaxTU = getMaxTU(_unit);
 	int lastStepCost = 0;
@@ -3988,6 +3989,10 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				bestGreatCoverScore = greatCoverScore;
 				bestGreatCoverPosition = pos;
+				if (myAggressiveness > 0 && myWalkToDist > walkToDist)
+				{
+					skipIndirectPeek = true;
+				}
 			}
 			if (goodCoverScore > bestGoodCoverScore)
 			{
@@ -4101,7 +4106,7 @@ void AIModule::brutalThink(BattleAction* action)
 	{
 		travelTarget = bestDirectPeakPosition;
 	}
-	else if (bestIndirectPeakScore > 0 && newVisibleTilesInDirect > 0)
+	else if (!skipIndirectPeek && bestIndirectPeakScore > 0 && newVisibleTilesInDirect > 0)
 	{
 		travelTarget = bestIndirectPeakPosition;
 		indirectPeek = true;
