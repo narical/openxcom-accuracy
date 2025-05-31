@@ -3787,7 +3787,7 @@ void AIModule::brutalThink(BattleAction* action)
 				}
 			}
 			float discoverThreat = 0;
-			if (!lineOfFireBeforeFriendCheck)
+			if (myAggressiveness < 2 || !lineOfFireBeforeFriendCheck)
 			{
 				bool validCover = true;
 				bool isNode = false;
@@ -4020,7 +4020,7 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI)
+			//if (_traceAI && discoverThreat > 0)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
