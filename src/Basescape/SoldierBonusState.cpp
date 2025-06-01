@@ -110,7 +110,7 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 	int visibilityAtDark = 0;
 	int visibilityAtDay = 0;
 	int psiVision = 0;
-	int heatVision = 0;
+	int bonusVisibilityThroughSmoke = 0;
 
 	int frontArmor = 0, leftArmor = 0, rightArmor = 0, rearArmor = 0, underArmor = 0;
 	UnitStats stats;
@@ -126,7 +126,7 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		visibilityAtDark += bonusRule->getVisibilityAtDark();
 		visibilityAtDay += bonusRule->getVisibilityAtDay();
 		psiVision += bonusRule->getPsiVision();
-		heatVision += bonusRule->getHeatVision();
+		bonusVisibilityThroughSmoke += bonusRule->getVisibilityThroughSmoke();
 
 		stats += *bonusRule->getStats();
 		timeRecovery = timeRecovery || bonusRule->getTimeRecoveryRaw()->isModded();
@@ -209,10 +209,10 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		if (gap.tryRun()) _lstSummary->addRow(1, "");
 		_lstSummary->addRow(2, tr("psiVision").c_str(), std::to_string(psiVision).c_str());
 	}
-	if (heatVision != 0)
+	if (bonusVisibilityThroughSmoke != 0)
 	{
 		if (gap.tryRun()) _lstSummary->addRow(1, "");
-		_lstSummary->addRow(2, tr("heatVision").c_str(), std::to_string(heatVision).c_str());
+		_lstSummary->addRow(2, tr("heatVision").c_str(), std::to_string(bonusVisibilityThroughSmoke).c_str());
 	}
 
 

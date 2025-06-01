@@ -2797,7 +2797,7 @@ void StatsForNerdsState::initArmorList()
 		_txtTitle->setAlign(ALIGN_LEFT);
 	}
 
-	addIntegerPercent(ss, armorRule->getHeatVision(), "heatVision");
+	addIntegerPercent(ss, armorRule->getVisibilityThroughSmoke(), "heatVision");
 	addInteger(ss, armorRule->getPsiVision(), "psiVision");
 	addInteger(ss, armorRule->getPsiCamouflage(), "psiCamouflage");
 
@@ -2999,7 +2999,7 @@ void StatsForNerdsState::initSoldierBonusList()
 	addInteger(ss, bonusRule->getVisibilityAtDark(), "visibilityAtDark");
 	addInteger(ss, bonusRule->getVisibilityAtDay(), "visibilityAtDay");
 	addInteger(ss, bonusRule->getPsiVision(), "getPsiVision");
-	addInteger(ss, bonusRule->getHeatVision(), "getHeatVision");
+	addInteger(ss, bonusRule->getVisibilityThroughSmoke(), "getHeatVision");
 
 	addHeading("recovery");
 	{

@@ -1890,7 +1890,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 	bool unitSeen = canTargetUnit(&originVoxel, tile, &scanVoxel, currentUnit, false);
 
 	// heat vision should be blind by looking directly through fire
-	int fireDensityFactor = Clamp(currentUnit->getHeatVision(), 0, 100);
+	int fireDensityFactor = Clamp(currentUnit->getVisibilityThroughSmoke(), 0, 100);
 	// heat vision 100% = smoke effectiveness 0%
 	int smokeDensityFactor = 100 - fireDensityFactor;
 
@@ -2069,9 +2069,9 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 	originVoxel = getSightOriginVoxel(currentUnit);
 
 	// heat vision 100% = smoke effectiveness 0%
-	int smokeDensityFactor = 100 - currentUnit->getArmor()->getHeatVision();
+	int smokeDensityFactor = 100 - currentUnit->getArmor()->getVisibilityThroughSmoke();
 	// heat vision should be blind by looking directly through fire
-	int fireDensityFactor = currentUnit->getArmor()->getHeatVision();
+	int fireDensityFactor = currentUnit->getArmor()->getVisibilityThroughSmoke();
 
 	if (seen)
 	{

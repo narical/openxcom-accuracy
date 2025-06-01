@@ -47,7 +47,7 @@ private:
 	int _visibilityAtDark = 0;
 	int _visibilityAtDay = 0;
 	int _psiVision = 0;
-	int _heatVision = 0;
+	int _visibilityThroughSmoke = 0;
 
 	int _frontArmor, _sideArmor, _leftArmorDiff, _rearArmor, _underArmor;
 	UnitStats _stats;
@@ -73,7 +73,7 @@ public:
 	/// Gets the bonus to psi vision (in tiles).
 	int getPsiVision() const { return _psiVision; }
 	/// Gets the bonus to heat vision (in tiles).
-	int getHeatVision() const { return _heatVision; }
+	int getVisibilityThroughSmoke() const { return _visibilityThroughSmoke; }
 
 	/// Gets the bonus to front armor.
 	int getFrontArmor() const { return _frontArmor; }
