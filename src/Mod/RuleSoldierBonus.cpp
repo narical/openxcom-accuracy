@@ -46,6 +46,7 @@ void RuleSoldierBonus::load(const YAML::YamlNodeReader& node, Mod* mod, const Mo
 	reader.tryRead("visibilityAtDay", _visibilityAtDay);
 	reader.tryRead("psiVision", _psiVision);
 	reader.tryRead("heatVision", _visibilityThroughSmoke);
+	reader.tryRead("visibilityThroughFire", _visibilityThroughFire);
 
 	reader.tryRead("frontArmor", _frontArmor);
 	reader.tryRead("sideArmor", _sideArmor);

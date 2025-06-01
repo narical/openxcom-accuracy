@@ -148,6 +148,7 @@ private:
 	int _maxViewDistanceAtDarkSquared;
 	int _psiVision = 0;
 	int _visibilityThroughSmoke = 0;
+	int _visibilityThroughFire = 100;
 	SpecialAbility _specab;
 	Armor *_armor;
 	SoldierGender _gender;
@@ -613,6 +614,8 @@ public:
 	int getPsiVision() const { return _psiVision; }
 	/// Get unit heat vision with bonuses.
 	int getVisibilityThroughSmoke() const { return _visibilityThroughSmoke; }
+	/// Get unit visibility through fire with bonuses.
+	int getVisibilityThroughFire() const { return _visibilityThroughFire; }
 
 	/// Gets the unit's spawn unit.
 	const Unit *getSpawnUnit() const;

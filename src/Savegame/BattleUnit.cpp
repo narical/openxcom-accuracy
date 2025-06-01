@@ -167,12 +167,14 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	int visibilityDayBonus = 0;
 	int psiVision = 0;
 	int bonusVisibilityThroughSmoke =  0;
+	int bonusVisibilityThroughFire = 0;
 	for (const auto* bonusRule : *soldier->getBonuses(nullptr))
 	{
 		visibilityDarkBonus += bonusRule->getVisibilityAtDark();
 		visibilityDayBonus += bonusRule->getVisibilityAtDay();
 		psiVision += bonusRule->getPsiVision();
 		bonusVisibilityThroughSmoke += bonusRule->getVisibilityThroughSmoke();
+		bonusVisibilityThroughFire += bonusRule->getVisibilityThroughFire();
 	}
 	_maxViewDistanceAtDark = _armor->getVisibilityAtDark() ? _armor->getVisibilityAtDark() : 9;
 	_maxViewDistanceAtDark = Clamp(_maxViewDistanceAtDark + visibilityDarkBonus, 1, mod->getMaxViewDistance());
@@ -181,6 +183,7 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 	_maxViewDistanceAtDay = Clamp(_maxViewDistanceAtDay + visibilityDayBonus, 1, mod->getMaxViewDistance());
 	_psiVision = _armor->getPsiVision() + psiVision;
 	_visibilityThroughSmoke = _armor->getVisibilityThroughSmoke() + bonusVisibilityThroughSmoke;
+	_visibilityThroughFire = _armor->getVisibilityThroughFire() + bonusVisibilityThroughFire;
 
 
 	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
@@ -527,6 +530,7 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	_maxViewDistanceAtDay = _armor->getVisibilityAtDay() ? _armor->getVisibilityAtDay() : mod->getMaxViewDistance();
 	_psiVision = _armor->getPsiVision();
 	_visibilityThroughSmoke =  _armor->getVisibilityThroughSmoke();
+	_visibilityThroughFire = _armor->getVisibilityThroughFire();
 
 
 	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
@@ -6546,7 +6550,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles to another unit at day");
 	bu.add<&BattleUnit::getMaxViewDistance>("getMaxViewDistance", "calculate maximum visibility distance consider camouflage, first arg is base visibility, second arg is cammo reduction, third arg is anti-cammo boost");
 	bu.add<&BattleUnit::getPsiVision>("getPsiVision");
-	bu.add<&BattleUnit::getVisibilityThroughSmoke>("getHeatVision");
+	bu.add<&BattleUnit::getVisibilityThroughSmoke>("getHeatVision", "getVisibilityThroughSmoke");
+	bu.add<&BattleUnit::getVisibilityThroughFire>("getVisibilityThroughFire", "getVisibilityThroughFire");
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");
 	bu.add<&getSpawnUnitScript>("getSpawnUnit", "get type of zombie will be spawn from current unit");
