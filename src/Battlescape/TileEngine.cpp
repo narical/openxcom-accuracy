@@ -2069,9 +2069,9 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 	originVoxel = getSightOriginVoxel(currentUnit);
 
 	// heat vision 100% = smoke effectiveness 0%
-	int smokeDensityFactor = 100 - currentUnit->getArmor()->getVisibilityThroughSmoke();
+	int smokeDensityFactor = 100 - currentUnit->getVisibilityThroughSmoke();
 	// heat vision should be blind by looking directly through fire
-	int fireDensityFactor = currentUnit->getArmor()->getVisibilityThroughSmoke();
+	int fireDensityFactor = currentUnit->getVisibilityThroughSmoke();
 
 	if (seen)
 	{
