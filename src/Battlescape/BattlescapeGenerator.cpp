@@ -1504,6 +1504,28 @@ void BattlescapeGenerator::autoEquip(std::vector<BattleUnit*> units, Mod *mod, s
 			}
 		} // End of loop iterating through units
 	} while (someoneGotSomething); // Continue distributing as long as items are being successfully given.
+	if (Options::preprimeGrenades > 0)
+	{
+		for (BattleUnit* bu : units) // Iterate through each unit
+		{
+			if (!bu->hasInventory() || !bu->getGeoscapeSoldier() || (!overrideEquipmentLayout && !bu->getGeoscapeSoldier()->getEquipmentLayout()->empty()))
+			{
+				continue; // Skip to the next unit
+			}
+			for (BattleItem* item : *bu->getInventory())
+			{
+				if (item->getRules()->getBattleType() != BT_GRENADE && item->getRules()->getBattleType() != BT_PROXIMITYGRENADE)
+				{
+					continue; // Skip items that are not grenades
+				}
+				if (Options::preprimeGrenades < 2 && item->getRules()->getDamageType()->ResistType != DT_SMOKE)
+					continue;
+				if (Options::preprimeGrenades < 3 && item->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
+					continue;
+				item->setFuseTimer(0);
+			}
+		}
+	}
 }
 
 /**

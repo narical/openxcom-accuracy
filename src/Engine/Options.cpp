@@ -582,6 +582,7 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "oxceFOW", &oxceFOW, 0, "STR_FOW", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "oxceFOWColor", &oxceFOWColor, 1, "STR_FOW_COLOR", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "oxceSmartCtrlEquip", &oxceSmartCtrlEquip, true, "STR_SMARTCONTROLEQUIP", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "preprimeGrenades", &preprimeGrenades, 1, "STR_PREPRIMEGRENADES", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "updateTurnsSinceSeenByClue", &updateTurnsSinceSeenByClue, true, "STR_UPDATETURNSSINCESEENBYCLUE", "STR_BATTLESCAPE"));
 
 	_info.push_back(OptionInfo(OPTION_OTHER, "brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));

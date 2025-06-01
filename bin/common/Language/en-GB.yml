@@ -132,6 +132,8 @@ en-GB:
   STR_SHOWMORESTATSININVENTORYVIEW_DESC: "Show extra information on the selected soldier in the inventory screen."
   STR_STRICTBLOCKEDCHECKING: "Strict checking for blockages"
   STR_STRICTBLOCKEDCHECKING_DESC: "Can prevent units from being spawned into walls and helps the AI to find better cover but also may block off areas on the map if the map wasn't built properly."
+  STR_PREPRIMEGRENADES: "Auto pre-prime grenades"
+  STR_PREPRIMEGRENADES_DESC: "What kind of greandes should be pre-primed in loadout-phase. 0> None 1> Only smoke-grenades 2> Regular grenades too 3> Proximity-grenades too"
   STR_SNEAKYAI: "Sneaky AI"
   STR_SNEAKYAI_DESC: "AI avoids exposing themselves to the player whenever possible."
   STR_BRUTALAI: "Brutal AI"

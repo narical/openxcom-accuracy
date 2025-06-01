@@ -508,6 +508,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 2;
 		}
+		else if (i == &Options::preprimeGrenades)
+		{
+			min = 0;
+			max = 3;
+		}
 
 		if (*i < min)
 		{
