@@ -3606,14 +3606,14 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 				if (hasTileSight(pos, unitPosition))
 					lineOfFireBeforeFriendCheck = true;
-				if (_unit->aiTargetMode() < 2 && unitDist > viewDistance)
-					continue;
+				if (unitDist < closestEnemyDistAssumed)
+					closestEnemyDistAssumed = unitDist;
 				if (shouldAvoidMeleeRange(unit) && unitDist < 2)
 				{
 					avoidMeleeRange = true;
 				}
-				if (unitDist < closestEnemyDistAssumed)
-					closestEnemyDistAssumed = unitDist;
+				if (_unit->aiTargetMode() < 2 && unitDist > viewDistance)
+					continue;
 				if (brutalValidTarget(unit, true))
 				{
 					if (unitDist < closestEnemyDistValid)
