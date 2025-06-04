@@ -234,7 +234,6 @@ void createAdvancedOptionsOXC()
 	_info.push_back(OptionInfo(OPTION_OXC, "vSyncForOpenGL", &vSyncForOpenGL, true, "STR_VSYNC_FOR_OPENGL", "STR_GENERAL")); // exposed in OXCE
 #endif
 	_info.push_back(OptionInfo(OPTION_OXC, "geoDragScrollInvert", &geoDragScrollInvert, false, "STR_DRAGSCROLLINVERT", "STR_GEOSCAPE")); // true drags away from the cursor, false drags towards (like a grab)
-	_info.push_back(OptionInfo(OPTION_OXC, "aggressiveRetaliation", &aggressiveRetaliation, false, "STR_AGGRESSIVERETALIATION", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "customInitialBase", &customInitialBase, false, "STR_CUSTOMINITIALBASE", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "allowBuildingQueue", &allowBuildingQueue, false, "STR_ALLOWBUILDINGQUEUE", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXC, "craftLaunchAlways", &craftLaunchAlways, false, "STR_CRAFTLAUNCHALWAYS", "STR_GEOSCAPE"));
@@ -562,6 +561,7 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "showCraftHangar", &showCraftHangar, false, "STR_SHOW_CRAFT_HANGAR", "STR_GENERAL"));	
 
 	_info.push_back(OptionInfo(OPTION_OTHER, "dogfightAI", &dogfightAI, true, "STR_DOGFIGHTAI", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "aggressiveRetaliation", &aggressiveRetaliation, true, "STR_AGGRESSIVERETALIATION", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "displayHiddenAlienActivity", &displayHiddenAlienActivity, 0, "STR_DISPLAY_HIDDEN_ALIEN_ACTIVITY", "STR_GEOSCAPE"));
 
 	_info.push_back(OptionInfo(OPTION_OTHER, "baseDefenseProbability", &baseDefenseProbability, false, "STR_DISPLAY_BASE_DEFENSE_PROBABILITY", "STR_BASESCAPE"));
