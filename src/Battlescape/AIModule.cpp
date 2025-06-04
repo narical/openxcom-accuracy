@@ -3477,6 +3477,8 @@ void AIModule::brutalThink(BattleAction* action)
 			break;
 		}
 	}
+	if (!_unit->getVisibleUnits()->empty() || contact)
+		saveDistance = false;
 	if (_traceAI)
 		Log(LOG_INFO) << "I have last been seen: " << _unit->getTurnsSinceSeen(_targetFaction);
 	if (_traceAI && immobileEnemies)
@@ -3499,6 +3501,7 @@ void AIModule::brutalThink(BattleAction* action)
 					Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade.";
 				action->type = BA_RETHINK;
 				action->number -= 1;
+				_reposition = true;
 				return;
 			}
 		}
@@ -3720,13 +3723,10 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			bool pathInvolvesFalling = false;
 			float visiblePath = 0;
-			if (Options::aiPerformanceOptimization)
+			for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
 			{
-				for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
-				{
-					if (hasTileSight(pos, pathPos))
-						visiblePath += 1;
-				}
+				if (hasTileSight(pos, pathPos))
+					visiblePath += 1;
 			}
 			for (auto pathPos : getPositionsOnPathTo(pos, _allPathFindingNodes))
 			{
@@ -3776,7 +3776,7 @@ void AIModule::brutalThink(BattleAction* action)
 								indirectPeakScore = visiblePath;
 							else
 							{
-								indirectPeakScore = highestVisibleTiles;
+								indirectPeakScore = highestVisibleTiles * (visiblePath + 1);
 								if (inDoors && !(myAggressiveness == 0))
 									indirectPeakScore *= getMaxTU(_unit);
 								else
@@ -3989,7 +3989,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				bestGreatCoverScore = greatCoverScore;
 				bestGreatCoverPosition = pos;
-				if (myAggressiveness > 0 && myWalkToDist > walkToDist)
+				if (myAggressiveness > 0 && myWalkToDist > walkToDist && remainingTimeUnits < myMaxTU * tuToSaveForHide)
 				{
 					skipIndirectPeek = true;
 				}
@@ -4020,11 +4020,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && discoverThreat > 0)
+			//if (_traceAI && indirectPeakScore > 0)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(indirectPeakScore);
 			//}
 		}
 		if (_traceAI)
@@ -4133,7 +4133,7 @@ void AIModule::brutalThink(BattleAction* action)
 		shouldEndTurnAfterMove = true;
 	}
 
-	if (travelTarget == myPos)
+	if (travelTarget == myPos && saveDistance)
 	{
 		if (wantToPrime)
 		{
