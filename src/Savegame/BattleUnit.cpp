@@ -6210,6 +6210,8 @@ bool BattleUnit::isAvoidMines() const
 		return false;
 	if (isLeeroyJenkins())
 		return false;
+	if (getOriginalFaction() != getFaction())
+		return false;
 	if (Options::avoidMines || getFaction() == FACTION_PLAYER)
 		return true;
 	return false;
