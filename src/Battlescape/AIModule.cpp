@@ -3102,6 +3102,7 @@ void AIModule::brutalThink(BattleAction* action)
 	float panicked = 0;
 	float total = 0;
 	bool visibleToEnemy = false;
+	bool enemyFarAwayFromStart = false;
 	for (BattleUnit* target : *(_save->getUnits()))
 	{
 		if (target->isOut())
@@ -3110,10 +3111,12 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			if (target != _unit)
 			{
-				for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, false))
+				_save->getPathfinding()->setIgnoreFriends(true);
+				for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
 				{
 					friendReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
 				}
+				_save->getPathfinding()->setIgnoreFriends(false);
 			}
 		}
 		Position targetPosition = target->getPosition();
@@ -3190,12 +3193,21 @@ void AIModule::brutalThink(BattleAction* action)
 					continue;
 			}
 		}
+		bool isFarAwayFromStart = true;
 		if (!target->hasPanickedLastTurn())
 		{
 			_save->getPathfinding()->setIgnoreFriends(true);
 			for (auto& reachablePosOfTarget : getReachableBy(target, _ranOutOfTUs, false, true))
 			{
+				Tile* checkStartTile = _save->getTile(reachablePosOfTarget.first);
+				if (checkStartTile->getFloorSpecialTileType() == START_POINT)
+					isFarAwayFromStart = false;
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
+			}
+			if (isFarAwayFromStart)
+			{
+				Log(LOG_INFO) << "unit on " << targetPosition << " is far away from start.";
+				enemyFarAwayFromStart = isFarAwayFromStart;
 			}
 			_save->getPathfinding()->setIgnoreFriends(false);
 		}
@@ -3222,15 +3234,43 @@ void AIModule::brutalThink(BattleAction* action)
 			unitToWalkTo = target;
 		}
 	}
-	if (_unit->getMorale() >= 100)
+	int myMaxTU = getMaxTU(_unit);
+	if (!contact && Options::dynamicAggression)
 	{
-		if (panicked >= 1)
-			myAggressiveness++;
-		if (panicked / total >= 0.5)
-			myAggressiveness++;
-		if (panicked / total == 1)
-			myAggressiveness++;
+		if (_unit->getMorale() >= 100)
+		{
+			if (panicked >= 1)
+				myAggressiveness++;
+			if (panicked / total >= 0.5)
+				myAggressiveness++;
+			if (panicked / total == 1)
+				myAggressiveness++;
+		}
+		else if (_unit->getMorale() < 50)
+		{
+			myAggressiveness = 0;
+		}
+		for (BattleUnit* unit : *(_save->getUnits()))
+		{
+			if (isEnemy(unit))
+				continue;
+			if (unit->isOut())
+				continue;
+			for (auto pos : enemyReachable)
+			{
+				if (pos.first == unit->getPosition())
+					enemyFarAwayFromStart = true;
+				Tile* tile = _save->getTile(pos.first);
+
+			}
+			if (enemyFarAwayFromStart)
+				break;
+		}
+		if (enemyFarAwayFromStart || panicked >= 1)
+			myAggressiveness += friendReachable[myPos] / myMaxTU;
 	}
+	//Log(LOG_INFO) << "friendReachable[myPos]: " << friendReachable[myPos]
+	//			  << " myMaxTU: " << myMaxTU;
 	int weaponRange = maxExtenderRangeWith(_unit, getMaxTU(_unit));
 	bool sweepMode = _unit->isLeeroyJenkins() || immobile || myAggressiveness >= 3;
 	_unit->setCharging(nullptr);
@@ -3520,7 +3560,6 @@ void AIModule::brutalThink(BattleAction* action)
 	bool shouldEndTurnAfterMove = false;
 	bool skipIndirectPeek = false;
 	int peakDirection = _unit->getDirection();
-	int myMaxTU = getMaxTU(_unit);
 	int lastStepCost = 0;
 	Position travelTarget = myPos;
 	if (unitToWalkTo != NULL)
@@ -3723,10 +3762,14 @@ void AIModule::brutalThink(BattleAction* action)
 			float walkToDist = myMaxTU + tuDistFromTarget;
 			bool pathInvolvesFalling = false;
 			float visiblePath = 0;
-			for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
+			//only add visiblePath-bonus for positions closer to target than our current position as otherwise we are unnecessarily prolong the path
+			if (tuDistFromTarget < myTuDistFromTarget)
 			{
-				if (hasTileSight(pos, pathPos))
-					visiblePath += 1;
+				for (auto pathPos : getPositionsOnPathTo(targetPosition, _allPathFindingNodes))
+				{
+					if (hasTileSight(pos, pathPos))
+						visiblePath += 1;
+				}
 			}
 			for (auto pathPos : getPositionsOnPathTo(pos, _allPathFindingNodes))
 			{
@@ -3765,7 +3808,7 @@ void AIModule::brutalThink(BattleAction* action)
 								int currentVisibleTiles = scoreVisibleTiles(_save->getTileEngine()->visibleTilesFrom(_unit, pos, i, true));
 								if (currentVisibleTiles > highestVisibleTiles)
 								{
-									highestVisibleTiles = currentVisibleTiles;
+									highestVisibleTiles = currentVisibleTiles * (visiblePath + 1);
 									bestPeakDirectionFromPos = i;
 								}
 							}
@@ -3967,7 +4010,6 @@ void AIModule::brutalThink(BattleAction* action)
 						greatCoverScore /= 2;
 						goodCoverScore /= 2;
 						okayCoverScore /= 2;
-						fallbackScore /= 2;
 					}
 				}
 			}
@@ -4020,11 +4062,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && indirectPeakScore > 0)
+			//if (_traceAI)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(indirectPeakScore);
+			//	tile->setTUMarker(walkToDist);
 			//}
 		}
 		if (_traceAI)
