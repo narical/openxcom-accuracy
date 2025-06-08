@@ -51,7 +51,7 @@ namespace OpenXcom
  * @param ufo Pointer to the attacking ufo.
  * @param state Pointer to the Geoscape.
  */
-BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state) : _state(state)
+BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state, bool instaHyper) : _state(state)
 {
 	bool showUfo = _game->getMod()->showUfoPreviewInBaseDefense();
 
@@ -150,7 +150,7 @@ BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state) :
 
 		// extra info
 		bool extraInfo = ufo->getHyperDetected();
-		if (!extraInfo && ufo->getRules()->isInstaHyper())
+		if (!extraInfo && instaHyper)
 		{
 			for (auto* fac : *_base->getFacilities())
 			{
@@ -191,7 +191,14 @@ BaseDefenseState::BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state) :
 
 	if (_ufo->getRules()->getMissilePower() != 0)
 	{
-		btnStartClick(0);
+		if (showUfo)
+		{
+			_btnAbort->setVisible(false);
+		}
+		else
+		{
+			btnStartClick(0);
+		}
 	}
 }
 
