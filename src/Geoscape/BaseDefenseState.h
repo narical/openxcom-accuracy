@@ -55,7 +55,7 @@ private:
 	bool applyDamage(const RuleBaseFacility* rule);
 public:
 	/// Creates the Base Defense state.
-	BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state);
+	BaseDefenseState(Base *base, Ufo *ufo, GeoscapeState *state, bool instaHyper);
 	/// Cleans up the Base Defense state.
 	~BaseDefenseState();
 	/// Handle the Timer.
