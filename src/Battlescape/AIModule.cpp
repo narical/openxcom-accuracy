@@ -249,7 +249,7 @@ bool AIModule::medikit_think(BattleMediKitType healOrStim)
 			(itemRule->getMediKitType() == healOrStim || itemRule->getMediKitType() == BMT_NORMAL) &&
 			itemRule->getAllowTargetSelf())
 		{
-			if (_save->getTurn() < itemRule->getAIUseDelay(_save->getMod()))
+			if (_save->getTurn() < itemRule->getAIUseDelay(_save->getMod()) && !self->isBrutal())
 			{
 				// can't use it yet, too soon
 				continue;
