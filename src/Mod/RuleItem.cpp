@@ -2127,6 +2127,9 @@ int RuleItem::getAIUseDelay(const Mod *mod) const
 	case BT_PSIAMP:
 		return mod->getAIUseDelayPsionic();
 
+	case BT_MEDIKIT:
+		return mod->getAIUseDelayMedikit();
+
 	default:
 		return _aiUseDelay;
 	}

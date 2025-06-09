@@ -97,7 +97,7 @@ private:
 	std::unordered_set<Tile *> _lofTilesLookup;
 	std::unordered_set<Tile *> _noLofTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel, _mana;
-	bool _kneeled, _floating, _dontReselect;
+	bool _kneeled, _floating, _dontReselect, _aiMedikitUsed;
 	bool _haveNoFloorBelow = false;
 	int _currentArmor[SIDE_MAX], _maxArmor[SIDE_MAX];
 	int _fatalWounds[BODYPART_MAX];
