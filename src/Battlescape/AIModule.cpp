@@ -4937,8 +4937,8 @@ bool AIModule::brutalPsiAction()
 		{
 			// don't target tanks
 			if ((*i)->getArmor()->getSize() == 1 &&
-				// they must be armed
-				(*i)->getMainHandWeapon() &&
+				// civilians must be armed to be considered psi-targets
+				((*i)->getMainHandWeapon() || (*i)->getFaction() != FACTION_NEUTRAL) &&
 				(!LOSRequired ||
 				 std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), *i) != _unit->getVisibleUnits()->end()) &&
 				brutalValidTarget(*i, true, true)
