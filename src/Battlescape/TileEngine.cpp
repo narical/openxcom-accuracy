@@ -4673,14 +4673,14 @@ int TileEngine::calculateLineTile(Position origin, Position target, std::vector<
 			}
 			if (minLightBlock > 0 && result)
 			{
-				MapData* objectMapData = _save->getTile(lastPoint)->getMapData(O_OBJECT);
+				MapData* objectMapData = _save->getTile(lastPoint)  ? _save->getTile(lastPoint)->getMapData(O_OBJECT) : nullptr;
 				if (objectMapData && objectMapData->getLightBlock() < minLightBlock)
 				{
 					result = false;
 				}
 				else
 				{
-					MapData* objectMapData = _save->getTile(point)->getMapData(O_OBJECT);
+					MapData* objectMapData = _save->getTile(point) ? _save->getTile(point)->getMapData(O_OBJECT) : nullptr;
 					if (objectMapData && objectMapData->getLightBlock() < minLightBlock)
 					{
 						result = false;
