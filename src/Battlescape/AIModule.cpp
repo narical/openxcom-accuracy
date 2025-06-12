@@ -3380,7 +3380,7 @@ void AIModule::brutalThink(BattleAction* action)
 					float avgSmoke = (targetTile->getSmoke() + ally->getTile()->getSmoke()) / 2.0;
 					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + avgSmoke / 3.0);
 					if (targetTile->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && targetTile->getFire() == 0)
-						minViewDistance = std::min((float)ally->getMaxViewDistanceAtDark(unitToWalkTo), minViewDistance);
+						minViewDistance = std::min((float)ally->getMaxViewDistanceAtDark(target), minViewDistance);
 					if (targetTile->getLastExplored(_unit->getFaction()) == _save->getTurn() && Position::distance(targetPosition, ally->getPosition()) <= minViewDistance)
 					{
 						tileChecked = true;
@@ -3420,11 +3420,6 @@ void AIModule::brutalThink(BattleAction* action)
 					isFarAwayFromStart = false;
 				enemyReachable[reachablePosOfTarget.first] += reachablePosOfTarget.second;
 			}
-			if (isFarAwayFromStart)
-			{
-				Log(LOG_INFO) << "unit on " << targetPosition << " is far away from start.";
-				enemyFarAwayFromStart = isFarAwayFromStart;
-			}
 			_save->getPathfinding()->setIgnoreFriends(false);
 		}
 		else
@@ -3448,12 +3443,12 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			shortestWalkingPath = currentWalkPath;
 			unitToWalkTo = target;
+			enemyFarAwayFromStart = isFarAwayFromStart;
 		}
 	}
 	int myMaxTU = getMaxTU(_unit);
 	if (!contact && Options::dynamicAggression)
 	{
-		int desperation = 4;
 		if (_unit->getMorale() >= 100)
 		{
 			if (panicked >= 1)
@@ -3474,7 +3469,6 @@ void AIModule::brutalThink(BattleAction* action)
 				continue;
 			if (unit->isOut())
 				continue;
-			desperation--;
 			for (auto pos : enemyReachable)
 			{
 				if (pos.first == unit->getPosition())
@@ -3489,8 +3483,6 @@ void AIModule::brutalThink(BattleAction* action)
 			myAggressiveness += friendReachable[myPos] / myMaxTU;
 		if (enemyNearby)
 			myAggressiveness = std::max(myAggressiveness, 2);
-		if (desperation > 0)
-			myAggressiveness += desperation;
 	}
 	//Log(LOG_INFO) << "friendReachable[myPos]: " << friendReachable[myPos]
 	//			  << " myMaxTU: " << myMaxTU;
@@ -3551,6 +3543,10 @@ void AIModule::brutalThink(BattleAction* action)
 				if (_traceAI)
 					Log(LOG_INFO) << "Should reposition to " << action->target
 								  << " in order to then attack with " << action->weapon->getRules()->getName();
+			}
+			else
+			{
+				_reposition = false;
 			}
 			if (_traceAI)
 			{
@@ -3672,7 +3668,6 @@ void AIModule::brutalThink(BattleAction* action)
 		}
 		action->type = BA_TURN;
 		action->target = posToLookAt;
-		_reposition = true;
 		if (_traceAI)
 		{
 			Log(LOG_INFO) << "Want to look at position: " << posToLookAt;
@@ -3766,7 +3761,6 @@ void AIModule::brutalThink(BattleAction* action)
 					Log(LOG_INFO) << "I spent " << primeCost << " time-units on priming a grenade.";
 				action->type = BA_RETHINK;
 				action->number -= 1;
-				_reposition = true;
 				return;
 			}
 		}
@@ -3847,6 +3841,7 @@ void AIModule::brutalThink(BattleAction* action)
 			float viewDistance = _save->getMod()->getMaxViewDistance();
 			int maxSmoke = myTile->getSmoke();
 			int remainingTimeUnits = _unit->getTimeUnits() - pu->getTUCost(false).time;
+			int remainingEnergy = _unit->getTimeUnits() - pu->getTUCost(false).energy;
 			int bestPeakDirectionFromPos = _unit->getDirection();
 			bool enemyShouldBeVisible = false;
 			if (unitToWalkTo)
@@ -3857,6 +3852,7 @@ void AIModule::brutalThink(BattleAction* action)
 				maxSmoke = std::max(unitToWalkTo->getTile()->getSmoke(), std::max(maxSmoke, tile->getSmoke()));
 			}
 			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + maxSmoke / 3.0)));
+			float highestDamage = 0;
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
 				Position unitPosition = unit->getPosition();
@@ -3906,6 +3902,7 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					if (unitDist < closestEnemyDistValid)
 						closestEnemyDistValid = unitDist;
+					highestDamage = std::max(highestDamage, damagePotential(pos, unit, remainingTimeUnits, remainingEnergy));
 					if (!IAmPureMelee)
 					{
 						if (!lineOfFire)
@@ -3921,7 +3918,7 @@ void AIModule::brutalThink(BattleAction* action)
 								lineOfFire = validateArcingShot(throwAction, tile);
 							if (lineOfFire && Options::battleRealisticAccuracy)
 							{
-								exposureMod = _save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit);
+								exposureMod = std::max(exposureMod, (float)_save->getTileEngine()->checkVoxelExposure(&origin, unit->getTile(), _unit));
 								if (exposureMod < EPSILON)
 									lineOfFire = false;
 							}
@@ -3992,11 +3989,11 @@ void AIModule::brutalThink(BattleAction* action)
 			float directPeakScore = 0;
 			float indirectPeakScore = 0;
 			float fallbackScore = 0;
-			if (!_blaster && lineOfFire && haveTUToAttack && !shouldHaveBeenAbleToAttack)
+			if (!_blaster && lineOfFire && haveTUToAttack && !shouldHaveBeenAbleToAttack && highestDamage > 0)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || IAmPureMelee)
 				{
-					attackScore = remainingTimeUnits;
+					attackScore = remainingTimeUnits * highestDamage;
 					if (Options::battleRealisticAccuracy)
 						attackScore *= exposureMod;
 					if (pu->getPrevNode())
@@ -4016,15 +4013,34 @@ void AIModule::brutalThink(BattleAction* action)
 						visiblePath += 1;
 				}
 			}
+			int crossEnemyVision = 0;
 			for (auto pathPos : getPositionsOnPathTo(pos, _allPathFindingNodes))
 			{
 				if (_save->getTile(pathPos)->hasNoFloor() && _unit->getMovementType() != MT_FLY)
 				{
 					pathInvolvesFalling = true;
-					break;
+				}
+				if (!IAmPureMelee && !sweepMode)
+				{
+					for (BattleUnit* bu : *(_save->getUnits()))
+					{
+						if (!isEnemy(bu) || bu->isOut())
+							continue;
+						if (bu->getReactionScore() < remainingTimeUnits * _unit->getBaseStats()->reactions)
+							continue;
+						if (Position::distance(pathPos, bu->getPosition()) > viewDistance)
+							continue;
+						if (Position::distance(pathPos, bu->getPosition()) > maxExtenderRangeWith(bu, bu->getTimeUnits()))
+							continue;
+						for (Tile* buVisible : *bu->getVisibleTiles())
+						{
+							if (buVisible->getPosition() == pathPos)
+								crossEnemyVision++;
+						}
+					}
 				}
 			}
-			if (!sweepMode)
+			if (!sweepMode && crossEnemyVision <= 1)
 			{
 				if (haveTUToAttack && myPos != pos && enemyShouldBeVisible && !outOfRangeForShortRangeWeapon)
 				{
@@ -4124,7 +4140,7 @@ void AIModule::brutalThink(BattleAction* action)
 				else if (discoverThreat > 0)
 				{
 					float tieBreaker = 1 / walkToDist;
-					if (contact && !outOfRangeForShortRangeWeapon && !IAmPureMelee)
+					if (!outOfRangeForShortRangeWeapon && !IAmPureMelee)
 						tieBreaker *= -1;
 					if (!_save->getTileEngine()->isNextToDoor(tile) || contact)
 						goodCoverScore = 100 / discoverThreat + tieBreaker;
@@ -4166,7 +4182,7 @@ void AIModule::brutalThink(BattleAction* action)
 				_energyCostToReachClosestPositionToBreakLos = pu->getTUCost(false).energy;
 				_tuWhenChecking = _unit->getTimeUnits();
 			}
-			if (contact && !outOfRangeForShortRangeWeapon && !IAmPureMelee)
+			if (myAggressiveness <= 2 && !outOfRangeForShortRangeWeapon && !IAmPureMelee)
 				fallbackScore = walkToDist;
 			else
 				fallbackScore = 100 / walkToDist;
@@ -4297,11 +4313,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI)
+			//if (_traceAI && highestDamage > 0)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(discoverThreat);
+			//	tile->setTUMarker(highestDamage);
 			//}
 		}
 		if (_traceAI)
@@ -5058,67 +5074,6 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
 			chosenBattleAction.weapon = _attackAction.weapon;
 		}
 	}
-	for (auto& i : attackOptions)
-	{
-		bool extraCostForCover = false;
-		if (_tuCostToReachClosestPositionToBreakLos != -1 && i != BA_HIT)
-			extraCostForCover = true;
-		Position simulationPosition = furthestToGoTowards(_attackAction.target, testAction, _allPathFindingNodes, false);
-		Tile* simulationTile = _save->getTile(simulationPosition);
-		for (auto& j : attackOptions)
-		{
-			testAction.type = j;
-			float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
-
-			if (newScore > score && simulationPosition != _unit->getPosition())
-			{
-				score = newScore;
-				chosenBattleAction.type = BA_WALK;
-				chosenBattleAction.run = wantToRun();
-				chosenBattleAction.target = simulationPosition;
-				chosenBattleAction.weapon = _attackAction.weapon;
-				chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simulationPosition, _attackAction.target);
-			}
-		}
-		// Now let's check all tiles in the radius of 2 around myself and the target
-		std::vector<Position> attackPositions;
-		int actionTUs = _unit->getActionTUs(testAction.type, testAction.weapon).Time;
-		if (actionTUs > 0)
-		{
-			for (int x = -2; x <= 2; ++x)
-			{
-				for (int y = -2; y <= 2; ++y)
-				{
-					if (x != 0 || y != 0)
-					{
-						Position attPos = _attackAction.target + Position(x, y, 0);
-						Tile* attTile = _save->getTile(attPos);
-						if (attTile && std::find(attackPositions.begin(), attackPositions.end(), attPos) == attackPositions.end())
-							attackPositions.push_back(attPos);
-					}
-				}
-			}
-		}
-		for (Position simPos : attackPositions)
-		{
-			Tile* simulationTile = _save->getTile(simPos);
-			for (auto& j : attackOptions)
-			{
-				testAction.type = j;
-				float newScore = brutalScoreFiringMode(&testAction, _aggroTarget, checkLOF, simulationTile, extraCostForCover);
-
-				if (newScore > score && simPos != _unit->getPosition())
-				{
-					score = newScore;
-					chosenBattleAction.type = BA_WALK;
-					chosenBattleAction.run = wantToRun();
-					chosenBattleAction.target = simPos;
-					chosenBattleAction.weapon = _attackAction.weapon;
-					chosenBattleAction.finalFacing = _save->getTileEngine()->getDirectionTo(simPos, _attackAction.target);
-				}
-			}
-		}
-	}
 	_attackAction = chosenBattleAction;
 	return score;
 }
@@ -5340,7 +5295,8 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
 	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
-	damage = std::max(damage, 1.0f);
+	if (damage <= 0)
+		return 0;
 	float damageTypeMod = 0;
 	BattleItem* damageTypeCheckItem = action->weapon;
 	if (damageTypeCheckItem->getAmmoForAction(action->type) != nullptr)
@@ -6990,6 +6946,243 @@ BattleAction* AIModule::grenadeThrowAction(Position pos)
 	action->actor = _unit;
 	action->target = pos;
 	return action;
+}
+
+float AIModule::damagePotential(Position pos, BattleUnit* target, int tuTotal, int energyTotal)
+{
+	float overallMaxDamage = 0;
+	std::vector<BattleItem*> weapons;
+	if (_unit->getRightHandWeapon())
+		weapons.push_back(_unit->getRightHandWeapon());
+	if (_unit->getLeftHandWeapon())
+		weapons.push_back(_unit->getLeftHandWeapon());
+	if (_unit->getUtilityWeapon(BT_MELEE))
+		weapons.push_back(_unit->getUtilityWeapon(BT_MELEE));
+	if (_unit->getSpecialWeapon(BT_FIREARM))
+		weapons.push_back(_unit->getSpecialWeapon(BT_FIREARM));
+	if (_grenade && _unit->getGrenadeFromBelt(_save))
+		weapons.push_back(_unit->getGrenadeFromBelt(_save));
+
+	std::vector<BattleActionType> actionTypes;
+	actionTypes.push_back(BA_AIMEDSHOT);
+	actionTypes.push_back(BA_SNAPSHOT);
+	actionTypes.push_back(BA_AUTOSHOT);
+	actionTypes.push_back(BA_THROW);
+	actionTypes.push_back(BA_HIT);
+
+	int distanceSq = Position::distanceSq(pos, target->getPosition());
+	float distance = Position::distance(pos, target->getPosition());
+
+	for (auto weapon : weapons)
+	{
+		float maxFinalDamageForThisWeapon = 0; // Tracks the best *calculated* damage for the current weapon
+
+		for (BattleActionType bat : actionTypes)
+		{
+			float explosionMod = 1.0f;
+			float numberOfShots = 1;
+			float currentActionRawPower = 0; // Raw power specifically for THIS action (bat)
+			int tuCost = _unit->getActionTUs(bat, weapon).Time;
+			int energyCost = _unit->getActionTUs(bat, weapon).Energy;
+			if (bat == BA_THROW && weapon == _unit->getGrenadeFromBelt(_save))
+			{
+				if (!_grenade)
+					continue;
+				if (target->getTile()->getDangerous())
+					continue;
+				if (!_unit->getGrenadeFromBelt(_save)->isFuseEnabled())
+				{
+					tuCost += weapon->getMoveToCost(_save->getMod()->getInventoryLeftHand());
+					tuCost += _unit->getActionTUs(BA_PRIME, _unit->getGrenadeFromBelt(_save)).Time;
+				}
+				// We don't have several shots but we can hit several targets at once
+				auto radius = weapon->getRules()->getExplosionRadius(BattleActionAttack::GetBeforeShoot(bat, _unit, weapon));
+				explosionMod = brutalExplosiveEfficacy(target->getPosition(), _unit, radius, true);
+				explosionMod *= grenadeRiddingUrgency();
+			}
+			else
+			{
+				if (bat == BA_THROW && weapon != _unit->getGrenadeFromBelt(_save))
+					continue;
+				auto ammo = weapon->getAmmoForAction(bat);
+				if (ammo)
+				{
+					currentActionRawPower = ammo->getRules()->getPower();
+					int radius = ammo->getRules()->getExplosionRadius({bat, _unit, _attackAction.weapon, ammo});
+					if (radius > 0)
+						explosionMod *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
+					if (ammo->getRules()->getShotgunPellets() > 0)
+						numberOfShots *= ammo->getRules()->getShotgunPellets();
+				}
+				else
+					continue;
+			}
+
+			// Get base accuracy for the action
+			float accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(bat, _unit, weapon), _save->getBattleGame()->getMod());
+
+			if (Options::battleUFOExtenderAccuracy && bat != BA_THROW)
+			{
+				int upperLimit;
+				if (bat == BA_AIMEDSHOT)
+				{
+					upperLimit = weapon->getRules()->getAimRange();
+				}
+				else if (bat == BA_AUTOSHOT)
+				{
+					upperLimit = weapon->getRules()->getAutoRange();
+				}
+				else
+				{
+					upperLimit = weapon->getRules()->getSnapRange();
+				}
+				int lowerLimit = weapon->getRules()->getMinRange();
+
+				if (distance > upperLimit)
+				{
+					accuracy -= (distance - upperLimit) * weapon->getRules()->getDropoff();
+				}
+				else if (distance < lowerLimit)
+				{
+					accuracy -= (lowerLimit - distance) * weapon->getRules()->getDropoff();
+				}
+			}
+			if (weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) != -1)
+			{
+				Tile* targetTile = target->getTile();
+				bool shouldHaveLos = true;
+				if (targetTile)
+				{
+					int viewDistance = _unit->getMaxViewDistanceAtDay(target);
+					if (target->getTile()->getShade() > _save->getMod()->getMaxDarknessToSeeUnits() && target->getTile()->getFire() == 0)
+						viewDistance = _unit->getMaxViewDistanceAtDark(target);
+					float minViewDistance = _save->getMod()->getMaxViewDistance() / (1.0 + targetTile->getSmoke() / 3.0);
+					viewDistance = std::min(viewDistance, (int)minViewDistance);
+					if (Position::distance(pos, target->getPosition()) > viewDistance)
+						shouldHaveLos = false;
+				}
+				else
+					shouldHaveLos = false;
+				if (!shouldHaveLos)
+					accuracy *= weapon->getRules()->getNoLOSAccuracyPenalty(_save->getMod()) / 100.0;
+			}
+
+			if (bat != BA_THROW && weapon->getRules()->isOutOfRange(distanceSq))
+				accuracy = 0;
+			if (bat == BA_HIT)
+			{
+				Position attackVexel = pos.toVoxel();
+				attackVexel += Position(8, 8, 0) * _unit->getArmor()->getSize();
+				int arc = _save->getTileEngine()->getArcDirection(_save->getTileEngine()->getDirectionTo(target->getPositionVexels(), attackVexel), target->getDirection());
+				float penalty = 1.0f - arc * target->getArmor()->getMeleeDodgeBackPenalty() / 4.0f;
+				if (target->getArmor()->getMeleeDodge(target) * penalty < accuracy)
+					accuracy -= target->getArmor()->getMeleeDodge(target) * penalty;
+				else
+					accuracy = 0.01;
+				// We can definitely assume we'll be facing the target
+				int directionToLook = _save->getTileEngine()->getDirectionTo(pos, target->getPosition());
+				if (!_save->getTileEngine()->validMeleeRange(pos, directionToLook, _unit, target, 0))
+				{
+					accuracy = 0;
+				}
+				else if (distance >= 2)
+				{
+					accuracy = 0;
+				}
+			}
+			else if (shouldAvoidMeleeRange(target) && distance < 2)
+			{
+				accuracy = 0;
+			}
+
+			if (bat == BA_AIMEDSHOT)
+			{
+				numberOfShots = weapon->getRules()->getConfigAimed()->shots;
+			}
+			else if (bat == BA_SNAPSHOT)
+			{
+				numberOfShots = weapon->getRules()->getConfigSnap()->shots;
+			}
+			else if (bat == BA_AUTOSHOT)
+			{
+				numberOfShots = weapon->getRules()->getConfigAuto()->shots;
+			}
+			else if (bat == BA_HIT)
+			{
+				numberOfShots = weapon->getRules()->getConfigMelee()->shots;
+			}
+
+			// check next firing mode if current one doesn't exist for this weapon
+			if (!tuCost)
+				continue;
+
+			float attacks = static_cast<float>(tuTotal) / tuCost;
+			if (energyCost > 0)
+				attacks = std::min(attacks, static_cast<float>(energyTotal) / energyCost);
+			numberOfShots *= attacks;
+			if (numberOfShots < 1)
+				continue;
+
+			auto ammo = weapon->getAmmoForAction(bat);
+			if (ammo)
+			{
+				currentActionRawPower = std::max(currentActionRawPower, (float)ammo->getRules()->getPower());
+			}
+			// Add power bonus for this specific action
+			currentActionRawPower = std::max(currentActionRawPower, (float)weapon->getRules()->getPowerBonus(BattleActionAttack::GetBeforeShoot(bat, _unit, weapon)));
+
+			if (currentActionRawPower <= 0) // If this specific action has no power, it won't contribute damage
+			{
+				continue;
+			}
+
+			float relevantArmor = 0;
+			if (bat == BA_THROW) // BA_THROW uses underarmor
+				relevantArmor = target->getArmor()->getUnderArmor();
+			else
+			{
+				UnitSide side = getSideFacingToPosition(target, pos);
+				// Simplified armor logic for brevity
+				if (side == SIDE_FRONT || side == SIDE_RIGHT || side == SIDE_LEFT || side == SIDE_REAR || side == SIDE_UNDER)
+					relevantArmor = target->getArmor()->getArmor(side);
+				else if (side == SIDE_LEFT_FRONT)
+					relevantArmor = (target->getArmor()->getArmor(SIDE_LEFT) + target->getArmor()->getArmor(SIDE_FRONT)) / 2.0f;
+				else if (side == SIDE_RIGHT_FRONT)
+					relevantArmor = (target->getArmor()->getArmor(SIDE_RIGHT) + target->getArmor()->getArmor(SIDE_FRONT)) / 2.0f;
+				else if (side == SIDE_LEFT_REAR)
+					relevantArmor = (target->getArmor()->getArmor(SIDE_LEFT) + target->getArmor()->getArmor(SIDE_REAR)) / 2.0f;
+				else if (side == SIDE_RIGHT_REAR)
+					relevantArmor = (target->getArmor()->getArmor(SIDE_RIGHT) + target->getArmor()->getArmor(SIDE_REAR)) / 2.0f;
+			}
+
+			// Start with the raw power of THIS specific action
+			float damageForCalc = currentActionRawPower;
+
+			// Apply resistance modifier
+			damageForCalc *= target->getArmor()->getDamageModifier(weapon->getRules()->getDamageType()->ResistType);
+
+			float damageRangeFactor = 1.0f + _save->getMod()->DAMAGE_RANGE / 100.0f;
+
+			accuracy /= 100.0;
+			// Apply a modifier for higher/lower hit-chance when closer/further from the target. But not for melee-attacks.
+			if (bat != BA_HIT && !Options::battleRealisticAccuracy)
+			{
+				if (accuracy > 0)
+					accuracy += std::max(1 - accuracy, 0.0f) / distance;
+				accuracy = std::min(1.0f, accuracy);
+			}
+			// Calculate final damage for *this action* using its own (modified) power
+			float finalActionDamage = (damageForCalc * damageRangeFactor - relevantArmor) / 2.0f;
+			finalActionDamage *= accuracy * numberOfShots * explosionMod;
+			finalActionDamage = std::max(0.0f, finalActionDamage); // Damage cannot be negative
+
+			// Update the maximum damage found for THIS weapon
+			maxFinalDamageForThisWeapon = std::max(maxFinalDamageForThisWeapon, finalActionDamage);
+		}
+		// After checking all actions for this weapon, update the overall maximum damage
+		overallMaxDamage = std::max(overallMaxDamage, maxFinalDamageForThisWeapon);
+	}
+	return overallMaxDamage;
 }
 
 }

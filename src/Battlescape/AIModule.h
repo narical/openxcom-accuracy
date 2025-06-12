@@ -277,6 +277,8 @@ public:
 	int scoreVisibleTiles(const std::set<Tile*>& tileSet);
 	/// prepares a grenade-action to use with validateArcingShot
 	BattleAction* grenadeThrowAction(Position pos);
+	/// how much damage we can inflict to a given enemy
+	float damagePotential(Position pos, BattleUnit* target, int tuTotal, int energyTotal);
 };
 
 }
