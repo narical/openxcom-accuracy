@@ -997,14 +997,18 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->getStatistics()->lowAccuracyHitCounter++;
 			}
 		}
+		int turnBefore = victim->getTurnsSinceSeen(_unit->getFaction());
 		victim->updateEnemyKnowledge(_parent->getSave()->getTileIndex(victim->getPosition()), true);
-		for (BattleUnit *unit : *(_parent->getSave()->getUnits()))
+		if (turnBefore != victim->getTurnsSinceSeen(_unit->getFaction()))
 		{
-			if (unit->isOut())
-				continue;
-			if (!unit->getAIModule() || !unit->isBrutal())
-				continue;
-			unit->checkForReactivation(_parent->getSave());
+			for (BattleUnit* unit : *(_parent->getSave()->getUnits()))
+			{
+				if (unit->isOut())
+					continue;
+				if (!unit->getAIModule() || !unit->isBrutal())
+					continue;
+				unit->checkForReactivation(_parent->getSave());
+			}
 		}
 	}
 }
