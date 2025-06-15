@@ -68,7 +68,7 @@ private:
 	int _tuCostToReachClosestPositionToBreakLos;
 	int _energyCostToReachClosestPositionToBreakLos;
 	int _tuWhenChecking;
-	bool _reposition = false;
+	bool _allowedToCheckAttack = false;
 	BattleActionType _reserve;
 	UnitFaction _targetFaction;
 	UnitFaction _myFaction;
@@ -186,7 +186,7 @@ public:
 	/// Chooses a firing mode for the AI based on expected damage dealt
 	float brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleActionCost &costSnap, BattleActionCost &costAimed, BattleActionCost &costThrow, BattleActionCost &costHit, bool checkLOF = false, float previousHighScore = 0);
 	/// Scores a firing mode action based on distance to target, accuracy and overall Damage dealt, also supports melee-hits
-	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF, Tile* simulationTile = NULL, bool needToHideAfterwards = false, bool checkMayHarmFriends = true);
+	float brutalScoreFiringMode(BattleAction *action, BattleUnit *target, bool checkLOF);
 	/// Used as multiplier for the throw-action in brutalScoreFiringMode
 	float brutalExplosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, int radius, bool grenade = false, bool validOnly = false) const;
 	/// An inaccurate simplified check for line of fire from a specific position to a specific target
@@ -248,7 +248,7 @@ public:
 	/// returns how much energy the unit can recover each turn
 	int getEnergyRecovery(BattleUnit* unit);
 	/// returns reachable tile-Ids by a particular unit
-	std::map<Position, int, PositionComparator> getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc = false, bool useMaxTUs = false);
+	std::map<Position, int, PositionComparator> getReachableBy(BattleUnit* unit, bool& ranOutOfTUs, bool forceRecalc = false, bool useMaxTUs = false, bool pruneAirTiles = false);
 	/// checks whether it would be possible to see one tile from another
 	bool hasTileSight(Position from, Position to);
 	/// returns the amount of blaster-waypoints to reach a target-positon
@@ -279,6 +279,10 @@ public:
 	BattleAction* grenadeThrowAction(Position pos);
 	/// how much damage we can inflict to a given enemy
 	float damagePotential(Position pos, BattleUnit* target, int tuTotal, int energyTotal);
+	/// checks if a position is visible to the enemy
+	bool isPositionVisibleToEnemy(Position pos);
+	/// allows or forbids attacking without another movement-logic-check
+	void allowAttack(bool allow);
 };
 
 }

@@ -3204,7 +3204,7 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 				// for some reason the unit had no AI routine assigned..
 				action.actor->setAIModule(new AIModule(_save, action.actor, 0));
 			}
-			if (action.actor->getAIModule()->brutalScoreFiringMode(&action, target, true, nullptr, false, false) <= 0)
+			if (action.actor->getAIModule()->brutalScoreFiringMode(&action, target, true) <= 0)
 				return false;
 
 			worker.execute(target->getArmor()->getScript<ModScript::ReactionUnitAction>(), arg);
