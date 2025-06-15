@@ -33,6 +33,7 @@
 #include "../Mod/Armor.h"
 #include "../Mod/Mod.h"
 #include "UnitFallBState.h"
+#include "AIModule.h"
 
 namespace OpenXcom
 {
@@ -135,6 +136,8 @@ void UnitWalkBState::think()
 			_pf->abortPath();
 			_parent->popState();
 		}
+		if (_unit->getAIModule())
+			_unit->getAIModule()->allowAttack(false);
 	};
 
 	if (_unit->getStatus() == STATUS_WALKING || _unit->getStatus() == STATUS_FLYING)
@@ -542,6 +545,19 @@ void UnitWalkBState::postPathProcedures()
 
 	_terrain->calculateLighting(LL_UNITS, _unit->getPosition());
 	_terrain->calculateFOV(_unit);
+	bool unitSpotted = (!_action.ignoreSpottedEnemies && !_falling && !_action.desperate && _unit->getStatus() != STATUS_PANICKING && _numUnitsSpotted != _unit->getUnitsSpottedThisTurn().size());
+	// If our friends have already passed, wake them up again:
+	if (unitSpotted)
+	{
+		for (BattleUnit* unit : *(_parent->getSave()->getUnits()))
+		{
+			if (unit->isOut())
+				continue;
+			if (!unit->getAIModule() || !unit->isBrutal() || unit->getFaction() != _unit->getFaction())
+				continue;
+			unit->checkForReactivation(_parent->getSave());
+		}
+	}
 	if (!_falling)
 		_parent->popState();
 }
