@@ -2781,6 +2781,7 @@ void StatsForNerdsState::initArmorList()
 	addInteger(ss, armorRule->getWeight(), "weight");
 
 	addInteger(ss, armorRule->getSize(), "size", 1);
+	addInteger(ss, armorRule->getSpaceOccupied(), "spaceOccupied", -1);
 
 	addSpecialAbility(ss, (SpecialAbility)armorRule->getSpecialAbility(), "specab");
 	addMovementType(ss, armorRule->getMovementType(), "movementType");

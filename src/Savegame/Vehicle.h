@@ -33,10 +33,10 @@ class Vehicle
 {
 private:
 	const RuleItem *_rules;
-	int _ammo, _size;
+	int _ammo, _size, _spaceOccupied;
 public:
 	/// Creates a vehicle of the specified type.
-	Vehicle(const RuleItem *rules, int ammo, int size);
+	Vehicle(const RuleItem *rules, int ammo, int size, int spaceOccupied);
 	/// Cleans up the vehicle.
 	~Vehicle();
 	/// Loads the vehicle from YAML.
@@ -51,6 +51,8 @@ public:
 	void setAmmo(int ammo);
 	/// Gets the vehicle's size.
 	int getTotalSize() const;
+	/// Gets how much space the vehicle occupies in a craft.
+	int getSpaceOccupied() const;
 };
 
 }

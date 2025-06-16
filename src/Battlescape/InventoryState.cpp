@@ -451,7 +451,7 @@ void InventoryState::init()
 				}
 				break;
 			}
-			unitSlot += tmpUnit->getArmor()->getTotalSize();
+			unitSlot += tmpUnit->getArmor()->getSpaceOccupied();
 		}
 		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot).arg(totalSlots));
 	}
