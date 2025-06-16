@@ -194,6 +194,7 @@ en-US:
   IgnoreNormalMoraleLose: "Ign. vanilla morale loss"
   IgnoreOverKill: "Ignore overkill"
   ArmorEffectiveness: "Armor effectiveness"
+  ArmorIgnore: "Armor ignore"
   RadiusEffectiveness: "Radius effectiveness"
   RadiusReduction: "Radius dmg reduction"
   FireThreshold: "Set-on-fire threshold"

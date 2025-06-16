@@ -1912,7 +1912,12 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (type->ArmorEffectiveness > 0.0f)
 		{
-			damage -= getArmor(side) * type->ArmorEffectiveness;
+			int armorValue = getArmor(side);
+			if (type->ArmorIgnore != 0)
+			{
+				armorValue = std::clamp(armorValue - type->ArmorIgnore, 0, armorValue);
+			}
+			damage -= armorValue * type->ArmorEffectiveness;
 		}
 
 		if (damage > 0)

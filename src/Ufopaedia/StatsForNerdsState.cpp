@@ -2072,6 +2072,7 @@ void StatsForNerdsState::initItemList()
 		addBoolean(ss, rule->IgnoreOverKill, "IgnoreOverKill", ruleByResistType->IgnoreOverKill);
 
 		addFloatAsPercentage(ss, rule->ArmorEffectiveness, "ArmorEffectiveness", ruleByResistType->ArmorEffectiveness);
+		addInteger(ss, rule->ArmorIgnore, "ArmorIgnore", ruleByResistType->ArmorIgnore);
 		addFloatAsPercentage(ss, rule->RadiusEffectiveness, "RadiusEffectiveness", ruleByResistType->RadiusEffectiveness);
 		addFloat(ss, rule->RadiusReduction, "RadiusReduction", ruleByResistType->RadiusReduction);
 
