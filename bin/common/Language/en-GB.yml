@@ -489,3 +489,5 @@ en-GB:
   STR_CONFIG_FOLDER_DESC: "This is where OpenXcom settings ('options.cfg') are stored. Normally the same as the User Folder."
   STR_AUTOPLAY_DISABLED: "Autoplay disabled"
   STR_AUTOPLAY_ENABLED: "Autoplay enabled"
+  STR_BATTLETHROWNSPEED: "Thrown Speed"
+  STR_BATTLETHROWNSPEED_DESC: "Changes the speed of thrown items. 0> Same as Fire Speed 1-20> Equivalent value to Fire Speed slider steps from BATTLESCAPE menu"

@@ -85,6 +85,11 @@ Projectile::Projectile(Mod* mod, SavedBattleGame* save, BattleAction action, Pos
 				_speed = std::max(1, _speed + _action.weapon->getRules()->getBulletSpeed());
 			}
 		}
+		else
+		{
+			if (Options::battleThrownSpeed > 0)
+				_speed = Options::battleThrownSpeed;
+		}
 	}
 	if ((targetVoxel.x - origin.x) + (targetVoxel.y - origin.y) >= 0)
 	{

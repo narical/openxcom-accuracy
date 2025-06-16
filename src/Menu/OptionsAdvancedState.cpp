@@ -513,6 +513,11 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 0;
 			max = 3;
 		}
+		else if (i == &Options::battleThrownSpeed)
+		{
+			min = 0;
+			max = 20;
+		}
 
 		if (*i < min)
 		{
