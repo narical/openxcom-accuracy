@@ -1982,7 +1982,7 @@ void StatsForNerdsState::initItemList()
 		}
 	}
 
-	addInteger(ss, itemRule->getWeight(), "weight", 3);
+	addFloat(ss, itemRule->getWeight(), "weight", 3.0f);
 	addInteger(ss, itemRule->getThrowRange(), "throwRange", 200);
 	addInteger(ss, itemRule->getUnderwaterThrowRange(), "underwaterThrowRange", 200);
 
@@ -2778,7 +2778,7 @@ void StatsForNerdsState::initArmorList()
 
 	addUnitStatBonus(ss, *armorRule->getStats(), "stats");
 
-	addInteger(ss, armorRule->getWeight(), "weight");
+	addFloat(ss, armorRule->getWeight(), "weight");
 
 	addInteger(ss, armorRule->getSize(), "size", 1);
 	addInteger(ss, armorRule->getSpaceOccupied(), "spaceOccupied", -1);

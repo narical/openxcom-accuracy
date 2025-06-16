@@ -35,7 +35,7 @@ const std::string Armor::NONE = "STR_NONE";
  */
 Armor::Armor(const std::string &type, int listOrder) :
 	_type(type), _infiniteSupply(false), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0),
-	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _spaceOccupied(-1), _weight(0),
+	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _spaceOccupied(-1), _weight(0.0f),
 	_visibilityAtDark(0), _visibilityAtDay(0),
 	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0),
 	_visibilityThroughSmoke(0), _visibilityThroughFire(100),
@@ -744,7 +744,7 @@ int Armor::getStunRegeneration(const BattleUnit* unit, int externalBonuses) cons
  * Gets the armor's weight.
  * @return the weight of the armor.
  */
-int Armor::getWeight() const
+float Armor::getWeight() const
 {
 	return _weight;
 }

@@ -197,7 +197,7 @@ namespace OpenXcom
 		const std::vector<const RuleItem*> dummy;
 		const std::vector<const RuleItem*> *ammo_data = ammoSlot != RuleItem::AmmoSlotSelfUse ? item->getCompatibleAmmoForSlot(ammoSlot) : &dummy;
 
-		int weight = item->getWeight();
+		float weight = item->getWeight();
 		std::string weightLabel = tr("STR_WEIGHT_PEDIA1").arg(weight);
 		if (!ammo_data->empty())
 		{

@@ -154,7 +154,8 @@ private:
 	std::vector<int> _selectWeaponSoundMale, _selectWeaponSoundFemale;
 	std::vector<int> _annoyedSoundMale, _annoyedSoundFemale;
 
-	int _size, _spaceOccupied, _weight, _visibilityAtDark, _visibilityAtDay;
+	int _size, _spaceOccupied, _visibilityAtDark, _visibilityAtDay;
+	float _weight;
 
 	int _personalLightFriend = 15;
 	int _personalLightHostile = 0;
@@ -368,7 +369,7 @@ public:
 	const RuleStatBonus *getStunRegenerationRaw() const { return &_stunRecovery; }
 
 	/// Gets the armor's weight.
-	int getWeight() const;
+	float getWeight() const;
 	/// Gets number of death frames.
 	int getDeathFrames() const;
 	/// Gets if armor uses constant animation.

@@ -2884,10 +2884,14 @@ void BattleUnit::prepareTimeUnits(int tu)
 		setValueMax(_tu, tu, 0, getBaseStats()->tu);
 
 		// Apply reductions, if new TU == 0 then it could make not spend TU decay
-		float encumbrance = (float)getBaseStats()->strength / (float)getCarriedWeight();
-		if (encumbrance < 1)
+		const float carried = getCarriedWeight();
+		if (carried > 0.0f)
 		{
-		  _tu = int(encumbrance * _tu);
+			const float encumbrance = static_cast<float>(getBaseStats()->strength) / carried;
+			if (encumbrance < 1.0f)
+			{
+				_tu = static_cast<int>(std::round(encumbrance * _tu));
+			}
 		}
 		// Each fatal wound to the left or right leg reduces the soldier's TUs by 10%.
 		_tu -= (_tu * ((_fatalWounds[BODYPART_LEFTLEG]+_fatalWounds[BODYPART_RIGHTLEG]) * 10))/100;
@@ -3267,7 +3271,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 	bool placed = false;
 	bool loaded = false;
 	const RuleItem *rule = item->getRules();
-	int weight = 0;
+	float weight = 0.0f;
 
 	bool isStandardPlayerUnit = getFaction() == FACTION_PLAYER && hasInventory() && !isSummonedPlayerUnit();
 
@@ -5095,15 +5099,15 @@ BattleUnit *BattleUnit::getCharging()
  * @param draggingItem item to ignore
  * @return weight
  */
-int BattleUnit::getCarriedWeight(BattleItem *draggingItem) const
+float BattleUnit::getCarriedWeight(BattleItem *draggingItem) const
 {
-	int weight = _armor->getWeight();
+	float weight = _armor->getWeight();
 	for (const auto* bi : _inventory)
 	{
 		if (bi == draggingItem) continue;
 		weight += bi->getTotalWeight();
 	}
-	return std::max(0,weight);
+	return std::max(0.0f,weight);
 }
 
 
