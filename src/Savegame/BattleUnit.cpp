@@ -2890,7 +2890,7 @@ void BattleUnit::prepareTimeUnits(int tu)
 			const float encumbrance = static_cast<float>(getBaseStats()->strength) / carried;
 			if (encumbrance < 1.0f)
 			{
-				_tu = static_cast<int>(std::round(encumbrance * _tu));
+				_tu *= static_cast<int>(std::round(encumbrance));
 			}
 		}
 		// Each fatal wound to the left or right leg reduces the soldier's TUs by 10%.
