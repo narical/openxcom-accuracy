@@ -279,13 +279,13 @@ int RuleDamageType::getWoundFinalDamage(int damage) const
 		int woundPotential = static_cast<int>(std::round(damage * ToWound));
 		switch (RandomWound)
 		{
-			case ItemWoundRandomType::LINEAR:
+			case ItemWoundRandomType::VANILLA:
 				if (RNG::generate(0, 10) < woundPotential)
 				{
 					return RNG::generate(1, 3);
 				}
 				break;
-			case ItemWoundRandomType::VANILLA:
+			case ItemWoundRandomType::LINEAR:
 				return woundPotential;
 			case ItemWoundRandomType::RANDOM:
 				return RNG::generate(0, woundPotential);
