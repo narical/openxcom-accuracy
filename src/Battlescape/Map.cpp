@@ -342,8 +342,13 @@ void Map::draw()
 	{
 		for (auto* explosion : _explosions)
 		{
+			if (explosion->isBig())
+			{
+				_explosionInFOV = true;
+				break;
+			}
 			t = _save->getTile(explosion->getPosition().toTile());
-			if (t && (explosion->isBig() || t->getVisible()))
+			if (t && t->getVisible())
 			{
 				_explosionInFOV = true;
 				break;
