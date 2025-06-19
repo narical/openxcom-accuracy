@@ -56,6 +56,10 @@ en-US:
   DRT_STANDARD: "standard damage range"
   DRT_EXPLOSION: "explosion damage range"
 #
+  WRT_LINEAR: "flat"
+  WRT_VANILLA: "vanilla"
+  WRT_RANDOM: "0-100% spread"
+#
   BFT_NONE: "none"
   BFT_INSTANT: "instant"
   BFT_SET: "manually set"
@@ -190,6 +194,7 @@ en-US:
   IgnoreNormalMoraleLose: "Ign. vanilla morale loss"
   IgnoreOverKill: "Ignore overkill"
   ArmorEffectiveness: "Armor effectiveness"
+  ArmorIgnore: "Armor ignore"
   RadiusEffectiveness: "Radius effectiveness"
   RadiusReduction: "Radius dmg reduction"
   FireThreshold: "Set-on-fire threshold"
@@ -204,7 +209,7 @@ en-US:
   ToStun: "Stun damage multiplier"
   RandomStun: "Stun damage RNG?"
   ToWound: "Wound count multiplier"
-  RandomWound: "Vanilla wound RNG?"
+  RandomWound: "Wound RNG mode"
   ToTime: "TU damage multiplier"
   RandomTime: "TU damage RNG?"
   ToEnergy: "Energy dmg multiplier"
@@ -359,6 +364,7 @@ en-US:
   leftArmorDiff: "Left Armor Diff"
   rearArmor: "Rear Armor"
   underArmor: "Under Armor"
+  spaceOccupied: "Space Occupied"
 #
   sizeX: "Size X"
   sizeY: "Size Y"

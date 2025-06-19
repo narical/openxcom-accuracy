@@ -722,7 +722,7 @@ public:
 	/// Get the units we are charging towards.
 	BattleUnit *getCharging();
 	/// Get the carried weight in strength units.
-	int getCarriedWeight(BattleItem *draggingItem = 0) const;
+	float getCarriedWeight(BattleItem *draggingItem = 0) const;
 
 	/// Set default state on unit.
 	void resetTurnsSince();

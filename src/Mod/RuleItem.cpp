@@ -148,7 +148,7 @@ const float TilesToVexels = 16.0f;
  */
 RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_type(type), _name(type), _vehicleUnit(nullptr), _vehicleFixedAmmoSlot(0), _size(0.0),
-	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(200), _underwaterThrowRange(200),
+	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3.0f), _throwRange(200), _underwaterThrowRange(200),
 	_throwDropoffRange(99), _underwaterThrowDropoffRange(99), _throwDropoff(5),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
 	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
@@ -1005,9 +1005,9 @@ int RuleItem::getTransferTime() const
 
 /**
  * Gets the weight of the item.
- * @return The weight in strength units.
+ * @return The weight (may be fractional) in strength units.
  */
-int RuleItem::getWeight() const
+float RuleItem::getWeight() const
 {
 	return _weight;
 }
@@ -2838,6 +2838,11 @@ void getArmorEffectivenessScript(const RuleDamageType* rdt, int& ret)
 	ret = rdt ? round(rdt->ArmorEffectiveness * 100) : 0;
 }
 
+void getArmorIgnoreScript(const RuleDamageType* rdt, int& ret)
+{
+	ret = rdt ? rdt->ArmorIgnore : 0;
+}
+
 template<float RuleDamageType::* Ptr>
 void getDamageToScript(const RuleDamageType* rdt, int &ret, int value)
 {
@@ -2914,6 +2919,7 @@ void RuleItem::ScriptRegister(ScriptParserBase* parser)
 		rs.add<&getRandomTypeScript>("getRandomType", "how to calculate randomized weapon damage from the weapon's power");
 
 		rs.add<&getArmorEffectivenessScript>("getArmorEffectiveness", "how effective is a unit's armor against this damage, % (value multiplied by 100 compared to ruleset value)");
+		rs.add<&getArmorIgnoreScript>("getArmorIgnore", "how many points of armor are ignored");
 
 		rs.add<&getDamageToScript<&RuleDamageType::ToArmorPre>>("getDamageToArmorPre", "calculated damage value multiplied by the corresponding modifier");
 		rs.add<&getDamageToScript<&RuleDamageType::ToArmor>>("getDamageToArmor", "calculated damage value multiplied by the corresponding modifier");

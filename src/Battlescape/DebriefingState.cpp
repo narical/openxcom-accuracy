@@ -2330,6 +2330,7 @@ void DebriefingState::reequipCraft(Base *base, Craft *craft, bool vehicleItemsCa
 		int qty = base->getStorageItems()->getItem(pair.first);
 		const RuleItem *tankRule = pair.first;
 		int size = tankRule->getVehicleUnit()->getArmor()->getTotalSize();
+		int space = tankRule->getVehicleUnit()->getArmor()->getSpaceOccupied();
 		int canBeAdded = std::min(qty, pair.second);
 		if (qty < pair.second)
 		{ // missing tanks
@@ -2341,7 +2342,7 @@ void DebriefingState::reequipCraft(Base *base, Craft *craft, bool vehicleItemsCa
 		{ // so this tank does NOT require ammo
 			for (int j = 0; j < canBeAdded; ++j)
 			{
-				craft->getVehicles()->push_back(new Vehicle(tankRule, tankRule->getVehicleClipSize(), size));
+				craft->getVehicles()->push_back(new Vehicle(tankRule, tankRule->getVehicleClipSize(), size, space));
 			}
 			base->getStorageItems()->removeItem(pair.first, canBeAdded);
 		}
@@ -2362,7 +2363,7 @@ void DebriefingState::reequipCraft(Base *base, Craft *craft, bool vehicleItemsCa
 			{
 				for (int j = 0; j < canBeAdded; ++j)
 				{
-					craft->getVehicles()->push_back(new Vehicle(tankRule, tankRule->getVehicleClipSize(), size));
+					craft->getVehicles()->push_back(new Vehicle(tankRule, tankRule->getVehicleClipSize(), size, space));
 					base->getStorageItems()->removeItem(ammo, ammoPerVehicle);
 				}
 				base->getStorageItems()->removeItem(pair.first, canBeAdded);

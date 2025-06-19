@@ -154,7 +154,8 @@ private:
 	std::vector<int> _selectWeaponSoundMale, _selectWeaponSoundFemale;
 	std::vector<int> _annoyedSoundMale, _annoyedSoundFemale;
 
-	int _size, _weight, _visibilityAtDark, _visibilityAtDay;
+	int _size, _spaceOccupied, _visibilityAtDark, _visibilityAtDay;
+	float _weight;
 
 	int _personalLightFriend = 15;
 	int _personalLightHostile = 0;
@@ -328,8 +329,10 @@ public:
 	const std::vector<int> &getFemaleAnnoyedSounds() const { return _annoyedSoundFemale; }
 	/// Gets whether this is a normal or big unit.
 	int getSize() const;
-	/// Gets how much space the armor occupies in a craft.
+	/// Gets total size of the armor on the battlescape.
 	int getTotalSize() const;
+	/// Gets how much space the armor occupies in a craft.
+	int getSpaceOccupied() const;
 	/// Gets damage modifier.
 	float getDamageModifier(ItemDamageType dt) const;
 	const std::vector<float> getDamageModifiersRaw() const;
@@ -366,7 +369,7 @@ public:
 	const RuleStatBonus *getStunRegenerationRaw() const { return &_stunRecovery; }
 
 	/// Gets the armor's weight.
-	int getWeight() const;
+	float getWeight() const;
 	/// Gets number of death frames.
 	int getDeathFrames() const;
 	/// Gets if armor uses constant animation.

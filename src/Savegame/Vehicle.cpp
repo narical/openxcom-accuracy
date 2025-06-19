@@ -27,8 +27,9 @@ namespace OpenXcom
  * @param rules Pointer to ruleset.
  * @param ammo Initial ammo.
  * @param size Size in tiles.
+ * @param spaceOccupied Space occupied in a craft.
  */
-Vehicle::Vehicle(const RuleItem *rules, int ammo, int size) : _rules(rules), _ammo(ammo), _size(size)
+Vehicle::Vehicle(const RuleItem* rules, int ammo, int size, int spaceOccupied) : _rules(rules), _ammo(ammo), _size(size), _spaceOccupied(spaceOccupied)
 {
 }
 
@@ -47,6 +48,7 @@ void Vehicle::load(const YAML::YamlNodeReader& reader)
 {
 	reader.tryRead("ammo", _ammo);
 	reader.tryRead("size", _size);
+	reader.tryRead("spaceOccupied", _spaceOccupied);
 }
 
 /**
@@ -59,6 +61,7 @@ void Vehicle::save(YAML::YamlNodeWriter writer) const
 	writer.write("type", _rules->getType());
 	writer.write("ammo", _ammo);
 	writer.write("size", _size);
+	writer.write("spaceOccupied", _spaceOccupied);
 }
 
 /**
@@ -103,6 +106,15 @@ void Vehicle::setAmmo(int ammo)
 int Vehicle::getTotalSize() const
 {
 	return _size;
+}
+
+/**
+ * Gets how much space the armor occupies in a craft. If not specified, uses armor size.
+ * @return Space occupied by the vehicle.
+ */
+int Vehicle::getSpaceOccupied() const
+{
+	return (_spaceOccupied > -1 ? _spaceOccupied : getTotalSize());
 }
 
 }

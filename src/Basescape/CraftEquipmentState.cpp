@@ -844,9 +844,10 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 	// Do we need to convert item to vehicle?
 	if (item->getVehicleUnit())
 	{
+		int space = item->getVehicleUnit()->getArmor()->getSpaceOccupied();
 		int size = item->getVehicleUnit()->getArmor()->getTotalSize();
 		// Check if there's enough room
-		int room = c->validateAddingVehicles(size);
+		int room = c->validateAddingVehicles(space);
 		if (room > 0)
 		{
 			change = std::min(room, change);
@@ -869,7 +870,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 							_base->getStorageItems()->removeItem(ammo, ammoPerVehicle);
 							_base->getStorageItems()->removeItem(item);
 						}
-						c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size));
+						c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size, space));
 						c->resetCustomDeployment(); // adding a vehicle into a craft invalidates a custom craft deployment
 					}
 				}
@@ -888,7 +889,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 			else
 				for (int i = 0; i < change; ++i)
 				{
-					c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size));
+					c->getVehicles()->push_back(new Vehicle(item, item->getVehicleClipSize(), size, space));
 					c->resetCustomDeployment(); // adding a vehicle into a craft invalidates a custom craft deployment
 					if (!_isNewBattle)
 					{

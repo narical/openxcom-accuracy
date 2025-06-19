@@ -1837,11 +1837,12 @@ void Base::setupDefenses(AlienMission* am)
 		if (rule->getVehicleUnit())
 		{
 			int size = rule->getVehicleUnit()->getArmor()->getTotalSize();
+			int space = rule->getVehicleUnit()->getArmor()->getSpaceOccupied();
 			if (rule->getVehicleClipAmmo() == nullptr) // so this vehicle does not need ammo
 			{
 				for (int j = 0; j < itemQty; ++j)
 				{
-					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
+					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size, space);
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 				}
@@ -1861,7 +1862,7 @@ void Base::setupDefenses(AlienMission* am)
 				int canBeAdded = std::min(itemQty, baseQty);
 				for (int j=0; j<canBeAdded; ++j)
 				{
-					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size);
+					auto vehicle = new Vehicle(rule, rule->getVehicleClipSize(), size, space);
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 					_items->removeItem(ammo, ammoPerVehicle);

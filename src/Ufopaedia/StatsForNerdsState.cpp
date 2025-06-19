@@ -1810,6 +1810,48 @@ void StatsForNerdsState::addSoundVectorResourcePaths(std::ostringstream &ss, Mod
 }
 
 /**
+ * Adds a wound random type to the table.
+ */
+void StatsForNerdsState::addRandomWound(std::ostringstream& ss, const ItemWoundRandomType& value, const std::string& propertyName, const ItemWoundRandomType& defaultvalue)
+{
+	if (value == defaultvalue && !_showDefaults)
+	{
+		return;
+	}
+
+	resetStream(ss);
+
+	switch (value)
+	{
+	case ItemWoundRandomType::LINEAR:
+		ss << tr("WRT_LINEAR");
+		break;
+	case ItemWoundRandomType::VANILLA:
+		ss << tr("WRT_VANILLA");
+		break;
+	case ItemWoundRandomType::RANDOM:
+		ss << tr("WRT_RANDOM");
+		break;
+	default:
+		ss << tr("STR_UNKNOWN");
+		break;
+	}
+
+	if (_showIds)
+	{
+		ss << " [" << (int)value << "]";
+	}
+
+	_lstRawData->addRow(2, trp(propertyName).c_str(), ss.str().c_str());
+	++_counter;
+
+	if (value != defaultvalue)
+	{
+		_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
+	}
+}
+
+/**
  * Shows the "raw" RuleItem data.
  */
 void StatsForNerdsState::initItemList()
@@ -1940,7 +1982,7 @@ void StatsForNerdsState::initItemList()
 		}
 	}
 
-	addInteger(ss, itemRule->getWeight(), "weight", 3);
+	addFloat(ss, itemRule->getWeight(), "weight", 3.0f);
 	addInteger(ss, itemRule->getThrowRange(), "throwRange", 200);
 	addInteger(ss, itemRule->getUnderwaterThrowRange(), "underwaterThrowRange", 200);
 
@@ -2030,6 +2072,7 @@ void StatsForNerdsState::initItemList()
 		addBoolean(ss, rule->IgnoreOverKill, "IgnoreOverKill", ruleByResistType->IgnoreOverKill);
 
 		addFloatAsPercentage(ss, rule->ArmorEffectiveness, "ArmorEffectiveness", ruleByResistType->ArmorEffectiveness);
+		addInteger(ss, rule->ArmorIgnore, "ArmorIgnore", ruleByResistType->ArmorIgnore);
 		addFloatAsPercentage(ss, rule->RadiusEffectiveness, "RadiusEffectiveness", ruleByResistType->RadiusEffectiveness);
 		addFloat(ss, rule->RadiusReduction, "RadiusReduction", ruleByResistType->RadiusReduction);
 
@@ -2049,7 +2092,7 @@ void StatsForNerdsState::initItemList()
 		addBoolean(ss, rule->RandomStun, "RandomStun", ruleByResistType->RandomStun);
 
 		addFloatAsPercentage(ss, rule->ToWound, "ToWound", ruleByResistType->ToWound);
-		addBoolean(ss, rule->RandomWound, "RandomWound", ruleByResistType->RandomWound);
+		addRandomWound(ss, rule->RandomWound, "RandomWound", ruleByResistType->RandomWound);
 
 		addFloatAsPercentage(ss, rule->ToTime, "ToTime", ruleByResistType->ToTime);
 		addBoolean(ss, rule->RandomTime, "RandomTime", ruleByResistType->RandomTime);
@@ -2735,9 +2778,10 @@ void StatsForNerdsState::initArmorList()
 
 	addUnitStatBonus(ss, *armorRule->getStats(), "stats");
 
-	addInteger(ss, armorRule->getWeight(), "weight");
+	addFloat(ss, armorRule->getWeight(), "weight");
 
 	addInteger(ss, armorRule->getSize(), "size", 1);
+	addInteger(ss, armorRule->getSpaceOccupied(), "spaceOccupied", -1);
 
 	addSpecialAbility(ss, (SpecialAbility)armorRule->getSpecialAbility(), "specab");
 	addMovementType(ss, armorRule->getMovementType(), "movementType");

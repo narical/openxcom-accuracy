@@ -38,6 +38,12 @@ enum ItemDamageRandomType
 	DRT_EXPLOSION = 9,
 	DRT_UFO_WITH_FOUR_DICE = 10
 };
+enum class ItemWoundRandomType : int
+{
+	VANILLA = 0,
+	LINEAR = 1,
+	RANDOM = 2
+};
 
 /**
  * Represents a specific damage type.
@@ -64,8 +70,10 @@ struct RuleDamageType
 	bool IgnoreNormalMoraleLose;
 	/// Damage type do not move health to negative values.
 	bool IgnoreOverKill;
-	/// How much of armor is ignored.
+	/// Multiplier applied to the armor.
 	float ArmorEffectiveness;
+	/// Flat amount of armor ignored.
+	int ArmorIgnore;
 	/// Conversion from power to max explosion radius.
 	float RadiusEffectiveness;
 	/// Reduction of explosion power per tile.
@@ -106,8 +114,8 @@ struct RuleDamageType
 	bool RandomArmor;
 	/// Damage type use random conversion armor pre damage.
 	bool RandomArmorPre;
-	/// Damage type use random chance for wound number or linear.
-	bool RandomWound;
+	/// Damage type use vanilla wound formula, linear or random conversion.
+	ItemWoundRandomType RandomWound;
 	/// Damage type use random conversion item damage.
 	bool RandomItem;
 	/// Damage type use random conversion tile damage.

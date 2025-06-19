@@ -451,7 +451,7 @@ void InventoryState::init()
 				}
 				break;
 			}
-			unitSlot += tmpUnit->getArmor()->getTotalSize();
+			unitSlot += tmpUnit->getArmor()->getSpaceOccupied();
 		}
 		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot).arg(totalSlots));
 	}
@@ -652,7 +652,7 @@ void InventoryState::updateStats()
 
 	_txtTus->setText(tr("STR_TIME_UNITS_SHORT").arg(unit->getTimeUnits()));
 
-	int weight = unit->getCarriedWeight(_inv->getSelectedItem());
+	float weight = unit->getCarriedWeight(_inv->getSelectedItem());
 	_txtWeight->setText(tr("STR_WEIGHT").arg(weight).arg(unit->getBaseStats()->strength));
 	if (weight > unit->getBaseStats()->strength)
 	{
