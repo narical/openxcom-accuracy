@@ -2147,6 +2147,55 @@ bool Soldier::hasAllRequiredBonusesForSkill(const RuleSkill* skillRules)
 	return true;
 }
 
+/**
+ * Check if the soldier has all the required stats and soldier bonuses for piloting the (current or new) craft.
+ */
+bool Soldier::hasAllPilotingRequirements(const Craft* newCraft) const
+{
+	if (!_rules->getAllowPiloting())
+		return false;
+
+	const Craft* craft = newCraft ? newCraft : _craft;
+
+	if (!craft)
+		return false;
+
+	// Does this soldier meet the minimum stat requirements for piloting the current craft?
+	const UnitStats& currentStats = _tmpStatsWithAllBonuses; // all bonuses count
+	const UnitStats& minStats = craft->getRules()->getPilotMinStatsRequired();
+	if (currentStats.tu < minStats.tu ||
+		currentStats.stamina < minStats.stamina ||
+		currentStats.health < minStats.health ||
+		currentStats.bravery < minStats.bravery ||
+		currentStats.reactions < minStats.reactions ||
+		currentStats.firing < minStats.firing ||
+		currentStats.throwing < minStats.throwing ||
+		currentStats.melee < minStats.melee ||
+		currentStats.mana < minStats.mana ||
+		currentStats.strength < minStats.strength ||
+		currentStats.psiStrength < minStats.psiStrength ||
+		(currentStats.psiSkill < minStats.psiSkill && minStats.psiSkill != 0)) // The != 0 is required for the "psi training at any time" option, as it sets skill to negative in training
+		return false;
+
+	// Does this soldier have all required soldier bonuses for piloting the current craft?
+	for (auto* requiredBonusRule : craft->getRules()->getPilotSoldierBonusesRequired())
+	{
+		bool found = false;
+		for (auto* bonusRule : _bonusCache) // *getBonuses(nullptr)
+		{
+			if (bonusRule == requiredBonusRule)
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			return false;
+	}
+
+	return true;
+}
+
 
 ////////////////////////////////////////////////////////////
 //					Script binding
