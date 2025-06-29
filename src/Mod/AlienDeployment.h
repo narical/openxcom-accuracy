@@ -135,6 +135,7 @@ private:
 	std::vector<std::pair<size_t, WeightedOptions*> > _alienBaseUpgrades;
 	bool _resetAlienBaseAgeAfterUpgrade, _resetAlienBaseAge;
 	std::string _upgradeRace;
+	std::vector<std::pair<size_t, WeightedOptions*> > _upgradeRaceDistribution;
 	bool _noWeaponPile;
 public:
 	/// Creates a blank Alien Deployment ruleset.
@@ -313,6 +314,11 @@ public:
 	bool resetAlienBaseAge() const { return _resetAlienBaseAge; }
 	/// Gets the new race for an alien base after an upgrade (into this type).
 	const std::string& getUpgradeRace() const { return _upgradeRace; }
+
+	/// Does this deployment have upgradeRaceWeights?
+	bool hasUpgradeRaceWeights() const { return !_upgradeRaceDistribution.empty(); }
+	/// Gets the new race for an alien base after an upgrade (into this type), based on the game time and the racial distribution.
+	std::string generateUpgradeRace(const size_t monthsPassed) const;
 
 	/// Should items on the "weapon pile" be hidden from the player?
 	bool getNoWeaponPile() const { return _noWeaponPile; }
