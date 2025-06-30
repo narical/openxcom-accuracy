@@ -4357,7 +4357,8 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 				ss << " old deployment: " << alienBase->getDeployment()->getType();
 				alienBase->setDeployment(upgrade);
 				ss << " new deployment: " << alienBase->getDeployment()->getType();
-				auto* upgradeRace = mod->getAlienRace(upgrade->getUpgradeRace(), false);
+				std::string alienRaceId = upgrade->hasUpgradeRaceWeights() ? upgrade->generateUpgradeRace(month) : upgrade->getUpgradeRace();
+				auto* upgradeRace = mod->getAlienRace(alienRaceId, false);
 				if (upgradeRace)
 				{
 					ss << " old race: " << alienBase->getAlienRace();

@@ -314,6 +314,8 @@ public:
 	void resetDailyDogfightExperienceCache();
 	/// Check if the soldier has all the required soldier bonuses for the given soldier skill.
 	bool hasAllRequiredBonusesForSkill(const RuleSkill* skillRules);
+	/// Check if the soldier has all the required stats and soldier bonuses for piloting the (current or new) craft.
+	bool hasAllPilotingRequirements(const Craft* newCraft = nullptr) const;
 
 private:
 	std::string generateCallsign(const std::vector<SoldierNamePool*> &names);
