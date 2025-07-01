@@ -4059,7 +4059,7 @@ void AIModule::brutalThink(BattleAction* action)
 				{
 					directPeakScore = remainingTimeUnits;
 				}
-				else if (enoughTUToPeak && !pathInvolvesFalling && !_unit->isCheatOnMovement() && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
+				else if (enoughTUToPeak && !pathInvolvesFalling && !(_unit->isCheatOnMovement() && myAggressiveness < 2) && (myMaxTU == _unit->getTimeUnits() || _save->getTileEngine()->isNextToDoor(myTile)))
 				{
 					if (myAggressiveness >= 3)
 						indirectPeakScore = 100 / walkToDist;
