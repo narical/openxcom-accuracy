@@ -1810,7 +1810,7 @@ protected:
 /**
  * Strong typed collection of values for script.
  */
-template<typename T, typename I = Uint8>
+template<typename T, typename I = Uint16>
 class ScriptValues : ScriptValuesBase
 {
 public:
