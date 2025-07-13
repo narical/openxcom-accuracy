@@ -49,10 +49,6 @@ AlienDeployment::AlienDeployment(const std::string &type) :
  */
 AlienDeployment::~AlienDeployment()
 {
-	for (auto& pair : _upgradeRaceDistribution)
-	{
-		delete pair.second;
-	}
 	for (auto& pair : _huntMissionDistribution)
 	{
 		delete pair.second;
@@ -209,12 +205,6 @@ void AlienDeployment::load(const YAML::YamlNodeReader& node, Mod *mod)
 	reader.tryRead("resetAlienBaseAgeAfterUpgrade", _resetAlienBaseAgeAfterUpgrade);
 	reader.tryRead("resetAlienBaseAge", _resetAlienBaseAge);
 	reader.tryRead("upgradeRace", _upgradeRace);
-	for (const auto& weights : reader["upgradeRaceWeights"].children())
-	{
-		WeightedOptions* nw = new WeightedOptions();
-		nw->load(weights);
-		_upgradeRaceDistribution.push_back(std::make_pair(weights.readKey<size_t>(0), nw));
-	}
 	reader.tryRead("noWeaponPile", _noWeaponPile);
 }
 
@@ -830,22 +820,6 @@ std::string AlienDeployment::generateAlienBaseUpgrade(const size_t baseAgeInMont
 		++rw;
 	return rw->second->choose();
 }
-
-/**
- * Chooses one of the available races for alien base upgrade.
- * The racial distribution may vary based on the current game date.
- * @param monthsPassed The number of months that have passed in the game world.
- * @return The string id of the race.
- */
-std::string AlienDeployment::generateUpgradeRace(const size_t monthsPassed) const
-{
-	std::vector<std::pair<size_t, WeightedOptions*> >::const_reverse_iterator rc;
-	for (rc = _upgradeRaceDistribution.rbegin(); rc != _upgradeRaceDistribution.rend() && monthsPassed < rc->first; ++rc);
-	if (rc == _upgradeRaceDistribution.rend())
-		return "";
-	return rc->second->choose();
-}
-
 
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, ItemSet* val)
