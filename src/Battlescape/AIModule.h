@@ -285,4 +285,20 @@ public:
 	void allowAttack(bool allow);
 };
 
+struct MoveEvaluation
+{
+	int remainingTU;
+	int remainingEnergy;
+	int lastStepCost;
+	float discoverThreat;
+	float walkToDist;
+	float attackPotential;
+	bool IsDirectPeak;
+	int visibleTiles;
+	int bestDirection;
+	float divisiveMod;
+	float multiplicativeMod;
+	float additiveMod;
+};
+
 }
