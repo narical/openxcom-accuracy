@@ -161,11 +161,13 @@ void SoldiersAIState::initList(size_t scrl)
 	_lstUnits->clearList();
 
 	std::vector<bool> allows;
+	std::vector<bool> leeroy;
 	if (!_soldiers.empty())
 	{
 		for (const auto* s : _soldiers)
 		{
-			_lstUnits->addRow(noCol, s->getName(true, 19).c_str(), tr(s->getRankString()).c_str(), "", std::to_string(s->getAggression()).c_str());
+			_lstUnits->addRow(noCol, s->getName(true, 19).c_str(), tr(s->getRankString()).c_str(), "", "");
+			leeroy.emplace_back(s->isLeeroyJenkins());
 			allows.emplace_back(s->getAllowAutoCombat());
 		}
 	}
@@ -175,7 +177,8 @@ void SoldiersAIState::initList(size_t scrl)
 		{
 			const std::string name = u->getGeoscapeSoldier() ? u->getGeoscapeSoldier()->getName(true, 19) : u->getName(_game->getLanguage());	//BattleUnit::getName has no maxLength parameter. Default value might change and Statstring might be way to long.
 			const std::string rank = u->getRankString();
-			_lstUnits->addRow(noCol, name.c_str(), tr(rank).c_str(), "", std::to_string(u->getAggression()).c_str());
+			_lstUnits->addRow(noCol, name.c_str(), tr(rank).c_str(), "", "");
+			leeroy.emplace_back(u->isLeeroyJenkins());
 			allows.emplace_back(u->getAllowAutoCombat());
 		}
 	}
@@ -194,6 +197,18 @@ void SoldiersAIState::initList(size_t scrl)
 			_lstUnits->setCellText(row, 2, tr("False"));
 		}
 		_lstUnits->setRowColor(row, color);
+	}
+
+	for (int row = 0; row < leeroy.size(); row++)
+	{
+		if (leeroy[row])
+		{
+			_lstUnits->setCellText(row, 3, tr("True"));
+		}
+		else
+		{
+			_lstUnits->setCellText(row, 3, tr("False"));
+		}
 	}
 	
 	if (scrl)
@@ -244,21 +259,32 @@ void SoldiersAIState::lstSoldiersClick(Action *action)
 		//templating the window
 		//converting the input battleunit/soldiers on the fly at construction and writing back changes at deconstruction
 		//wrapper class for soldiers and battleunits
-		const auto newAG = _soldiers.empty() ? toggleAgg(_units.at(row)) : toggleAgg(_soldiers.at(row));
-		_lstUnits->setCellText(row, 3, std::to_string(newAG).c_str());		//TODO OXC replacement for to_string?	//TODO tr()?	//TODO look at how vanilla oxce states do that
+		const bool newLeeroy = _soldiers.empty() ? toggleAIBattleUnit(true) : toggleAISoldier(true);
+		if (newLeeroy)
+		{
+			_lstUnits->setCellText(row, 3, tr("True"));
+		}
+		else
+		{
+			_lstUnits->setCellText(row, 3, tr("False"));
+		}
 	}
 }
 
 
-bool SoldiersAIState::toggleAISoldier()
+bool SoldiersAIState::toggleAISoldier(bool leeroy)
 {
 	Soldier *s = _soldiers.at(_lstUnits->getSelectedRow());
+	if (leeroy)
+		return s->toggleLeeroyJenkins();
 	return s->toggleAllowAutoCombat();
 }
 
-bool SoldiersAIState::toggleAIBattleUnit()
+bool SoldiersAIState::toggleAIBattleUnit(bool leeroy)
 {
 	auto* bu = _units.at(_lstUnits->getSelectedRow());
+	if (leeroy)
+		return bu->toggleLeeroyJenkins();
 	return bu->toggleAllowAutoCombat();
 }
 

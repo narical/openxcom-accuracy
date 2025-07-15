@@ -386,15 +386,10 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		*i += increment;
 
 		int min = 0, max = 0;
-		if (i == &Options::aggression || i == &Options::baseDefenseAggression)
+		if (i == &Options::aiCheatMode)
 		{
-			min = 0;
-			max = 4;
-		}
-		else if(i == &Options::aiTargetMode)
-		{
-			min = 1;
-			max = 4;
+			min = -1;
+			max = 2;
 		}
 		else if (i == &Options::battleExplosionHeight)
 		{

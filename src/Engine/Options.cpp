@@ -591,14 +591,10 @@ void createAdvancedOptionsOTHER()
 	_info.push_back(OptionInfo(OPTION_OTHER, "brutalAI", &brutalAI, true, "STR_BRUTALAI", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "brutalCivilians", &brutalCivilians, false, "STR_BRUTALCIVILIANS", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "ignoreDelay", &ignoreDelay, true, "STR_IGNOREDELAY", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "cheatOnMovement", &cheatOnMovement, false, "STR_CHEATONMOVEMENT", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "allowPreprime", &allowPreprime, true, "STR_ALLOWPREPRIME", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "avoidMines", &avoidMines, true, "STR_AVOIDMINES", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "aiPeformance", &aiPerformanceOptimization, false, "STR_AI_PERFORMANCE", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "aiTargetMode", &aiTargetMode, 3, "STR_AITARGETMODE", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "aggression", &aggression, 1, "STR_AGGRESSIONMODE", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "baseDefenseAggression", &baseDefenseAggression, 4, "STR_BASE_DEFENSE_AGGRESSIONMODE", "STR_AI"));
-	_info.push_back(OptionInfo(OPTION_OTHER, "dynamicAggression", &dynamicAggression, true, "STR_DYNAMIC_AGGRESSION", "STR_AI"));
+	_info.push_back(OptionInfo(OPTION_OTHER, "aiCheatMode", &aiCheatMode, 0, "STR_AICHEATMODE", "STR_AI"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombat", &autoCombat, false, "STR_AUTOCOMBAT", "STR_AUTO"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachCombat", &autoCombatEachCombat, true, "STR_AUTOCOMBAT_EACH_COMBAT", "STR_AUTO"));
 	_info.push_back(OptionInfo(OPTION_OTHER, "autoCombatEachTurn", &autoCombatEachTurn, true, "STR_AUTOCOMBAT_EACH_TURN", "STR_AUTO"));
