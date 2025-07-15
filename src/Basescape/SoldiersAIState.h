@@ -77,15 +77,15 @@ public:
 	void lstSoldiersClick(Action *action);
 
 	/// Toggle AI control @ autocombat of currently selected soldier
-	bool toggleAISoldier();
+	bool toggleAISoldier(bool leeroy = false);
 	/// Toggle AI control @ autocombat of currently selected battleunit
-	bool toggleAIBattleUnit();
+	bool toggleAIBattleUnit(bool leeroy = false);
 
 	/// Toggle AI aggressiveness @ autocombat of currently selected soldier/battleunit
 	template <typename T>
 	int toggleAgg(T* unit)
 	{
-		const auto newVal = (unit->getAggression() + 1) % 4;
+		const auto newVal = (unit->getAggression() + 1) % 2;
 		unit->setAggression(newVal);
 		return newVal;
 	}

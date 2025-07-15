@@ -57,7 +57,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
 	_corpseRecovered(false),
-	_allowAutoCombat(Options::autoCombatDefaultSoldier), _aggression(3)
+	_allowAutoCombat(Options::autoCombatDefaultSoldier), _isLeeroyJenkins(true)
 {
 	if (id != 0)
 	{
@@ -188,7 +188,7 @@ void Soldier::load(const YAML::YamlNodeReader& node, const Mod *mod, SavedGame *
 	reader.tryRead("healthMissing", _healthMissing);
 	reader.tryRead("recovery", _recovery);
 	reader.tryRead("allowAutoCombat", _allowAutoCombat);
-	reader.tryRead("aggression", _aggression);
+	reader.tryRead("isLeeroyJenkins", _isLeeroyJenkins);
 
 	Armor *armor = _armor;
 	if (reader["armor"])
@@ -343,7 +343,7 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
 		writer.write("transformationBonuses", _transformationBonuses);
 
 	writer.write("allowAutoCombat", _allowAutoCombat);
-	writer.write("aggression", _aggression);
+	writer.write("isLeeroyJenkins", _isLeeroyJenkins);
 
 	_scriptValues.save(writer, shared);
 }

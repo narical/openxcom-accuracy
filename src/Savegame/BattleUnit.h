@@ -875,7 +875,13 @@ public:
 	/// Get the unit mind controller's id.
 	int getMindControllerId() const;
 	/// Get the unit leeroyJenkins flag
-	bool isLeeroyJenkins(bool ignoreBrutal = false) const;
+	bool isLeeroyJenkins() const;
+	/// Toggles and returns new LeeroyJenkins state
+	bool toggleLeeroyJenkins()
+	{
+		_isLeeroyJenkins = !_isLeeroyJenkins;
+		return _isLeeroyJenkins;
+	}
 	/// Get the unit's aggression-flag
 	float getAggressiveness(std::string missionType) const;
 	/// Gets the spotter score. This is the number of turns sniper AI units can use spotting info from this unit.
@@ -937,7 +943,7 @@ public:
 	/// Returns whether this unit is allowed to cheat with knowledge it cannot have
 	bool isCheatOnMovement();
 	/// Returns the targetting mode the unit is allowed to use
-	int aiTargetMode();
+	int aiCheatMode();
 	/// Checks whether it makes sense to reactivate a unit that wanted to end it's turn and do so if it's the case
 	void checkForReactivation(const SavedBattleGame* battle);
 	/// Cache inside the unit what positions it can reach for reference by AI

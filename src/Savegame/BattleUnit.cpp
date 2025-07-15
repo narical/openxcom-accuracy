@@ -84,7 +84,6 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_rank = soldier->getRankString();
 	_gender = soldier->getGender();
 	_intelligence = 2;
-	_aggression = soldier->getAggression();
 	_faceDirection = -1;
 	_floorAbove = false;
 	_breathing = false;
@@ -118,6 +117,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	deriveSoldierRank();
 
 	_allowAutoCombat = soldier->getAllowAutoCombat();
+	_isLeeroyJenkins = soldier->isLeeroyJenkins();
 
 	updateArmorFromSoldier(mod, soldier, soldier->getArmor(), depth, false, sc);
 
@@ -2590,12 +2590,12 @@ void BattleUnit::clearVisibleUnits()
  */
 bool BattleUnit::addToVisibleTiles(Tile *tile)
 {
+	tile->setLastExplored(getFaction());
 	//Only add once, otherwise we're going to mess up the visibility value and make trouble for the AI (if sneaky).
 	if (_visibleTilesLookup.insert(tile).second)
 	{
 		if (getFaction() == FACTION_PLAYER)
 			tile->setVisible(1);
-		tile->setLastExplored(getFaction());
 		_visibleTiles.push_back(tile);
 		return true;
 	}
@@ -4814,8 +4814,6 @@ int BattleUnit::getIntelligence() const
  */
 int BattleUnit::getAggression() const
 {
-	if (getGeoscapeSoldier())
-		return getGeoscapeSoldier()->getAggression();
 	return _aggression;
 }
 
@@ -4826,8 +4824,6 @@ int BattleUnit::getAggression() const
 void BattleUnit::setAggression(int aggression)
 {
 	_aggression = aggression;
-	if (getGeoscapeSoldier())
-		getGeoscapeSoldier()->setAggression(aggression);
 }
 
 int BattleUnit::getMaxViewDistance(int baseVisibility, int nerf, int buff) const
@@ -6244,7 +6240,7 @@ bool BattleUnit::isCheatOnMovement()
 {
 	bool cheat = false;
 	if (getFaction() == FACTION_HOSTILE)
-		cheat = Options::cheatOnMovement;
+		cheat = aiCheatMode() > 0;
 	if (_unitRules && _unitRules->isCheatOnMovement())
 		cheat = true;
 	return cheat;
@@ -6253,16 +6249,12 @@ bool BattleUnit::isCheatOnMovement()
 /**
  * Returns whether the unit should be controlled by brutalAI
  */
-int BattleUnit::aiTargetMode()
+int BattleUnit::aiCheatMode()
 {
 	// Player and Neutral-AI are locked to mode 3
 	if (getFaction() != FACTION_HOSTILE)
-		return 3;
-	int targetMode = Options::aiTargetMode;
-	if (_unitRules && _unitRules->aiTargetMode() > 0)
-		targetMode = std::max(targetMode, _unitRules->aiTargetMode());
-	targetMode = std::clamp(targetMode, 1, 4);
-	return targetMode;
+		return 0;
+	return Options::aiCheatMode;
 }
 
 /**
@@ -6333,31 +6325,14 @@ bool BattleUnit::wasMaxTusOfUpdate()
 	return _maxTUsWhenReachableWasUpdated;
 }
 
-bool BattleUnit::isLeeroyJenkins(bool ignoreBrutal) const
+bool BattleUnit::isLeeroyJenkins() const
 {
-	if (!isBrutal() || ignoreBrutal)
-		return _isLeeroyJenkins;
-	else if (Options::aggression >= 1)
-		return _isLeeroyJenkins;
-	else
-		return false;
+	return _isLeeroyJenkins;
 }
 
 float BattleUnit::getAggressiveness(std::string missionType) const
 {
-	if (getFaction() == FACTION_PLAYER)
-		return getAggression();
-	int aggressionSettingToUse = Options::aggression;
-	if (missionType == "STR_BASE_DEFENSE")
-	{
-		aggressionSettingToUse = Options::baseDefenseAggression;
-	}
-	float aggressiveness = 0;
-	if (aggressionSettingToUse == 4)
-		aggressiveness = getAggression();
-	else
-		return aggressionSettingToUse;
-	return aggressiveness;
+	return getAggression();
 }
 
 ////////////////////////////////////////////////////////////
