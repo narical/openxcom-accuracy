@@ -122,7 +122,7 @@ private:
 	void addBattleType(std::ostringstream &ss, const BattleType &value, const std::string &propertyName, const BattleType &defaultvalue = BT_NONE);
 	void addDamageType(std::ostringstream &ss, const ItemDamageType &value, const std::string &propertyName, const ItemDamageType &defaultvalue = DT_NONE);
 	void addDamageRandomType(std::ostringstream &ss, const ItemDamageRandomType &value, const std::string &propertyName, const ItemDamageRandomType &defaultvalue = DRT_DEFAULT);
-	void addRandomWound(std::ostringstream& ss, const ItemWoundRandomType& value, const std::string& propertyName, const ItemWoundRandomType& defaultvalue = ItemWoundRandomType::VANILLA);
+	void addRandomWoundType(std::ostringstream& ss, const ItemWoundRandomType& value, const std::string& propertyName, const ItemWoundRandomType& defaultvalue = ItemWoundRandomType::VANILLA);
 	void addBattleFuseType(std::ostringstream &ss, const BattleFuseType &value, const std::string &propertyName, const BattleFuseType &defaultvalue = BFT_NONE);
 	void addRuleItemUseCostBasic(std::ostringstream &ss, const RuleItemUseCost &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void addBoolOrInteger(std::ostringstream &ss, const int &value, bool formatAsBoolean);
