@@ -33,7 +33,7 @@ RuleDamageType::RuleDamageType() :
 	ArmorEffectiveness(1.0f), ArmorIgnore(0), RadiusEffectiveness(0.0f), RadiusReduction(10.0f),
 	FireThreshold(1000), SmokeThreshold(1000),
 	ToHealth(1.0f), ToMana(0.0f), ToArmor(0.1f), ToArmorPre(0.0f), ToWound(1.0f), ToItem(0.0f), ToTile(0.5f), ToStun(0.25f), ToEnergy(0.0f), ToTime(0.0f), ToMorale(0.0f),
-	RandomHealth(false), RandomMana(false), RandomArmor(false), RandomArmorPre(false), RandomWound(true), RandomWoundType(ItemWoundRandomType::LINEAR), RandomItem(false), RandomTile(false), RandomStun(true), RandomEnergy(false), RandomTime(false), RandomMorale(false),
+	RandomHealth(false), RandomMana(false), RandomArmor(false), RandomArmorPre(false), RandomWound(true), RandomWoundType(ItemWoundRandomType::VANILLA), RandomItem(false), RandomTile(false), RandomStun(true), RandomEnergy(false), RandomTime(false), RandomMorale(false),
 	TileDamageMethod(1)
 {
 
