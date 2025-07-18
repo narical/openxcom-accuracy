@@ -200,6 +200,7 @@ void RuleDamageType::load(const YAML::YamlNodeReader& node)
 	reader.tryRead("RandomArmor", RandomArmor);
 	reader.tryRead("RandomArmorPre", RandomArmorPre);
 	reader.tryRead("RandomWound", RandomWound);
+	reader.tryRead("RandomWoundType", RandomWoundType);
 	reader.tryRead("RandomItem", RandomItem);
 	reader.tryRead("RandomTile", RandomTile);
 	reader.tryRead("RandomStun", RandomStun);
@@ -287,9 +288,7 @@ int RuleDamageType::getWoundFinalDamage(int damage) const
 					return RNG::generate(1, 3);
 				}
 				break;
-			case ItemWoundRandomType::LINEAR:
-				return woundPotential;
-			case ItemWoundRandomType::RANDOM:
+			case ItemWoundRandomType::SPREAD:
 				return RNG::generate(0, woundPotential);
 			}
 		}

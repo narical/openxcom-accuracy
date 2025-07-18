@@ -1823,17 +1823,14 @@ void StatsForNerdsState::addRandomWoundType(std::ostringstream& ss, const ItemWo
 
 	switch (value)
 	{
-	case ItemWoundRandomType::LINEAR:
-		ss << tr("WRT_LINEAR");
-		break;
 	case ItemWoundRandomType::VANILLA:
 		ss << tr("WRT_VANILLA");
 		break;
-	case ItemWoundRandomType::RANDOM:
-		ss << tr("WRT_RANDOM");
+	case ItemWoundRandomType::SPREAD:
+		ss << tr("WRT_SPREAD");
 		break;
 	default:
-		ss << tr("STR_UNKNOWN");
+		ss << tr("WRT_UNSUPPORTED");
 		break;
 	}
 
@@ -2093,7 +2090,7 @@ void StatsForNerdsState::initItemList()
 
 		addFloatAsPercentage(ss, rule->ToWound, "ToWound", ruleByResistType->ToWound);
 		addBoolean(ss, rule->RandomWound, "RandomWound", ruleByResistType->RandomWound);
-		addRandomWoundType(ss, rule->RandomWoundType, "RandomWound", ruleByResistType->RandomWoundType);
+		addRandomWoundType(ss, rule->RandomWoundType, "RandomWoundType", ruleByResistType->RandomWoundType);
 
 		addFloatAsPercentage(ss, rule->ToTime, "ToTime", ruleByResistType->ToTime);
 		addBoolean(ss, rule->RandomTime, "RandomTime", ruleByResistType->RandomTime);

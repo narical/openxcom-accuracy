@@ -56,9 +56,9 @@ en-US:
   DRT_STANDARD: "standard damage range"
   DRT_EXPLOSION: "explosion damage range"
 #
-  WRT_LINEAR: "flat"
-  WRT_VANILLA: "vanilla"
-  WRT_RANDOM: "0-100% spread"
+  WRT_VANILLA: "vanilla formula"
+  WRT_SPREAD: "0-100% spread"
+  WRT_UNSUPPORTED: "unsupported (disabled)"
 #
   BFT_NONE: "none"
   BFT_INSTANT: "instant"
