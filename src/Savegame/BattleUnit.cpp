@@ -3945,6 +3945,7 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool needammo, bool rea
  */
 BattleItem *BattleUnit::getGrenadeFromBelt(const SavedBattleGame* battle) const
 {
+	BattleItem *best = nullptr;
 	for (auto* bi : _inventory)
 	{
 		if (isBrutal() && bi->getRules()->getDamageType()->RandomType == DRT_NONE)
@@ -3953,11 +3954,12 @@ BattleItem *BattleUnit::getGrenadeFromBelt(const SavedBattleGame* battle) const
 		{
 			if (battle->getTurn() >= bi->getRules()->getAIUseDelay(battle->getMod()))
 			{
-				return bi;
+				if (!best || bi->getRules()->getPower() > best->getRules()->getPower())
+					best = bi;
 			}
 		}
 	}
-	return 0;
+	return best;
 }
 
 /**
