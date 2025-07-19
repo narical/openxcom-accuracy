@@ -3972,7 +3972,7 @@ void AIModule::brutalThink(BattleAction* action)
 					{
 						if (!isEnemy(bu) || bu->isOut())
 							continue;
-						if (bu->getReactionScore() < remainingTimeUnits * _unit->getBaseStats()->reactions)
+						if (bu->getReactionScore() < (remainingTimeUnits * _unit->getBaseStats()->reactions) / (double)_unit->getBaseStats()->tu)
 							continue;
 						if (Position::distance(pathPos, bu->getPosition()) > viewDistance)
 							continue;
@@ -3990,7 +3990,7 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || IAmPureMelee)
 				{
-					if (crossEnemyVision > 1)
+					if (crossEnemyVision > 1 || (crossEnemyVision > 0 && contact))
 						highestDamage = std::min(highestDamage, 1.0f);
 					attackScore = remainingTimeUnits * highestDamage;
 					me.attackPotential = highestDamage;
@@ -4313,11 +4313,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && indirectPeakScore > 0)
+			//if (_traceAI && _unit->getId() % 100 == 7)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(indirectPeakScore);
+			//	tile->setTUMarker(crossEnemyVision);
 			//}
 		}
 		if (_traceAI)
