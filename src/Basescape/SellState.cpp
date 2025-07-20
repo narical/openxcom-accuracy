@@ -187,6 +187,11 @@ void SellState::delayedInit()
 
 	_cats.push_back("STR_ALL_ITEMS");
 	_cats.push_back("STR_FILTER_HIDDEN");
+	if (Options::oxceBaseFilterResearchable)
+	{
+		_cats.push_back("STR_FILTER_RESEARCHED");
+		_cats.push_back("STR_FILTER_RESEARCHABLE");
+	}
 
 	for (auto* soldier : *_base->getSoldiers())
 	{
@@ -315,6 +320,11 @@ void SellState::delayedInit()
 			_cats.clear();
 			_cats.push_back("STR_ALL_ITEMS");
 			_cats.push_back("STR_FILTER_HIDDEN");
+			if (Options::oxceBaseFilterResearchable)
+			{
+				_cats.push_back("STR_FILTER_RESEARCHED");
+				_cats.push_back("STR_FILTER_RESEARCHABLE");
+			}
 			_vanillaCategories = _cats.size();
 		}
 		for (auto& categoryName : _game->getMod()->getItemCategoriesList())
@@ -533,6 +543,8 @@ void SellState::updateList()
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL_ITEMS");
 	bool categoryUnassigned = (selectedCategory == "STR_UNASSIGNED");
 	bool categoryHidden = (selectedCategory == "STR_FILTER_HIDDEN");
+	bool categoryResearched = (selectedCategory == "STR_FILTER_RESEARCHED");
+	bool categoryResearchable = (selectedCategory == "STR_FILTER_RESEARCHABLE");
 
 	if (_previousSort != _currentSort)
 	{
@@ -554,6 +566,21 @@ void SellState::updateList()
 			bool hidden = isHidden(i);
 			if (!hidden)
 			{
+				continue;
+			}
+		}
+		else if (categoryResearched || categoryResearchable)
+		{
+			if (_items[i].type == TRANSFER_ITEM)
+			{
+				RuleItem* rule = (RuleItem*)_items[i].rule;
+				bool isResearchable = _game->getSavedGame()->isResearchable(rule, _game->getMod());
+				if (categoryResearched && isResearchable) continue;
+				if (categoryResearchable && !isResearchable) continue;
+			}
+			else
+			{
+				// don't show non-items (e.g. craft, personnel)
 				continue;
 			}
 		}

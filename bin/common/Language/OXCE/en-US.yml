@@ -237,6 +237,8 @@ en-US:
   STR_ITEMS_AT_DESTINATION: "Items at destination"
   STR_PRISONERS: "Prisoners"
   STR_ARMORS: "Armors"
+  STR_FILTER_RESEARCHED: "Fully researched"
+  STR_FILTER_RESEARCHABLE: "Researchable"
 #=================== Battlescape ===================
 #AbortMissionState.cpp
   STR_CRAFT_DEPLOYMENT_QUESTION: "Save Craft Deployment?"
