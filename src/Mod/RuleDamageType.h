@@ -41,8 +41,7 @@ enum ItemDamageRandomType
 enum class ItemWoundRandomType : int
 {
 	VANILLA = 0,
-	LINEAR = 1,
-	RANDOM = 2
+	SPREAD = 1
 };
 
 /**
@@ -116,7 +115,7 @@ struct RuleDamageType
 	bool RandomArmorPre;
 	/// Damage type use random chance for wound number.
 	bool RandomWound;
-	/// Damage type use vanilla wound formula, linear or random conversion.
+	/// Damage type use vanilla wound formula or random conversion.
 	ItemWoundRandomType RandomWoundType;
 	/// Damage type use random conversion item damage.
 	bool RandomItem;
