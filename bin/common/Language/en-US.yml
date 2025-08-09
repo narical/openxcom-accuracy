@@ -542,6 +542,5 @@ en-US:
   STR_BASE_DEFENSE_AGGRESSIONMODE_DESC: "Values work the same as for Aggressivness but specifically for base-defense-missions."
   STR_DYNAMIC_AGGRESSION: "Dynamic Aggressiveness"
   STR_DYNAMIC_AGGRESSION_DESC: "The AI will adjust it's aggressiveness based on it's morale, how many units it has in an area and whether your units are panicking or nearby."
-  STR_AUTOCOMBAT_PER_UNIT_DESC: "Allows to exclude soldiers from the AI autocombat"
   STR_BATTLETHROWNSPEED: "Thrown Speed"
   STR_BATTLETHROWNSPEED_DESC: "Changes the speed of thrown items: {ALT}0>{ALT} Same as Fire Speed {NEWLINE}{ALT}1-20>{ALT} Equivalent value to \"Fire Speed\" slider in the menu"
