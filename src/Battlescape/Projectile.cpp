@@ -590,7 +590,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			{
 				ss << "Exposure " << std::round(exposure*100) << "%";
 
-				if (snipingBonus)
+				if (Options::battleRealisticImprovedAimed && snipingBonus)
 				{
 					ss << " Sniping +" << snipingBonus << "%";
 				}
@@ -598,7 +598,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			}
 			else
 			{
-				if (snipingBonus > 0) ss << "Sniping +" << snipingBonus << "%";
+				if (Options::battleRealisticImprovedAimed && snipingBonus > 0) ss << "Sniping +" << snipingBonus << "%";
 				ss << " Total " << real_accuracy << "%";
 			}
 
