@@ -448,7 +448,7 @@ public:
 	const ScriptValues<Armor> &getScriptValuesRaw() const { return _scriptValues; }
 
 	/// Gets the armor's units.
-	const std::vector<const RuleSoldier*> &getUnits() const;
+	const std::vector<const RuleSoldier*> &getUnitsRaw() const;
 	/// Check if a soldier can use this armor.
 	bool getCanBeUsedBy(const RuleSoldier* soldier) const;
 

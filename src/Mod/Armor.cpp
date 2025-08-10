@@ -1060,7 +1060,7 @@ bool Armor::hasInventory() const
 * Gets the list of units this armor applies to.
 * @return The list of unit IDs (empty = applies to all).
 */
-const std::vector<const RuleSoldier*> &Armor::getUnits() const
+const std::vector<const RuleSoldier*> &Armor::getUnitsRaw() const
 {
 	return _units;
 }
