@@ -4106,18 +4106,16 @@ void AIModule::brutalThink(BattleAction* action)
 			{
 				for (auto& reachable : enemyReachable)
 				{
-					if (reachable.second > discoverThreat)
+					for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 					{
-						for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
+						for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
 						{
-							for (int y = 0; y < _unit->getArmor()->getSize(); ++y)
-							{
-								Position compPos = pos;
-								compPos.x += x;
-								compPos.y += y;
-								if (hasTileSight(compPos, reachable.first))
-									discoverThreat = reachable.second;
-							}
+							Position compPos = pos;
+							float currThreat = reachable.second / (Position::distance(reachable.first, compPos) + 1);
+							compPos.x += x;
+							compPos.y += y;
+							if (currThreat > discoverThreat && hasTileSight(compPos, reachable.first))
+								discoverThreat = currThreat;
 						}
 					}
 				}
@@ -4313,11 +4311,11 @@ void AIModule::brutalThink(BattleAction* action)
 				bestFallbackScore = fallbackScore;
 				bestFallbackPosition = pos;
 			}
-			//if (_traceAI && _unit->getId() % 100 == 7)
+			//if (_traceAI && discoverThreat > 0)
 			//{
 			//	tile->setMarkerColor(_unit->getId()%100);
 			//	tile->setPreview(10);
-			//	tile->setTUMarker(crossEnemyVision);
+			//	tile->setTUMarker(discoverThreat);
 			//}
 		}
 		if (_traceAI)
@@ -6723,6 +6721,8 @@ std::map<Position, int, PositionComparator> AIModule::getSmokeFearMap()
 
 bool AIModule::hasTileSight(Position from, Position to)
 {
+	if (from == to)
+		return true;
 	if (_save->getTileEngine()->hasEntry(from, to))
 	{
 		return _save->getTileEngine()->getVisibilityCache(from, to);
