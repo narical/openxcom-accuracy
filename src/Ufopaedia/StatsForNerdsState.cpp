@@ -2866,7 +2866,7 @@ void StatsForNerdsState::initArmorList()
 		endHeading();
 	}
 
-	addVectorOfRules(ss, armorRule->getUnits(), "units");
+	addVectorOfRules(ss, armorRule->getUnitsRaw(), "units");
 
 	ModScript::scriptCallback<ModScript::StatsForNerdsArmor>(armorRule, armorRule, this, _game->getSavedGame());
 
