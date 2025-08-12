@@ -413,8 +413,6 @@ en-US:
   STR_AUTO_SELL_DESC: "In the battle debriefing sell screen, any item types you sold in previous battles will be automatically marked for selling."
   STR_AUTOMATICPROMOTIONS: "Automatic promotions"
   STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
-  STR_SMARTCONTROLEQUIP: "Smart ctrl-click and auto-equip"
-  STR_SMARTCONTROLEQUIP_DESC: "Ctrl-clicking items in the loadout-phase will prefer slots that are faster to reach. The off-hand will be deprioritized if the main-hand holds a two-handed item. Auto-equip uses the same logic."
   STR_OFF_CENTRE_SHOOTING: "Off-center shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
   STR_CRASHED_OR_LANDED: "Crashed/Landed button"
@@ -563,9 +561,6 @@ en-US:
   STR_ENGINE_OXCE: "OXCE"
   STR_ENGINE_OTHER: "OTHER"
   STR_ENGINE_BOXCE: "BOXCE"
-  STR_BASESCAPE: "Basescape"
-  STR_AI: "AI"
-  STR_AUTO: "Autoplay"
 #OptionsBattlescapeState.cpp
   STR_PATH_ENERGY_COST: "Energy"
   STR_PATH_ENERGY_COST_DESC: "Clicking shows the energy your unit will have remaining after moving to the destination."
