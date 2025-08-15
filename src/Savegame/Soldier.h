@@ -156,7 +156,7 @@ public:
 	/// Sets the soldier's look sub type.
 	void setLookVariant(int lookVariant);
 	/// Gets soldier rules.
-	RuleSoldier *getRules() const;
+	const RuleSoldier *getRules() const;
 	/// Gets the soldier's unique ID.
 	int getId() const;
 	/// Add a mission to the counter.

@@ -242,6 +242,7 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	_battleUnitScripts.load(_type, reader, parsers.battleUnitScripts);
 
 	mod->loadUnorderedNames(_type, _unitsNames, reader["units"]);
+	mod->loadUnorderedInts(_type, _ranks, reader["ranks"]);
 	_scriptValues.load(reader, parsers.getShared());
 	mod->loadSpriteOffset(_type, _customArmorPreviewIndex, reader["customArmorPreviewIndex"], "CustomArmorPreviews");
 	loadBoolNullable(_allowsRunning, reader["allowsRunning"]);
@@ -368,6 +369,7 @@ void Armor::afterLoad(const Mod* mod)
 	}
 
 	Collections::sortVector(_units);
+	Collections::sortVector(_ranks);
 }
 
 
@@ -1068,9 +1070,24 @@ const std::vector<const RuleSoldier*> &Armor::getUnitsRaw() const
 /**
  * Check if a soldier can use this armor.
  */
-bool Armor::getCanBeUsedBy(const RuleSoldier* soldier) const
+bool Armor::getCanBeUsedBy(const Soldier* soldier) const
 {
-	return _units.empty() || Collections::sortVectorHave(_units, soldier);
+	if (!_units.empty())
+	{
+		if (!Collections::sortVectorHave(_units, soldier->getRules()))
+		{
+			return false;
+		}
+	}
+	if (!_ranks.empty())
+	{
+		int rankInt = soldier->getRank();
+		if (!Collections::sortVectorHave(_ranks, rankInt))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 /**

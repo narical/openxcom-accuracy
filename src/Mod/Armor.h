@@ -109,6 +109,7 @@ private:
 	std::vector<const RuleItem*> _corpseBattle;
 	std::vector<const RuleItem*> _builtInWeapons;
 	std::vector<const RuleSoldier*> _units;
+	std::vector<int> _ranks;
 	const RuleResearch* _requires = nullptr;
 	const RuleItem* _corpseGeo = nullptr;
 	const RuleItem* _storeItem = nullptr;
@@ -449,8 +450,10 @@ public:
 
 	/// Gets the armor's units.
 	const std::vector<const RuleSoldier*> &getUnitsRaw() const;
+	/// Gets the armor's supported soldier ranks.
+	const std::vector<int>& getRanksRaw() const { return _ranks; }
 	/// Check if a soldier can use this armor.
-	bool getCanBeUsedBy(const RuleSoldier* soldier) const;
+	bool getCanBeUsedBy(const Soldier* soldier) const;
 
 
 	/// Gets the index of the sprite in the CustomArmorPreview sprite set

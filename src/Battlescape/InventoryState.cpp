@@ -976,7 +976,7 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 			}
 		}
 		// does the armor fit on the current unit?
-		if (!next->getCanBeUsedBy(soldier->getRules()))
+		if (!next->getCanBeUsedBy(soldier))
 		{
 			armorAvailable = false;
 		}

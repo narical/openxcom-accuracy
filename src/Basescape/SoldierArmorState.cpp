@@ -120,7 +120,7 @@ SoldierArmorState::SoldierArmorState(Base *base, size_t soldier, SoldierArmorOri
 	{
 		if (a->getRequiredResearch() && !_game->getSavedGame()->isResearched(a->getRequiredResearch()))
 			continue;
-		if (!a->getCanBeUsedBy(s->getRules()))
+		if (!a->getCanBeUsedBy(s))
 			continue;
 		if (a->hasInfiniteSupply())
 		{
