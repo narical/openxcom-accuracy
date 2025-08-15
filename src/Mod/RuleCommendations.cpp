@@ -55,6 +55,8 @@ void RuleCommendations::load(const YAML::YamlNodeReader& reader, const Mod* mod)
 	mod->loadNames(_type, _soldierBonusTypesNames, reader["soldierBonusTypes"]);
 	mod->loadNames(_type, _missionMarkerNames, reader["missionMarkerFilter"]);
 	mod->loadNames(_type, _missionTypeNames, reader["missionTypeFilter"]);
+
+	mod->loadUnorderedNames(_type, _requiresNames, reader["requires"]);
 }
 
 /**
@@ -63,6 +65,8 @@ void RuleCommendations::load(const YAML::YamlNodeReader& reader, const Mod* mod)
 void RuleCommendations::afterLoad(const Mod* mod)
 {
 	mod->linkRule(_soldierBonusTypes, _soldierBonusTypesNames);
+
+	mod->linkRule(_requires, _requiresNames);
 }
 
 /**

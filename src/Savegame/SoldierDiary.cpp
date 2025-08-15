@@ -264,8 +264,10 @@ std::vector<SoldierCommendations*> *SoldierDiary::getSoldierCommendations()
  * Award new ones, if deserved.
  * @return bool Has a commendation been awarded?
  */
-bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*> *missionStatistics)
+bool SoldierDiary::manageCommendations(const Mod* mod, SavedGame* save)
 {
+	std::vector<MissionStatistics*>* missionStatistics = save->getMissionStatistics();
+
 	const int BATTLE_TYPES = 13;
 	const std::string battleTypeArray[BATTLE_TYPES] = { "BT_NONE", "BT_FIREARM", "BT_AMMO", "BT_MELEE", "BT_GRENADE",
 		"BT_PROXIMITYGRENADE", "BT_MEDIKIT", "BT_SCANNER", "BT_MINDPROBE", "BT_PSIAMP", "BT_FLARE", "BT_CORPSE", "BT_END" };
@@ -284,6 +286,13 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 	{
 		const auto& commType = (*iter).first;
 		const RuleCommendations* commRule = (*iter).second;
+
+		if (!save->isResearched(commRule->getRequires(), false))
+		{
+			// commendation is not unlocked yet
+			++iter;
+			continue;
+		}
 
 		awardCommendationBool = true;
 		nextCommendationLevel.clear();
@@ -1026,7 +1035,7 @@ int SoldierDiary::getAccuracy() const
 /**
  *  Get trap kills total.
  */
-int SoldierDiary::getTrapKillTotal(Mod *mod) const
+int SoldierDiary::getTrapKillTotal(const Mod* mod) const
 {
 	int trapKillTotal = 0;
 
@@ -1045,7 +1054,7 @@ int SoldierDiary::getTrapKillTotal(Mod *mod) const
 /**
  *  Get reaction kill total.
  */
- int SoldierDiary::getReactionFireKillTotal(Mod *mod) const
+ int SoldierDiary::getReactionFireKillTotal(const Mod* mod) const
  {
 	int reactionFireKillTotal = 0;
 

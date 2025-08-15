@@ -24,6 +24,7 @@ namespace OpenXcom
 
 class Mod;
 class RuleSoldierBonus;
+class RuleResearch;
 
 /**
  * Represents a specific type of commendation.
@@ -43,6 +44,9 @@ private:
 	std::vector<const RuleSoldierBonus*> _soldierBonusTypes;
 	std::vector<std::string> _missionMarkerNames; // these are not alien deployment type names!
 	std::vector<std::string> _missionTypeNames;   // these are not alien deployment type names!
+
+	std::vector<std::string> _requiresNames;
+	std::vector<const RuleResearch*> _requires;
 
 public:
 	/// Creates a blank commendation ruleset.
@@ -67,6 +71,9 @@ public:
 	const std::vector<std::string>& getMissionMarkerNames() const;
 	/// Gets the commendation's mission type filter.
 	const std::vector<std::string>& getMissionTypeNames() const;
+
+	/// Gets the commendation's research requirements.
+	const std::vector<const RuleResearch*>& getRequires() const { return _requires; }
 
 };
 
