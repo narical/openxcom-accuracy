@@ -264,7 +264,7 @@ std::vector<SoldierCommendations*> *SoldierDiary::getSoldierCommendations()
  * Award new ones, if deserved.
  * @return bool Has a commendation been awarded?
  */
-bool SoldierDiary::manageCommendations(const Mod* mod, SavedGame* save)
+bool SoldierDiary::manageCommendations(const Mod* mod, SavedGame* save, const Soldier* soldier)
 {
 	std::vector<MissionStatistics*>* missionStatistics = save->getMissionStatistics();
 
@@ -287,6 +287,12 @@ bool SoldierDiary::manageCommendations(const Mod* mod, SavedGame* save)
 		const auto& commType = (*iter).first;
 		const RuleCommendations* commRule = (*iter).second;
 
+		if (!commRule->isSupportedBy(soldier->getRules()))
+		{
+			// commendation does not apply to this soldier type
+			++iter;
+			continue;
+		}
 		if (!save->isResearched(commRule->getRequires(), false))
 		{
 			// commendation is not unlocked yet

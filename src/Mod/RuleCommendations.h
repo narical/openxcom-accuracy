@@ -25,6 +25,7 @@ namespace OpenXcom
 class Mod;
 class RuleSoldierBonus;
 class RuleResearch;
+class RuleSoldier;
 
 /**
  * Represents a specific type of commendation.
@@ -47,6 +48,8 @@ private:
 
 	std::vector<std::string> _requiresNames;
 	std::vector<const RuleResearch*> _requires;
+	std::vector<std::string> _unitsNames;
+	std::vector<const RuleSoldier*> _units;
 
 public:
 	/// Creates a blank commendation ruleset.
@@ -74,6 +77,8 @@ public:
 
 	/// Gets the commendation's research requirements.
 	const std::vector<const RuleResearch*>& getRequires() const { return _requires; }
+	/// Check if a given soldier type can be awarded this commendation.
+	bool isSupportedBy(const RuleSoldier* soldier) const;
 
 };
 

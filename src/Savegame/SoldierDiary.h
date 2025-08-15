@@ -131,7 +131,7 @@ public:
 	/// Get the solder's commendations.
 	std::vector<SoldierCommendations*> *getSoldierCommendations();
 	/// Manage commendations, return true if a medal is awarded.
-	bool manageCommendations(const Mod* mod, SavedGame* save);
+	bool manageCommendations(const Mod* mod, SavedGame* save, const Soldier* soldier);
 	/// Increment the soldier's service time.
 	void addMonthlyService();
 	/// Get the total months in service.
