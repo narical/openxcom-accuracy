@@ -267,6 +267,7 @@ en-US:
   requiresBuy: "Tech required to buy"
   requiresBuyBaseFunc: "Services needed to buy"
   requiresBuyCountry: "Allied country required"
+  requiresAward: "Award required"
   categories: "Categories"
   supportedInventorySections: "Inventory slots"
 #

@@ -37,6 +37,7 @@ class BattleUnit;
 class RuleItem;
 class RuleResearch;
 class RuleSoldier;
+class RuleCommendations;
 
 /**
  * Move cost multipler.
@@ -99,6 +100,7 @@ private:
 	std::string _ufopediaType;
 	std::string _type, _spriteSheet, _spriteInv, _corpseGeoName, _storeItemName, _selfDestructItemName, _specWeaponName;
 	std::string _requiresName;
+	std::string _requiresAwardName;
 	std::string _layersDefaultPrefix;
 	std::map<int, std::string> _layersSpecificPrefix;
 	std::map<std::string, std::vector<std::string> > _layersDefinition;
@@ -111,6 +113,7 @@ private:
 	std::vector<const RuleSoldier*> _units;
 	std::vector<int> _ranks;
 	const RuleResearch* _requires = nullptr;
+	const RuleCommendations* _requiresAward = nullptr;
 	const RuleItem* _corpseGeo = nullptr;
 	const RuleItem* _storeItem = nullptr;
 	const RuleItem* _selfDestructItem = nullptr;
@@ -236,6 +239,8 @@ public:
 	const RuleItem* getSpecialWeapon() const;
 	/// Gets the research required to be able to equip this armor.
 	const RuleResearch* getRequiredResearch() const;
+	/// Gets the commendation required to be able to equip this armor.
+	const RuleCommendations* getRequiredAward() const { return _requiresAward; }
 
 	/// Armor have layered armor definition. Check by Prefix.
 	bool hasLayersDefinition() const { return !_layersDefaultPrefix.empty(); }

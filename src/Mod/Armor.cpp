@@ -22,6 +22,7 @@
 #include "LoadYaml.h"
 #include "Mod.h"
 #include "RuleSoldier.h"
+#include "../Savegame/SoldierDiary.h"
 
 namespace OpenXcom
 {
@@ -101,6 +102,7 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	mod->loadNameNull(_type, _selfDestructItemName, reader["selfDestructItem"]);
 	mod->loadNameNull(_type, _specWeaponName, reader["specialWeapon"]);
 	mod->loadNameNull(_type, _requiresName, reader["requires"]);
+	mod->loadNameNull(_type, _requiresAwardName, reader["requiresAward"]);
 
 	reader.tryRead("layersDefaultPrefix", _layersDefaultPrefix);
 	reader.tryRead("layersSpecificPrefix", _layersSpecificPrefix);
@@ -287,6 +289,7 @@ void Armor::afterLoad(const Mod* mod)
 	mod->linkRule(_builtInWeapons, _builtInWeaponsNames);
 	mod->linkRule(_units, _unitsNames);
 	mod->linkRule(_requires, _requiresName);
+	mod->linkRule(_requiresAward, _requiresAwardName);
 	if (_storeItemName == Armor::NONE)
 	{
 		_infiniteSupply = true;
@@ -1083,6 +1086,13 @@ bool Armor::getCanBeUsedBy(const Soldier* soldier) const
 	{
 		int rankInt = soldier->getRank();
 		if (!Collections::sortVectorHave(_ranks, rankInt))
+		{
+			return false;
+		}
+	}
+	if (_requiresAward)
+	{
+		if (!soldier->getDiary()->containsCommendation(_requiresAward))
 		{
 			return false;
 		}

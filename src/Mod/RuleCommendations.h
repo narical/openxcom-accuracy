@@ -60,6 +60,9 @@ public:
 	void load(const YAML::YamlNodeReader& reader, const Mod* mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
+
+	/// Gets the commendation's type.
+	const std::string& getType() const { return _type; }
 	/// Get the commendation's description.
 	const std::string& getDescription() const;
 	/// Get the commendation's award criteria.

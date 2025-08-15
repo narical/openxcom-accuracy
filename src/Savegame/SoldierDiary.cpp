@@ -260,6 +260,21 @@ std::vector<SoldierCommendations*> *SoldierDiary::getSoldierCommendations()
 }
 
 /**
+ * Checks whether the diary contains a given commendation.
+ */
+bool SoldierDiary::containsCommendation(const RuleCommendations* rule) const
+{
+	for (auto* comm : _commendations)
+	{
+		if (comm->getRule() == rule)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Manage the soldier's commendations.
  * Award new ones, if deserved.
  * @return bool Has a commendation been awarded?

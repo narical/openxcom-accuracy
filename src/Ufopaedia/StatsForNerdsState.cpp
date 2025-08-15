@@ -37,6 +37,7 @@
 #include "../Mod/ExtraSprites.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleBaseFacility.h"
+#include "../Mod/RuleCommendations.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/RuleInterface.h"
@@ -2826,6 +2827,7 @@ void StatsForNerdsState::initArmorList()
 
 	addVectorOfRules(ss, armorRule->getUnitsRaw(), "units");
 	addVectorOfIntegers(ss, armorRule->getRanksRaw(), "ranks");
+	addRule(ss, armorRule->getRequiredAward(), "requiresAward");
 
 	ModScript::scriptCallback<ModScript::StatsForNerdsArmor>(armorRule, armorRule, this, _game->getSavedGame());
 

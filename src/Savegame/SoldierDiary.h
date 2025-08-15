@@ -130,6 +130,8 @@ public:
 	int getDaysWoundedTotal() const;
 	/// Get the solder's commendations.
 	std::vector<SoldierCommendations*> *getSoldierCommendations();
+	/// Checks whether the diary contains a given commendation.
+	bool containsCommendation(const RuleCommendations* rule) const;
 	/// Manage commendations, return true if a medal is awarded.
 	bool manageCommendations(const Mod* mod, SavedGame* save, const Soldier* soldier);
 	/// Increment the soldier's service time.
