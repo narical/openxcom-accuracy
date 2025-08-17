@@ -103,6 +103,7 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	mod->loadNameNull(_type, _specWeaponName, reader["specialWeapon"]);
 	mod->loadNameNull(_type, _requiresName, reader["requires"]);
 	mod->loadNameNull(_type, _requiresAwardName, reader["requiresAward"]);
+	mod->loadNameNull(_type, _requiresBonusName, reader["requiresBonus"]);
 
 	reader.tryRead("layersDefaultPrefix", _layersDefaultPrefix);
 	reader.tryRead("layersSpecificPrefix", _layersSpecificPrefix);
@@ -290,6 +291,7 @@ void Armor::afterLoad(const Mod* mod)
 	mod->linkRule(_units, _unitsNames);
 	mod->linkRule(_requires, _requiresName);
 	mod->linkRule(_requiresAward, _requiresAwardName);
+	mod->linkRule(_requiresBonus, _requiresBonusName);
 	if (_storeItemName == Armor::NONE)
 	{
 		_infiniteSupply = true;
@@ -1093,6 +1095,13 @@ bool Armor::getCanBeUsedBy(const Soldier* soldier) const
 	if (_requiresAward)
 	{
 		if (!soldier->getDiary()->containsCommendation(_requiresAward))
+		{
+			return false;
+		}
+	}
+	if (_requiresBonus)
+	{
+		if (!soldier->hasBonus(_requiresBonus))
 		{
 			return false;
 		}

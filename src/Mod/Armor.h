@@ -37,6 +37,7 @@ class BattleUnit;
 class RuleItem;
 class RuleResearch;
 class RuleSoldier;
+class RulesoldierBonus;
 class RuleCommendations;
 
 /**
@@ -101,6 +102,7 @@ private:
 	std::string _type, _spriteSheet, _spriteInv, _corpseGeoName, _storeItemName, _selfDestructItemName, _specWeaponName;
 	std::string _requiresName;
 	std::string _requiresAwardName;
+	std::string _requiresBonusName;
 	std::string _layersDefaultPrefix;
 	std::map<int, std::string> _layersSpecificPrefix;
 	std::map<std::string, std::vector<std::string> > _layersDefinition;
@@ -114,6 +116,7 @@ private:
 	std::vector<int> _ranks;
 	const RuleResearch* _requires = nullptr;
 	const RuleCommendations* _requiresAward = nullptr;
+	const RuleSoldierBonus* _requiresBonus = nullptr;
 	const RuleItem* _corpseGeo = nullptr;
 	const RuleItem* _storeItem = nullptr;
 	const RuleItem* _selfDestructItem = nullptr;
@@ -241,6 +244,8 @@ public:
 	const RuleResearch* getRequiredResearch() const;
 	/// Gets the commendation required to be able to equip this armor.
 	const RuleCommendations* getRequiredAward() const { return _requiresAward; }
+	/// Gets the soldier bonus required to be able to equip this armor.
+	const RuleSoldierBonus* getRequiredBonus() const { return _requiresBonus; }
 
 	/// Armor have layered armor definition. Check by Prefix.
 	bool hasLayersDefinition() const { return !_layersDefaultPrefix.empty(); }
