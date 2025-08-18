@@ -92,6 +92,9 @@ public:
 	bool isReversed() const;
 	/// adds a cloud of particles at the projectile's location
 	void addVaporCloud();
+
+	/// converts Accuracy to Chance to hit
+    static int getHitChance(int distance, int accuracy, const std::vector<int>* lookupTable);
 };
 
 }

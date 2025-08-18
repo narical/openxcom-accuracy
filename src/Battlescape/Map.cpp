@@ -1397,6 +1397,9 @@ void Map::drawTerrain(Surface *surface)
 								int upperLimit = weapon->getAimRange();
 								int lowerLimit = weapon->getMinRange();
 
+								int targetSize = 1;
+								if (unit && unit->getVisible()) targetSize = unit->getArmor()->getSize();
+
 								// Include LOS penalty for tiles in the unit's current view range
 								// Don't recalculate LOS for outside of the current FOV
 								bool hasLOS = false;
@@ -1470,7 +1473,6 @@ void Map::drawTerrain(Surface *surface)
 										goto accuracy_calculated;
 									}
 
-									int targetSize = 0;
 									double sizeMultiplier = 0;
 									Tile *targetTile = nullptr;
 									std::vector<Position> exposedVoxels;
@@ -1744,6 +1746,7 @@ void Map::drawTerrain(Surface *surface)
 								}
 								else
 								{
+									accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable(targetSize));
 									ss << accuracy;
 									ss << "%";
 								}

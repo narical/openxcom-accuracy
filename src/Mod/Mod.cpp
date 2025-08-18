@@ -1976,7 +1976,6 @@ void Mod::loadUnorderedInts(const std::string &parent, std::vector<int>& ints, c
 	loadHelper(parent, ints, reader, LoadFuncEditable{});
 }
 
-
 /**
  * Loads a name.
  */

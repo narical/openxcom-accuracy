@@ -480,6 +480,10 @@ public:
 	static bool EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 	static bool EXTENDED_FORCE_SPAWN;
 
+    // Hit chances lookup tables config
+    static const int distanceRows = 40;
+    static const int maxAccuracy = 120; // Should be even number
+    static const int accPerRowCount = 61; // Accuracy from 0% to 120%, with 2% step
 
 	/// Return `true` when given string is empty or pseudo null value.
 	static bool isEmptyRuleName(const std::string& s)

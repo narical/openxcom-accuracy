@@ -1211,4 +1211,40 @@ void Projectile::addVaporCloud()
 	}
 }
 
+
+/**
+ * Calculates chance to hit based on Accuracy and Distance.
+ * @param distance Distance to target in tiles.
+ * @param accuracy Final accuracy of a shooter.
+ */
+int Projectile::getHitChance(int distance, int accuracy, const std::vector<int> *lookupTable)
+{
+	if (!lookupTable) return accuracy;
+
+	int maxAccuracy = Mod::maxAccuracy;
+	int maxDistance = Mod::distanceRows;
+	int accuraciesPerRow = Mod::accPerRowCount;
+
+	if (accuracy < 0) accuracy = 0;
+	if (accuracy > maxAccuracy) accuracy = maxAccuracy;
+	if (distance < 1) distance = 1;
+	if (distance > maxDistance) distance = maxDistance;
+
+	int index;
+	int result;
+
+	if (accuracy % 2 == 0) // For even number - just take the value from table
+	{
+		index = (distance - 1) * accuraciesPerRow + accuracy / 2;
+		result = lookupTable->at( index );
+		return result;
+	}
+
+	// For odd number - interpolate between prev and next even numbers
+	index = (distance - 1) * accuraciesPerRow + (accuracy - 1) / 2;
+	result = Round( ((double)lookupTable->at(index) + (double)lookupTable->at(index+1)) / 2 );
+
+	return result;
+}
+
 }
