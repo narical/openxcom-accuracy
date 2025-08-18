@@ -310,6 +310,7 @@ private:
 	RuleBaseFacilityFunctions _hireScientistsRequiresBaseFunc, _hireEngineersRequiresBaseFunc;
 
     AccuracyModConfig _realisticAccuracyConfig;
+	std::map<int, std::vector<int>> _hitChancesTable;
 
 	std::string _destroyedFacility;
 	YAML::YamlString _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -529,6 +530,8 @@ public:
 	const std::vector<std::vector<Uint8> > *getLUTs() const;
 	/// Gets parameters for Realistic Accuracy mod
 	const AccuracyModConfig *getAccuracyModConfig() const;
+	/// Gets hit chances lookup table
+	const std::vector<int>* getHitChancesTable(int size) const;
 
 
 	/// Check for obsolete error based on year.
