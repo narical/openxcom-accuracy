@@ -185,7 +185,7 @@ public:
 	/// Get ammo count visibility for slot.
 	bool isAmmoVisibleForSlot(int slot) const;
 	/// Get total weight (with ammo).
-	float getTotalWeight() const;
+	int getTotalWeight() const;
 	/// Get waypoints count.
 	int getCurrentWaypoints() const;
 

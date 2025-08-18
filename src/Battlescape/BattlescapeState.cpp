@@ -4127,9 +4127,9 @@ void BattlescapeState::readyLightGrenade(Action* action)
 
 		// non zero weight
 
-		float weight = ruleItem->getWeight();
+		int weight = ruleItem->getWeight();
 
-		if (weight <= 0.0f)
+		if (weight <= 0)
 			continue;
 
 		// update weights
@@ -4196,7 +4196,7 @@ void BattlescapeState::readyHeavyGrenade(Action* action)
 
 		// non zero weight
 
-		float weight = ruleItem->getWeight();
+		int weight = ruleItem->getWeight();
 
 		if (weight <= 0)
 			continue;

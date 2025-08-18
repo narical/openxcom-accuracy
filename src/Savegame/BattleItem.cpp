@@ -1033,9 +1033,9 @@ bool BattleItem::isAmmoVisibleForSlot(int slot) const
  * Get item weight with ammo weight.
  * @return Weight.
  */
-float BattleItem::getTotalWeight() const
+int BattleItem::getTotalWeight() const
 {
-	float weight = _rules->getWeight();
+	int weight = _rules->getWeight();
 	for (const auto* a : _ammoItem)
 	{
 		if (a && a != this)

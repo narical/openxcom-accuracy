@@ -6488,7 +6488,7 @@ float AIModule::getItemPickUpScore(BattleItem* item)
 	if (!valid)
 		return 0;
 	score = item->getRules()->getSellCost();
-	float mainHandWeight = 0;
+	int mainHandWeight = 0;
 	if (_unit->getMainHandWeapon())
 		mainHandWeight = _unit->getMainHandWeapon()->getRules()->getWeight();
 	float encumbrance = (float)_unit->getBaseStats()->strength / (float)(_unit->getCarriedWeight() - mainHandWeight + item->getRules()->getWeight());

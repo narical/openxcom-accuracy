@@ -383,8 +383,7 @@ private:
 	int _vehicleFixedAmmoSlot;
 	double _size;
 	int _monthlyBuyLimit;
-	int _costBuy, _costSell, _transferTime;
-	float _weight;
+	int _costBuy, _costSell, _transferTime, _weight;
 	int _throwRange, _underwaterThrowRange;
 	int _throwDropoffRange, _underwaterThrowDropoffRange, _throwDropoff;
 	int _bigSprite;
@@ -559,7 +558,7 @@ public:
 	int getTransferTime() const;
 
 	/// Gets the item's weight.
-	float getWeight() const;
+	int getWeight() const;
 	/// Gets the item's maximum throw range.
 	int getThrowRange() const { return _throwRange; }
 	/// Gets the item's maximum underwater throw range.
