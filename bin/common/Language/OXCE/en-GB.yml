@@ -515,6 +515,7 @@ en-GB:
   STR_CRAFT_IS_READY: "{0} at {1} is ready."
   STR_ECONOMY_WARNING: "The funds {0} and income {1} are low and the maintenance {2} too high! Sell something to avoid taking a credit... funds missing: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "EXTENDED"
 #InterceptState.cpp
   STR_RETURNING: "RETURNING"

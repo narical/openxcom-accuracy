@@ -856,7 +856,7 @@ void Soldier::setLookVariant(int lookVariant)
  * Returns the soldier's rules.
  * @return rule soldier
  */
-RuleSoldier *Soldier::getRules() const
+const RuleSoldier *Soldier::getRules() const
 {
 	return _rules;
 }
@@ -2010,6 +2010,22 @@ UnitStats Soldier::calculateStatChanges(const Mod *mod, RuleSoldierTransformatio
 	}
 
 	return statChange;
+}
+
+/**
+ * Checks whether the soldier has a given bonus.
+ * Disclaimer: DOES NOT REFRESH THE BONUS CACHE!
+ */
+bool Soldier::hasBonus(const RuleSoldierBonus* bonus) const
+{
+	for (auto* sb : _bonusCache)
+	{
+		if (sb == bonus)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /**

@@ -146,6 +146,7 @@ OPT int oxceStartUpTextMode;
 OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT int oxceGeoSlowdownFactor;
 OPT bool oxceGeoShowScoreInsteadOfFunds;
+OPT bool oxceGeoEnableTrainingIndicator;
 OPT bool oxceGeoSuppressRedundantHKAlert;
 OPT bool oxceGeoSuppressLandingWithoutEquipment;
 OPT bool oxceGeoGoToNearestBase;

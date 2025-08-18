@@ -267,6 +267,8 @@ en-GB:
   requiresBuy: "Tech required to buy"
   requiresBuyBaseFunc: "Services needed to buy"
   requiresBuyCountry: "Allied country required"
+  requiresAward: "Award required"
+  requiresBonus: "Bonus required"
   categories: "Categories"
   supportedInventorySections: "Inventory slots"
 #
@@ -354,6 +356,7 @@ en-GB:
   stun: "Stun"
   mana: "Mana"
   units: "Compatible units"
+  ranks: "Compatible ranks"
   frontArmor: "Front Armor"
   sideArmor: "Side Armor"
   leftArmorDiff: "Left Armor Diff"
