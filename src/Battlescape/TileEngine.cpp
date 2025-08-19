@@ -2968,6 +2968,12 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 
 							bool outOfRange = weapon->getRules()->isOutOfRange(distanceSq);
 
+							if (Options::useChanceToHit)
+							{
+								auto targetSize = unit->getArmor()->getSize();
+								accuracy = Projectile::getHitChance(distance, accuracy, _save->getMod()->getHitChancesTable( targetSize ));
+							}
+
 							if (accuracy >= reactionFireThreshold && !outOfRange)
 							{
 								spotters.push_back(rs);
