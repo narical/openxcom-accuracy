@@ -1746,7 +1746,7 @@ void Map::drawTerrain(Surface *surface)
 								}
 								else
 								{
-									if (Options::useChanceToHit)
+									if (Options::useChanceToHit && !Options::battleRealisticAccuracy)
 									{
 										accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
 									}
