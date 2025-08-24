@@ -4258,9 +4258,14 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 				ss << " baseType: " << alienBase->getType();
 				ss << " deployment: " << alienBase->getDeployment()->getType();
 				ss << " old race: " << alienBase->getAlienRace();
+				int tries = 0;
 				while (attemptAlienRaceEvolution(month, alienBase))
 				{
 					ss << " new race: " << alienBase->getAlienRace();
+					if (++tries >= 100)
+					{
+						throw Exception("Alien race evolution: endless loop detected. It's not my fault. Crashing now!");
+					}
 				}
 				ss << " end.";
 				if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
