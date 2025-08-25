@@ -89,6 +89,8 @@ enum BasePlacementErrors : int
 	BPE_Used_AlienContainment = 17,
 	/// 18: This facility provides something that another facility requires
 	BPE_Used_Provides_Required = 18,
+	/// 19: trying to build a facility (from scratch) that can only be built as an upgrade of another facility
+	BPE_UpgradeOnly = 18,
 };
 
 struct BaseSumDailyRecovery

@@ -135,6 +135,7 @@ private:
 	std::vector<std::pair<size_t, WeightedOptions*> > _alienBaseUpgrades;
 	bool _resetAlienBaseAgeAfterUpgrade, _resetAlienBaseAge;
 	std::string _upgradeRace;
+	std::vector<std::tuple<size_t, std::string, std::string> > _alienRaceEvolution;
 	bool _noWeaponPile;
 public:
 	/// Creates a blank Alien Deployment ruleset.
@@ -315,6 +316,9 @@ public:
 	const std::string& getUpgradeRace() const { return _upgradeRace; }
 	/// Gets the minimum aggression-level of Brutal-AI so they can be forced to be more proactive on certain mission-types
 	const int getMinBrutalAggression() const { return _minBrutalAggression; }
+	/// Gets the alien race evolution rules.
+	const auto& getAlienRaceEvolution() const { return _alienRaceEvolution; }
+
 	/// Should items on the "weapon pile" be hidden from the player?
 	bool getNoWeaponPile() const { return _noWeaponPile; }
 };
