@@ -155,14 +155,7 @@ public:
 
     struct AccuracyModConfig // Real Accuracy mod configuration
     {
-        int minCap = 1;
-        int maxCap = 300;
-        int aimBonus = 3;
-        int kneelBonus = 2;
-        double sizeMultiplier = 1.35;
         int suicideProtectionDistance = 50;
-        int bonusDistanceMax = 10;
-        int bonusDistanceMin = 6;
 
         // Deviation in voxels per 10 tiles of shot trajectory
         // first for "realistic", second for "normal"

@@ -386,8 +386,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 	{
 		bool isCtrlPressed = _save->isCtrlPressed(true);
 		bool isTargetObject = false;
-		int targetSize = 0;
-		double sizeMultiplier = 0;
+		int targetSize = 1;
 		double exposure = 0.0;
 		const Mod::AccuracyModConfig* AccuracyMod = _mod->getAccuracyModConfig();
 		bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
@@ -420,7 +419,6 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 		{
 			targetTile = targetUnit->getTile();
 			targetSize = targetUnit->getArmor()->getSize();
-			sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod->sizeMultiplier);
 
 			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 			int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
@@ -468,7 +466,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			distanceVoxels = Position::distance( tempOrigin, *target );
 		}
 
-		distanceTiles = distanceVoxels / 16 + 1; // Should never be 0
+		distanceTiles = distanceVoxels / Position::TileXY + 1; // Should never be 0
 
 		// Apply distance limits
 		if (distanceTiles > upperLimit)
@@ -480,72 +478,15 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			real_accuracy -= (lowerLimit - distanceTiles) * weapon->getDropoff();
 		}
 
-		int unitAccuracy = shooterUnit->getBaseStats()->firing;
-		int unmodifiedAccuracy = real_accuracy;
-		int snipingBonus = ( real_accuracy > unitAccuracy ? (real_accuracy - unitAccuracy)/2 : 0 );
-		// ...BEFORE SIZE MULTIPLIER - or bonus will be too big
+		real_accuracy = Projectile::getHitChance(distanceTiles, real_accuracy, _save->getMod()->getHitChancesTable( targetSize ));
 
-		// Apply size multiplier
-		if (exposedVoxelsCount > 0)
-		{
-			real_accuracy = (int)ceil(real_accuracy * sizeMultiplier);
-		}
+		int snipingBonus = ( real_accuracy > 100 ? (real_accuracy - 100)/2 : 0 );
+		bool isSniperShot = ( snipingBonus > 0 ? true : false );
 
 		// Both for units and empty tiles
 		if (targetTile)
 		{
 			isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
-
-			bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
-			bool belowBonusThreshold = upperLimit < AccuracyMod->bonusDistanceMin;
-			bool inBonusZone = upperLimit >= AccuracyMod->bonusDistanceMin && upperLimit <= AccuracyMod->bonusDistanceMax;
-			bool aboveBonusThreshold = upperLimit > AccuracyMod->bonusDistanceMax;
-			bool maxRangeAllowsBonus = maxRange > AccuracyMod->bonusDistanceMax;
-			bool noMinRange = weapon->getMinRange() == 0;
-
-			int maxDistanceVoxels = 0;
-			double distanceRatio = 0;
-			int upperLimitVoxels = upperLimit * Position::TileXY;
-
-			if (belowBonusThreshold)
-				maxDistanceVoxels = upperLimitVoxels;
-
-			else if (inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled)
-				maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
-
-			else if (aboveBonusThreshold)
-				maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
-
-			else
-				maxDistanceVoxels = upperLimitVoxels;
-
-			// Improve accuracy for close-range aimed shots
-			if (distanceVoxels <= maxDistanceVoxels && _action.type == BA_AIMEDSHOT && noMinRange && real_accuracy < 100)
-			{
-				distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
-
-				// Multiplier up to x2 for 10 tiles, nearest to a target
-				// in case current accuracy is enough to get 100% by doubling it
-				// With good enough accuracy this makes it possible to get
-				// ~100% even for medium-ranged shots. Good aiming should pay off!
-				if (real_accuracy*2 >= 100)
-					real_accuracy = (int)ceil( real_accuracy * (1 + distanceRatio));
-
-				// We still want to get our 100% on a tile, adjanced to target
-				// so increase accuracy in reverse proportion to the distance left
-				else
-					real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
-
-				if (real_accuracy > 100) real_accuracy = 100;
-			}
-
-			// Improve accuracy for close-range snap/auto shots
-			else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
-				(_action.type == BA_AUTOSHOT || _action.type == BA_SNAPSHOT))
-			{
-				distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
-				real_accuracy += (int)ceil((100 - real_accuracy) * distanceRatio);
-			}
 
 			// Apply the exposure
 			if (exposedVoxelsCount > 0 && coverHasEffect)
@@ -553,29 +494,9 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 				real_accuracy = (int)ceil(real_accuracy * coverEfficiencyCoeff * exposure + real_accuracy * (1 - coverEfficiencyCoeff));
 			}
 
-			if (Options::battleRealisticImprovedAimed && real_accuracy < unmodifiedAccuracy)
+			if (Options::battleRealisticImprovedAimed && isSniperShot)
 			{
-				real_accuracy = std::min( unmodifiedAccuracy, real_accuracy + snipingBonus);
-			}
-
-			// Apply additional rules for low-accuracy shots
-			if (real_accuracy <= AccuracyMod->minCap)
-			{
-				real_accuracy = AccuracyMod->minCap;
-
-				// Check if target exposure is less than 5% (or 2.5% for big units)
-				// That's a particulary hard shot where final accuracy can drop below its min cap
-				int hardShotAccuracy = (int)(exposure / targetSize * 100);
-				if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod->minCap)
-					real_accuracy = hardShotAccuracy;
-
-				// And let's make kneeling more meaningful for such shots
-				if (shooterUnit->isKneeled()) real_accuracy += AccuracyMod->kneelBonus;
-				if (_action.type == BA_AIMEDSHOT) real_accuracy += AccuracyMod->aimBonus; // Same for aiming
-			}
-			else if (real_accuracy > AccuracyMod->maxCap)
-			{
-				real_accuracy = AccuracyMod->maxCap;
+				real_accuracy += snipingBonus;
 			}
 		}
 
@@ -590,7 +511,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			{
 				ss << "Exposure " << std::round(exposure*100) << "%";
 
-				if (Options::battleRealisticImprovedAimed && snipingBonus)
+				if (Options::battleRealisticImprovedAimed && isSniperShot)
 				{
 					ss << " Sniping +" << snipingBonus << "%";
 				}
@@ -598,7 +519,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			}
 			else
 			{
-				if (Options::battleRealisticImprovedAimed && snipingBonus > 0) ss << "Sniping +" << snipingBonus << "%";
+				if (Options::battleRealisticImprovedAimed && isSniperShot) ss << "Sniping +" << snipingBonus << "%";
 				ss << " Total " << real_accuracy << "%";
 			}
 
@@ -685,11 +606,12 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 				visibleCenter.z = (int)round((double)temp.z / exposedVoxels.size());
 			}
 
+			// Lower your aim for big units or with HE weapons
 			bool isSplashDamage = false;
 			auto ammo = _action.weapon->getAmmoForAction(_action.type);
 			if (ammo && !ammo->getRules()->getDamageType()->isDirect()) isSplashDamage = true;
 			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
-				visibleCenter.z -= heightRange / 3; // Lower your aim for big units or with HE weapons
+				visibleCenter.z -= heightRange / 3;
 
 			int idx = Options::battleRealisticShotDispersion;
 			int shotTypeDeviation;
@@ -726,6 +648,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			int deviation = (distanceDeviation + oneHandWeaponDeviation + kneelDeviation
                             + shotTypeDeviation + accuracyDeviation*2) * distanceDeviationCoeff;
 
+			// More horizontal deviation, less
 			int horizontal_deviation = deviation * AccuracyMod->horizontalSpreadCoeff[idx];
 			int vertical_deviation = deviation * AccuracyMod->verticalSpreadCoeff[idx];
 
@@ -761,7 +684,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 						if (Position::distanceSq( origin, trajectory.at(0)) <
 							AccuracyMod->suicideProtectionDistance * AccuracyMod->suicideProtectionDistance)
 						{
-							continue; // No accidental hits please!
+							continue; // No suicides please!
 						}
 					}
 

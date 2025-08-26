@@ -1,12 +1,5 @@
 realisticAccuracy:
-  minCap: 1
-  maxCap: 300
-  aimBonus: 3
-  kneelBonus: 2
-  sizeMultiplier: 1.35
   suicideProtectionDistance: 50
-  bonusDistanceMax: 10
-  bonusDistanceMin: 6
   distanceDeviation: 13
   oneHandWeaponDeviation: 3
   kneelDeviation: -2
@@ -18,14 +11,7 @@ realisticAccuracy:
 
 # Default values in parenthesis
 #
-# minCap       (1)    Minimum accuracy value
-# maxCap       (300)  Maximum accuracy value
-# aimBonus     (3)    Additional bonus for aimed shot, if total accuracy is 5% or less
-# kneelBonus   (2)    Additional bonus for kneeling, if total accuracy is 5% or less
-# sizeMultiplier  (1.35)         Accuracy multiplier when targeting big units
 # suicideProtectionDistance (50) Minimal distance missing shot should fly, in voxels
-# bonusDistanceMax (10)          Improved accuracy distance - top threshold
-# bonusDistanceMin (6)	         Improved accuracy distance - bottom threshold
 #
 # Deviation parameters override "Normal" shot dispersion option!
 #

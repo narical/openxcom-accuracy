@@ -3277,14 +3277,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
     // Override any settings if presented in realisticAccuracy.rul
 	if (const auto& nodeRA = loadDocInfoHelper("realisticAccuracy"))
 	{
-		nodeRA.tryRead("minCap", _realisticAccuracyConfig.minCap);
-        nodeRA.tryRead("maxCap", _realisticAccuracyConfig.maxCap);
-        nodeRA.tryRead("aimBonus", _realisticAccuracyConfig.aimBonus);
-        nodeRA.tryRead("kneelBonus", _realisticAccuracyConfig.kneelBonus);
-        nodeRA.tryRead("sizeMultiplier", _realisticAccuracyConfig.sizeMultiplier);
         nodeRA.tryRead("suicideProtectionDistance", _realisticAccuracyConfig.suicideProtectionDistance);
-        nodeRA.tryRead("bonusDistanceMax", _realisticAccuracyConfig.bonusDistanceMax);
-        nodeRA.tryRead("bonusDistanceMin", _realisticAccuracyConfig.bonusDistanceMin);
 
         // Override "Normal" fire spread option
         nodeRA.tryRead("distanceDeviation", _realisticAccuracyConfig.distanceDeviation[1]);

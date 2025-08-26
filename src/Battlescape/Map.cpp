@@ -1473,7 +1473,6 @@ void Map::drawTerrain(Surface *surface)
 										goto accuracy_calculated;
 									}
 
-									double sizeMultiplier = 0;
 									Tile *targetTile = nullptr;
 									std::vector<Position> exposedVoxels;
 
@@ -1481,7 +1480,6 @@ void Map::drawTerrain(Surface *surface)
 									if (unit && unit->getVisible()) // If we are targeting unit
 									{
 										targetSize = unit->getArmor()->getSize();
-										sizeMultiplier = (targetSize == 1 ? 1 : AccuracyMod->sizeMultiplier);
 										targetTile = unit->getTile();
 
 										exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 );
@@ -1563,69 +1561,8 @@ void Map::drawTerrain(Surface *surface)
 										_txtAccuracy->setColor( TXT_YELLOW );
 									}
 
-									bool isSniperShot = false;
-									int unitAccuracy = shooterUnit->getBaseStats()->firing;
-									int unmodifiedAccuracy = accuracy;
-									snipingBonus = ( accuracy > unitAccuracy ? (accuracy - unitAccuracy)/2 : 0 );
-									// ...BEFORE SIZE MULTIPLIER - or bonus will be too big
-
-									// Apply size multiplier
-									if (unit && maxVoxels > 0)
-									{
-										accuracy = (int)ceil(accuracy * sizeMultiplier);
-									}
-
-									bool improvedSnapEnabled = Options::battleRealisticImprovedSnap;
-									bool belowBonusThreshold = upperLimit < AccuracyMod->bonusDistanceMin;
-									bool inBonusZone = upperLimit >= AccuracyMod->bonusDistanceMin && upperLimit <= AccuracyMod->bonusDistanceMax;
-									bool aboveBonusThreshold = upperLimit > AccuracyMod->bonusDistanceMax;
-									bool maxRangeAllowsBonus = maxRange > AccuracyMod->bonusDistanceMax;
-									bool noMinRange = weapon->getMinRange() == 0;
-									bool improvedSnapBonusEnabled = inBonusZone && maxRangeAllowsBonus && improvedSnapEnabled;
-
-									int maxDistanceVoxels = 0;
-									double distanceRatio = 0;
-									int upperLimitVoxels = upperLimit * Position::TileXY;
-
-									if (belowBonusThreshold)
-										maxDistanceVoxels = upperLimitVoxels;
-
-									else if (improvedSnapBonusEnabled)
-										maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
-
-									else if (aboveBonusThreshold)
-										maxDistanceVoxels = AccuracyMod->bonusDistanceMax * Position::TileXY;
-
-									else
-										maxDistanceVoxels = upperLimitVoxels;
-
-									// Improve accuracy for close-range aimed shots
-									if (distanceVoxels <= maxDistanceVoxels && action->type == BA_AIMEDSHOT && noMinRange && accuracy < 100)
-									{
-										distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
-
-										// Multiplier up to x2 for 10 tiles, nearest to a target
-										// in case current accuracy is enough to get 100% by doubling it
-										// With good enough accuracy this makes it possible to get
-										// ~100% even for medium-ranged shots. Good aiming should pay off!
-										if (accuracy*2 >= 100)
-											accuracy = (int)ceil( accuracy * (1 + distanceRatio));
-
-										// We still want to get our 100% on a tile, adjanced to target
-										// so increase accuracy in reverse proportion to the distance left
-										else
-											accuracy += (int)ceil((100 - accuracy) * distanceRatio);
-
-										if (accuracy > 100) accuracy = 100;
-									}
-
-									// Improve accuracy for close-range snap/auto shots
-									else if (distanceVoxels <= maxDistanceVoxels && noMinRange &&
-										(action->type == BA_AUTOSHOT || action->type == BA_SNAPSHOT))
-									{
-										distanceRatio = (maxDistanceVoxels - distanceVoxels) / (double)maxDistanceVoxels;
-										accuracy += (int)ceil((100 - accuracy) * distanceRatio);
-									}
+									snipingBonus = ( accuracy > 100 ? (accuracy - 100)/2 : 0 );
+									bool isSniperShot = ( snipingBonus > 0 ? true : false );
 
 									// Apply the exposure
 									if (unit && maxVoxels > 0 && coverHasEffect)
@@ -1633,30 +1570,9 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
 									}
 
-									if (Options::battleRealisticImprovedAimed && accuracy < unmodifiedAccuracy)
+									if (Options::battleRealisticImprovedAimed && isSniperShot)
 									{
-										accuracy = std::min( unmodifiedAccuracy, accuracy + snipingBonus);
-										if (accuracy == unmodifiedAccuracy) isSniperShot = true;
-									}
-
-									// Apply additional rules for low-accuracy shots
-									if (accuracy <= AccuracyMod->minCap)
-									{
-										accuracy = AccuracyMod->minCap;
-
-										// Check if target exposure is less than 5% (or 2.5% for big units)
-										// That's a particulary hard shot
-										int hardShotAccuracy = (int)(maxExposure / targetSize * 100);
-										if (hardShotAccuracy > 0 && hardShotAccuracy < AccuracyMod->minCap)
-											accuracy = hardShotAccuracy;
-
-										if (isKneeled) accuracy += AccuracyMod->kneelBonus; // And let's make kneeling more meaningful for such shots
-										if (action->type == BA_AIMEDSHOT) accuracy += AccuracyMod->aimBonus; // Same for aiming
-										_txtAccuracy->setColor( TXT_RED );
-									}
-									else if (accuracy > AccuracyMod->maxCap)
-									{
-										accuracy = AccuracyMod->maxCap;
+										accuracy += snipingBonus;
 									}
 
 									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
@@ -1746,7 +1662,8 @@ void Map::drawTerrain(Surface *surface)
 								}
 								else
 								{
-									if (Options::useChanceToHit && !Options::battleRealisticAccuracy)
+									if ((Options::useChanceToHit && !Options::battleRealisticAccuracy) ||
+										 Options::battleRealisticAccuracy)
 									{
 										accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
 									}
