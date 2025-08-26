@@ -5196,7 +5196,7 @@ float AIModule::brutalExtendedFireModeChoice(BattleActionCost &costAuto, BattleA
  * @param checkLOF Set to true if you want to check for a valid line of fire
  * @return The calculated score
  */
-float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, bool checkLOF)
+float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, bool checkLOF, bool reactionCheck)
 {
 	// Sanity check first, if the passed action has no type or weapon, return 0.
 	if (!action->type || !action->weapon)
@@ -5380,6 +5380,8 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
 	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
+	if (reactionCheck)
+		damage = std::max(1.0f, damage);
 	if (damage <= 0)
 		return 0;
 	float damageTypeMod = 0;
