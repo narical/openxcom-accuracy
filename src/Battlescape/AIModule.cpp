@@ -5318,6 +5318,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 		return 0;
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	float damage = 0;
+	RuleDamageType damageType = *action->weapon->getRules()->getDamageType();
 	if (action->type == BA_THROW && action->weapon == _unit->getGrenadeFromBelt(_save))
 	{
 		if (!_grenade)
@@ -5351,6 +5352,7 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 				explosionMod *= brutalExplosiveEfficacy(target->getPosition(), _unit, radius, false);
 			if (ammo->getRules()->getShotgunPellets() > 0)
 				numberOfShots *= ammo->getRules()->getShotgunPellets();
+			damageType = *ammo->getRules()->getDamageType();
 		}
 		else
 			return 0;
@@ -5378,29 +5380,26 @@ float AIModule::brutalScoreFiringMode(BattleAction* action, BattleUnit* target, 
 			relevantArmor = (target->getArmor()->getArmor(SIDE_RIGHT) + target->getArmor()->getArmor(SIDE_REAR)) / 2.0;
 	}
 	float damageRange = 1.0 + _save->getMod()->DAMAGE_RANGE / 100.0;
-	damage *= target->getArmor()->getDamageModifier(action->weapon->getRules()->getDamageType()->ResistType);
+	damage *= target->getArmor()->getDamageModifier(damageType.ResistType);
 	damage = (damage * damageRange - relevantArmor) / 2.0f;
 	if (reactionCheck)
 		damage = std::max(1.0f, damage);
 	if (damage <= 0)
 		return 0;
 	float damageTypeMod = 0;
-	BattleItem* damageTypeCheckItem = action->weapon;
-	if (damageTypeCheckItem->getAmmoForAction(action->type) != nullptr)
-		damageTypeCheckItem = damageTypeCheckItem->getAmmoForAction(action->type);
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getHealthFinalDamage(damage) / damage;
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getWoundFinalDamage(damage) / damage;
-	damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getStunFinalDamage(damage) / (2 * damage);
-	if (damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) > 0)
-		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getArmorFinalDamage(damage) / (3 * damage);
-	if (damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) > 0)
-		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getMoraleFinalDamage(damage) / (5 * damage);
-	if (damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) > 0)
-		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getEnergyFinalDamage(damage) / (10 * damage);
-	if (damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) > 0)
-		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getManaFinalDamage(damage) / (10 * damage);
-	if (damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) > 0)
-		damageTypeMod += damageTypeCheckItem->getRules()->getDamageType()->getTimeFinalDamage(damage) / (10 * damage);
+	damageTypeMod += damageType.getHealthFinalDamage(damage) / damage;
+	damageTypeMod += damageType.getWoundFinalDamage(damage) / damage;
+	damageTypeMod += damageType.getStunFinalDamage(damage) / (2 * damage);
+	if (damageType.getArmorFinalDamage(damage) > 0)
+		damageTypeMod += damageType.getArmorFinalDamage(damage) / (3 * damage);
+	if (damageType.getMoraleFinalDamage(damage) > 0)
+		damageTypeMod += damageType.getMoraleFinalDamage(damage) / (5 * damage);
+	if (damageType.getEnergyFinalDamage(damage) > 0)
+		damageTypeMod += damageType.getEnergyFinalDamage(damage) / (10 * damage);
+	if (damageType.getManaFinalDamage(damage) > 0)
+		damageTypeMod += damageType.getManaFinalDamage(damage) / (10 * damage);
+	if (damageType.getTimeFinalDamage(damage) > 0)
+		damageTypeMod += damageType.getTimeFinalDamage(damage) / (10 * damage);
 	if (target->getTile() && target->getTile()->getDangerous())
 		damage /= 2.0f;
 
