@@ -405,6 +405,7 @@ pl:
   leavesBehindOnSell: "Po sprzedaży pozostaje"
   removalTime: "Czas rozbiórki"
   canBeBuiltOver: "Można na tym budować?"
+  upgradeOnly: ""
   buildOverFacilities: "Można zbudować"
 #
   BFRCT_DEFAULT: "domyślne"

@@ -405,6 +405,7 @@ es-419:
   leavesBehindOnSell: ""
   removalTime: ""
   canBeBuiltOver: ""
+  upgradeOnly: ""
   buildOverFacilities: ""
 #
   BFRCT_DEFAULT: "Normal por defecto"

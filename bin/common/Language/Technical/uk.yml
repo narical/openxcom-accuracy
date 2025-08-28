@@ -405,6 +405,7 @@ uk:
   leavesBehindOnSell: "Залишки на продаж"
   removalTime: "Час видалення"
   canBeBuiltOver: "Чи можна перебудувати?"
+  upgradeOnly: ""
   buildOverFacilities: "Будівельні споруди"
 #
   BFRCT_DEFAULT: "оригінал за замовчуванням"

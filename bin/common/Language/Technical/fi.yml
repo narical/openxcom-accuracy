@@ -405,6 +405,7 @@ fi:
   leavesBehindOnSell: "Jättää jälkeen myynnissä"
   removalTime: "Poistoaika"
   canBeBuiltOver: "Päälle voi rakentaa?"
+  upgradeOnly: ""
   buildOverFacilities: "Päällerakennuslaitokset"
 #
   BFRCT_DEFAULT: "alkuperäispelin (vanilla) oletus"

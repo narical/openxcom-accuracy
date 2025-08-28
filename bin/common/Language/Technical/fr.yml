@@ -405,6 +405,7 @@ fr:
   leavesBehindOnSell: "Laisse derrière soi lors de la vente"
   removalTime: "Temps de retrait"
   canBeBuiltOver: "Peut être construit par-dessus ?"
+  upgradeOnly: ""
   buildOverFacilities: "Installations constructibles par-dessus"
 #
   BFRCT_DEFAULT: "Paramètres par défaut de la version d'origine"

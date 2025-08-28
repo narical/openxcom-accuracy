@@ -405,6 +405,7 @@ ru:
   leavesBehindOnSell: "Заменяющий модуль"
   removalTime: "Время на снос"
   canBeBuiltOver: "Может надстраиваться?"
+  upgradeOnly: "Только улучшение?"
   buildOverFacilities: "Надстраивается над"
 #
   BFRCT_DEFAULT: "как в оригинале"

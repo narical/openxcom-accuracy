@@ -405,6 +405,7 @@ cs:
   leavesBehindOnSell: "Po prodej po sobě nechá"
   removalTime: "Čas odstranění"
   canBeBuiltOver: "Může být přestavěno?"
+  upgradeOnly: ""
   buildOverFacilities: ""
 #
   BFRCT_DEFAULT: "Výchozí vanilla"
