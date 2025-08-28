@@ -405,6 +405,7 @@ de:
   leavesBehindOnSell: "Hinterlassenschaften beim Verkauf"
   removalTime: "Zeit für die Beseitigung"
   canBeBuiltOver: "Kann überbaut werden?"
+  upgradeOnly: ""
   buildOverFacilities: "Überbaubare Einrichtungen"
 #
   BFRCT_DEFAULT: "Originale Voreinstellung"

@@ -405,6 +405,7 @@ ja:
   leavesBehindOnSell: "戦地残存物の売却"
   removalTime: "撤去時間"
   canBeBuiltOver: "既存施設上への建造を可能にするか"
+  upgradeOnly: ""
   buildOverFacilities: "重複建造された施設"
 #
   BFRCT_DEFAULT: "デフォルト設定"

@@ -405,6 +405,7 @@ it:
   leavesBehindOnSell: "Lascia alla vendita"
   removalTime: "Tempo rimozione"
   canBeBuiltOver: "Puoi costruire sopra?"
+  upgradeOnly: ""
   buildOverFacilities: "Costruzione su edifici"
 #
   BFRCT_DEFAULT: "vanilla default"

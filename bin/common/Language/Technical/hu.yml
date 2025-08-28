@@ -405,6 +405,7 @@ hu:
   leavesBehindOnSell: "Eladáskor marad utána"
   removalTime: "Eltávolítás ideje"
   canBeBuiltOver: "Lehet ráépíteni?"
+  upgradeOnly: ""
   buildOverFacilities: "Ráépülő funkciók"
 #
   BFRCT_DEFAULT: "vanilla alapérték"
