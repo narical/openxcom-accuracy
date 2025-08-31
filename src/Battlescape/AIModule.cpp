@@ -3834,6 +3834,7 @@ void AIModule::brutalThink(BattleAction* action)
 			}
 			viewDistance = std::min(viewDistance, (float)(_save->getMod()->getMaxViewDistance() / (1.0 + maxSmoke / 3.0)));
 			float highestDamage = 0;
+			bool specialDoorCase = false;
 			for (BattleUnit* unit : *(_save->getUnits()))
 			{
 				Position unitPosition = unit->getPosition();
@@ -3938,10 +3939,9 @@ void AIModule::brutalThink(BattleAction* action)
 			bool shouldHaveBeenAbleToAttack = pos == myPos && _tuWhenChecking == _unit->getTimeUnits();
 
 			bool realLineOfFire = lineOfFire;
-			bool specialDoorCase = false;
 			bool enoughTUToPeak = _unit->getTimeUnits() - pu->getTUCost(false).time > myMaxTU * tuToSaveForHide && _unit->getEnergy() - pu->getTUCost(false).energy > _unit->getBaseStats()->stamina * tuToSaveForHide;
 			//! Special case: Our target is at a door and the tile we want to go to is too and they have a distance of 1. That means the target is blocking door from other side. So we go there and open it!
-			if (!lineOfFire && enoughTUToPeak)
+			if (!lineOfFire)
 			{
 				for (int x = 0; x < _unit->getArmor()->getSize(); ++x)
 				{
@@ -3960,6 +3960,7 @@ void AIModule::brutalThink(BattleAction* action)
 								realLineOfFire = false;
 								attackTU += 8;
 								specialDoorCase = true;
+								remainingTimeUnits -= 8;
 							}
 						}
 					}
@@ -4002,15 +4003,17 @@ void AIModule::brutalThink(BattleAction* action)
 					}
 				}
 			}
-			if (!_blaster && lineOfFire && haveTUToAttack && !shouldHaveBeenAbleToAttack && highestDamage > 0 && !enemyHasHighGround)
+			if (!_blaster && lineOfFire && haveTUToAttack && !shouldHaveBeenAbleToAttack && (highestDamage > 0 || specialDoorCase) && !enemyHasHighGround)
 			{
-				if (maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || IAmPureMelee)
+				if ((maxExtenderRangeWith(_unit, _unit->getTimeUnits() - pu->getTUCost(false).time) >= closestEnemyDistValid || specialDoorCase) || IAmPureMelee)
 				{
 					if (crossEnemyVision > 1 || (crossEnemyVision > 0 && contact))
 						highestDamage = std::min(highestDamage, 1.0f);
+					if (specialDoorCase)
+						highestDamage = 1;
 					attackScore = remainingTimeUnits * highestDamage;
 					me.attackPotential = highestDamage;
-					if (Options::battleRealisticAccuracy)
+					if (Options::battleRealisticAccuracy && !specialDoorCase)
 					{
 						attackScore *= exposureMod;
 						me.attackPotential *= exposureMod;
@@ -4380,7 +4383,7 @@ void AIModule::brutalThink(BattleAction* action)
 	}
 	if (moveTU <= _unit->getTimeUnits() - attackTU)
 		haveTUToAttack = true;
-	if (bestAttackScore > 0 && !haveTUToAttack && bestGreatCoverScore + bestGoodCoverScore + bestOkayCoverScore > 0)
+	if (bestAttackScore > 0 && !haveTUToAttack && bestGreatCoverScore > 0)
 	{
 		shouldHaveLofAfterMove = iHaveLof;
 		if (_traceAI)
