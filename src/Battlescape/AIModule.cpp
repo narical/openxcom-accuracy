@@ -4643,6 +4643,14 @@ void AIModule::brutalThink(BattleAction* action)
 		{
 			Log(LOG_INFO) << "Should face towards " << targetPosition << " which is " << action->finalFacing << " should have Lof after move: " << shouldHaveLofAfterMove << " winnerWasSpecialDoorCase: " << winnerWasSpecialDoorCase;
 		}
+		if (winnerWasSpecialDoorCase)
+		{
+			if (action->finalFacing == _unit->getDirection())
+				action->type = BA_NONE;
+			else
+				action->type = BA_TURN;
+			action->target = targetPosition;
+		}
 	}
 	else
 	{
