@@ -3966,6 +3966,8 @@ bool TileEngine::detonate(Tile* tile, int explosive)
 				fireProof = tiles[i]->getFlammability(currentpart);
 				fuel = tiles[i]->getFuel(currentpart) + 1;
 			}
+			if (tiles[i]->getMapData(currentpart)->getArmor() == 0)
+				break;
 		}
 		// set tile on fire
 		if (fireProof < remainingPower)
