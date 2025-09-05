@@ -466,7 +466,8 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			distanceVoxels = Position::distance( tempOrigin, *target );
 		}
 
-		distanceTiles = distanceVoxels / Position::TileXY + 1; // Should never be 0
+		distanceTiles = distanceVoxels / Position::TileXY;
+		if (distanceTiles == 0) distanceTiles = 1; // Should never be 0
 
 		// Apply distance limits
 		if (distanceTiles > upperLimit)

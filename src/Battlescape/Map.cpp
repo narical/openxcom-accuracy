@@ -1538,7 +1538,8 @@ void Map::drawTerrain(Surface *surface)
 										distanceVoxels = Position::distance( origin, targetPos );
 									}
 
-									distanceTiles = distanceVoxels / Position::TileXY + 1; // Should never be 0
+									distanceTiles = distanceVoxels / Position::TileXY;
+									if (distanceTiles == 0) distanceTiles = 1; // Should never be 0
 
 									// Apply distance limits
 									if (distanceTiles > upperLimit)
