@@ -479,8 +479,6 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			real_accuracy -= (lowerLimit - distanceTiles) * weapon->getDropoff();
 		}
 
-		real_accuracy = Projectile::getHitChance(distanceTiles, real_accuracy, _save->getMod()->getHitChancesTable( targetSize ));
-
 		int snipingBonus = ( real_accuracy > 100 ? (real_accuracy - 100)/2 : 0 );
 		bool isSniperShot = ( snipingBonus > 0 );
 
@@ -494,6 +492,8 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			{
 				real_accuracy = (int)ceil(real_accuracy * coverEfficiencyCoeff * exposure + real_accuracy * (1 - coverEfficiencyCoeff));
 			}
+
+			real_accuracy = Projectile::getHitChance(distanceTiles, real_accuracy, _save->getMod()->getHitChancesTable( targetSize ));
 
 			if (Options::battleRealisticImprovedAimed && isSniperShot)
 			{

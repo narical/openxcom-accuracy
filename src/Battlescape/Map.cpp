@@ -1571,6 +1571,8 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
 									}
 
+									accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
+
 									if (Options::battleRealisticImprovedAimed && isSniperShot)
 									{
 										accuracy += snipingBonus;
@@ -1663,8 +1665,7 @@ void Map::drawTerrain(Surface *surface)
 								}
 								else
 								{
-									if ((Options::useChanceToHit && !Options::battleRealisticAccuracy) ||
-										 Options::battleRealisticAccuracy)
+									if (Options::useChanceToHit && !Options::battleRealisticAccuracy)
 									{
 										accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
 									}
