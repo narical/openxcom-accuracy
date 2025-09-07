@@ -466,7 +466,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			distanceVoxels = Position::distance( tempOrigin, *target );
 		}
 
-		distanceTiles = distanceVoxels / Position::TileXY;
+		distanceTiles = round((double)distanceVoxels / Position::TileXY);
 		if (distanceTiles == 0) distanceTiles = 1; // Should never be 0
 
 		// Apply distance limits
@@ -482,7 +482,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 		real_accuracy = Projectile::getHitChance(distanceTiles, real_accuracy, _save->getMod()->getHitChancesTable( targetSize ));
 
 		int snipingBonus = ( real_accuracy > 100 ? (real_accuracy - 100)/2 : 0 );
-		bool isSniperShot = ( snipingBonus > 0 ? true : false );
+		bool isSniperShot = ( snipingBonus > 0 );
 
 		// Both for units and empty tiles
 		if (targetTile)
