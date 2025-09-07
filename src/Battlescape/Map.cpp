@@ -1443,6 +1443,13 @@ void Map::drawTerrain(Surface *surface)
 									}
 								}
 
+                                // Apply No-LOS penalty if presented
+								if (noLOSAccuracyPenalty != -1 && !hasLOS)
+								{
+									accuracy = (int)ceil((double)accuracy * (double)noLOSAccuracyPenalty / 100.0);
+									_txtAccuracy->setColor( TXT_YELLOW );
+								}
+
 								if (Options::battleUFOExtenderAccuracy)
 								{
 									if (action->type == BA_AUTOSHOT)
@@ -1553,13 +1560,6 @@ void Map::drawTerrain(Surface *surface)
 									else // no adjustment made? set it to green.
 									{
 										_txtAccuracy->setColor( TXT_GREEN );
-									}
-
-									// Apply No-LOS penalty if presented
-									if (noLOSAccuracyPenalty != -1 && !hasLOS)
-									{
-										accuracy = accuracy * noLOSAccuracyPenalty / 100;
-										_txtAccuracy->setColor( TXT_YELLOW );
 									}
 
 									snipingBonus = ( accuracy > 100 ? (accuracy - 100)/2 : 0 );
