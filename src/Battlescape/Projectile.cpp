@@ -504,7 +504,7 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 		int accuracy_check = RNG::generate(1, 100);
 		bool hit_successful = ( accuracy_check <= real_accuracy );
 
-		if (Options::battleRealisticDisplayRolls)
+		if (Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER)
 		{
 			std::ostringstream ss;
 
