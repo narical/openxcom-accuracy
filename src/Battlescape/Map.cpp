@@ -1407,7 +1407,7 @@ void Map::drawTerrain(Surface *surface)
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
 								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
-								int distanceTiles = (int)std::ceil(sqrt(float(distanceSq)));
+								int distance = (int)std::ceil(sqrt(float(distanceSq)));
 								int distanceVoxels = 0;
 								int maxRange = weapon->getMaxRange();
 								int upperLimit = weapon->getAimRange();
@@ -1561,17 +1561,17 @@ void Map::drawTerrain(Surface *surface)
 										distanceVoxels = Position::distance( origin, targetPos );
 									}
 
-									distanceTiles = round((double)distanceVoxels / Position::TileXY);
-									if (distanceTiles == 0) distanceTiles = 1; // Should never be 0
+									distance = round((double)distanceVoxels / Position::TileXY);
+									if (distance == 0) distance = 1; // Should never be 0
 
 									// Apply distance limits
-									if (distanceTiles > upperLimit)
+									if (distance > upperLimit)
 									{
-										accuracy -= (distanceTiles - upperLimit) * weapon->getDropoff();
+										accuracy -= (distance - upperLimit) * weapon->getDropoff();
 									}
-									else if (distanceTiles < lowerLimit)
+									else if (distance < lowerLimit)
 									{
-										accuracy -= (lowerLimit - distanceTiles) * weapon->getDropoff();
+										accuracy -= (lowerLimit - distance) * weapon->getDropoff();
 									}
 									else // no adjustment made? set it to green.
 									{
@@ -1587,7 +1587,7 @@ void Map::drawTerrain(Surface *surface)
 										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
 									}
 
-									accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
+									accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
 
 									if (Options::battleRealisticImprovedAimed && isSniperShot)
 									{
@@ -1619,15 +1619,15 @@ void Map::drawTerrain(Surface *surface)
 								else if (_cursorType == CT_AIM && Options::battleUFOExtenderAccuracy) // UFO Extender accuracy
 								{
 									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
-									distanceTiles = (int)std::ceil(sqrt(float(distanceSq)));
+									distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-									if (distanceTiles > upperLimit)
+									if (distance > upperLimit)
 									{
-										accuracy -= (distanceTiles - upperLimit) * weapon->getDropoff();
+										accuracy -= (distance - upperLimit) * weapon->getDropoff();
 									}
-									else if (distanceTiles < lowerLimit)
+									else if (distance < lowerLimit)
 									{
-										accuracy -= (lowerLimit - distanceTiles) * weapon->getDropoff();
+										accuracy -= (lowerLimit - distance) * weapon->getDropoff();
 									}
 									else
 									{
@@ -1683,7 +1683,7 @@ void Map::drawTerrain(Surface *surface)
 								{
 									if (Options::useChanceToHit && !Options::battleRealisticAccuracy)
 									{
-										accuracy = Projectile::getHitChance(distanceTiles, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
+										accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
 									}
 
 									ss << accuracy;
@@ -1770,12 +1770,12 @@ void Map::drawTerrain(Surface *surface)
 											if (weapon->getIgnoreAmmoPower())
 											{
 												totalDamage += weapon->getPowerBonus(attack);
-												totalDamage -= weapon->getPowerRangeReduction(distanceTiles * 16);
+												totalDamage -= weapon->getPowerRangeReduction(distance * 16);
 											}
 											else
 											{
 												totalDamage += rule->getPowerBonus(attack);
-												totalDamage -= rule->getPowerRangeReduction(distanceTiles * 16);
+												totalDamage -= rule->getPowerRangeReduction(distance * 16);
 											}
 											if (totalDamage < 0) totalDamage = 0;
 											if (_cursorType != CT_WAYPOINT)
