@@ -105,11 +105,24 @@ namespace OpenXcom
  * @param visibleMapHeight Current visible map height.
  */
 Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) : InteractiveSurface(width, height, x, y),
-	_game(game), _arrow(0), _anyIndicator(false), _isAltPressed(false),
+	_game(game), _isTFTD(false), _arrow(0), _anyIndicator(false), _isAltPressed(false), _isCtrlPressed(false),
 	_selectorX(0), _selectorY(0), _mouseX(0), _mouseY(0), _cursorType(CT_NORMAL), _cursorSize(1), _animFrame(0),
 	_projectile(0), _followProjectile(true), _projectileInFOV(false), _explosionInFOV(false), _launch(false), _visibleMapHeight(visibleMapHeight),
 	_unitDying(false), _smoothingEngaged(false), _flashScreen(false), _bgColor(15), _projectileSet(0), _showObstacles(false), _showInfoOnCursor(false)
 {
+	// TODO: extract to a better place later
+	for (const auto& pair : Options::mods)
+	{
+		if (pair.second)
+		{
+			if (pair.first == "xcom2")
+			{
+				_isTFTD = true;
+				break;
+			}
+		}
+	}
+
 	_iconHeight = _game->getMod()->getInterface("battlescape")->getElement("icons")->h;
 	_iconWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
 	_messageColor = _game->getMod()->getInterface("battlescape")->getElement("messageWindows")->color;
@@ -157,7 +170,7 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_obstacleTimer->stop();
 	_obstacleTimer->onTimer((SurfaceHandler)&Map::disableObstacles);
 
-	_showInfoOnCursor = ((Options::battleUFOExtenderAccuracy || Options::battleRealisticAccuracy) && Options::oxceShowAccuracyOnCrosshair == 1) || Options::oxceShowAccuracyOnCrosshair == 2;
+	_showInfoOnCursor = (Options::oxceShowAccuracyOnCrosshair == 1 && Options::battleUFOExtenderAccuracy) || Options::oxceShowAccuracyOnCrosshair == 2;
 	_txtAccuracy = new Text(44, 18, 0, 0);
 	_txtAccuracy->setSmall();
 	_txtAccuracy->setPalette(_game->getScreen()->getPalette());
@@ -194,13 +207,17 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 		_debugVisionMode = _save->getToggleBrightness();
 	}
 
+	_save->setToggleNightVisionTemp(false);
+	_save->setToggleNightVisionColorTemp(0);
+	_save->setToggleBrightnessTemp(_debugVisionMode);
+
 	_fadeShade = 16;
 	_nvColor = 0;
 	_fadeTimer = new Timer(FADE_INTERVAL);
 	_fadeTimer->onTimer((SurfaceHandler)&Map::fadeShade);
 	_fadeTimer->start();
 
-	auto enviro = _save->getEnviroEffects();
+	auto* enviro = _save->getEnviroEffects();
 	if (enviro)
 	{
 		_bgColor = enviro->getMapBackgroundColor();
@@ -448,8 +465,9 @@ static const int TXT_BROWN	= Palette::blockOffset(Pathfinding::brown - 1) - 1;
 static const int TXT_WHITE	= Palette::blockOffset(Pathfinding::white - 1) - 1;
 
 static const int ArrowBobOffsets[8] = {0,1,2,1,0,1,2,1};
-static const int ArrowColorsUFO[4] = {6, 3, 14, 4};   // white,    red, blue, green
-static const int ArrowColorsTFTD[4] = {4, 11, 16, 6}; // white, orange, blue, green
+
+static const int ArrowColorsUFO[4]  = { 6,  3, 14, 4 }; // white,    red, blue, green
+static const int ArrowColorsTFTD[4] = { 4, 11, 16, 6 }; // white, orange, blue, green
 
 int getArrowBobForFrame(int frame)
 {
@@ -499,7 +517,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	}
 	else if (movingUnit && unitTile == currTile)
 	{
-		auto upperTile = _save->getAboveTile(unitTile);
+		auto* upperTile = _save->getAboveTile(unitTile);
 		if (upperTile && upperTile->hasNoFloor(_save))
 		{
 			bu = upperTile->getUnit();
@@ -693,15 +711,15 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	};
 
 	// draw unit
-	auto shade = 0;
-	auto offsets = calculateWalkingOffset(bu);
+	int shade = 0;
+	UnitWalkingOffset offsets = calculateWalkingOffset(bu);
 	if (moving)
 	{
-		const auto start = bu->getPosition();
-		const auto end = bu->getDestination();
-		const auto minLevel = std::min(start.z, end.z);
-		const auto startShade = getMixedTileShade(_save->getTile(start), start.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
-		const auto endShade = getMixedTileShade(_save->getTile(end), end.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
+		const Position start = bu->getPosition();
+		const Position end = bu->getDestination();
+		const auto minLevel = std::min(start.z, end.z); // Sint16
+		const int startShade = getMixedTileShade(_save->getTile(start), start.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
+		const int endShade = getMixedTileShade(_save->getTile(end), end.z == minLevel ? offsets.TerrainLevelOffset : 0, false);
 		shade = Interpolate(startShade, endShade, offsets.NormalizedMovePhase, 16);
 	}
 	else
@@ -890,7 +908,7 @@ void Map::drawTerrain(Surface *surface)
 	}
 
 	surface->lock();
-	const auto cameraPos = _camera->getMapOffset();
+	const Position cameraPos = _camera->getMapOffset();
 	for (int itZ = beginZ; itZ <= endZ; itZ++)
 	{
 		bool topLayer = itZ == endZ;
@@ -907,7 +925,7 @@ void Map::drawTerrain(Surface *surface)
 				if (screenPosition.x > -_spriteWidth && screenPosition.x < surface->getWidth() + _spriteWidth &&
 					screenPosition.y > -_spriteHeight && screenPosition.y < surface->getHeight() + _spriteHeight )
 				{
-					auto isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
+					bool isUnitMovingNearby = movingUnit && positionInRangeXY(movingUnitPosition, mapPosition, 2);
 
 
 					int oxceFOWshade = 0; // needs to be zero if FOW is off
@@ -975,8 +993,6 @@ void Map::drawTerrain(Surface *surface)
 						}
 					} 
 					tileColor = tile->getMarkerColor();
-								
-
 
 					// Draw floor
 					tmpSurface = tile->getSprite(O_FLOOR);
@@ -988,7 +1004,7 @@ void Map::drawTerrain(Surface *surface)
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_FLOOR), tileShade, false, _nvColor);
 					}
 
-					auto unit = tile->getUnit();
+					auto* unit = tile->getUnit();
 
 					// Draw cursor back
 					if (_cursorType != CT_NONE && _selectorX > itX - _cursorSize && _selectorY > itY - _cursorSize && _selectorX < itX+1 && _selectorY < itY+1 && !_save->getBattleState()->getMouseOverIcons())
@@ -1042,7 +1058,7 @@ void Map::drawTerrain(Surface *surface)
 						tmpSurface = tile->getSprite(O_WESTWALL);
 						if (tmpSurface)
 						{
-							auto wallShade = getWallShade(O_WESTWALL, tile);
+							int wallShade = getWallShade(O_WESTWALL, tile);
 							if (tile->getObstacle(O_WESTWALL))
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y - tile->getYOffset(O_WESTWALL), obstacleShade, false, _nvColor);
 							else if (_thisTileVisible)
@@ -1731,12 +1747,12 @@ void Map::drawTerrain(Surface *surface)
 									// step 3: calculate and draw
 									if (rule && _cacheActiveWeaponUfopediaArticleUnlocked == 1)
 									{
-										float dis = Position::distance(action->actor->getPosition().toVoxel(), Position(itX, itY, itZ).toVoxel());
 										if (rule->getBattleType() == BT_PSIAMP)
 										{
 											float attackStrength = BattleUnit::getPsiAccuracy(attack);
 											float defenseStrength = 30.0f; // indicator ignores: +victim->getArmor()->getPsiDefence(victim);
 
+											float dis = Position::distance(action->actor->getPosition().toVoxel(), Position(itX, itY, itZ).toVoxel());
 											int min = attackStrength - defenseStrength - rule->getPsiAccuracyRangeReduction(dis);
 											int max = min + 55;
 											if (max <= 0)
@@ -1754,12 +1770,12 @@ void Map::drawTerrain(Surface *surface)
 											if (weapon->getIgnoreAmmoPower())
 											{
 												totalDamage += weapon->getPowerBonus(attack);
-												totalDamage -= weapon->getPowerRangeReduction(dis * 16);
+												totalDamage -= weapon->getPowerRangeReduction(distanceTiles * 16);
 											}
 											else
 											{
 												totalDamage += rule->getPowerBonus(attack);
-												totalDamage -= rule->getPowerRangeReduction(dis * 16);
+												totalDamage -= rule->getPowerRangeReduction(distanceTiles * 16);
 											}
 											if (totalDamage < 0) totalDamage = 0;
 											if (_cursorType != CT_WAYPOINT)
@@ -1945,7 +1961,7 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 
-	auto selectedUnit = _save->getSelectedUnit();
+	auto* selectedUnit = _save->getSelectedUnit();
 	if (selectedUnit && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode()) && selectedUnit->getPosition().z <= _camera->getViewLevel())
 	{
 		_camera->convertMapToScreen(selectedUnit->getPosition(), &screenPosition);
@@ -1969,7 +1985,7 @@ void Map::drawTerrain(Surface *surface)
 	// Draw motion scanner arrows
 	if (_isAltPressed && _save->getSide() == FACTION_PLAYER && this->getCursorType() != CT_NONE)
 	{
-		for (auto myUnit : *_save->getUnits())
+		for (auto* myUnit : *_save->getUnits())
 		{
 			Position temp;
 			if (myUnit->getFaction() != FACTION_PLAYER && !myUnit->isOut())
@@ -2175,6 +2191,8 @@ void Map::persistToggles()
 		// persisted per battle
 		_save->setToggleBrightness(_debugVisionMode);
 	}
+
+	_save->setToggleBrightnessTemp(_debugVisionMode);
 }
 
 /**
@@ -2460,9 +2478,9 @@ UnitWalkingOffset Map::calculateWalkingOffset(const BattleUnit *unit) const
 	// If we are walking in between tiles, interpolate it's terrain level.
 	if (unit->getStatus() == STATUS_WALKING || unit->getStatus() == STATUS_FLYING)
 	{
-		const auto posCurr = unit->getPosition();
-		const auto posDest = unit->getDestination();
-		const auto posLast = unit->getLastPosition();
+		const Position posCurr = unit->getPosition();
+		const Position posDest = unit->getDestination();
+		const Position posLast = unit->getLastPosition();
 		if (phase < midphase)
 		{
 			int fromLevel = getTerrainLevel(posCurr, size);
@@ -2620,7 +2638,7 @@ void Map::addVaporParticle(Position pos, Particle particle)
  */
 Collections::Range<const Particle*> Map::getVaporParticle(const Tile* tile, int topLayer) const
 {
-	auto pos = tile->getPosition();
+	Position pos = tile->getPosition();
 	auto& v = _vaporParticles[_camera->getMapSizeX() * pos.y + pos.x];
 	int startZ = pos.z * Particle::LayerAccuracy + (topLayer & 1);
 	int endZ = startZ + Particle::LayerAccuracy / 2;
@@ -2672,6 +2690,8 @@ void Map::fadeShade()
 	if ((_nightVisionOn && !hold) || (!_nightVisionOn && hold))
 	{
 		_nvColor = Options::oxceNightVisionColor;
+		_save->setToggleNightVisionTemp(true);
+		_save->setToggleNightVisionColorTemp(_nvColor);
 		if (_fadeShade > NIGHT_VISION_SHADE) // 0 = max brightness
 		{
 			--_fadeShade;
@@ -2690,6 +2710,8 @@ void Map::fadeShade()
 			{
 				// and at the end turn off night vision
 				_nvColor = 0;
+				_save->setToggleNightVisionTemp(false);
+				_save->setToggleNightVisionColorTemp(0);
 			}
 		}
 	}
