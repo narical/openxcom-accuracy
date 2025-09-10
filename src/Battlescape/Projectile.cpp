@@ -458,12 +458,12 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 				}
 			}
 			_action.relativeOrigin = selectedOriginType;
-			distanceVoxels = targetUnit->distance3dToPositionPrecise( selectedOrigin );
+			distanceVoxels = targetUnit->distance3dToPositionPrecise( selectedOrigin ) - shooterUnit->getRadiusVoxels();
 		}
 		else // Get distance to target empty tile
 		{
 			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-			distanceVoxels = Position::distance( tempOrigin, *target );
+			distanceVoxels = Position::distance( tempOrigin, *target ) - shooterUnit->getRadiusVoxels();
 		}
 
 		distanceTiles = round((double)distanceVoxels / Position::TileXY);

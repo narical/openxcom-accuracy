@@ -1559,7 +1559,7 @@ void Map::drawTerrain(Surface *surface)
 													}
 												}
 												action->relativeOrigin = selectedOriginType;
-												distanceVoxels = unit->distance3dToPositionPrecise(selectedOrigin);
+												distanceVoxels = unit->distance3dToPositionPrecise(selectedOrigin) - shooterUnit->getRadiusVoxels();
 											}
 											else if (shooterUnit->getTile()) // Targeting an empty tile
 											{
@@ -1570,7 +1570,7 @@ void Map::drawTerrain(Surface *surface)
 												targetTile = _save->getTile(action->target);
 												bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER);
 												targetPos = _save->getTileEngine()->adjustTargetVoxelFromTileType(&origin, targetTile, shooterUnit, isPlayer);
-												distanceVoxels = Position::distance(origin, targetPos);
+												distanceVoxels = Position::distance(origin, targetPos) - shooterUnit->getRadiusVoxels();
 											}
 
 											accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
