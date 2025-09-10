@@ -1390,304 +1390,299 @@ void Map::drawTerrain(Surface *surface)
 							tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(frameNumber);
 							Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
 
-							// UFO extender accuracy: display adjusted accuracy value on crosshair in real-time.
+							int targetSize = 1;
+							if (unit && unit->getVisible()) targetSize = unit->getArmor()->getSize();
+
+							// Display adjusted accuracy value on crosshair in real-time.
 							if (_cursorType >= CT_AIM && _showInfoOnCursor && (_cursorType != CT_THROW || !Options::oxceDisableInfoOnThrowCursor))
 							{
-								bool targetSelf = false;
-								int accuracy = 0;
-								int maxVoxels = 0;
-								int snipingBonus = 0;
-								double maxExposure = 0.0;
-								const Mod::AccuracyModConfig *AccuracyMod = _game->getMod()->getAccuracyModConfig();
-								bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
-								double coverEffciencyCoeff = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
 								BattleAction *action = _save->getBattleGame()->getCurrentAction();
 								const RuleItem *weapon = action->weapon->getRules();
-								bool isArcingShot = action->weapon->getArcingShot(action->type);
 								std::ostringstream ss;
 								auto attack = BattleActionAttack::GetBeforeShoot(*action);
-								int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
-								int distance = (int)std::ceil(sqrt(float(distanceSq)));
-								int distanceVoxels = 0;
-								int maxRange = weapon->getMaxRange();
-								int upperLimit = weapon->getAimRange();
-								int lowerLimit = weapon->getMinRange();
+								int distance = 0; // Will be calculated differently for each mode
 
-								int targetSize = 1;
-								if (unit && unit->getVisible()) targetSize = unit->getArmor()->getSize();
-
-								// Include LOS penalty for tiles in the unit's current view range
-								// Don't recalculate LOS for outside of the current FOV
-								bool hasLOS = false;
-								int noLOSAccuracyPenalty = action->weapon->getRules()->getNoLOSAccuracyPenalty(_game->getMod());
-
-								const bool isCtrlPressed = _game->isCtrlPressed(true);
-								const bool isKneeled = action->actor->isKneeled();
-
-								if (Position(itX, itY, itZ) == _cacheCursorPosition
-									&& isCtrlPressed == _cacheIsCtrlPressed
-									&& isKneeled == _cacheIsKneeled
-									&& _cacheAccuracy != -1
-									&& _cacheAccuracyTextColor != -1)
+								if (!Options::battleRealisticAccuracy) // Classic Accuracy
 								{
-									// use cached result
-									accuracy = _cacheAccuracy;
-									_txtAccuracy->setColor( _cacheAccuracyTextColor );
-									targetSelf = _cacheTargetSelf;
-									goto accuracy_calculated;
-								}
+									int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
+									distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-								if (noLOSAccuracyPenalty != -1)
-								{
-									if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
+									if (_cursorType == CT_AIM || _cursorType == CT_THROW)
 									{
-										// use cached result
-										hasLOS = (_cacheHasLOS == 1);
-									}
-									else
-									{
-										// recalculate
-										if (unit && (unit->getVisible() || _save->getDebugMode()))
+										int accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
+
+										int upperLimit, lowerLimit;
+										int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), action->type);
+
+										// at this point, let's assume the shot is adjusted and set the text amber.
+										_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::yellow - 1) - 1);
+
+										if (distance > upperLimit)
 										{
-											hasLOS = _save->getTileEngine()->visible(action->actor, tile);
+											accuracy -= (distance - upperLimit) * dropoff;
+										}
+										else if (distance < lowerLimit)
+										{
+											accuracy -= (lowerLimit - distance) * dropoff;
 										}
 										else
 										{
-											hasLOS = _save->getTileEngine()->isTileInLOS(action, tile, false);
-										}
-										_cacheHasLOS = hasLOS ? 1 : 0;
-									}
-								}
-
-                                // Apply No-LOS penalty if presented
-								if (noLOSAccuracyPenalty != -1 && !hasLOS)
-								{
-									accuracy = (int)ceil((double)accuracy * (double)noLOSAccuracyPenalty / 100.0);
-									_txtAccuracy->setColor( TXT_YELLOW );
-								}
-
-								if (Options::battleUFOExtenderAccuracy)
-								{
-									if (action->type == BA_AUTOSHOT)
-									{
-										upperLimit = weapon->getAutoRange();
-									}
-									else if (action->type == BA_SNAPSHOT)
-									{
-										upperLimit = weapon->getSnapRange();
-
-									}
-								}
-
-								if (upperLimit > maxRange) upperLimit = maxRange;
-
-								// at this point, let's assume the shot is adjusted and set the text amber.
-								_txtAccuracy->setColor( TXT_YELLOW );
-								accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
-
-								if (_cursorType == CT_AIM && Options::battleRealisticAccuracy && !isArcingShot) // Realistic accuracy
-								{
-									BattleUnit* shooterUnit = action->actor;
-
-									if (unit && unit == shooterUnit) // 100% to hit the ground under the shooter
-									{
-										// Don't display any number
-										targetSelf = true;
-										goto accuracy_calculated;
-									}
-
-									Tile *targetTile = nullptr;
-									std::vector<Position> exposedVoxels;
-
-									// Determine distance in voxels
-									if (unit && unit->getVisible()) // If we are targeting unit
-									{
-										targetSize = unit->getArmor()->getSize();
-										targetTile = unit->getTile();
-
-										exposedVoxels.reserve(( 1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2 );
-
-										// This is needed inside getOriginVoxel() to get direction
-										action->target = unit->getPosition();
-
-										// This is TEMPORARY SOLUTION
-										// when selectedOriginType is found - save it to action->relativeOrigin
-										// which is then used by canTargetUnit() in ProjectileFlyBState::init()
-
-										Position selectedOrigin = TileEngine::invalid;
-										BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
-										std::vector<BattleActionOrigin> originTypes;
-
-										originTypes.push_back( BattleActionOrigin::CENTRE );
-
-										if (Options::oxceEnableOffCentreShooting)
-										{
-											originTypes.push_back( BattleActionOrigin::LEFT );
-											originTypes.push_back( BattleActionOrigin::RIGHT );
+											// no adjustment made? set it to green.
+											_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::green - 1) - 1);
 										}
 
-										// Find shooting point with best target's exposure
-										for (const auto &relPos : originTypes)
+										// Include LOS penalty for tiles in the unit's current view range
+										// Don't recalculate LOS for outside of the current FOV
+										int noLOSAccuracyPenalty = weapon->getNoLOSAccuracyPenalty(_game->getMod());
+										if (noLOSAccuracyPenalty != -1)
 										{
-											exposedVoxels.clear();
-											action->relativeOrigin = relPos;
-											Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
-											double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, shooterUnit, false, &exposedVoxels, false);
-
-											// Save default values for center origin
-											// Overwrite if better results are found for shifted origins
-											if (relPos == BattleActionOrigin::CENTRE || (int)exposedVoxels.size() > maxVoxels)
+											bool hasLOS = false;
+											if (Position(itX, itY, itZ) == _cacheCursorPosition && _isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
 											{
-												selectedOrigin = origin;
-												selectedOriginType = relPos;
-												maxVoxels = exposedVoxels.size();
-												maxExposure = exposure; // Save for later use
+												// use cached result
+												hasLOS = (_cacheHasLOS == 1);
+											}
+											else
+											{
+												// recalculate
+												if (unit && (unit->getVisible() || _save->getDebugMode()))
+												{
+													hasLOS = _save->getTileEngine()->visible(action->actor, tile);
+												}
+												else
+												{
+													hasLOS = _save->getTileEngine()->isTileInLOS(action, tile, true);
+												}
+												// remember
+												_cacheIsCtrlPressed = _isCtrlPressed;
+												_cacheCursorPosition = Position(itX, itY, itZ);
+												_cacheHasLOS = hasLOS ? 1 : 0;
+											}
+
+											if (!hasLOS)
+											{
+												accuracy = accuracy * noLOSAccuracyPenalty / 100;
+												_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::yellow - 1) - 1);
 											}
 										}
-										action->relativeOrigin = selectedOriginType; // Save the found origin shift
-										distanceVoxels = unit->distance3dToPositionPrecise( selectedOrigin );
-									}
-									else if (shooterUnit->getTile()) // If we are targeting empty tile
-									{
-										action->relativeOrigin = BattleActionOrigin::CENTRE;
-										action->target = Position{itX, itY, itZ}; // Needed inside getOriginVoxel() to get direction
-										Position targetPos = action->target.toVoxel();
-										Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
-										targetTile = _save->getTile(action->target);
-										bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER ? true : false);
 
-										targetPos = _save->getTileEngine()->adjustTargetVoxelFromTileType(&origin, targetTile, shooterUnit, isPlayer);
+										bool outOfRange = (action->type == BA_THROW)
+															  ? weapon->isOutOfThrowRange(distanceSq, _save->getDepth())
+															  : weapon->isOutOfRange(distanceSq);
 
-										distanceVoxels = Position::distance( origin, targetPos );
-									}
+										// zero accuracy or out of range: set it red.
+										if (accuracy <= 0 || outOfRange)
+										{
+											accuracy = 0;
+											_txtAccuracy->setColor(Palette::blockOffset(Pathfinding::red - 1) - 1);
+										}
 
-									distance = round((double)distanceVoxels / Position::TileXY);
-									if (distance == 0) distance = 1; // Should never be 0
+										// replace accuracy number by chance-to-hit
+										if (Options::useChanceToHit)
+										{
+											accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable(targetSize));
+										}
 
-									// Apply distance limits
-									if (distance > upperLimit)
-									{
-										accuracy -= (distance - upperLimit) * weapon->getDropoff();
-									}
-									else if (distance < lowerLimit)
-									{
-										accuracy -= (lowerLimit - distance) * weapon->getDropoff();
-									}
-									else // no adjustment made? set it to green.
-									{
-										_txtAccuracy->setColor( TXT_GREEN );
-									}
-
-									snipingBonus = ( accuracy > 100 ? (accuracy - 100)/2 : 0 );
-									bool isSniperShot = ( snipingBonus > 0 );
-
-									// Apply the exposure
-									if (unit && maxVoxels > 0 && coverHasEffect)
-									{
-										accuracy = (int)ceil(accuracy * coverEffciencyCoeff * maxExposure + accuracy * (1 - coverEffciencyCoeff));
-									}
-
-									accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
-
-									if (Options::battleRealisticImprovedAimed && isSniperShot)
-									{
-										accuracy += snipingBonus;
-									}
-
-									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
-									bool outOfRange = weapon->isOutOfRange(distanceSq);
-
-									if (isSniperShot)
-									{
-										_txtAccuracy->setColor( TXT_WHITE );
-									}
-
-									// If target is out of range - show 0% accuracy with brown cursor
-									if (outOfRange)
-									{
-										accuracy = 0;
-										_txtAccuracy->setColor( TXT_BROWN );
-									}
-
-									// If target is a unit without a LoF - show just a brown cursor
-									else if (unit && (unit->getVisible() || _save->getDebugMode()) && maxVoxels == 0)
-									{
-										_txtAccuracy->setColor( TXT_BROWN );
+										ss << accuracy << "%";
 									}
 								}
-
-								else if (_cursorType == CT_AIM && Options::battleUFOExtenderAccuracy) // UFO Extender accuracy
+								else // Realistic Accuracy
 								{
-									distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY,itZ));
-									distance = (int)std::ceil(sqrt(float(distanceSq)));
+									const bool isCtrlPressed = _game->isCtrlPressed(true);
+									const bool isKneeled = action->actor->isKneeled();
+									int accuracy = 0;
+									bool targetSelf = false;
+									double maxExposure = 0.0;
+									int maxVoxels = 0;
 
-									if (distance > upperLimit)
+									if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && isKneeled == _cacheIsKneeled && _cacheAccuracy != -1 && _cacheAccuracyTextColor != -1)
 									{
-										accuracy -= (distance - upperLimit) * weapon->getDropoff();
-									}
-									else if (distance < lowerLimit)
-									{
-										accuracy -= (lowerLimit - distance) * weapon->getDropoff();
+										accuracy = _cacheAccuracy;
+										_txtAccuracy->setColor(_cacheAccuracyTextColor);
+										targetSelf = _cacheTargetSelf;
 									}
 									else
 									{
-										// no adjustment made? set it to green.
-										_txtAccuracy->setColor( TXT_GREEN );
+										BattleUnit* shooterUnit = action->actor;
+										const Mod::AccuracyModConfig *AccuracyMod = _game->getMod()->getAccuracyModConfig();
+										int distanceVoxels = 0;
+
+										if (unit && unit == shooterUnit)
+										{
+											targetSelf = true;
+										}
+										else
+										{
+											Tile *targetTile = nullptr;
+											std::vector<Position> exposedVoxels;
+
+											if (unit && unit->getVisible()) // Targeting a unit
+											{
+												targetSize = unit->getArmor()->getSize();
+												targetTile = unit->getTile();
+												exposedVoxels.reserve((1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2);
+
+												// This is needed inside getOriginVoxel() to get direction
+												action->target = unit->getPosition();
+
+												// This is TEMPORARY SOLUTION
+												// when selectedOriginType is found - save it to action->relativeOrigin
+												// which is then used by canTargetUnit() in ProjectileFlyBState::init()
+												// Reaction fire in RA is broken due to this!
+
+												Position selectedOrigin = TileEngine::invalid;
+												BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
+												std::vector<BattleActionOrigin> originTypes;
+												originTypes.push_back(BattleActionOrigin::CENTRE);
+												if (Options::oxceEnableOffCentreShooting)
+												{
+													originTypes.push_back(BattleActionOrigin::LEFT);
+													originTypes.push_back(BattleActionOrigin::RIGHT);
+												}
+
+												// Find shooting point with best target's exposure
+												for (const auto &relPos : originTypes)
+												{
+													exposedVoxels.clear();
+													action->relativeOrigin = relPos;
+													Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
+													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, shooterUnit, false, &exposedVoxels, false);
+
+													// Save default values for center origin
+													// Overwrite if better results are found for shifted origins
+													if (relPos == BattleActionOrigin::CENTRE || (int)exposedVoxels.size() > maxVoxels)
+													{
+														selectedOrigin = origin;
+														selectedOriginType = relPos;
+														maxVoxels = exposedVoxels.size();
+														maxExposure = exposure;
+													}
+												}
+												action->relativeOrigin = selectedOriginType;
+												distanceVoxels = unit->distance3dToPositionPrecise(selectedOrigin);
+											}
+											else if (shooterUnit->getTile()) // Targeting an empty tile
+											{
+												action->relativeOrigin = BattleActionOrigin::CENTRE;
+												action->target = Position{itX, itY, itZ};
+												Position targetPos = action->target.toVoxel();
+												Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
+												targetTile = _save->getTile(action->target);
+												bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER);
+												targetPos = _save->getTileEngine()->adjustTargetVoxelFromTileType(&origin, targetTile, shooterUnit, isPlayer);
+												distanceVoxels = Position::distance(origin, targetPos);
+											}
+
+											accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
+											distance = round((double)distanceVoxels / Position::TileXY);
+											if (distance == 0) distance = 1;
+
+											int upperLimit, lowerLimit;
+											int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), action->type);
+
+											_txtAccuracy->setColor(TXT_YELLOW);
+											if (distance > upperLimit)
+											{
+												accuracy -= (distance - upperLimit) * dropoff;
+											}
+											else if (distance < lowerLimit)
+											{
+												accuracy -= (lowerLimit - distance) * dropoff;
+											}
+											else
+											{
+												_txtAccuracy->setColor(TXT_GREEN);
+											}
+
+											int noLOSAccuracyPenalty = weapon->getNoLOSAccuracyPenalty(_game->getMod());
+											if (noLOSAccuracyPenalty != -1)
+											{
+												bool hasLOS = false;
+												if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && _cacheHasLOS != -1)
+												{
+													hasLOS = (_cacheHasLOS == 1);
+												}
+												else
+												{
+													if (unit && (unit->getVisible() || _save->getDebugMode()))
+													{
+														hasLOS = _save->getTileEngine()->visible(action->actor, tile);
+													}
+													else
+													{
+														hasLOS = _save->getTileEngine()->isTileInLOS(action, tile, false);
+													}
+													_cacheHasLOS = hasLOS ? 1 : 0;
+												}
+
+												if (!hasLOS)
+												{
+													accuracy = (int)ceil((double)accuracy * (double)noLOSAccuracyPenalty / 100.0);
+													_txtAccuracy->setColor(TXT_YELLOW);
+												}
+											}
+
+											int snipingBonus = (accuracy > 100 ? (accuracy - 100) / 2 : 0);
+											bool isSniperShot = (snipingBonus > 0);
+
+											bool coverHasEffect = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency];
+											if (unit && maxVoxels > 0 && coverHasEffect)
+											{
+												// Apply the exposure
+												double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency] / 100.0;
+												accuracy = (int)ceil(accuracy * coverEfficiencyCoeff * maxExposure + accuracy * (1.0 - coverEfficiencyCoeff));
+											}
+
+											accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable(targetSize));
+
+											if (Options::battleRealisticImprovedAimed && isSniperShot)
+											{
+												accuracy += snipingBonus;
+											}
+
+											int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
+											bool outOfRange = weapon->isOutOfRange(distanceSq);
+
+											if (isSniperShot)
+											{
+												_txtAccuracy->setColor(TXT_WHITE);
+											}
+
+											if (outOfRange)
+											{
+												accuracy = 0;
+												_txtAccuracy->setColor(TXT_BROWN);
+											}
+											else if (unit && (unit->getVisible() || _save->getDebugMode()) && maxVoxels == 0)
+											{
+												_txtAccuracy->setColor(TXT_BROWN);
+											}
+										}
+
+										_cacheCursorPosition = Position(itX, itY, itZ);
+										_cacheAccuracyTextColor = _txtAccuracy->getColor();
+										_cacheAccuracy = accuracy;
+										_cacheIsKneeled = isKneeled;
+										_cacheTargetSelf = targetSelf;
 									}
 
-									if (noLOSAccuracyPenalty !=-1 && !hasLOS)
+									if (isCtrlPressed && maxVoxels > 0)
 									{
-										accuracy = accuracy * noLOSAccuracyPenalty / 100;
-										_txtAccuracy->setColor( TXT_YELLOW );
+										int currentColor = TXT_RED;
+										if (maxExposure > 0.65) currentColor = TXT_GREEN;
+										else if (maxExposure > 0.35) currentColor = TXT_YELLOW;
+										_txtAccuracy->setColor(currentColor);
+										ss << "> " << std::round(maxExposure * 100) << "% <";
 									}
-
-									bool outOfRange = action->type == BA_THROW
-										? weapon->isOutOfThrowRange(distanceSq, _save->getDepth())
-										: weapon->isOutOfRange(distanceSq);
-
-									// zero accuracy or out of range: set it red.
-									if (accuracy <= 0 || outOfRange)
+									else if (targetSelf)
 									{
-										accuracy = 0;
-										_txtAccuracy->setColor( TXT_RED );
+										ss.str("");
+										ss.clear();
 									}
-								}
-
-								_txtAccuracy->getColor();
-							accuracy_calculated:
-
-								// remember
-								_cacheCursorPosition = Position(itX, itY, itZ);
-								_cacheAccuracyTextColor = _txtAccuracy->getColor();
-								_cacheAccuracy = accuracy;
-								_cacheIsKneeled = isKneeled;
-								_cacheTargetSelf = targetSelf;
-
-								if (isCtrlPressed && Options::battleRealisticAccuracy && maxVoxels > 0)
-								{
-									int currentColor = TXT_RED;
-									if (maxExposure > 0.65)	currentColor = TXT_GREEN;
-									else if (maxExposure > 0.35) currentColor = TXT_YELLOW;
-
-									_txtAccuracy->setColor(currentColor);
-
-									ss << "> ";
-									ss << std::round(maxExposure * 100);
-									ss << "% <";
-								}
-								else if (targetSelf)
-								{
-									ss.clear();
-								}
-								else
-								{
-									if (Options::useChanceToHit && !Options::battleRealisticAccuracy)
+									else
 									{
-										accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable( targetSize ));
+										ss << accuracy << "%";
 									}
-
-									ss << accuracy;
-									ss << "%";
 								}
 
 								//TODO: merge this code with `InventoryState::calculateCurrentDamageTooltip` as 90% is same or should be same
@@ -1702,15 +1697,8 @@ void Map::drawTerrain(Surface *surface)
 									}
 									else if (action->weapon->needsAmmoForAction(action->type))
 									{
-										auto ammo = attack.damage_item;
-										if (ammo != nullptr)
-										{
-											rule = ammo->getRules();
-										}
-										else
-										{
-											rule = 0; // empty weapon = no rule
-										}
+										auto* ammo = attack.damage_item;
+										rule = (ammo != nullptr) ? ammo->getRules() : nullptr;
 									}
 									else
 									{
