@@ -1490,14 +1490,16 @@ void Map::drawTerrain(Surface *surface)
 								{
 									const bool isCtrlPressed = _game->isCtrlPressed(true);
 									const bool isKneeled = action->actor->isKneeled();
-									int accuracy = 0;
+									int accuracyInteger = 0;
+									double accuracy = 0.0;
 									bool targetSelf = false;
 									double maxExposure = 0.0;
+									double distanceFloat = 0.0;
 									int maxVoxels = 0;
 
 									if (Position(itX, itY, itZ) == _cacheCursorPosition && isCtrlPressed == _cacheIsCtrlPressed && isKneeled == _cacheIsKneeled && _cacheAccuracy != -1 && _cacheAccuracyTextColor != -1)
 									{
-										accuracy = _cacheAccuracy;
+										accuracyInteger = _cacheAccuracy;
 										_txtAccuracy->setColor(_cacheAccuracyTextColor);
 										targetSelf = _cacheTargetSelf;
 									}
@@ -1573,21 +1575,20 @@ void Map::drawTerrain(Surface *surface)
 												distanceVoxels = Position::distance(origin, targetPos) - shooterUnit->getRadiusVoxels();
 											}
 
-											accuracy = BattleUnit::getFiringAccuracy(attack, _game->getMod());
-											distance = round((double)distanceVoxels / Position::TileXY);
-											if (distance == 0) distance = 1;
+											accuracy = static_cast<double>(BattleUnit::getFiringAccuracy(attack, _game->getMod()));
+											distanceFloat = (double)distanceVoxels / Position::TileXY;
 
 											int upperLimit, lowerLimit;
 											int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), action->type);
 
 											_txtAccuracy->setColor(TXT_YELLOW);
-											if (distance > upperLimit)
+											if (distanceFloat > upperLimit)
 											{
-												accuracy -= (distance - upperLimit) * dropoff;
+												accuracy -= (distanceFloat - upperLimit) * dropoff;
 											}
-											else if (distance < lowerLimit)
+											else if (distanceFloat < lowerLimit)
 											{
-												accuracy -= (lowerLimit - distance) * dropoff;
+												accuracy -= (lowerLimit - distanceFloat) * dropoff;
 											}
 											else
 											{
@@ -1617,12 +1618,12 @@ void Map::drawTerrain(Surface *surface)
 
 												if (!hasLOS)
 												{
-													accuracy = (int)ceil((double)accuracy * (double)noLOSAccuracyPenalty / 100.0);
+													accuracy *= (double)noLOSAccuracyPenalty / 100.0;
 													_txtAccuracy->setColor(TXT_YELLOW);
 												}
 											}
 
-											int snipingBonus = (accuracy > 100 ? (accuracy - 100) / 2 : 0);
+											int snipingBonus = (round(accuracy) > 100 ? round((accuracy - 100) / 2) : 0);
 											bool isSniperShot = (snipingBonus > 0);
 
 											bool coverHasEffect = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency];
@@ -1630,14 +1631,18 @@ void Map::drawTerrain(Surface *surface)
 											{
 												// Apply the exposure
 												double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency] / 100.0;
-												accuracy = (int)ceil(accuracy * coverEfficiencyCoeff * maxExposure + accuracy * (1.0 - coverEfficiencyCoeff));
+												accuracy = accuracy * coverEfficiencyCoeff * maxExposure + accuracy * (1.0 - coverEfficiencyCoeff);
 											}
 
-											accuracy = Projectile::getHitChance(distance, accuracy, _game->getMod()->getHitChancesTable(targetSize));
+											accuracyInteger = round(accuracy);
+											distance = round(distanceFloat);
+											if (distance < 1) distance = 1;
+
+											accuracyInteger = Projectile::getHitChance(distance, accuracyInteger, _game->getMod()->getHitChancesTable(targetSize));
 
 											if (Options::battleRealisticImprovedAimed && isSniperShot)
 											{
-												accuracy += snipingBonus;
+												accuracyInteger += snipingBonus;
 											}
 
 											int distanceSq = action->actor->distance3dToPositionSq(Position(itX, itY, itZ));
@@ -1650,7 +1655,7 @@ void Map::drawTerrain(Surface *surface)
 
 											if (outOfRange)
 											{
-												accuracy = 0;
+												accuracyInteger = 0;
 												_txtAccuracy->setColor(TXT_BROWN);
 											}
 											else if (unit && (unit->getVisible() || _save->getDebugMode()) && maxVoxels == 0)
@@ -1661,7 +1666,7 @@ void Map::drawTerrain(Surface *surface)
 
 										_cacheCursorPosition = Position(itX, itY, itZ);
 										_cacheAccuracyTextColor = _txtAccuracy->getColor();
-										_cacheAccuracy = accuracy;
+										_cacheAccuracy = accuracyInteger;
 										_cacheIsKneeled = isKneeled;
 										_cacheTargetSelf = targetSelf;
 									}
@@ -1681,7 +1686,7 @@ void Map::drawTerrain(Surface *surface)
 									}
 									else
 									{
-										ss << accuracy << "%";
+										ss << accuracyInteger << "%";
 									}
 								}
 
