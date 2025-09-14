@@ -60,6 +60,8 @@ private:
 	bool _reversed;
 	int _vaporColor, _vaporDensity, _vaporProbability;
 	void applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine);
+	void applyAccuracyRealistic(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine);
+	Position calculateMissingTrajectoryRA(const Position& origin, const Position* target, BattleUnit* shooterUnit, const BattleUnit* targetUnit, int distanceVoxels, const std::vector<Position>& exposedVoxels);
 public:
 	/// Creates a new Projectile.
 	Projectile(Mod *mod, SavedBattleGame *save, BattleAction action, Position origin, Position target, BattleItem *ammo);

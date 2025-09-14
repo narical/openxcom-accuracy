@@ -38,6 +38,214 @@ namespace OpenXcom
 {
 
 /**
+ * Helper function for Realistic Accuracy. Calculates trajectory for a miss.
+ * @param mod Pointer to mod.
+ * @param save Pointer to battle savegame.
+ * @param action An action.
+ * @param origin Position the projectile originates from.
+ * @param targetVoxel Position the projectile is targeting.
+ * @param ammo the ammo that produced this projectile, where applicable.
+ */
+Position Projectile::calculateMissingTrajectoryRA(const Position &origin, const Position* target, BattleUnit *shooterUnit, const BattleUnit* targetUnit, int distanceVoxels, const std::vector<Position>& exposedVoxels)
+{
+	bool isCtrlPressed = _save->isCtrlPressed(true);
+	bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER);
+	const Mod::AccuracyModConfig* AccuracyMod = _mod->getAccuracyModConfig();
+
+	int exposedVoxelsCount = exposedVoxels.size(); // Maximum of exposed voxels for left, center or right shooting position
+	Tile *targetTile = _save->getTile(target->toTile());
+
+	int targetSize = 1;
+	int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
+	int unitRadius = 4; // and this radius
+	int targetMinHeight = target->z - target->z % Position::TileZ - targetTile->getTerrainLevel();
+	int unitMin_X{ target->x - unitRadius - 1 };
+	int unitMin_Y{ target->y - unitRadius - 1 };
+	int unitMax_X{ target->x + unitRadius + 1 };
+	int unitMax_Y{ target->y + unitRadius + 1 }; //"Virtual" unit's bounds for targeting empty tile
+
+	if (targetUnit) // Finding boundaries of target unit
+	{
+		targetMinHeight += targetUnit->getFloatHeight();
+
+		if (!targetUnit->isOut())
+			heightRange = targetUnit->getHeight();
+		else
+			heightRange = 12;
+
+		unitRadius = targetUnit->getRadiusVoxels();
+		targetSize = targetUnit->getArmor()->getSize();
+		Position unitCenter = targetUnit->getPosition().toVoxel();
+		unitCenter += Position{ 8*targetSize, 8*targetSize, 0 };
+
+		unitMin_X = unitCenter.x - unitRadius - 1;
+		unitMin_Y = unitCenter.y - unitRadius - 1;
+		unitMax_X = unitCenter.x + unitRadius + 1;
+		unitMax_Y = unitCenter.y + unitRadius + 1;
+	}
+
+	int targetMaxHeight = targetMinHeight + heightRange;
+
+	Position visibleCenter{0, 0, 0};
+	if (exposedVoxelsCount == 0)
+	{
+		visibleCenter = *target; // No exposed voxels? Use initial target point as unit center
+	}
+	else // Find the center of exposed part
+	{
+		struct // Sint16 overflows, cannot use regular Position-type variable
+		{
+			Sint32 x = 0;
+			Sint32 y = 0;
+			Sint32 z = 0;
+		} temp;
+
+		for (const Position &vox : exposedVoxels) // Sum all exposed voxels to a single point with HUGE coordinates
+		{
+			temp.x += vox.x;
+			temp.y += vox.y;
+			temp.z += vox.z;
+		}
+		visibleCenter.x = (int)round((double)temp.x / exposedVoxels.size()); // Find arithmetic mean of all exposed voxels
+		visibleCenter.y = (int)round((double)temp.y / exposedVoxels.size());
+		visibleCenter.z = (int)round((double)temp.z / exposedVoxels.size());
+	}
+
+    // Lower your aim for big units or with HE weapons
+	bool isSplashDamage = false;
+	auto weapon = _action.weapon->getRules();
+	auto ammo = _action.weapon->getAmmoForAction(_action.type);
+	if (ammo && !ammo->getRules()->getDamageType()->isDirect()) isSplashDamage = true;
+	if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
+		visibleCenter.z -= heightRange / 3;
+
+	int idx = Options::battleRealisticShotDispersion;
+	int shotTypeDeviation;
+	switch (_action.type)
+	{
+	case BA_AIMEDSHOT:
+		shotTypeDeviation = AccuracyMod->aimedDeviation[idx];
+		break;
+	case BA_SNAPSHOT:
+		shotTypeDeviation = AccuracyMod->snapDeviation[idx];
+		break;
+	case BA_AUTOSHOT:
+		shotTypeDeviation = AccuracyMod->autoDeviation[idx];
+		break;
+	default:
+		shotTypeDeviation = AccuracyMod->autoDeviation[idx];
+		break;
+	}
+
+	int distanceDeviation = AccuracyMod->distanceDeviation[idx];
+
+    // Less dispersion with two-handers
+	int oneHandWeaponDeviation = 0;
+	if (!weapon->isTwoHanded()) oneHandWeaponDeviation = AccuracyMod->oneHandWeaponDeviation[idx];
+	// TODO: add check for penalty !
+
+	int kneelDeviation = 0;
+	if (shooterUnit->isKneeled()) kneelDeviation = AccuracyMod->kneelDeviation[idx];
+
+	int accuracyDeviation = (50 - shooterUnit->getBaseStats()->firing) / 10;
+
+	double distanceDeviationCoeff = (double)distanceVoxels / (10 * Position::TileXY);
+
+	int deviation = (distanceDeviation + oneHandWeaponDeviation + kneelDeviation
+					 + shotTypeDeviation + accuracyDeviation*2) * distanceDeviationCoeff;
+
+    // Modify horizontal and vertical deviations
+	int horizontal_deviation = round( deviation * AccuracyMod->horizontalSpreadCoeff[idx] );
+	int vertical_deviation = round( deviation * AccuracyMod->verticalSpreadCoeff[idx] );
+
+	Position deviate;
+	std::vector<Position> trajectory;
+
+	for ( int i=0; i<5; ++i) // Maximum possible additional deviation 5, in case you're extremely unlucky
+	{
+		for ( int j=0; j<10; ++j ) // Randomly try to "shoot" to different points around the center of visible part
+		{
+			deviate = visibleCenter;
+			deviate.x += RNG::generate(-horizontal_deviation, horizontal_deviation);
+			deviate.y += RNG::generate(-horizontal_deviation, horizontal_deviation);
+			deviate.z += RNG::generate(-vertical_deviation,   vertical_deviation);
+
+            // if the point belongs to invalid tile
+			Tile *testTile = _save->getTile(deviate.toTile());
+			if (!testTile) continue;
+
+            // if the point is between shooter and target - we don't like it, look for the next one
+            // we need a point close to normal to LOS, or behind the target
+			if (Position::distanceSq(origin, deviate) < Position::distanceSq(origin,visibleCenter)) continue;
+
+            // Remove diagonal skew
+			if (Position::distance2dSq(visibleCenter, deviate) > horizontal_deviation * horizontal_deviation) continue;
+
+			trajectory.clear();
+			int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
+
+            // Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
+			if (isPlayer && !isCtrlPressed && !trajectory.empty() && distanceVoxels > Position::TileXY)
+			{
+				if (Position::distanceSq( origin, trajectory.at(0)) <
+					AccuracyMod->suicideProtectionDistance * AccuracyMod->suicideProtectionDistance)
+				{
+					continue; // No suicides please!
+				}
+			}
+
+			if ((targetUnit && test != V_UNIT) || (!targetUnit && test == V_UNIT))
+			// We successfully missed the target, use the point we found
+			{
+				return deviate;
+			}
+
+			else if (targetUnit && !trajectory.empty())
+			{
+				int impactX = trajectory.at(0).x;
+				int impactY = trajectory.at(0).y;
+				int impactZ = trajectory.at(0).z;
+
+				if (impactX >= unitMin_X && impactX <= unitMax_X &&
+					impactY >= unitMin_Y && impactY <= unitMax_Y &&
+					impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
+				{
+					continue; // We hit our target, it's not what we want
+				}
+
+				return deviate;
+			}
+
+			else
+			{
+				int impactX = deviate.x;
+				int impactY = deviate.y;
+				int impactZ = deviate.z;
+
+				if (impactX >= unitMin_X && impactX <= unitMax_X &&
+					impactY >= unitMin_Y && impactY <= unitMax_Y &&
+					impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
+				{
+					continue; // We hit our virtual target, it's not what we want
+				}
+
+				return deviate;
+			}
+		}
+
+        // Tried to miss many times but failed? Increase the deviation slightly and try again
+		++horizontal_deviation;
+		++vertical_deviation;
+	}
+
+	// Can't miss after even more tries? Just shoot to the ground under target and call it a day
+	deviate = *target;
+	deviate.z -= deviate.z % 24;
+	return deviate;
+}
+
+
+/**
  * Sets up a UnitSprite with the specified size and position.
  * @param mod Pointer to mod.
  * @param save Pointer to battle savegame.
@@ -203,7 +411,14 @@ int Projectile::calculateTrajectory(double accuracy, const Position& originVoxel
 
 	// apply some accuracy modifiers.
 	// This will results in a new target voxel
-	applyAccuracy(originVoxel, &_targetVoxel, accuracy, false, extendLine);
+	if (Options::battleRealisticAccuracy)
+	{
+		applyAccuracyRealistic(originVoxel, &_targetVoxel, accuracy, false, extendLine);
+	}
+	else
+	{
+		applyAccuracy(originVoxel, &_targetVoxel, accuracy, false, extendLine);
+	}
 
 	// finally do a line calculation and store this trajectory.
 	return _save->getTileEngine()->calculateLineVoxel(originVoxel, _targetVoxel, true, &_trajectory, bu);
@@ -331,15 +546,303 @@ int Projectile::calculateThrow(double accuracy)
  * @param keepRange Whether range affects accuracy.
  * @param extendLine should this line get extended to maximum distance?
  */
-void Projectile::applyAccuracy(Position origin, Position* target, double accuracy, bool keepRange, bool extendLine)
+void Projectile::applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine)
 {
+	int xdiff = origin.x - target->x;
+	int ydiff = origin.y - target->y;
+	int zdiff = origin.z - target->z;
+	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff)+(double)(zdiff*zdiff));
+	// maxRange is the maximum range a projectile shall ever travel in voxel space
+	double maxRange = keepRange?realDistance:16*1000; // 1000 tiles
+	maxRange = _action.type == BA_HIT?46:maxRange; // up to 2 tiles diagonally (as in the case of reaper v reaper)
+
+	if (_action.type != BA_HIT)
+	{
+		int upperLimit, lowerLimit;
+		int dropoff = _action.weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), _action.type);
+
+		double distance = realDistance / 16; // distance in tiles, but still fractional
+		double accuracyLoss = 0.0;
+		if (distance > upperLimit)
+		{
+			accuracyLoss = (dropoff * (distance - upperLimit)) / 100;
+		}
+		else if (distance < lowerLimit)
+		{
+			accuracyLoss = (dropoff * (lowerLimit - distance)) / 100;
+		}
+		accuracy = std::max(0.0, accuracy - accuracyLoss);
+	}
+
+	int xDist = abs(origin.x - target->x);
+	int yDist = abs(origin.y - target->y);
+	int zDist = abs(origin.z - target->z);
+	int xyShift, zShift;
+
+	// Uniform shooting spread
+	if (Options::shootingSpreadMode == 1)
+	{
+		if (xDist <= yDist)
+			xyShift = xDist / 4 + yDist;
+		else
+			xyShift = xDist + yDist / 4;
+
+		xyShift *= 0.839; // Constant to match average xyShift to vanilla
+	}
+
+	// Tightened uniform shooting spread
+	else if (Options::shootingSpreadMode == 2)
+	{
+		xyShift = (xDist + yDist) / 2;	//Uniform part of spreading from vanilla
+	}
+
+	// Vanilla shooting spread (Options::shootingSpreadMode == 0)
+	else
+	{
+		if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
+			xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+		else
+			xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+	}
+
+	if (xyShift <= zDist)				//slight z deviation
+		zShift = xyShift / 2 + zDist;
+	else
+		zShift = xyShift + zDist / 2;
+
+    // Apply penalty for having no LOS to target
+	int noLOSAccuracyPenalty = _action.weapon->getRules()->getNoLOSAccuracyPenalty(_mod);
+	if (noLOSAccuracyPenalty != -1)
+	{
+		Tile *t = _save->getTile(target->toTile());
+		if (t)
+		{
+			bool hasLOS = false;
+			BattleUnit *bu = _action.actor;
+			BattleUnit *targetUnit = t->getUnit(); // we can call TileEngine::visible() only if the target unit is on the same tile
+
+			if (targetUnit)
+			{
+				hasLOS = _save->getTileEngine()->visible(bu, t);
+			}
+			else
+			{
+				hasLOS = _save->getTileEngine()->isTileInLOS(&_action, t, false);
+			}
+
+			if (!hasLOS)
+			{
+				accuracy = accuracy * noLOSAccuracyPenalty / 100;
+			}
+		}
+	}
+
+	int deviation = RNG::generate(0, 100) - (accuracy * 100);
+
+	// Alternative throwing mechanic
+	if (_action.type == BA_THROW && Options::battleAltGrenades)
+	{
+		int distance = round(realDistance / 16);
+		int maxDistanceWithoutPenalty = sqrt(accuracy * 100) * 3;
+		int penalty = std::max( 0, (distance - maxDistanceWithoutPenalty)*16 );
+		deviation += RNG::generate(0, penalty);
+
+		if (deviation >= 0)
+			deviation += 30;	// Extra spread to "miss" cloud is like 2 additional tiles maximum
+		else
+			deviation = 18;		// Successfull hit means that "grenade" hits target or (sometimes) adjanced tile
+							// Throwing has per-tile precision
+	}
+
+	// Shooting has per-voxel precision
+	else
+	{
+		if (deviation >= 0)
+			deviation += 50;				// add extra spread to "miss" cloud
+		else
+			deviation += 10;				//accuracy of 109 or greater will become 1 (tightest spread)
+	}
+
+	deviation = std::max(1, zShift * deviation / 200);	//range ratio
+
+	// Make shooting dispersion round instead of square for Uniform options
+	if (Options::shootingSpreadMode != 0)
+	{
+		const double SECONDARY_SPREAD_COEFF = 1.1;
+
+		bool resultShifted = false;
+		int dX, dY;
+
+		for (int i = 0; i < 15; ++i) // Break from this cycle when proper target is found
+		{
+			dX = RNG::generate(0, deviation) - deviation / 2;
+			dY = RNG::generate(0, deviation) - deviation / 2;
+
+			int radiusSq = dX*dX + dY*dY;
+			int deviateRadius = deviation / 2;
+			int deviateRadiusSq = deviateRadius * deviateRadius;
+
+			if (radiusSq <= deviateRadiusSq) break;  // If we inside of the spread circle - we're done!
+
+			if (!resultShifted)
+			{
+				resultShifted = true;
+				deviation *= SECONDARY_SPREAD_COEFF; // Change spread radius for second+ attempts
+			}
+		}
+
+		target->x += dX;
+		target->y += dY;
+	}
+
+	else // Classic shooting spread
+	{
+		target->x += RNG::generate(0, deviation) - deviation / 2;
+		target->y += RNG::generate(0, deviation) - deviation / 2;
+	}
+
+	target->z += RNG::generate(0, deviation / 2) / 2 - deviation / 8;
+
+	if (extendLine)
+	{
+		double rotation, tilt;
+		rotation = atan2(double(target->y - origin.y), double(target->x - origin.x)) * 180 / M_PI;
+		tilt = atan2(double(target->z - origin.z),
+					 sqrt(double(target->x - origin.x)*double(target->x - origin.x)+double(target->y - origin.y)*double(target->y - origin.y))) * 180 / M_PI;
+		// calculate new target
+		// this new target can be very far out of the map, but we don't care about that right now
+		double cos_fi = cos(Deg2Rad(tilt));
+		double sin_fi = sin(Deg2Rad(tilt));
+		double cos_te = cos(Deg2Rad(rotation));
+		double sin_te = sin(Deg2Rad(rotation));
+		target->x = (int)(origin.x + maxRange * cos_te * cos_fi);
+		target->y = (int)(origin.y + maxRange * sin_te * cos_fi);
+		target->z = (int)(origin.z + maxRange * sin_fi);
+	}
+}
+
+/**
+ * Calculates the new target in voxel space, based on the given accuracy modifier.
+ * @param origin Start position of the trajectory in voxels.
+ * @param target Endpoint of the trajectory in voxels.
+ * @param accuracy Accuracy modifier.
+ * @param keepRange Whether range affects accuracy.
+ * @param extendLine should this line get extended to maximum distance?
+ */
+void Projectile::applyAccuracyRealistic(Position origin, Position* target, double accuracy, bool keepRange, bool extendLine)
+{
+	Tile *targetTile = _save->getTile(target->toTile());
+	if (!targetTile) return;
+
 	bool isArcingShot = _action.weapon->getArcingShot(_action.type);
 
-	int distanceTiles = 0;
-	int distanceVoxels = 0;
-	bool hasLOS = false;
+	// For any action, incompatible with RA - use classic accuracy insteasd
+	if (_action.type == BA_LAUNCH || _action.type == BA_THROW || isArcingShot)
+	{
+		applyAccuracy( origin, target, accuracy, keepRange, extendLine );
+		return;
+	}
 
-	// Apply penalty for having no LOS to target
+	int targetSize = 1;
+	double distance = 0;
+	bool hasLOS = false;
+	double exposure = 0.0;
+	int distanceVoxels = 0;
+	bool isTargetObject = false;
+	const Mod::AccuracyModConfig* AccuracyMod = _mod->getAccuracyModConfig();
+	bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
+	double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
+
+	BattleUnit *shooterUnit = _action.actor;
+
+	std::vector<Position> exposedVoxels;
+	int exposedVoxelsCount = 0; // Maximum of exposed voxels for left, center or right shooting position
+
+	BattleUnit *targetUnit = nullptr;
+	targetUnit = targetTile->getOverlappingUnit(_save);
+
+	if (targetUnit && targetUnit == shooterUnit) // Trying to shoot yourself ?
+	{
+		// Target floor under weapon with tiny variations
+		target->x = origin.x + RNG::generate(-1,1);
+		target->y = origin.y + RNG::generate(-1,1);
+		target->z = shooterUnit->getPositionVexels().z;
+
+		targetUnit = nullptr;
+		return;
+	}
+
+	if (targetUnit && targetUnit->getVisible()) // Get distance and exposure
+	{
+		targetTile = targetUnit->getTile();
+		targetSize = targetUnit->getArmor()->getSize();
+
+		int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
+		int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
+
+		std::vector<Position> tempVoxels;
+		tempVoxels.reserve( heightCount * widthCount );
+		exposedVoxels.reserve( heightCount * widthCount );
+
+		Position selectedOrigin = TileEngine::invalid;
+		BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
+		std::vector<BattleActionOrigin> originTypes;
+
+		originTypes.push_back( BattleActionOrigin::CENTRE );
+
+		if (Options::oxceEnableOffCentreShooting)
+		{
+			originTypes.push_back( BattleActionOrigin::LEFT );
+			originTypes.push_back( BattleActionOrigin::RIGHT );
+		}
+
+		for (const auto &relPos : originTypes)
+		{
+			tempVoxels.clear();
+			_action.relativeOrigin = relPos;
+			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
+			if (selectedOrigin == TileEngine::invalid) selectedOrigin = tempOrigin;
+
+			double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true, &tempVoxels, false);
+
+			if ((int)tempVoxels.size() > exposedVoxelsCount)
+			{
+				exposedVoxelsCount = tempVoxels.size();
+				exposure = tempExposure;
+				selectedOriginType = relPos;
+				selectedOrigin = tempOrigin;
+				exposedVoxels.swap( tempVoxels );
+			}
+		}
+		_action.relativeOrigin = selectedOriginType;
+		distanceVoxels = targetUnit->distance3dToPositionPrecise( selectedOrigin ) - shooterUnit->getRadiusVoxels();
+	}
+	else // Get distance to target empty tile
+	{
+		Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
+		distanceVoxels = Position::distance( tempOrigin, *target ) - shooterUnit->getRadiusVoxels();
+	}
+
+	distance = (double)distanceVoxels / Position::TileXY;
+
+	const RuleItem *weapon = _action.weapon->getRules();
+	int upperLimit, lowerLimit;
+	int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), _action.type);
+
+	double accuracyLoss = 0.0;
+
+    // Apply distance limits
+	if (round(distance) > upperLimit)
+	{
+		accuracyLoss = dropoff * (distance - upperLimit) / 100;
+	}
+	else if (round(distance) < lowerLimit)
+	{
+		accuracyLoss = dropoff * (lowerLimit - distance) / 100;
+	}
+	accuracy = std::max(0.0, accuracy - accuracyLoss);
+
+    // Apply penalty for having no LOS to target
 	int noLOSAccuracyPenalty = _action.weapon->getRules()->getNoLOSAccuracyPenalty(_mod);
 	if (noLOSAccuracyPenalty != -1)
 	{
@@ -359,509 +862,92 @@ void Projectile::applyAccuracy(Position origin, Position* target, double accurac
 			}
 
 			if (!hasLOS)
-				accuracy = accuracy * noLOSAccuracyPenalty / 100;
+				accuracy = accuracy * (double)noLOSAccuracyPenalty / 100;
 		}
 	}
 
-	const RuleItem *weapon = _action.weapon->getRules();
-	int maxRange = weapon->getMaxRange();
-	int upperLimit = weapon->getAimRange();
-	int lowerLimit = weapon->getMinRange();
+	int snipingBonus = ( accuracy > 1.0 ? round((accuracy*100 - 100)/2) : 0 );
+	bool isSniperShot = ( snipingBonus > 0 );
 
-	if (Options::battleUFOExtenderAccuracy &&_action.type != BA_THROW && _action.type != BA_HIT)
+    // Now convert values to integers
+	int accuracyInteger = 0;
+	int distanceInteger = round(distance);
+	if (distanceInteger < 1) distanceInteger = 1;
+
+	isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
+
+    // Apply exposure
+	if (exposedVoxelsCount > 0 && coverHasEffect)
 	{
-		if (_action.type == BA_AUTOSHOT)
-		{
-			upperLimit = weapon->getAutoRange();
-		}
-		else if (_action.type == BA_SNAPSHOT)
-		{
-			upperLimit = weapon->getSnapRange();
-		}
+		accuracyInteger = round(100 * (accuracy * coverEfficiencyCoeff * exposure + accuracy * (1 - coverEfficiencyCoeff)));
+	}
+	else
+	{
+		accuracyInteger = round(100 * accuracy);
 	}
 
-	if (upperLimit > maxRange) upperLimit = maxRange;
+	// Apply hitchance
+	accuracyInteger = Projectile::getHitChance(distanceInteger, accuracyInteger, _save->getMod()->getHitChancesTable( targetSize ));
 
-	if (Options::battleRealisticAccuracy && _action.type != BA_LAUNCH && _action.type != BA_THROW && !isArcingShot)
+	if (Options::battleRealisticImprovedAimed && isSniperShot)
 	{
-		bool isCtrlPressed = _save->isCtrlPressed(true);
-		bool isTargetObject = false;
-		int targetSize = 1;
-		double exposure = 0.0;
-		const Mod::AccuracyModConfig* AccuracyMod = _mod->getAccuracyModConfig();
-		bool coverHasEffect = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ];
-		double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[ (int)Options::battleRealisticCoverEfficiency ] / 100.0;
+		accuracyInteger += snipingBonus;
+	}
 
-		int real_accuracy = ceil( accuracy * 100 ); // separate variable for realistic accuracy, just in case
+	int accuracyCheck = RNG::generate(1, 100);
+	bool hitSuccessful = ( accuracyCheck <= accuracyInteger );
 
-		BattleUnit *shooterUnit = _action.actor;
-		bool isPlayer = (shooterUnit->getFaction() == FACTION_PLAYER);
+	if (Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER)
+	{
+		std::ostringstream ss;
 
-		std::vector<Position> exposedVoxels;
-		int exposedVoxelsCount = 0; // Maximum of exposed voxels for left, center or right shooting position
-
-		BattleUnit *targetUnit = nullptr;
-		Tile *targetTile = _save->getTile(target->toTile());
-		if (targetTile) targetUnit = targetTile->getOverlappingUnit(_save);
-
-		if (targetUnit && targetUnit == shooterUnit) // Trying to shoot yourself ?
+		if (targetUnit && targetUnit->getVisible())
 		{
-			// Target floor under weapon with tiny variations
-			target->x = origin.x + RNG::generate(-1,1);
-			target->y = origin.y + RNG::generate(-1,1);
-			target->z = shooterUnit->getPositionVexels().z;
-
-			targetUnit = nullptr;
-			goto target_calculated;
-		}
-
-		if (targetUnit && targetUnit->getVisible()) // Get distance and exposure
-		{
-			targetTile = targetUnit->getTile();
-			targetSize = targetUnit->getArmor()->getSize();
-
-			int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
-			int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
-
-			std::vector<Position> tempVoxels;
-			tempVoxels.reserve( heightCount * widthCount );
-			exposedVoxels.reserve( heightCount * widthCount );
-
-			Position selectedOrigin = TileEngine::invalid;
-			BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
-			std::vector<BattleActionOrigin> originTypes;
-
-			originTypes.push_back( BattleActionOrigin::CENTRE );
-
-			if (Options::oxceEnableOffCentreShooting)
-			{
-				originTypes.push_back( BattleActionOrigin::LEFT );
-				originTypes.push_back( BattleActionOrigin::RIGHT );
-			}
-
-			for (const auto &relPos : originTypes)
-			{
-				tempVoxels.clear();
-				_action.relativeOrigin = relPos;
-				Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-				if (selectedOrigin == TileEngine::invalid) selectedOrigin = tempOrigin;
-
-				double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true, &tempVoxels, false);
-
-				if ((int)tempVoxels.size() > exposedVoxelsCount)
-				{
-					exposedVoxelsCount = tempVoxels.size();
-					exposure = tempExposure;
-					selectedOriginType = relPos;
-					selectedOrigin = tempOrigin;
-					exposedVoxels.swap( tempVoxels );
-				}
-			}
-			_action.relativeOrigin = selectedOriginType;
-			distanceVoxels = targetUnit->distance3dToPositionPrecise( selectedOrigin ) - shooterUnit->getRadiusVoxels();
-		}
-		else // Get distance to target empty tile
-		{
-			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-			distanceVoxels = Position::distance( tempOrigin, *target ) - shooterUnit->getRadiusVoxels();
-		}
-
-		distanceTiles = round((double)distanceVoxels / Position::TileXY);
-		if (distanceTiles == 0) distanceTiles = 1; // Should never be 0
-
-		// Apply distance limits
-		if (distanceTiles > upperLimit)
-		{
-			real_accuracy -= (distanceTiles - upperLimit) * weapon->getDropoff();
-		}
-		else if (distanceTiles < lowerLimit)
-		{
-			real_accuracy -= (lowerLimit - distanceTiles) * weapon->getDropoff();
-		}
-
-		int snipingBonus = ( real_accuracy > 100 ? (real_accuracy - 100)/2 : 0 );
-		bool isSniperShot = ( snipingBonus > 0 );
-
-		// Both for units and empty tiles
-		if (targetTile)
-		{
-			isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
-
-			// Apply the exposure
-			if (exposedVoxelsCount > 0 && coverHasEffect)
-			{
-				real_accuracy = (int)ceil(real_accuracy * coverEfficiencyCoeff * exposure + real_accuracy * (1 - coverEfficiencyCoeff));
-			}
-
-			real_accuracy = Projectile::getHitChance(distanceTiles, real_accuracy, _save->getMod()->getHitChancesTable( targetSize ));
+			ss << "Exposure " << std::round(exposure*100) << "%";
 
 			if (Options::battleRealisticImprovedAimed && isSniperShot)
 			{
-				real_accuracy += snipingBonus;
+				ss << " Sniping +" << snipingBonus << "%";
 			}
+			ss << " Total " << accuracyInteger << "%";
 		}
-
-		int accuracy_check = RNG::generate(1, 100);
-		bool hit_successful = ( accuracy_check <= real_accuracy );
-
-		if (Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER)
-		{
-			std::ostringstream ss;
-
-			if (targetUnit && targetUnit->getVisible())
-			{
-				ss << "Exposure " << std::round(exposure*100) << "%";
-
-				if (Options::battleRealisticImprovedAimed && isSniperShot)
-				{
-					ss << " Sniping +" << snipingBonus << "%";
-				}
-				ss << " Total " << real_accuracy << "%";
-			}
-			else
-			{
-				if (Options::battleRealisticImprovedAimed && isSniperShot) ss << "Sniping +" << snipingBonus << "%";
-				ss << " Total " << real_accuracy << "%";
-			}
-
-			ss << " Roll " << accuracy_check << ( hit_successful ? " -> HIT" : " -> MISS" );
-			_save->getBattleState()->debug(ss.str(), true);
-		}
-
-		if (hit_successful && !exposedVoxels.empty())
-		{
-			if (targetUnit)	*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
-		}
-
-		else if (hit_successful && targetUnit) // "Hitting" hidden unit
-		{
-			target->x -= target->x % Position::TileXY - Position::TileXY / 2;
-			target->y -= target->y % Position::TileXY - Position::TileXY / 2;
-			target->z -= target->z % Position::TileZ - Position::TileZ / 2;
-        }
-
-		else if (hit_successful && isTargetObject) // "Hitting" a tile with an object
-		{
-			// just leave it "as is"
-		}
-
-		else if (hit_successful) // "Hitting" empty tile
-		{
-			target->x += RNG::generate(-3, 3); // Add some deviation in XY plane - Z deviation leads to obvious misses
-			target->y += RNG::generate(-3, 3);
-		}
-		else if (targetTile) // We missed, time to find a line of fire to perform a miss with a realistic deviation
-		{
-			int heightRange = 12; // Targeting to empty terrain tile will use this size for fire deviation
-			int unitRadius = 4; // and this radius
-			int targetMinHeight = target->z - target->z % Position::TileZ - targetTile->getTerrainLevel();
-			int unitMin_X{ target->x - unitRadius - 1 };
-			int unitMin_Y{ target->y - unitRadius - 1 };
-			int unitMax_X{ target->x + unitRadius + 1 };
-			int unitMax_Y{ target->y + unitRadius + 1 }; //"Virtual" unit's bounds for targeting empty tile
-
-			if (targetUnit) // Finding boundaries of target unit
-			{
-				targetMinHeight += targetUnit->getFloatHeight();
-
-				if (!targetUnit->isOut())
-					heightRange = targetUnit->getHeight();
-				else
-					heightRange = 12;
-
-				unitRadius = targetUnit->getRadiusVoxels();
-				targetSize = targetUnit->getArmor()->getSize();
-				Position unitCenter = targetUnit->getPosition().toVoxel();
-				unitCenter += Position{ 8*targetSize, 8*targetSize, 0 };
-
-				unitMin_X = unitCenter.x - unitRadius - 1;
-				unitMin_Y = unitCenter.y - unitRadius - 1;
-				unitMax_X = unitCenter.x + unitRadius + 1;
-				unitMax_Y = unitCenter.y + unitRadius + 1;
-			}
-
-			int targetMaxHeight = targetMinHeight + heightRange;
-
-			Position visibleCenter{0, 0, 0};
-			if (exposedVoxelsCount == 0)
-			{
-				visibleCenter = *target; // No exposed voxels? Use initial target point as unit center
-			}
-			else // Find the center of exposed part
-			{
-				struct // Sint16 overflows, cannot use regular Position-type variable
-				{
-					Sint32 x = 0;
-					Sint32 y = 0;
-					Sint32 z = 0;
-				} temp;
-
-				for (const Position &vox : exposedVoxels) // Sum all exposed voxels to a single point with HUGE coordinates
-				{
-					temp.x += vox.x;
-					temp.y += vox.y;
-					temp.z += vox.z;
-				}
-				visibleCenter.x = (int)round((double)temp.x / exposedVoxels.size()); // Find arithmetic mean of all exposed voxels
-				visibleCenter.y = (int)round((double)temp.y / exposedVoxels.size());
-				visibleCenter.z = (int)round((double)temp.z / exposedVoxels.size());
-			}
-
-			// Lower your aim for big units or with HE weapons
-			bool isSplashDamage = false;
-			auto ammo = _action.weapon->getAmmoForAction(_action.type);
-			if (ammo && !ammo->getRules()->getDamageType()->isDirect()) isSplashDamage = true;
-			if (!isCtrlPressed && targetUnit && ( targetSize == 2 || isSplashDamage ))
-				visibleCenter.z -= heightRange / 3;
-
-			int idx = Options::battleRealisticShotDispersion;
-			int shotTypeDeviation;
-			switch (_action.type)
-			{
-			case BA_AIMEDSHOT:
-				shotTypeDeviation = AccuracyMod->aimedDeviation[idx];
-				break;
-			case BA_SNAPSHOT:
-				shotTypeDeviation = AccuracyMod->snapDeviation[idx];
-				break;
-			case BA_AUTOSHOT:
-				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
-				break;
-			default:
-				shotTypeDeviation = AccuracyMod->autoDeviation[idx];
-				break;
-			}
-
-			int distanceDeviation = AccuracyMod->distanceDeviation[idx];
-
-			// Less dispersion with two-handers
-			int oneHandWeaponDeviation = 0;
-			if (!weapon->isTwoHanded()) oneHandWeaponDeviation = AccuracyMod->oneHandWeaponDeviation[idx];
-			// TODO: add check for penalty !
-
-			int kneelDeviation = 0;
-			if (shooterUnit->isKneeled()) kneelDeviation = AccuracyMod->kneelDeviation[idx];
-
-			int accuracyDeviation = (50 - shooterUnit->getBaseStats()->firing) / 10;
-
-			double distanceDeviationCoeff = (double)distanceVoxels / (10 * Position::TileXY);
-
-			int deviation = (distanceDeviation + oneHandWeaponDeviation + kneelDeviation
-                            + shotTypeDeviation + accuracyDeviation*2) * distanceDeviationCoeff;
-
-			// More horizontal deviation, less
-			int horizontal_deviation = deviation * AccuracyMod->horizontalSpreadCoeff[idx];
-			int vertical_deviation = deviation * AccuracyMod->verticalSpreadCoeff[idx];
-
-			Position deviate;
-			std::vector<Position> trajectory;
-
-			for ( int i=0; i<5; ++i) // Maximum possible additional deviation 5, in case you're extremely unlucky
-			{
-				for ( int j=0; j<10; ++j ) // Randomly try to "shoot" to different points around the center of visible part
-				{
-					deviate = visibleCenter;
-					deviate.x += RNG::generate(-horizontal_deviation, horizontal_deviation);
-					deviate.y += RNG::generate(-horizontal_deviation, horizontal_deviation);
-					deviate.z += RNG::generate(-vertical_deviation,   vertical_deviation);
-
-					// if the point belongs to invalid tile
-					Tile *testTile = _save->getTile(deviate.toTile());
-					if (!testTile) continue;
-
-					// if the point is between shooter and target - we don't like it, look for the next one
-					// we need a point close to normal to LOS, or behind the target
-					if (Position::distanceSq(origin, deviate) < Position::distanceSq(origin,visibleCenter)) continue;
-
-					// Remove diagonal skew
-					if (Position::distance2dSq(visibleCenter, deviate) > horizontal_deviation * horizontal_deviation) continue;
-
-					trajectory.clear();
-					int test = _save->getTileEngine()->calculateLineVoxel(origin, deviate, false, &trajectory, shooterUnit);
-
-					// Skip found trajectory if it hits near the shooter - to prevent destroying cover or blowing himself up with HE weapon
-					if (isPlayer && !isCtrlPressed && !trajectory.empty() && distanceTiles > 1)
-					{
-						if (Position::distanceSq( origin, trajectory.at(0)) <
-							AccuracyMod->suicideProtectionDistance * AccuracyMod->suicideProtectionDistance)
-						{
-							continue; // No suicides please!
-						}
-					}
-
-					if ((targetUnit && test != V_UNIT) || (!targetUnit && test == V_UNIT))
-					// We successfully missed the target, use the point we found
-					{
-						*target = deviate;
-						goto target_calculated;
-					}
-
-					else if (targetUnit && !trajectory.empty())
-					{
-						int impactX = trajectory.at(0).x;
-						int impactY = trajectory.at(0).y;
-						int impactZ = trajectory.at(0).z;
-
-						if (impactX >= unitMin_X && impactX <= unitMax_X &&
-							impactY >= unitMin_Y && impactY <= unitMax_Y &&
-							impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
-						{
-							continue; // We hit our target, it's not what we want
-						}
-
-						*target = deviate;
-						goto target_calculated;
-					}
-
-					else
-					{
-						int impactX = deviate.x;
-						int impactY = deviate.y;
-						int impactZ = deviate.z;
-
-						if (impactX >= unitMin_X && impactX <= unitMax_X &&
-							impactY >= unitMin_Y && impactY <= unitMax_Y &&
-							impactZ >= targetMinHeight && impactZ <= targetMaxHeight)
-						{
-							continue; // We hit our virtual target, it's not what we want
-						}
-
-						*target = deviate;
-						goto target_calculated;
-					}
-				}
-
-				// Tried to miss many times but failed? Increase the deviation slightly and try again
-				++horizontal_deviation;
-				++vertical_deviation;
-			}
-			target->z -= target->z%24; // Can't miss after even more tries? Just shoot to the ground under target and call it a day
-		}
-
 		else
 		{
-			Log(LOG_INFO) << " No target tile!";
+			if (Options::battleRealisticImprovedAimed && isSniperShot) ss << "Sniping +" << snipingBonus << "%";
+			ss << " Total " << accuracyInteger << "%";
 		}
+
+		ss << " Roll " << accuracyCheck << ( hitSuccessful ? " -> HIT" : " -> MISS" );
+		_save->getBattleState()->debug(ss.str(), true);
 	}
 
-	else // Default accuracy implementation
+	// Calculate final target point
+	if (hitSuccessful && !exposedVoxels.empty()) // "Hitting" visible unit
 	{
-		int xDist = abs(origin.x - target->x);
-		int yDist = abs(origin.y - target->y);
-		int zDist = abs(origin.z - target->z);
-
-		distanceVoxels = (int)sqrt((double)(xDist*xDist)+(double)(yDist*yDist)+(double)(zDist*zDist));
-		distanceTiles = distanceVoxels / 16 + 1;
-
-		if (_action.type != BA_THROW && _action.type != BA_HIT)
-		{
-			double modifier = 0.0;
-			if (distanceTiles < lowerLimit)
-			{
-				modifier = (weapon->getDropoff() * (lowerLimit - distanceTiles)) / 100.0;
-			}
-			else if (upperLimit < distanceTiles)
-			{
-				modifier = (weapon->getDropoff() * (distanceTiles - upperLimit)) / 100.0;
-			}
-			accuracy = std::max(0.0, accuracy - modifier);
-		}
-
-		int xyShift, zShift;
-
-		if (Options::shootingSpreadMode == 1) // Uniform shooting spread
-		{
-			if (xDist <= yDist)
-				xyShift = xDist / 4 + yDist;
-			else
-				xyShift = xDist + yDist / 4;
-
-			xyShift *= 0.839; // Constant to match average xyShift to vanilla
-		}
-
-		else if (Options::shootingSpreadMode == 2) // Tightened uniform shooting spread
-		{
-			xyShift = (xDist + yDist) / 2;	//Uniform part of spreading from vanilla
-		}
-
-		else // if Options::shootingSpreadMode == 0 - Vanilla shooting spread
-		{
-			if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
-				xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
-			else
-				xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
-		}
-
-		if (xyShift <= zDist)				//slight z deviation
-			zShift = xyShift / 2 + zDist;
-		else
-			zShift = xyShift + zDist / 2;
-
-		int deviation = RNG::generate(0, 100) - (accuracy * 100);
-
-		// Alternative throwing mechanic
-		if (_action.type == BA_THROW && Options::battleAltGrenades)
-		{
-			int maxDistanceWithoutPenalty = sqrt(accuracy * 100) * 3;
-			int penalty = std::max( 0, (distanceTiles - maxDistanceWithoutPenalty)*16 );
-			deviation += RNG::generate(0, penalty);
-
-			if (deviation >= 0)
-				deviation += 30;	// Extra spread to "miss" cloud is like 2 additional tiles maximum
-			else
-				deviation = 18;		// Successfull hit means that "grenade" hits target or (sometimes) adjanced tile
-									// Throwing has per-tile precision
-		}
-
-		// Shooting has per-voxel precision
-		else
-		{
-			if (deviation >= 0)
-				deviation += 50;	// add extra spread to "miss" cloud
-			else
-				deviation += 10;	// accuracy of 109 or greater will become 1 (tightest spread)
-		}
-
-		deviation = std::max(1, zShift * deviation / 200);	//range ratio
-
-		if (Options::shootingSpreadMode == 1 || Options::shootingSpreadMode == 2) // Make spread round instead of square
-		{
-			const double SECONDARY_SPREAD_COEFF = 1.1; // Increasing spread radius to compensate additional hits
-
-			bool resultShifted = false;
-			int dX, dY;
-
-			for (int i = 0; i < 15; ++i) // Break from this cycle when proper target is found
-			{
-				dX = RNG::generate(0, deviation) - deviation / 2;
-				dY = RNG::generate(0, deviation) - deviation / 2;
-
-				int radiusSq = dX*dX + dY*dY;
-				int deviateRadius = deviation / 2;
-				int deviateRadiusSq = deviateRadius * deviateRadius;
-
-				if (radiusSq <= deviateRadiusSq) break;  // If we inside of the spread circle - we're done!
-
-				if (!resultShifted)
-				{
-					resultShifted = true;
-					deviation *= SECONDARY_SPREAD_COEFF; // Change spread radius for second+ attempts
-				}
-			}
-			target->x += dX;
-			target->y += dY;
-		}
-
-		else // Classic shooting spread
-		{
-			target->x += RNG::generate(0, deviation) - deviation / 2;
-			target->y += RNG::generate(0, deviation) - deviation / 2;
-		}
-
-		target->z += RNG::generate(0, deviation / 2) / 2 - deviation / 8;
+		*target = exposedVoxels.at(RNG::generate(0, exposedVoxelsCount-1)); // Aim to random exposed voxel of the target
 	}
 
-target_calculated:
+	else if (hitSuccessful && targetUnit) // "Hitting" hidden unit
+	{
+		target->x -= target->x % Position::TileXY - Position::TileXY / 2;
+		target->y -= target->y % Position::TileXY - Position::TileXY / 2;
+		target->z -= target->z % Position::TileZ - Position::TileZ / 2;
+	}
+
+	else if (hitSuccessful && isTargetObject) // "Hitting" a tile with an object
+	{
+	  // just leave it "as is"
+	}
+
+	else if (hitSuccessful) // "Hitting" empty tile
+	{
+		target->x += RNG::generate(-3, 3); // Add some deviation in XY plane - Z deviation leads to obvious misses
+		target->y += RNG::generate(-3, 3);
+	}
+	else // We missed, time to find a line of fire to perform a miss with a realistic deviation
+	{
+		*target = calculateMissingTrajectoryRA( origin, target, shooterUnit, targetUnit, distanceVoxels, exposedVoxels );
+	}
 
 	if (extendLine)
 	{
