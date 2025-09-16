@@ -668,7 +668,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	// Make shooting dispersion round instead of square for Uniform options
 	if (Options::shootingSpreadMode != 0)
 	{
-		const double SECONDARY_SPREAD_COEFF = 0.85;
+		const double SECONDARY_SPREAD_COEFF = 0.85; // Inner spread circle diameter compared to outer
 
 		bool resultShifted = false;
 		int dX, dY;
