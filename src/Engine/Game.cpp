@@ -644,6 +644,7 @@ void Game::loadLanguages()
 	const std::string dirLanguage = "Language/";
 	const std::string dirLanguageAndroid = "Language/Android/";
 	const std::string dirLanguageOXCE = "Language/OXCE/";
+	const std::string dirLanguageBOXCE = "Language/BOXCE/";
 	const std::string dirLanguageTechnical = "Language/Technical/";
 
 	const std::string defaultLangYml = defaultLang + ".yml";
@@ -655,11 +656,13 @@ void Game::loadLanguages()
 	auto slice = FileMap::getSlice(dirLanguage + defaultLangYml);
 	auto sliceAndroid = FileMap::getSlice(dirLanguageAndroid + defaultLangYml);
 	auto sliceOXCE = FileMap::getSlice(dirLanguageOXCE + defaultLangYml);
+	auto sliceBOXCE = FileMap::getSlice(dirLanguageBOXCE + defaultLangYml);
 	auto sliceTechnical = FileMap::getSlice(dirLanguageTechnical + defaultLangYml);
 
 	auto slice2 = FileMap::getSlice(dirLanguage + currentLangYml);
 	auto sliceAndroid2 = FileMap::getSlice(dirLanguageAndroid + currentLangYml);
 	auto sliceOXCE2 = FileMap::getSlice(dirLanguageOXCE + currentLangYml);
+	auto sliceBOXCE2 = FileMap::getSlice(dirLanguageBOXCE + currentLangYml);
 	auto sliceTechnical2 = FileMap::getSlice(dirLanguageTechnical + currentLangYml);
 
 	bool twoLangs = currentLang != defaultLang;
@@ -670,6 +673,8 @@ void Game::loadLanguages()
 		if (twoLangs && sliceAndroid2[i]) { _lang->loadFile(sliceAndroid2[i]); }
 		if (sliceOXCE[i]) { _lang->loadFile(sliceOXCE[i]); }
 		if (twoLangs && sliceOXCE2[i]) { _lang->loadFile(sliceOXCE2[i]); }
+		if (sliceBOXCE[i]) { _lang->loadFile(sliceBOXCE[i]); }
+		if (twoLangs && sliceBOXCE2[i]) { _lang->loadFile(sliceBOXCE2[i]); }
 		if (sliceTechnical[i]) { _lang->loadFile(sliceTechnical[i]); }
 		if (twoLangs && sliceTechnical2[i]) { _lang->loadFile(sliceTechnical2[i]); }
 	}
