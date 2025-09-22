@@ -2756,6 +2756,16 @@ inline void BattlescapeState::handle(Action *action)
 
 					_game->pushState(new BriefingState(ycraft, 0, true));
 				}
+				// "ctrl-c" - camera: toggle show single map level
+				else if (key == SDLK_c && ctrlPressed)
+				{
+					_map->getCamera()->toggleShowSingleLayer();
+
+					if (_map->getCamera()->getShowSingleLayer())
+						warningLongRaw(tr("STR_SINGLE_MAP_LAYER_ACTIVATED"));
+					else
+						warning("STR_SINGLE_MAP_LAYER_DEACTIVATED");
+				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
 				{

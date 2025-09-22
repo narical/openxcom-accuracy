@@ -258,6 +258,8 @@ en-US:
   STR_BUG_HUNT_ACTIVATED: "Bug Hunt mode activated: enemies are visible on the minimap!"
   STR_QUICK_MODE_ACTIVATED: "Usain Bolt mode activated.{NEWLINE}Press Ctrl+S again to deactivate."
   STR_QUICK_MODE_DEACTIVATED: "Usain Bolt mode deactivated."
+  STR_SINGLE_MAP_LAYER_ACTIVATED: "Single map layer mode activated.{NEWLINE}Press Ctrl+C again to deactivate."
+  STR_SINGLE_MAP_LAYER_DEACTIVATED: "Single map layer mode deactivated."
   STR_TARGET_ENEMY: "; Target = ENEMY"
   STR_TARGET_NEUTRAL: "; Target = NEUTRAL"
   STR_TARGET_FRIEND: "; Target = FRIEND"
