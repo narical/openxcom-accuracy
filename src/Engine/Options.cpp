@@ -409,6 +409,7 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleNightVisionType", &oxceToggleNightVisionType, 1, "", "HIDDEN"));     // per battle
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceToggleBrightnessType", &oxceToggleBrightnessType, 0, "", "HIDDEN"));       // not persisted
 
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceShowBurningAsWounded", &oxceShowBurningAsWounded, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceDisableInfoOnThrowCursor", &oxceDisableInfoOnThrowCursor, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceSwapDontReselectActions", &oxceSwapDontReselectActions, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableUnitResponseSounds", &oxceEnableUnitResponseSounds, true, "", "HIDDEN"));

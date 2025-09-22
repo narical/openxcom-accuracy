@@ -2341,7 +2341,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			if (j >= VISIBLE_MAX) break; // loop finished
 			if (bu->getFaction() == FACTION_PLAYER && bu->getStatus() != STATUS_DEAD && !bu->isIgnored() && bu->indicatorsAreEnabled())
 			{
-				if (bu->getFatalWounds() > 0 || bu->getFire() > 0)
+				if (bu->getFatalWounds() > 0 || (Options::oxceShowBurningAsWounded && bu->getFire() > 0))
 				{
 					_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
 					_btnVisibleUnit[j]->setVisible(true);
