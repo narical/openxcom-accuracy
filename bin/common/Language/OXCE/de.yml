@@ -422,6 +422,8 @@ de:
   STR_ENGINE_OXC: "OXC"
   STR_ENGINE_OXCE: "OXCE"
   STR_ENGINE_OTHER: "ANDERE"
+  STR_BASESCAPE: "Grundriss"
+  STR_AI: "KI"
   STR_PATH_ENERGY_COST: "Energie"
   STR_PATH_ENERGY_COST_DESC: "Durch Anklicken wird die Energie angezeigt, die Ihrer Einheit nach der Ankunft am Zielort noch zur Verfügung steht."
   STR_TEST_SCREEN: "TESTBILDSCHIRM"
