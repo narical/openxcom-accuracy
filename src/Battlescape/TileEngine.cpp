@@ -2952,6 +2952,7 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 							int distanceSq = unit->distance3dToUnitSq(bu);
 							int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
+                            if (!Options::battleRealisticAccuracy)
 							{
 								int upperLimit, lowerLimit;
 								int dropoff = weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), rs.attackType);
@@ -2966,11 +2967,85 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 								}
 							}
 
-							bool outOfRange = weapon->getRules()->isOutOfRange(distanceSq);
+                            bool outOfRange = weapon->getRules()->isOutOfRange(distanceSq);
+                            int targetSize = unit->getArmor()->getSize();
 
-							if (Options::useChanceToHit)
+							if (Options::battleRealisticAccuracy)
 							{
-								auto targetSize = unit->getArmor()->getSize();
+                                double accuracyFloat = static_cast<double>(accuracy);
+
+								const Mod::AccuracyModConfig *AccuracyMod = _save->getMod()->getAccuracyModConfig();
+								int distanceVoxels = 0;
+								std::vector<Position> exposedVoxels;
+
+                                int maxVoxels = 0;
+                                double maxExposure = 0.0;
+                                auto targetTile = tile;
+                                exposedVoxels.reserve((1 + BattleUnit::BIG_MAX_RADIUS * 2) * TileEngine::voxelTileSize.z / 2);
+
+                                // This is needed inside getOriginVoxel() to get direction
+                                falseAction.target = unit->getPosition();
+
+                                Position selectedOrigin = TileEngine::invalid;
+                                BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
+                                std::vector<BattleActionOrigin> originTypes;
+                                originTypes.push_back(BattleActionOrigin::CENTRE);
+                                if (Options::oxceEnableOffCentreShooting)
+                                {
+                                    originTypes.push_back(BattleActionOrigin::LEFT);
+                                    originTypes.push_back(BattleActionOrigin::RIGHT);
+                                }
+
+                                // Find shooting point with best target's exposure
+                                for (const auto &relPos : originTypes)
+                                {
+                                    exposedVoxels.clear();
+                                    falseAction.relativeOrigin = relPos;
+                                    Position origin = _save->getTileEngine()->getOriginVoxel(falseAction, bu->getTile());
+                                    double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, bu, false, &exposedVoxels, false);
+
+                                    // Save default values for center origin
+                                    // Overwrite if better results are found for shifted origins
+                                    if (relPos == BattleActionOrigin::CENTRE || (int)exposedVoxels.size() > maxVoxels)
+                                    {
+                                        selectedOrigin = origin;
+                                        selectedOriginType = relPos;
+                                        maxVoxels = exposedVoxels.size();
+                                        maxExposure = exposure;
+                                    }
+                                }
+                                falseAction.relativeOrigin = selectedOriginType;
+                                distanceVoxels = unit->distance3dToPositionPrecise(selectedOrigin) - bu->getRadiusVoxels();
+								double distanceFloat = (double)distanceVoxels / Position::TileXY;
+
+								int upperLimit, lowerLimit;
+                                int dropoff = weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), rs.attackType);
+
+								if (distanceFloat > upperLimit)
+								{
+									accuracyFloat -= (distanceFloat - upperLimit) * dropoff;
+								}
+								else if (distanceFloat < lowerLimit)
+								{
+									accuracyFloat -= (lowerLimit - distanceFloat) * dropoff;
+								}
+
+								bool coverHasEffect = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency];
+								if (maxVoxels > 0 && coverHasEffect)
+								{
+									// Apply the exposure
+									double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency] / 100.0;
+									accuracyFloat = accuracyFloat * coverEfficiencyCoeff * maxExposure + accuracyFloat * (1.0 - coverEfficiencyCoeff);
+								}
+
+								accuracy = round(accuracyFloat);
+								distance = round(distanceFloat);
+								if (distance < 1) distance = 1;
+
+								accuracy = Projectile::getHitChance(distance, accuracy, _save->getMod()->getHitChancesTable(targetSize));
+							}
+                            else if (Options::useChanceToHit)
+							{
 								accuracy = Projectile::getHitChance(distance, accuracy, _save->getMod()->getHitChancesTable( targetSize ));
 							}
 
