@@ -151,8 +151,6 @@ en-US:
 #SoldiersState.h
   STR_TRAINING: "Training"
   STR_SOLDIER_INFO: "Soldier Info"
-  STR_NO_CRAFT_FILTER: "No Craft Filter"
-  STR_NOT_ASSIGNED: "Unassigned"
 #SoldierTransformState.cpp
   STR_SELECT_TRANSFORMATION_FOR: "SELECT TRANSFORMATION FOR{NEWLINE}{0}"
   STR_TRANSFORMATIONS_BUTTON: "^"
@@ -165,7 +163,7 @@ en-US:
   STR_CHANGES_MAX: "Changes (max)"
   STR_BONUS_STATS: "Bonus stats"
 #SoldierTransformationListState.cpp
-  STR_TRANSFORMATIONS_OVERVIEW: "Transform. Overview"
+  STR_TRANSFORMATIONS_OVERVIEW: "Transformations Overview"
   STR_PROJECT_NAME: "PROJECT NAME"
   STR_AVAILABLE_MATERIALS: "AVAILABLE MATERIALS"
   STR_ELIGIBLE_SOLDIERS: "ELIGIBLE SOLDIERS"
@@ -418,6 +416,8 @@ en-US:
   STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
   STR_OFF_CENTRE_SHOOTING: "Off-center shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_UNIFORM_SHOOTING_SPREAD: "Uniform shooting spread"
+  STR_UNIFORM_SHOOTING_SPREAD_DESC: "Spread is uniform in all directions and more tight."
   STR_CRASHED_OR_LANDED: "Crashed/Landed button"
   STR_CRASHED_OR_LANDED_DESC: "If enabled, an extra button is displayed on the New Battle screen. Alternatively, press F11 to show/hide the button. {ALT}0>{ALT}Disabled, {ALT}1>{ALT}Crashed, {ALT}2>{ALT}Landed."
 #===================
@@ -447,8 +447,6 @@ en-US:
   STR_TOGGLE_NIGHT_VISION: "Toggle Night Vision"
   STR_HOLD_NIGHT_VISION: "Short Night Vision"
   STR_SELECT_MUSIC_TRACK: "Select Music Track"
-  STR_keyAIList: "Soldiers AI Autocombat"
-  STR_TOGGLE_AUTO_PLAY: "Toggle Autoplay Ctrl + "
 #===================
   STR_TOGGLE_TOUCH_BUTTONS: "Toggle Touch Buttons"
   STR_TOGGLE_BRIGHTNESS: "Toggle Brightness (visual only)"
@@ -563,7 +561,8 @@ en-US:
   STR_ENGINE_OXC: "OXC"
   STR_ENGINE_OXCE: "OXCE"
   STR_ENGINE_OTHER: "OTHER"
-  STR_ENGINE_BOXCE: "BOXCE"
+  STR_BASESCAPE: "Basescape"
+  STR_AI: "AI"
 #OptionsBattlescapeState.cpp
   STR_PATH_ENERGY_COST: "Energy"
   STR_PATH_ENERGY_COST_DESC: "Clicking shows the energy your unit will have remaining after moving to the destination."
