@@ -2188,6 +2188,10 @@ interfaces:
         color2: 32
   - type: stats
     elements:
+      - id: numMaxHealth
+        color: 144
+        pos: [278, 0]    # only X counts, Y is ignored (because it's dynamic)
+        custom: 2        # 0 + 1(=show also when current hp is equal to max hp) + 2(=show '/' prefix)
       - id: textName
         color: 64
       - id: barTUs
