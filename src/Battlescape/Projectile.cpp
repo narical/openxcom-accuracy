@@ -719,6 +719,13 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		target->y = (int)(origin.y + maxRange * sin_te * cos_fi);
 		target->z = (int)(origin.z + maxRange * sin_fi);
 	}
+
+	if (Options::battleRealisticAccuracy && Options::battleRealisticDisplayRolls && _action.actor->getFaction() == FACTION_PLAYER)
+	{
+		std::ostringstream ss;
+        ss << " Fallback to vanilla accuracy";
+		_save->getBattleState()->debug(ss.str(), true);
+	}
 }
 
 /**
