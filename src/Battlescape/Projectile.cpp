@@ -741,10 +741,11 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 	Tile *targetTile = _save->getTile(target->toTile());
 	if (!targetTile) return;
 
+	bool isShotgun = _ammo && _ammo->getRules()->getShotgunPellets() != 0 && _ammo->getRules()->getDamageType()->isDirect();
 	bool isArcingShot = _action.weapon->getArcingShot(_action.type);
 
 	// For any action, incompatible with RA - use classic accuracy insteasd
-	if (_action.type == BA_LAUNCH || _action.type == BA_THROW || isArcingShot)
+	if (_action.type == BA_LAUNCH || _action.type == BA_THROW || isArcingShot || isShotgun)
 	{
 		applyAccuracy( origin, target, accuracy, keepRange, extendLine );
 		return;
