@@ -743,9 +743,10 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 
 	bool isShotgun = _ammo && _ammo->getRules()->getShotgunPellets() != 0 && _ammo->getRules()->getDamageType()->isDirect();
 	bool isArcingShot = _action.weapon->getArcingShot(_action.type);
+	bool isSpray = _action.sprayTargeting;
 
 	// For any action, incompatible with RA - use classic accuracy insteasd
-	if (_action.type == BA_LAUNCH || _action.type == BA_THROW || isArcingShot || isShotgun)
+	if (_action.type == BA_LAUNCH || _action.type == BA_THROW || isArcingShot || isShotgun || isSpray)
 	{
 		applyAccuracy( origin, target, accuracy, keepRange, extendLine );
 		return;
