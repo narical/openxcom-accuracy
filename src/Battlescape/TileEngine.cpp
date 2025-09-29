@@ -2131,7 +2131,8 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
  * @param exposedVoxels [Optional] Array of positions of exposed voxels (function fills it)
  * @return Degree of exposure (as percent).
  */
-double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug, std::vector<Position> *exposedVoxels, bool isSimpleMode)
+double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug,
+                                    std::vector<Position> *exposedVoxels, std::vector<Position> *coveredVoxels, bool isSimpleMode)
 {
 	isDebug = isDebug && _save->getDebugMode();
 	if (excludeUnit && excludeUnit->isAIControlled()) isSimpleMode = true;
@@ -2243,12 +2244,17 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 					scanLine += '#';
 				}
 				else
-					scanLine += symbols[ test+1 ]; // overlapped by another unit
+                {
+                    if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+                    scanLine += symbols[ test+1 ]; // overlapped by another unit
+                }
 			}
 
 			else
 			{
 				if ( test == V_EMPTY )	--total;
+                else if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel); // Target can't be covered by void
+
 				scanLine += symbols[ test+1 ]; // V_EMPTY = -1
 			}
 		}
@@ -2302,7 +2308,15 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 					exposure += 0.05;
 					if (exposedVoxels) exposedVoxels->emplace_back(scanVoxel);
 				}
+                else
+                {
+                    if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+                }
 			}
+            else if (test != V_EMPTY)
+            {
+                if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+            }
 		}
 	}
 
@@ -3002,7 +3016,7 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
                                     exposedVoxels.clear();
                                     falseAction.relativeOrigin = relPos;
                                     Position origin = _save->getTileEngine()->getOriginVoxel(falseAction, bu->getTile());
-                                    double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, bu, false, &exposedVoxels, false);
+                                    double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, bu, false, &exposedVoxels, nullptr, false);
 
                                     // Save default values for center origin
                                     // Overwrite if better results are found for shifted origins

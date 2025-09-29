@@ -1557,7 +1557,7 @@ void Map::drawTerrain(Surface *surface)
 													exposedVoxels.clear();
 													action->relativeOrigin = relPos;
 													Position origin = _save->getTileEngine()->getOriginVoxel(*action, shooterUnit->getTile());
-													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, shooterUnit, false, &exposedVoxels, false);
+													double exposure = _save->getTileEngine()->checkVoxelExposure(&origin, targetTile, shooterUnit, false, &exposedVoxels, nullptr, false);
 
 													// Save default values for center origin
 													// Overwrite if better results are found for shifted origins
