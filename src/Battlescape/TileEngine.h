@@ -259,7 +259,7 @@ public:
 	/// Gets the AI to look through a window.
 	int faceWindow(Position position);
 	/// Checks a unit's % exposure on a tile, and fills array of exposed voxels
-	double checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug = false, std::vector<Position> *exposedVoxels = nullptr, bool isSimpleMode = true);
+	double checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, bool isDebug = false, std::vector<Position> *exposedVoxels = nullptr, std::vector<Position> *coveredVoxels = nullptr, bool isSimpleMode = true);
 	/// Checks validity for targetting a unit.
 	bool canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit = 0);
 	/// Check validity for targetting a tile.

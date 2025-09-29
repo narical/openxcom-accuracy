@@ -764,8 +764,9 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 
 	BattleUnit *shooterUnit = _action.actor;
 
-	std::vector<Position> exposedVoxels;
+	std::vector<Position> exposedVoxels, coveredVoxels;
 	int exposedVoxelsCount = 0; // Maximum of exposed voxels for left, center or right shooting position
+	int coveredVoxelsCount = 0;
 
 	BattleUnit *targetUnit = nullptr;
 	targetUnit = targetTile->getOverlappingUnit(_save);
@@ -789,9 +790,8 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 		int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 		int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
 
-		std::vector<Position> tempVoxels;
-		tempVoxels.reserve( heightCount * widthCount );
 		exposedVoxels.reserve( heightCount * widthCount );
+		coveredVoxels.reserve( heightCount * widthCount );
 
 		Position selectedOrigin = TileEngine::invalid;
 		BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
@@ -805,22 +805,31 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 			originTypes.push_back( BattleActionOrigin::RIGHT );
 		}
 
+		std::vector<Position> exposedVoxelsTemp, coveredVoxelsTemp;
+		exposedVoxelsTemp.reserve( heightCount * widthCount );
+		coveredVoxelsTemp.reserve( heightCount * widthCount );
+
 		for (const auto &relPos : originTypes)
 		{
-			tempVoxels.clear();
+			exposedVoxelsTemp.clear();
+			coveredVoxelsTemp.clear();
+
 			_action.relativeOrigin = relPos;
 			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
 			if (selectedOrigin == TileEngine::invalid) selectedOrigin = tempOrigin;
 
-			double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true, &tempVoxels, false);
+			double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true,
+                                                                            &exposedVoxelsTemp, &coveredVoxelsTemp, false);
 
-			if ((int)tempVoxels.size() > exposedVoxelsCount)
+			if ((int)exposedVoxelsTemp.size() > exposedVoxelsCount)
 			{
-				exposedVoxelsCount = tempVoxels.size();
+				exposedVoxelsCount = exposedVoxelsTemp.size();
+				coveredVoxelsCount = coveredVoxelsTemp.size();
 				exposure = tempExposure;
 				selectedOriginType = relPos;
 				selectedOrigin = tempOrigin;
-				exposedVoxels.swap( tempVoxels );
+				exposedVoxels.swap( exposedVoxelsTemp );
+				coveredVoxels.swap( coveredVoxelsTemp );
 			}
 		}
 		_action.relativeOrigin = selectedOriginType;
@@ -878,33 +887,32 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 	int snipingBonus = ( accuracy > 1.0 ? round((accuracy*100 - 100)/2) : 0 );
 	bool isSniperShot = ( snipingBonus > 0 );
 
+	isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
+
     // Now convert values to integers
-	int accuracyInteger = 0;
+	int accuracyInteger = round(100 * accuracy);
 	int distanceInteger = round(distance);
 	if (distanceInteger < 1) distanceInteger = 1;
 
-	isTargetObject = targetTile->getMapData(O_OBJECT); // Check if there are any objects
+	int rawChanceToHit = Projectile::getHitChance(distanceInteger, accuracyInteger, _save->getMod()->getHitChancesTable( targetSize ));
+	int coveredChanceToHit = rawChanceToHit;
 
     // Apply exposure
 	if (exposedVoxelsCount > 0 && coverHasEffect)
 	{
 		accuracyInteger = round(100 * (accuracy * coverEfficiencyCoeff * exposure + accuracy * (1 - coverEfficiencyCoeff)));
+		coveredChanceToHit = Projectile::getHitChance(distanceInteger, accuracyInteger, _save->getMod()->getHitChancesTable( targetSize ));
 	}
-	else
-	{
-		accuracyInteger = round(100 * accuracy);
-	}
-
-	// Apply hitchance
-	accuracyInteger = Projectile::getHitChance(distanceInteger, accuracyInteger, _save->getMod()->getHitChancesTable( targetSize ));
 
 	if (Options::battleRealisticImprovedAimed && isSniperShot)
 	{
-		accuracyInteger += snipingBonus;
+		rawChanceToHit += snipingBonus;
+		coveredChanceToHit += snipingBonus;
 	}
 
 	int accuracyCheck = RNG::generate(1, 100);
-	bool hitSuccessful = ( accuracyCheck <= accuracyInteger );
+	bool hitSuccessful = ( accuracyCheck <= coveredChanceToHit );
+	bool hitToCover = ( !hitSuccessful && accuracyCheck <= rawChanceToHit );
 
 	if (Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER)
 	{
@@ -926,7 +934,11 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 			ss << " Total " << accuracyInteger << "%";
 		}
 
-		ss << " Roll " << accuracyCheck << ( hitSuccessful ? " -> HIT" : " -> MISS" );
+		ss << " Roll " << accuracyCheck;
+		if (hitSuccessful) ss << " -> HIT";
+		else if (hitToCover) ss << " -> COVER";
+		else ss << " -> MISS";
+
 		_save->getBattleState()->debug(ss.str(), true);
 	}
 
@@ -953,6 +965,12 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 		target->x += RNG::generate(-3, 3); // Add some deviation in XY plane - Z deviation leads to obvious misses
 		target->y += RNG::generate(-3, 3);
 	}
+
+	else if (hitToCover && !coveredVoxels.empty()) // "Hitting" cover
+	{
+		*target = coveredVoxels.at(RNG::generate(0, coveredVoxelsCount-1)); // Aim to random cover voxel
+	}
+
 	else // We missed, time to find a line of fire to perform a miss with a realistic deviation
 	{
 		*target = calculateMissingTrajectoryRA( origin, target, shooterUnit, targetUnit, distanceVoxels, exposedVoxels );
