@@ -68,10 +68,13 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _isSurrendering(false), _hasPanickedLastTurn(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
 	_dontReselect(false), _aiMedikitUsed(false), _fire(0), _currentAIState(0), _visible(false),
 	_exp{ }, _expTmp{ },
-	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0), 
-	_moraleRestored(0), _charging(0),
+	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0),
+	_hitByFire(false), _hitByAnything(false), _alreadyExploded(false),
+	_fireMaxHit(0), _smokeMaxHit(0),
+	_moraleRestored(0), _notificationShown(0), _charging(0),
 	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
-	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1), _tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
+	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1),
+	_tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
@@ -424,7 +427,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_allowAutoCombat(true),
 	_visible(false), _exp{ }, _expTmp{ },
 	_motionPoints(0), _scannedTurn(-1), _customMarker(0), _kills(0), _hitByFire(false), _hitByAnything(false), _alreadyExploded(false), _fireMaxHit(0), _smokeMaxHit(0),
-	_moraleRestored(0), _charging(0),
+	_moraleRestored(0), _notificationShown(0), _charging(0),
 	_turnsSinceSeenByHostile(255), _turnsSinceSeenByNeutral(255), _turnsSinceSeenByPlayer(255),
 	_tileLastSpottedByHostile(-1), _tileLastSpottedByNeutral(-1), _tileLastSpottedByPlayer(-1),
 	_tileLastSpottedForBlindShotByHostile(-1), _tileLastSpottedForBlindShotByNeutral(-1), _tileLastSpottedForBlindShotByPlayer(-1),
@@ -688,6 +691,7 @@ void BattleUnit::load(const YAML::YamlNodeReader& node, const Mod *mod, const Sc
 	reader.tryRead("rankInt", _rankInt);
 	reader.tryRead("rankIntUnified", _rankIntUnified);
 	reader.tryRead("moraleRestored", _moraleRestored);
+	reader.tryRead("notificationShown", _notificationShown);
 	reader.tryRead("killedBy", _killedBy);
 	reader.tryRead("kills", _kills);
 	reader.tryRead("dontReselect", _dontReselect);
@@ -828,7 +832,8 @@ void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 	writer.write("rankInt", _rankInt);
 	writer.write("rankIntUnified", _rankIntUnified);
 	writer.write("moraleRestored", _moraleRestored);
-
+	if (_notificationShown > 0)
+		writer.write("notificationShown", _notificationShown);
 	if (getAIModule())
 		getAIModule()->save(writer["AI"]);
 	writer.write("killedBy", _killedBy); // does not have a default value, must always be saved

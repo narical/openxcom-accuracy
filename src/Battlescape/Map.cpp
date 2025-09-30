@@ -886,6 +886,11 @@ void Map::drawTerrain(Surface *surface)
 	{
 		endZ = std::min(endZ, _camera->getViewLevel());
 	}
+	if (_camera->getShowSingleLayer())
+	{
+		beginZ = _camera->getViewLevel();
+		endZ = _camera->getViewLevel();
+	}
 
 
 	bool pathfinderTurnedOn = _save->getPathfinding()->isPathPreviewed();
