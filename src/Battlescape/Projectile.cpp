@@ -920,18 +920,18 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 
 		if (targetUnit && targetUnit->getVisible())
 		{
-			ss << "Exposure " << std::round(exposure*100) << "%";
+			ss << "Vis: " << std::round(exposure*100) << "%";
+			ss << " Total: " << coveredChanceToHit << "/" << rawChanceToHit << "%";
 
 			if (Options::battleRealisticImprovedAimed && isSniperShot)
 			{
-				ss << " Sniping +" << snipingBonus << "%";
+				ss << " Sniper: " << snipingBonus << "%";
 			}
-			ss << " Total " << accuracyInteger << "%";
 		}
 		else
 		{
-			if (Options::battleRealisticImprovedAimed && isSniperShot) ss << "Sniping +" << snipingBonus << "%";
-			ss << " Total " << accuracyInteger << "%";
+			ss << "Total: " << rawChanceToHit;
+			if (Options::battleRealisticImprovedAimed && isSniperShot) ss << " Sniper: " << snipingBonus << "%";
 		}
 
 		ss << " Roll " << accuracyCheck;
