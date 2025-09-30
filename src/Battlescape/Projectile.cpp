@@ -900,8 +900,7 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
     // Apply exposure
 	if (exposedVoxelsCount > 0 && coverHasEffect)
 	{
-		accuracyInteger = round(100 * (accuracy * coverEfficiencyCoeff * exposure + accuracy * (1 - coverEfficiencyCoeff)));
-		coveredChanceToHit = Projectile::getHitChance(distanceInteger, accuracyInteger, _save->getMod()->getHitChancesTable( targetSize ));
+		coveredChanceToHit = round((double)rawChanceToHit * coverEfficiencyCoeff * exposure + (double)rawChanceToHit * (1 - coverEfficiencyCoeff));
 	}
 
 	if (Options::battleRealisticImprovedAimed && isSniperShot)

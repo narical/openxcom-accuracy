@@ -1636,18 +1636,19 @@ void Map::drawTerrain(Surface *surface)
 											bool isSniperShot = (snipingBonus > 0  && !disableRA);
 
 											bool coverHasEffect = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency];
-											if (unit && maxVoxels > 0 && coverHasEffect && !disableRA)
-											{
-												// Apply the exposure
-												double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency] / 100.0;
-												accuracy = accuracy * coverEfficiencyCoeff * maxExposure + accuracy * (1.0 - coverEfficiencyCoeff);
-											}
 
 											accuracyInteger = round(accuracy);
 											distance = round(distanceFloat);
 											if (distance < 1) distance = 1;
 
 											accuracyInteger = Projectile::getHitChance(distance, accuracyInteger, _game->getMod()->getHitChancesTable(targetSize));
+
+											if (unit && maxVoxels > 0 && coverHasEffect && !disableRA)
+											{
+												// Apply the exposure
+												double coverEfficiencyCoeff = AccuracyMod->coverEfficiency[(int)Options::battleRealisticCoverEfficiency] / 100.0;
+												accuracyInteger = round((double)accuracyInteger * coverEfficiencyCoeff * maxExposure + (double)accuracyInteger * (1.0 - coverEfficiencyCoeff));
+											}
 
 											if (Options::battleRealisticImprovedAimed && isSniperShot)
 											{
