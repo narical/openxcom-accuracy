@@ -38,6 +38,68 @@ namespace OpenXcom
 {
 
 /**
+ * Helper function for Realistic Accuracy.
+ * Checks positions protection. Removes protected voxels from vector of covered ones.
+ * @param origin Position the projectile originates from.
+ * @param coveredVoxels Positions which should be checked for protection.
+ * @param faction of shooting unit
+ * @param distanceVoxels distance from shooter to target
+ */
+bool Projectile::shotNeedsProtection(const Position &origin, std::vector<Position>& coveredVoxels, OpenXcom::UnitFaction faction, int distanceVoxels)
+{
+	if (faction != FACTION_PLAYER) return false; // TODO: add other factions if needed
+
+	int coveredVoxelsCount = coveredVoxels.size();
+	if (coveredVoxelsCount == 0) return true; // Doesn't matter, just return from here
+
+	bool isCtrlPressed = _save->isCtrlPressed(true); // Don't protect forced shots
+	if (isCtrlPressed) return false;
+
+	auto ammo = _action.weapon->getAmmoForAction(_action.type);
+	bool isSplashDamage = (ammo && !ammo->getRules()->getDamageType()->isDirect());
+
+	int protectionDistance = _mod->getAccuracyModConfig()->suicideProtectionDistance;
+
+	if (distanceVoxels < protectionDistance) return false; // Don't protect against close target
+
+	int protectionDistanceSq = protectionDistance * protectionDistance;
+
+	std::vector<Position> unprotectedVoxels;
+	unprotectedVoxels.reserve(coveredVoxelsCount);
+
+	Tile *targetTile = nullptr;
+	BattleUnit *targetUnit = nullptr;
+
+	for (const Position& voxel : coveredVoxels)
+	{
+		if (Position::distanceSq(origin, voxel) > protectionDistanceSq) // Voxel is far away, remove protection
+		{
+			unprotectedVoxels.emplace_back(voxel);
+		}
+		else
+		{
+			if (isSplashDamage) continue; // Suicide protection
+
+			targetTile = _save->getTile(voxel.toTile());
+			if (!targetTile) goto removeProtection;
+
+			targetUnit = targetTile->getOverlappingUnit(_save);
+			if (!targetUnit) goto removeProtection;
+
+			if (targetUnit->getFaction() == faction) continue; // Friendly fire protection;
+
+			removeProtection: unprotectedVoxels.emplace_back(voxel);
+		}
+	}
+
+	coveredVoxels.swap(unprotectedVoxels);
+	if (coveredVoxels.size() == 0) return true; // No safe voxels found
+
+	return false;
+}
+
+
+/**
  * Helper function for Realistic Accuracy. Calculates trajectory for a miss.
  * @param mod Pointer to mod.
  * @param save Pointer to battle savegame.

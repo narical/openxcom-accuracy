@@ -62,7 +62,8 @@ private:
 	void applyAccuracy(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine);
 	void applyAccuracyRealistic(Position origin, Position *target, double accuracy, bool keepRange, bool extendLine);
 	Position calculateMissingTrajectoryRA(const Position& origin, const Position* target, BattleUnit* shooterUnit, const BattleUnit* targetUnit, int distanceVoxels, const std::vector<Position>& exposedVoxels);
-public:
+	bool shotNeedsProtection(const Position &origin, std::vector<Position>& coveredVoxels, UnitFaction faction, int distanceVoxels);
+  public:
 	/// Creates a new Projectile.
 	Projectile(Mod *mod, SavedBattleGame *save, BattleAction action, Position origin, Position target, BattleItem *ammo);
 	/// Cleans up the Projectile.
