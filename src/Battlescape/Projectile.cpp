@@ -975,34 +975,7 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 	int accuracyCheck = RNG::generate(1, 100);
 	bool hitSuccessful = ( accuracyCheck <= coveredChanceToHit );
 	bool hitToCover = ( !hitSuccessful && accuracyCheck <= rawChanceToHit );
-
-	if (Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER)
-	{
-		std::ostringstream ss;
-
-		if (targetUnit && targetUnit->getVisible())
-		{
-			ss << "Vis: " << std::round(exposure*100) << "%";
-			ss << " Total: " << coveredChanceToHit << "/" << rawChanceToHit << "%";
-
-			if (Options::battleRealisticImprovedAimed && isSniperShot)
-			{
-				ss << " Sniper: " << snipingBonus << "%";
-			}
-		}
-		else
-		{
-			ss << "Total: " << rawChanceToHit;
-			if (Options::battleRealisticImprovedAimed && isSniperShot) ss << " Sniper: " << snipingBonus << "%";
-		}
-
-		ss << " Roll " << accuracyCheck;
-		if (hitSuccessful) ss << " -> HIT";
-		else if (hitToCover) ss << " -> COVER";
-		else ss << " -> MISS";
-
-		_save->getBattleState()->debug(ss.str(), true);
-	}
+	bool hitNoSuicide = false;
 
 	// Calculate final target point
 	if (hitSuccessful && !exposedVoxels.empty()) // "Hitting" visible unit
@@ -1030,12 +1003,57 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 
 	else if (hitToCover && !coveredVoxels.empty()) // "Hitting" cover
 	{
-		*target = coveredVoxels.at(RNG::generate(0, coveredVoxelsCount-1)); // Aim to random cover voxel
+		bool protect = shotNeedsProtection(origin, coveredVoxels, shooterUnit->getFaction(), distanceVoxels);
+		coveredVoxelsCount = coveredVoxels.size();
+
+		if (protect)
+		{
+			*target = calculateMissingTrajectoryRA( origin, target, shooterUnit, targetUnit, distanceVoxels, exposedVoxels );
+			hitToCover = false;
+			hitNoSuicide = true;
+		}
+		else
+		{
+			int rng = RNG::generate( 0, coveredVoxelsCount-1 );
+			*target = coveredVoxels.at(rng); // Aim to random covered voxel
+		}
 	}
 
 	else // We missed, time to find a line of fire to perform a miss with a realistic deviation
 	{
 		*target = calculateMissingTrajectoryRA( origin, target, shooterUnit, targetUnit, distanceVoxels, exposedVoxels );
+	}
+
+	bool showRngRollsPlayer = Options::battleRealisticDisplayRolls && shooterUnit->getFaction() == FACTION_PLAYER;
+	bool showRngRollsOthers = Options::battleRealisticDisplayOthersRolls && shooterUnit->getFaction() != FACTION_PLAYER;
+
+	if (showRngRollsPlayer || showRngRollsOthers)
+	{
+		std::ostringstream ss;
+
+		if (targetUnit && targetUnit->getVisible())
+		{
+			ss << "Vis: " << std::round(exposure*100) << "%";
+			ss << " Total: " << coveredChanceToHit << "/" << rawChanceToHit << "%";
+
+			if (Options::battleRealisticImprovedAimed && isSniperShot)
+			{
+				ss << " Sniper: " << snipingBonus << "%";
+			}
+		}
+		else
+		{
+			ss << "Total: " << rawChanceToHit;
+			if (Options::battleRealisticImprovedAimed && isSniperShot) ss << " Sniper: " << snipingBonus << "%";
+		}
+
+		ss << " Roll " << accuracyCheck;
+		if (hitSuccessful) ss << " -> HIT";
+		else if (hitToCover) ss << " -> COVER";
+		else if (hitNoSuicide) ss << " -> PROTECT";
+		else ss << " -> MISS";
+
+		_save->getBattleState()->debug(ss.str(), true);
 	}
 
 	if (extendLine)
