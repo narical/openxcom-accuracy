@@ -51,6 +51,8 @@ en-US:
   STR_BATTLEREALISTICCOVEREFFICIENCY_DESC: "Part of the accuracy affected by cover: {ALT}0>{ALT} 0% (none) {NEWLINE}{ALT}1>{ALT} 30% (low) {ALT}2>{ALT} 50% (medium) {ALT}3>{ALT} 70% (high) {ALT}4>{ALT} 100% (full)"
   STR_BATTLEREALISTICDISPLAYROLLS: "RA - Display RNG rolls"
   STR_BATTLEREALISTICDISPLAYROLLS_DESC: "Display the exact RNG roll for each shot compared to accuracy"
+  STR_BATTLEREALISTICDISPLAYOTHERSROLLS:  "RA - Display RNG rolls for others"
+  STR_BATTLEREALISTICDISPLAYOTHERSROLLS_DESC:  "Display RNG rolls for enemies and neutral forces"
   STR_BATTLEREALISTICIMPAIMED: "RA - Sniping bonus"
   STR_BATTLEREALISTICIMPAIMED_DESC: "Add half of the accuracy which exceeds 100% as sniping bonus after applying cover penalty"
   STR_BATTLEREALISTICIMPLOF: "RA - Improved line of fire"
