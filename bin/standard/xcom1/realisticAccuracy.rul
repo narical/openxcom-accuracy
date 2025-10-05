@@ -1,4 +1,5 @@
 realisticAccuracy:
+  peekDistance: 25
   suicideProtectionDistance: 50
   distanceDeviation: 13
   oneHandWeaponDeviation: 3

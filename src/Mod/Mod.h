@@ -155,6 +155,7 @@ public:
 
     struct AccuracyModConfig // Real Accuracy mod configuration
     {
+		int peekDistance = 25;
         int suicideProtectionDistance = 50;
 
         // Deviation in voxels per 10 tiles of shot trajectory

@@ -2208,6 +2208,7 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 	// Reduce number of checks in simple mode
 	int simplifyDivider = unitRadius;
 	if (targetSize == 2) simplifyDivider = 4;
+    int peekDistanceSq = _save->getMod()->getAccuracyModConfig()->peekDistance * _save->getMod()->getAccuracyModConfig()->peekDistance;
 
 	for (int height = targetMaxHeight; height >= bottomHeight; height -= 2)
 	{
@@ -2229,7 +2230,14 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
-			if (test == V_UNIT)
+
+            bool peekBehindCover = false;
+            if (!_trajectory.empty())
+            {
+                peekBehindCover = (Position::distanceSq(*originVoxel, _trajectory.at(0)) <= peekDistanceSq);
+            }
+
+            if (test == V_UNIT)
 			{
 				int impactX = _trajectory.at(0).x;
 				int impactY = _trajectory.at(0).y;
@@ -2245,15 +2253,16 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 				}
 				else
                 {
-                    if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+                    if (peekBehindCover) --total;
+                    else if (coveredVoxels) coveredVoxels->emplace_back(_trajectory.at(0));
                     scanLine += symbols[ test+1 ]; // overlapped by another unit
                 }
 			}
 
 			else
 			{
-				if ( test == V_EMPTY )	--total;
-                else if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel); // Target can't be covered by void
+				if ( test == V_EMPTY || peekBehindCover ) --total;
+                else if (coveredVoxels) coveredVoxels->emplace_back(_trajectory.at(0)); // Target can't be covered by void
 
 				scanLine += symbols[ test+1 ]; // V_EMPTY = -1
 			}
@@ -2295,6 +2304,13 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 
 			_trajectory.clear();
 			int test = calculateLineVoxel(*originVoxel, scanVoxel, false, &_trajectory, excludeUnit);
+
+            bool peekBehindCover = false;
+            if (!_trajectory.empty())
+            {
+                peekBehindCover = (Position::distanceSq(*originVoxel, _trajectory.at(0)) <= peekDistanceSq);
+            }
+
 			if (test == V_UNIT)
 			{
 				int impactX = _trajectory.at(0).x;
@@ -2310,12 +2326,14 @@ double TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleU
 				}
                 else
                 {
-                    if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+                    if (peekBehindCover) --total;
+                    else if (coveredVoxels) coveredVoxels->emplace_back(_trajectory.at(0));
                 }
 			}
             else if (test != V_EMPTY)
             {
-                if (coveredVoxels) coveredVoxels->emplace_back(scanVoxel);
+                if ( peekBehindCover ) --total;
+                else if (coveredVoxels) coveredVoxels->emplace_back(_trajectory.at(0)); // Target can't be covered by void
             }
 		}
 	}

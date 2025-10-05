@@ -3277,6 +3277,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
     // Override any settings if presented in realisticAccuracy.rul
 	if (const auto& nodeRA = loadDocInfoHelper("realisticAccuracy"))
 	{
+		nodeRA.tryRead("peekDistance", _realisticAccuracyConfig.peekDistance);
         nodeRA.tryRead("suicideProtectionDistance", _realisticAccuracyConfig.suicideProtectionDistance);
 
         // Override "Normal" fire spread option
