@@ -1541,13 +1541,7 @@ void Map::drawTerrain(Surface *surface)
 												// This is needed inside getOriginVoxel() to get direction
 												action->target = unit->getPosition();
 
-												// This is TEMPORARY SOLUTION
-												// when selectedOriginType is found - save it to action->relativeOrigin
-												// which is then used by canTargetUnit() in ProjectileFlyBState::init()
-												// Reaction fire in RA is broken due to this!
-
 												Position selectedOrigin = TileEngine::invalid;
-												BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
 												std::vector<BattleActionOrigin> originTypes;
 												originTypes.push_back(BattleActionOrigin::CENTRE);
 												if (Options::oxceEnableOffCentreShooting)
@@ -1569,12 +1563,11 @@ void Map::drawTerrain(Surface *surface)
 													if (relPos == BattleActionOrigin::CENTRE || (int)exposedVoxels.size() > maxVoxels)
 													{
 														selectedOrigin = origin;
-														selectedOriginType = relPos;
 														maxVoxels = exposedVoxels.size();
 														maxExposure = exposure;
 													}
 												}
-												action->relativeOrigin = selectedOriginType;
+												action->relativeOrigin = BattleActionOrigin::CENTRE; // Reset to default! It's used elsewhere
 												distanceVoxels = unit->distance3dToPositionPrecise(selectedOrigin) - shooterUnit->getRadiusVoxels();
 											}
 											else if (shooterUnit->getTile()) // Targeting an empty tile
