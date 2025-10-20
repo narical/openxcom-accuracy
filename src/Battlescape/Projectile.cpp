@@ -827,8 +827,8 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 	BattleUnit *shooterUnit = _action.actor;
 
 	std::vector<Position> exposedVoxels, coveredVoxels;
-	int exposedVoxelsCount = 0; // Maximum of exposed voxels for left, center or right shooting position
-	int coveredVoxelsCount = 0;
+	size_t exposedVoxelsCount = 0; // Maximum of exposed voxels for left, center or right shooting position
+	size_t coveredVoxelsCount = 0;
 
 	BattleUnit *targetUnit = nullptr;
 	targetUnit = targetTile->getOverlappingUnit(_save);
@@ -851,51 +851,14 @@ void Projectile::applyAccuracyRealistic(Position origin, Position* target, doubl
 
 		int heightCount = 1 + targetUnit->getHeight()/2; // additional level for unit's bottom
 		int widthCount = 1 + ( targetSize > 1 ? BattleUnit::BIG_MAX_RADIUS*2 : BattleUnit::SMALL_MAX_RADIUS*2 );
-
 		exposedVoxels.reserve( heightCount * widthCount );
 		coveredVoxels.reserve( heightCount * widthCount );
 
-		Position selectedOrigin = TileEngine::invalid;
-		BattleActionOrigin selectedOriginType = BattleActionOrigin::CENTRE;
-		std::vector<BattleActionOrigin> originTypes;
+		exposure = _save->getTileEngine()->checkVoxelExposure( &origin, targetTile, shooterUnit, true, &exposedVoxels, &coveredVoxels, false);
 
-		originTypes.push_back( BattleActionOrigin::CENTRE );
-
-		if (Options::oxceEnableOffCentreShooting)
-		{
-			originTypes.push_back( BattleActionOrigin::LEFT );
-			originTypes.push_back( BattleActionOrigin::RIGHT );
-		}
-
-		std::vector<Position> exposedVoxelsTemp, coveredVoxelsTemp;
-		exposedVoxelsTemp.reserve( heightCount * widthCount );
-		coveredVoxelsTemp.reserve( heightCount * widthCount );
-
-		for (const auto &relPos : originTypes)
-		{
-			exposedVoxelsTemp.clear();
-			coveredVoxelsTemp.clear();
-
-			_action.relativeOrigin = relPos;
-			Position tempOrigin = _save->getTileEngine()->getOriginVoxel(_action, shooterUnit->getTile());
-			if (selectedOrigin == TileEngine::invalid) selectedOrigin = tempOrigin;
-
-			double tempExposure = _save->getTileEngine()->checkVoxelExposure( &tempOrigin, targetTile, shooterUnit, true,
-                                                                            &exposedVoxelsTemp, &coveredVoxelsTemp, false);
-
-			if ((int)exposedVoxelsTemp.size() > exposedVoxelsCount)
-			{
-				exposedVoxelsCount = exposedVoxelsTemp.size();
-				coveredVoxelsCount = coveredVoxelsTemp.size();
-				exposure = tempExposure;
-				selectedOriginType = relPos;
-				selectedOrigin = tempOrigin;
-				exposedVoxels.swap( exposedVoxelsTemp );
-				coveredVoxels.swap( coveredVoxelsTemp );
-			}
-		}
-		_action.relativeOrigin = selectedOriginType;
-		distanceVoxels = targetUnit->distance3dToPositionPrecise( selectedOrigin ) - shooterUnit->getRadiusVoxels();
+		exposedVoxelsCount = exposedVoxels.size();
+		coveredVoxelsCount = coveredVoxels.size();
+		distanceVoxels = targetUnit->distance3dToPositionPrecise( origin ) - shooterUnit->getRadiusVoxels();
 	}
 	else // Get distance to target empty tile
 	{
