@@ -6424,8 +6424,14 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 				break;
 			};
 		}
-		else
+        else // Classic off-centre shooting
 		{
+            if ( action.target.toTile() == origin.toTile()) // Force-shooting self?
+            {
+                originVoxel += Position(8,8,0); // Center origin inside a tile, but leave Z intact
+                return originVoxel;
+            }
+
 			const int dirXshift[8] = {8, 14,15,15,8, 1, 1, 1};
 			const int dirYshift[8] = {1, 1, 8, 15,15,15,8, 1};
 
